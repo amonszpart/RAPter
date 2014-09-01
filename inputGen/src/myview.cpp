@@ -1,6 +1,6 @@
 #include "myview.h"
 
-MyVIew::MyVIew(QObject *parent) :
+MyView::MyView(QWidget *parent) :
     QGraphicsView(parent)
 {
 }

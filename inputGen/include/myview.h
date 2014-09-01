@@ -3,11 +3,11 @@
 
 #include <QGraphicsView>
 
-class MyVIew : public QGraphicsView
+class MyView : public QGraphicsView
 {
     Q_OBJECT
 public:
-    explicit MyVIew(QObject *parent = 0);
+    explicit MyView(QWidget *parent = 0);
 
 signals:
 
