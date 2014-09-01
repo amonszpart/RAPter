@@ -79,8 +79,9 @@ void MainWindow::on_actionLoad_SVG_triggered()
                         QStringList attrList (reader.attributes().value("d").toString().split(" "));
 
                         // The path is not empty and contains coordinates
-                        if( attrList.size() > 1 &&
-                                attrList.front().compare("M") == 0){
+                        if( attrList.size() > 1 && (
+                                    attrList.front().compare("M") == 0  ||
+                                    attrList.front().compare("m") == 0 )){
 
                             cout << "Reading new set of lines" << endl;
 
