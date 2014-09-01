@@ -2,12 +2,17 @@ PROJECT(inputGen)
 cmake_minimum_required(VERSION 2.8)
 
 FIND_PACKAGE(Qt4 REQUIRED)
+FIND_PACKAGE(Eigen3 REQUIRED)
 
-SET(inputGen_SOURCES src/main.cpp 
+SET(inputGen_SOURCES
+  src/main.cpp
   src/mainwindow.cpp 
   src/myview.cpp)
-SET(inputGen_HEADERS include/mainwindow.h 
-  include/myview.h)
+SET(inputGen_HEADERS
+  include/mainwindow.h
+  include/myview.h
+  include/types.h
+  include/primitive.h)
 SET(inputGen_FORMS ui/mainwindow.ui)
 # SET(inputGen_RESOURCES images.qrc)
 
