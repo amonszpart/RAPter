@@ -3,10 +3,8 @@
 
 #ifdef GF2_USE_PCL
 
-namespace GF2
-{
-namespace pclutil
-{
+namespace GF2 {
+namespace pclutil {
 
 template <class PointAllocatorFunctorT, class PointContainerT, class CloudPtrT> inline int
 cloudToVector( PointContainerT &container, CloudPtrT const& cloud )
@@ -19,7 +17,7 @@ cloudToVector( PointContainerT &container, CloudPtrT const& cloud )
     }
 
     return EXIT_SUCCESS;
-}
+} //...cloudToVector
 
 } //...ns pclutil
 } //...ns GF2

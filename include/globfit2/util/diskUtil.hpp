@@ -1,6 +1,10 @@
 #ifndef GF2_DISKUTIL_HPP
 #define GF2_DISKUTIL_HPP
 
+#include <string>
+#include "boost/filesystem.hpp"
+
+namespace GF2 {
 namespace util {
 
 //! \brief  _saveSafe Saves backups of the path to be overwritten. If .0.bak exists, try .1.bak, etc.
@@ -29,6 +33,7 @@ saveBackup( std::string path )
     return bak_path;
 } // ..._saveSafe()
 
-} //...namespace  util
+} //...namespace util
+} //...namespace GF2
 
 #endif // GF2_DISKUTIL_HPP

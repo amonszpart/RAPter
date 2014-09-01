@@ -123,7 +123,7 @@ Solver::show( int argc, char** argv )
     // convert cloud
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud( new pcl::PointCloud<pcl::PointXYZRGB> );
     pcl::io::loadPLYFile( dir + "/" + cloud_file, *cloud );
-    am::pclutil::cloudToVector<PointT::Allocator>( points, cloud );
+    pclutil::cloudToVector<PointT::Allocator>( points, cloud );
 
     // parse associations
 
@@ -1300,7 +1300,7 @@ Solver::run( std::string                   img_path
             // convert to raw vector
             std::vector<PointT::VectorType> raw_points;
             //! \todo exchange to PointPrimitiveT::template toCloud<CloudXYZ::Ptr, _PointContainerT, PCLPointAllocator<PointPrimitiveT::Dim> >( cloud, points );
-            am::pclutil::cloudToVector<PointT::RawAllocator>( raw_points, cloud );
+            pclutil::cloudToVector<PointT::RawAllocator>( raw_points, cloud );
 
             // convert to tagged vector
             points.reserve( raw_points.size() );
@@ -1323,7 +1323,7 @@ Solver::run( std::string                   img_path
     Visualizer<PrimitiveContainerT,PointContainerT>::show<Scalar>( lines, points, scale );
 
     // solve
-    std::string timestamp_str   = am::util::timestamp2Str();
+    std::string timestamp_str   = util::timestamp2Str();
     std::string fname           = boost::filesystem::path( img_path ).stem().string();
     std::string store_dir       = fname + timestamp_str;
     if ( !cloud_path.empty() )

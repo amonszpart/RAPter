@@ -5,11 +5,12 @@
 #include "Eigen/Dense"
 #include "opencv2/core/core.hpp"
 
-namespace GF2
-{
+namespace GF2 {
+namespace util {
 
 template <typename Scalar>
-::cv::Point3f hsv2rgb( ::cv::Point3_<Scalar> const& in )
+inline ::cv::Point3f
+hsv2rgb( ::cv::Point3_<Scalar> const& in )
 {
     double      hh, p, q, t, ff;
     long        i;
@@ -112,6 +113,9 @@ nColoursEigen( int n, Scalar scale, bool random_shuffle )
     return colours_eigen;
 }
 
+extern std::string timestamp2Str();
+
+} //...namespace util
 } //...namespace GF2
 
 #endif // GF2_UTIL_HPP

@@ -52,7 +52,7 @@ add_library( libmosek64 SHARED IMPORTED )
 set_property( TARGET libmosek64 PROPERTY IMPORTED_LOCATION_RELEASE ${MOSEK_DIR}/bin/libmosek64.so )
 set_property( TARGET libmosek64 PROPERTY IMPORTED_LOCATION_DEBUG ${MOSEK_DIR}/bin/libmosek64.so )
 INCLUDE_DIRECTORIES( ${MOSEK_DIR}/h )
-SET( MOSEK_LIBRARIES libmosek64 )
+SET( MOSEK_LIBRARIES "libmosek64" )
 
 # Bonmin
 SET( BONMIN_LIBRARIES
@@ -99,27 +99,27 @@ ADD_DEFINITIONS( -DGF2_USE_PCL=1
 
 SET( GLOBOPT_TARGET_NAME gurobi_opt )
 INCLUDE_DIRECTORIES( include
-    /usr/include/eigen3/
+    ${EIGEN_INCLUDE_DIRS}
 )
 
 SET( GLOBOPT_H_LIST
+    #include/params.h
     include/globfit2/my_types.h
     include/globfit2/util/diskUtil.hpp
     include/globfit2/util/util.hpp
     include/globfit2/util/pcl_util.hpp
+    include/globfit2/ground_truth/gtCreator.h
     include/globfit2/primitives/linePrimitive2.h
     include/globfit2/primitives/pointPrimitive.h
     include/globfit2/visualization/visualizer.h
-    include/globfit2/ground_truth/gtCreator.h
+    include/globfit2/optimization/patchDistanceFunctors.h
     include/globfit2/optimization/energyFunctors.h
     include/globfit2/optimization/candidateGenerator.h
     include/globfit2/optimization/merging.hpp
+    include/globfit2/optimization/problemSetup.hpp
     include/optimization/qp/gurobiOpt.h
     include/optimization/qp/MyGRBCallback.h
     include/optimization/qp/solver.h
-    include/globfit2/optimization/problemSetup.hpp
-    include/params.h
-    include/globfit2/optimization/patchDistanceFunctors.h
 )
 
 SET( GLOBOPT_SRC_LIST
@@ -128,6 +128,7 @@ SET( GLOBOPT_SRC_LIST
     src/optimization/qp/qp_main.cpp
     src/optimization/qp/candidateGenerator.cpp # cached compilation
     src/optimization/qp/visualizer.cpp         # cached compilation
+    src/util/util.cpp
 )
 
 ADD_EXECUTABLE( ${GLOBOPT_TARGET_NAME} ${GLOBOPT_SRC_LIST} ${GLOBOPT_H_LIST} )

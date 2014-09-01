@@ -96,7 +96,7 @@ namespace GF2
                   << "points: " << points.size()
                   << ", lines: " << nlines
                   << ", max_group_id: " << max_group_id << std::endl;
-        std::vector<Eigen::Vector3f> colours = nColoursEigen( max_group_id+1, /* scale: */ 255.f, /* shuffle: */ false );
+        std::vector<Eigen::Vector3f> colours = util::nColoursEigen( max_group_id+1, /* scale: */ 255.f, /* shuffle: */ false );
 
         pcl::visualization::PCLVisualizer::Ptr vptr( new pcl::visualization::PCLVisualizer() );
         vptr->setBackgroundColor( .7, .7, .7 );
