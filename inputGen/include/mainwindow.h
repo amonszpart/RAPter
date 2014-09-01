@@ -1,13 +1,11 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "ui_mainwindow.h"
 #include <QMainWindow>
 
-namespace Ui {
-class MainWindow;
-}
 
-class MainWindow : public QMainWindow
+class MainWindow : public QMainWindow, private Ui::MainWindow
 {
     Q_OBJECT
 
@@ -15,8 +13,14 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+private slots:
+    void on_actionLoad_SVG_triggered();
+
+protected:
+    virtual void closeEvent(QCloseEvent*);
+
 private:
-    Ui::MainWindow *ui;
+    void readSettings();
 };
 
 #endif // MAINWINDOW_H
