@@ -203,12 +203,15 @@ Merging::mergeCli( int argc, char** argv )
                         // rule out itself
                         if ( pid2 == pid )                                     continue;
                         // rule out other orphans
-                        if ( points[pid2].getTag(_PointPrimitiveT::GID) < 0 )  continue;
+                        const int gid2 = points[pid2].getTag(_PointPrimitiveT::GID);
+                        if ( gid2 < 0 )  continue;
 
                         _Scalar dist = (points[pid].template pos() - points[pid2].template pos()).norm();
-                        // store if inside scale
-                        if ( dist < closest_distance )
+                        // store if closer, than earlier orphan, and if inside scale to given primitive (can be explained)
+                        if ( (dist < closest_distance) && _PointPrimitiveDistanceFunctor::template eval<_Scalar>(points[pid], prims_map.at(gid2).at(0)) )
                         {
+                            if ( prims_map.at(gid2).size() > 1 ) std::cerr << "[" << __func__ << "]: " << "two lines in one patch, not prepared here, fix this" << std::endl;
+
                             closest_distance = dist;
                             closest_gid      = points[pid2].getTag( _PointPrimitiveT::GID );
                             closest_orphan   = points_it;
