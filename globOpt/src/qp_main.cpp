@@ -5,7 +5,7 @@
 #include "optimization/qp/solver.h"
 #include "globfit2/optimization/problemSetup.h"
 
-#include "globfit2/optimization/merging.hpp"
+#include "globfit2/optimization/merging.h"
 #include "globfit2/io/io.h"
 
 int main( int argc, char *argv[] )
@@ -50,7 +50,7 @@ int main( int argc, char *argv[] )
     }
     else if ( pcl::console::find_switch(argc,argv,"--merge") )
     {
-        return GF2::Merging::merge<GF2::Solver::PrimitiveContainerT, GF2::Solver::PointContainerT, GF2::Solver::Scalar>( argc, argv );
+        return GF2::Merging::mergeCli<GF2::Solver::PrimitiveContainerT, GF2::Solver::PointContainerT, GF2::Solver::Scalar>( argc, argv );
     }
     else if ( pcl::console::find_switch(argc,argv,"--show") )
     {
