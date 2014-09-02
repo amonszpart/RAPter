@@ -22,9 +22,9 @@ class Solver
         typedef float                                       Scalar;
         typedef Eigen::Matrix<Scalar,3,1>                   Vector;
         typedef LinePrimitive2                              PrimitiveT;
-        typedef PointPrimitive                              PointT;
+        typedef PointPrimitive                              PointPrimitiveT;
         typedef std::vector<std::vector<PrimitiveT> >       PrimitiveContainerT;
-        typedef std::vector<PointT>                         PointContainerT;
+        typedef std::vector<PointPrimitiveT>                         PointContainerT;
         typedef Eigen::SparseMatrix<Scalar,Eigen::RowMajor> SparseMatrix;
 
         //static inline int show       ( int argc, char** argv );
@@ -413,16 +413,7 @@ Solver::generate(   int    argc
 
         std::string f_assoc_path = boost::filesystem::path( cloud_path ).parent_path().string() + "/" + "points_primitives.txt";
         util::saveBackup( f_assoc_path );
-        std::ofstream f_assoc( f_assoc_path );
-        f_assoc << "# point_id,primitive_gid,primitive_dir_gid" << std::endl;
-        for ( size_t pid = 0; pid != points.size(); ++pid )
-        {
-            f_assoc << pid
-                       << "," << points[pid].getTag( PointPrimitiveT::GID )
-                       << "," << -1  // assigned to patch, but no direction
-                       << std::endl;
-        }
-        f_assoc.close();
+        io::writeAssociations<PointPrimitiveT>( points, f_assoc_path );
         std::cout << "[" << __func__ << "]: " << "wrote to " << f_assoc_path << std::endl;
     }
 
@@ -641,7 +632,7 @@ Solver::solve( int    argc
                 PrimitiveContainerT prims;
                 {
                     if ( verbose ) std::cout << "[" << __func__ << "]: " << "reading primitives from " << candidates_path << "...";
-                    io::readPrimitives<PrimitiveT>( prims, candidates_path );
+                    io::readPrimitives<PrimitiveT, typename PrimitiveContainerT::value_type>( prims, candidates_path );
                     if ( verbose ) std::cout << "reading primitives ok\n";
                 } //...read primitives
 
@@ -717,7 +708,7 @@ Solver::datafit( int    argc
     PointContainerT     points;
     {
         if ( verbose ) std::cout << "[" << __func__ << "]: " << "reading cloud from " << cloud_path << "...";
-        io::readPoints<PointT>( points, cloud_path );
+        io::readPoints<PointPrimitiveT>( points, cloud_path );
         if ( verbose ) std::cout << "reading cloud ok\n";
     } //...read points
 
@@ -725,7 +716,7 @@ Solver::datafit( int    argc
     PrimitiveContainerT prims;
     {
         if ( verbose ) std::cout << "[" << __func__ << "]: " << "reading primitives from " << primitives_path << "...";
-        io::readPrimitives<PrimitiveT>( prims, primitives_path );
+        io::readPrimitives<PrimitiveT, typename PrimitiveContainerT::value_type>( prims, primitives_path );
         if ( verbose ) std::cout << "reading primitives ok\n";
     } //...read primitives
 

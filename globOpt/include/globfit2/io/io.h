@@ -22,7 +22,10 @@ namespace GF2
         //! \tparam PrimitiveT Concept: PrimitiveContainerT::value_type::value_type aka GF2::LinePrimitive2.
         //! \tparam PrimitiveContainerT Concept: vector< vector< GF2::LinePrimitive2 > >.
         template <class PrimitiveT /* = typename PrimitiveContainerT::value_type::value_type*/, class PrimitiveContainerT> inline int
-        savePrimitives( PrimitiveContainerT const& primitives, std::string out_file_name, bool verbose = false )
+        savePrimitives( PrimitiveContainerT const& primitives
+                      , std::string out_file_name
+                      , bool verbose = false
+                      )
         {
             const int Dim = PrimitiveT::Dim;
             typedef typename PrimitiveT::VectorType VectorType;
@@ -46,15 +49,22 @@ namespace GF2
             return EXIT_SUCCESS;
         }
 
+        //! \brief Reads primitives with their GIDs and dir_GIDs from file.
+        //! \tparam PatchT Concept: vector< \ref GF2::LinePrimitive2 >.
         template <
                    class       PrimitiveT          /*= typename PrimitiveContainerT::value_type::value_type*/
+                 , class       PatchT
                  , class       PrimitiveContainerT
                  >
-        inline int readPrimitives( PrimitiveContainerT &lines, std::string const& path )
+        inline int readPrimitives( PrimitiveContainerT &lines
+                                 , std::string const& path
+                                 //, void(*add)(PrimitiveContainerT & prims, PrimitiveT const& prim, int gid, int dir_gid ) = NULL
+                                 , std::map<int, typename PrimitiveContainerT::value_type> *patches = NULL
+                                 )
         {
             typedef typename PrimitiveT::Scalar Scalar;
-            enum {                              Dim    = PrimitiveT::Dim };
-            typedef typename PrimitiveContainerT::value_type PatchT;
+            enum {                              Dim    = PrimitiveT::Dim }; // Important! This decides how many floats to read
+            //typedef typename PrimitiveContainerT::value_type PatchT;
             typedef std::map<int, PatchT>                    PatchMap; // <GID, vector<primitives> >
 
             // open file
@@ -82,6 +92,8 @@ namespace GF2
                 {
                     floats.push_back( atof(tmp_str.c_str()) );
                 }
+
+                // error check
                 if ( floats.size() < Dim )
                     std::cerr << "[" << __func__ << "]: " << "not good, floats.size() < Dim..." << std::endl;
 
@@ -89,48 +101,56 @@ namespace GF2
                 int gid = -1, dir_gid = -1;
                 if ( !iss.eof() )
                 {
-                    if ( std::getline(iss, tmp_str, ',') )
-                    {
-                        gid = atoi( tmp_str.c_str() );
-                        //lines[lid].back().setTag( PrimitiveT::GID, gid );
-                    }
-                    if ( std::getline(iss, tmp_str, ',') )
-                    {
-                        dir_gid = atoi( tmp_str.c_str() );
-                        //lines[lid].back().setTag( PrimitiveT::DIR_GID, dir_gid );
-                    }
+                    if ( std::getline(iss, tmp_str, ',') )  gid     = atoi( tmp_str.c_str() );
+                    if ( std::getline(iss, tmp_str, ',') )  dir_gid = atoi( tmp_str.c_str() );
                 } // if patch information
 
                 // insert into proper patch, if gid specified
                 if ( gid > -1 )
                 {
-//                    if ( gid >= lines.size() )
-//                        lines.resize( gid+1 );
-
-//                    lines[ gid ].emplace_back( PrimitiveT(floats) );
-//                    lines[ gid ].back().setTag( PrimitiveT::GID, gid );
-//                    lines[ gid ].back().setTag( PrimitiveT::DIR_GID, dir_gid );
                     tmp_lines[ gid ].push_back( PrimitiveT(floats) );
                     tmp_lines[ gid ].back().setTag( PrimitiveT::GID    , gid     );
                     tmp_lines[ gid ].back().setTag( PrimitiveT::DIR_GID, dir_gid );
                 }
                 else // just make a new patch for it
                 {
-                    lines.push_back( PatchT() );
-                    lines[lid].push_back( PrimitiveT(floats) );
-                    lines[lid].back().setTag( PrimitiveT::GID, line_count ); // 1D indexing only
+                    throw new std::runtime_error("[io::readPrims] code not up to date to handle gid==-1 cases, please add proper GID to primitives");
+//                    lines.push_back( PatchT() );
+//                    lines[lid].push_back( PrimitiveT(floats) );
+//                    lines[lid].back().setTag( PrimitiveT::GID, line_count ); // 1D indexing only
                 }
 
                 ++line_count;
             } // while getline
 
             // copy all patches from map to vector (so that there are no empty patches in the vector)
-            lines.reserve( lines.size() + tmp_lines.size() );
+            //lines.reserve( lines.size() + tmp_lines.size() );
             typename PatchMap::const_iterator end_it = tmp_lines.end();
             for ( typename PatchMap::const_iterator it = tmp_lines.begin(); it != end_it; ++it )
             {
-                lines.push_back( PatchT() );
-                lines.back().insert( lines.back().end(), it->second.begin(), it->second.end() );
+//                if ( add )
+//                {
+//                    typename PatchT::const_iterator end_it2 = it->second.end();
+//                    for ( typename PatchT::const_iterator it2 = it->second.begin(); it2 != end_it2; ++it2 )
+//                    {
+//                        int tmp_gid     = it2->getTag(PrimitiveT::GID);
+//                        int tmp_dir_gid = it2->getTag(PrimitiveT::DIR_GID);
+//                        add( lines, *it2, tmp_gid, tmp_dir_gid );
+
+//                        if ( tmp_gid != it->first )
+//                            std::cerr << "[" << __func__ << "]: " << "it->first " << it->first << " != " << tmp_gid << " it2->second.gid" << std::endl;
+//                    }
+//                }
+//                else
+//                {
+                    // assume vector<vector< PrimitiveT > >
+                    lines.push_back( PatchT() );
+                    lines.back().insert( lines.back().end(), it->second.begin(), it->second.end() );
+//                }
+            }
+            if ( patches )
+            {
+                *patches = tmp_lines;
             }
 
             file.close();
@@ -192,10 +212,44 @@ namespace GF2
             return EXIT_SUCCESS;
         } // ... readAssociations
 
-        //! \brief Solver::readPoints Read stored points, and convert them to non-PCL format.
-        //! \param [out]points        Output point vector
-        //! \param [in] path          PLY source path
-        //! \return EXIT_SUCCESS
+        //! \brief                       Write points' associations to GID and DIR_GID.
+        //! \tparam     _PointPrimitiveT Concept: \ref GF2::PointPrimitive.
+        //! \tparam     _PointContainerT Concept: vector< \ref GF2::PointPrimitive >
+        //! \param[in]  points           Output point vector
+        //! \param[in]  path             PLY source path
+        //! \return                      EXIT_SUCCESS
+        template < class _PointPrimitiveT
+                 , class _PointContainerT
+                 >
+        inline int writeAssociations( _PointContainerT const& points
+                                    , std::string const& f_assoc_path )
+        {
+            // open
+            std::ofstream f_assoc( f_assoc_path );
+            if ( !f_assoc.is_open() ) { std::cerr << "[" << __func__ << "]: " << "could not open " << f_assoc_path << " for writing..." << std::endl; return EXIT_FAILURE; }
+
+            // preamble
+            f_assoc << "# point_id,primitive_gid,primitive_dir_gid" << std::endl;
+            // write points
+            for ( size_t pid = 0; pid != points.size(); ++pid )
+            {
+                f_assoc << pid
+                           << "," << points[pid].getTag( _PointPrimitiveT::GID )
+                           << "," << -1  // assigned to patch, but no direction
+                           << std::endl;
+            }
+            // finish
+            f_assoc.close();
+
+            std::cout << "[" << __func__ << "]: " << "wrote to " << f_assoc_path << std::endl;
+
+            return EXIT_SUCCESS;
+        } //...writeAssociations
+
+        //! \brief                    Read stored points, and convert them to non-PCL format.
+        //! \param[out] points        Output point vector
+        //! \param[in]  path          PLY source path
+        //! \return                   EXIT_SUCCESS
         template < class _PointT /*= typename _PointContainerT::value_type */
                    , class _PointContainerT
                  >
@@ -230,19 +284,44 @@ namespace GF2
             return EXIT_SUCCESS;
         } // ...Solver::readPoints()
 
-#if 0 // deprecated
-        extern int
-        readSolution( std::string const path );
+        //! \brief                   Write points to almost PLY
+        //! \param[in] points        Points
+        //! \param[in] path          PLY destination path
+        //! \return EXIT_SUCCESS
+        template < class _PointT /*= typename _PointContainerT::value_type */
+                   , class _PointContainerT
+                 >
+        inline int
+        writePoints( _PointContainerT &points
+                   , std::string       path )
+        {
+            std::ofstream file( path.c_str() );
+            if ( ! file.is_open() ) { std::cerr << "[" << __func__ << "]: " << "could not open " << path << std::endl; return EXIT_FAILURE; }
 
-        template <class PrimitivesT, typename Scalar = typename PrimitivesT::value_type::Scalar> int
-        saveSolution( std::string path
-                      , MaskType const& opt_mask
-                      , PrimitivesT const& candidates
-                      , Scalar const working_scale
-                      , std::vector<Scalar> const& gf2_desired_angles
-                      , int  argc
-                      , char **argv);
-#endif
+            file << "ply\n"
+                 << "format ascii 1.0\n"
+                 << "comment Aron generated\n"
+                 << "element vertex " << points.size() << "\n"
+                 << "property float x\n"
+                 << "property float y\n"
+                 << "property float z\n"
+                 << "property float nx\n"
+                 << "property float ny\n"
+                 << "property float nz\n"
+                 << "end_header\n";
+
+            for ( typename _PointContainerT::const_iterator it = points.begin(); it != points.end(); ++it )
+            {
+                Eigen::Matrix< typename _PointT::Scalar, 3, 1 > pos = it->pos();
+                Eigen::Matrix< typename _PointT::Scalar, 3, 1 > dir = it->dir();
+                file << pos(0) << " " << pos(1) << " " << pos(2) << " " << dir(0) << " " << dir(1) << " " << dir(2) << std::endl;
+            }
+
+            file.close();
+
+            return EXIT_SUCCESS;
+        } //...writePoints()
+
     } // ... ns io
 } // ... ns GF2
 
@@ -252,3 +331,4 @@ namespace GF2
 #endif
 
 #endif // __GF2_IO_H__
+
