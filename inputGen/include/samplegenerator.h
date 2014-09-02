@@ -35,7 +35,6 @@ PrimitiveSampleGenerator<_Scalar>::generateSamples(
     typedef typename PrimitiveContainer::value_type::vec vec;
 
     typename PrimitiveContainer::const_iterator it;
-    std::cout << "spacing: " << spacing << std::endl;
 
     for(it = pcontainer.begin(); it != pcontainer.end(); it++){
 

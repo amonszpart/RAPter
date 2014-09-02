@@ -25,7 +25,6 @@ SampleGeneratorFactory::~SampleGeneratorFactory()
 void
 SampleGeneratorFactory::updateGenerator()
 {
-    cout << "UpdateGenerator" << endl;
     typedef InputGen::Application::Primitive::vec vec;
 
     _pointSet->clear();
