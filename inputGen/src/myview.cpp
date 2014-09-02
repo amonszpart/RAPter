@@ -12,12 +12,19 @@ MyView::MyView(QWidget *parent) :
 {
     setViewport(new QGLWidget);
     setViewportUpdateMode(FullViewportUpdate);
-    setScene(new MyScene(this));
+
+    MyScene* scene = new MyScene(this);
+    setScene(scene);
+
+    connect(this, SIGNAL(samplesChanged(InputGen::Application::PointSet*,
+                                        InputGen::Application::SampleGenerator*)),
+              scene, SLOT(updateSamples(InputGen::Application::PointSet*,
+                                        InputGen::Application::SampleGenerator*)));
 }
 
 
 void
-MyView::setPrimitives(const std::vector<InputGen::Application::Primitive> &s)
+MyView::setPrimitives(std::vector<InputGen::Application::Primitive> *s)
 {
     MyScene* sc = dynamic_cast<MyScene*> (scene());
     if (sc)

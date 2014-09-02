@@ -6,6 +6,7 @@
 #include <QFileDialog>
 #include <QSettings>
 #include <QXmlStreamReader>
+#include <QTextStream>
 
 #include "primitive.h"
 #include "types.h"
@@ -19,6 +20,13 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     setupUi(this);
     readSettings();
+
+    connect(_generatorDoc, SIGNAL(samplesChanged(InputGen::Application::PointSet*,
+                                                 InputGen::Application::SampleGenerator*)),
+            _graphicsView, SIGNAL(samplesChanged(InputGen::Application::PointSet*,
+                                                 InputGen::Application::SampleGenerator*)));
+
+    _generatorDoc->setPoints(&_pointSet);
 }
 
 
@@ -59,7 +67,7 @@ void MainWindow::on_actionLoad_SVG_triggered()
                                  defaultPath,
                                  "Scalable Vector Graphics (*.svg)");
 
-    std::vector< Primitive > primitiveSet;
+    _pSet.clear();
 
     if (! path.isNull()){
         QFile input(path);
@@ -125,6 +133,8 @@ void MainWindow::on_actionLoad_SVG_triggered()
 
                                 cout << "Reading new set of lines" << endl;
 
+                                bool relativeCoord = attrList.front().compare("M");
+
                                 attrList.pop_front();
 
 
@@ -140,8 +150,8 @@ void MainWindow::on_actionLoad_SVG_triggered()
                                             line.setCoord(Primitive::vec(coordLists.at(0).toDouble(),
                                                                          coordLists.at(1).toDouble(),
                                                                          0));
-                                            // in svg, path coordinates are stored relatively
-                                            if ( lines.size() != 0)
+                                            
+                                            if ( relativeCoord && lines.size() != 0)
                                                 line.setCoord(line.coord() + lines.back().coord());
                                             lines.push_back(line);
                                         }
@@ -152,19 +162,19 @@ void MainWindow::on_actionLoad_SVG_triggered()
                                     Primitive& l1 = lines[i];
                                     const Primitive& l2 = lines[i+1];
                                     const Primitive::vec dortho= (l2.coord() - l1.coord()).normalized();
-                                    const Primitive::vec dir ( dortho(1), - dortho(0), Scalar(0.) );
+                                    const Primitive::vec normal ( dortho(1), - dortho(0), Scalar(0.) );
                                     const Primitive::vec2 dim (-(l2.coord() - l1.coord()).norm(), Scalar(0.));
 
                                     l1.setDim(dim);
-                                    l1.setDir(dir);
+                                    l1.setNormal(normal);
 
                                     cout << "l1=" << l1.coord().transpose() << endl;
                                     cout << "l2=" << l2.coord().transpose() << endl;
 
-                                    cout << l1.coord().transpose() << " "
-                                         << l1.dir().transpose() << " "
-                                         << l1.dim()(0)
-                                         << endl;
+//                                    cout << l1.coord().transpose() << " "
+//                                         << l1.dir().transpose() << " "
+//                                         << l1.dim()(0)
+//                                         << endl;
                                 }
 
                                 // second step of the extraction, we now compute the directions
@@ -175,19 +185,19 @@ void MainWindow::on_actionLoad_SVG_triggered()
                                     Primitive& l1 = lines.back();
                                     const Primitive& l2 = lines.front();
                                     const Primitive::vec dortho= (l2.coord() - l1.coord()).normalized();
-                                    const Primitive::vec dir ( dortho(1), - dortho(0), Scalar(0.) );
+                                    const Primitive::vec normal ( dortho(1), - dortho(0), Scalar(0.) );
                                     const Primitive::vec2 dim (-(l2.coord() - l1.coord()).norm(), Scalar(0.));
 
                                     l1.setDim(dim);
-                                    l1.setDir(dir);
+                                    l1.setNormal(normal);
 
                                     cout << "l1=" << l1.coord().transpose() << endl;
                                     cout << "l2=" << l2.coord().transpose() << endl;
 
-                                    cout << l1.coord().transpose() << " "
-                                         << l1.dir().transpose() << " "
-                                         << l1.dim()(0)
-                                         << endl;
+                                    //cout << l1.coord().transpose() << " "
+                                    //     << l1.dir().transpose() << " "
+                                    //     << l1.dim()(0)
+                                    //     << endl;
                                 }
                             }
                             // update with transformations
@@ -196,7 +206,7 @@ void MainWindow::on_actionLoad_SVG_triggered()
                             }
 
 
-                            primitiveSet.insert(primitiveSet.end(), lines.begin(), lines.end());
+                            _pSet.insert(_pSet.end(), lines.begin(), lines.end());
                         }
                     }
                     reader.readNext();
@@ -205,5 +215,38 @@ void MainWindow::on_actionLoad_SVG_triggered()
         }
     }
 
-    _graphicsView->setPrimitives(primitiveSet);
+    _graphicsView->setPrimitives(&_pSet);
+    _generatorDoc->setPrimitives(&_pSet);
+}
+
+void MainWindow::on_actionSave_points_triggered()
+{
+    QSettings settings;
+    QString defaultPath = settings.value("Path/xyzSave").toString();
+
+    QString path =
+    QFileDialog::getSaveFileName(this,
+                                 tr("Save cloud as PTX file"),
+                                 defaultPath,
+                                 "Pointcloud (*.xyz)");
+
+
+    if (! path.isNull()){
+        QFile input(path);
+        if (input.open(QIODevice::WriteOnly |
+                       QIODevice::Truncate  |
+                       QIODevice::Text)) {
+            settings.setValue("Path/xyzSave", path);
+            QTextStream out(&input);
+
+            for(InputGen::Application::PointSet::const_iterator it = _pointSet.begin();
+                it != _pointSet.end(); it++){
+                out << (*it)(0) << " "
+                    << (*it)(1) << " "
+                    << (*it)(2) << endl;
+            }
+
+            input.close();
+        }
+    }
 }

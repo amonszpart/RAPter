@@ -2,7 +2,8 @@
 #define PRIMITIVE_H
 
 #include "eigen3/Eigen/Core"
-#include <iostream> // debug only
+#include <iostream>
+
 
 namespace InputGen{
 
@@ -27,7 +28,7 @@ public:
 
 private:
     vec  _coord,  //! <\brief coordinates of one point on the line
-         _dir;    //! <\brief direction of the line
+         _normal; //! <\brief direction of the line
     vec2 _dim;    //! <\brief dimensions (width/length) of the primitive
 
     uint _uid;    //! <\brief unique identifier
@@ -41,7 +42,7 @@ public:
                            int uid = LinearPrimitive<_Scalar>::getUID(),
                            int did = -1) // default behavior, did = uid
         : _coord(vec::Zero()),
-          _dir(vec::Zero()),
+          _normal(vec(1,0,0)),
           _dim(vec2::Zero()),
           _uid(uid),
           _did(did==-1 ? uid : did),
@@ -53,21 +54,21 @@ public:
 
     //inline vec& coord() { return _coord; }
     //inline vec& dir()   { return _dir; }
-    inline const vec&  coord() const { return _coord; }
-    inline const vec&  dir()   const { return _dir; }
-    inline const vec2& dim()   const { return _dim; }
+    inline const vec&  coord()   const { return _coord; }
+    inline const vec&  normal()  const { return _normal; }
+    inline const vec2& dim()     const { return _dim; }
 
     template <class vec3Derived>
     inline void setCoord(const vec3Derived& coord )
     { _coord = coord; if (_type == LINE_2D) _coord(2) = 0; }
 
     template <class vec3Derived>
-    inline void setDir  (const vec3Derived& dir )
-    { _dir = dir; if (_type == LINE_2D) _dir(2) = 0; }
+    inline void setNormal  (const vec3Derived& normal )
+    { _normal= normal; if (_type == LINE_2D) _normal(2) = 0; }
 
     template <class vec2Derived>
     inline void setDim  (const vec2Derived& dim )
-    { _dim = dim; if (_type == LINE_2D) _dir(1) = 0; }
+    { _dim = dim; if (_type == LINE_2D) _dim(1) = 0; }
 
     inline uint uid() const { return _uid; }
 
@@ -83,7 +84,24 @@ public:
     void displayAsLine() const {
         DisplayFunctor<Scalar>::displayVertex(_coord.data());
         //DisplayFunctor<Scalar>::displayVertex((_coord+0.1*_dir).eval().data());
-        DisplayFunctor<Scalar>::displayVertex((_coord+vec (_dir(1), -_dir(0), 0)*_dim(0)).eval().data());
+        DisplayFunctor<Scalar>::displayVertex((_coord+getTangentVector()*_dim(0)).eval().data());
+    }
+
+
+    //! \brief Compute tangent vector
+    inline vec getTangentVector() const {
+        // rotation of the normal vector around z axis
+        if (_type == LINE_2D)
+            return vec(_normal(1), -_normal(0), 0);
+        else{
+            std::cerr << "Invalid request in " << __FILE__ << ":" << __LINE__ << std::endl;
+            return vec::Zero();
+        }
+
+    }
+
+    inline vec getMidPoint() const {
+        return _coord+0.5*getTangentVector()*_dim(0);
     }
 
 
