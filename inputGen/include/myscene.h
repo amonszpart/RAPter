@@ -2,6 +2,7 @@
 #define MYSCENE_H
 
 #include <QGraphicsScene>
+#include <QWheelEvent>
 
 #include "primitive.h"
 #include "types.h"
@@ -20,6 +21,7 @@ public:
 
 protected:
     virtual void drawBackground(QPainter*, const QRectF &);
+    virtual void wheelEvent    (QGraphicsSceneWheelEvent * );
 
 private:
     void setStates();
@@ -30,6 +32,7 @@ public slots:
 
 private:
     std::vector< InputGen::Application::Primitive > _pSet;
+    float _zoom;
 
 };
 

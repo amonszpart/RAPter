@@ -6,6 +6,7 @@
 
 #include <iostream>
 
+using namespace std;
 
 // Utility functions
 void qgluPerspective(GLdouble fovy, GLdouble aspect, GLdouble zNear, GLdouble zFar)
@@ -42,9 +43,25 @@ GLDisplayFunctor<float>::displayVertex(const float* data){
 
 
 MyScene::MyScene(QObject *parent) :
-    QGraphicsScene(parent)
+    QGraphicsScene(parent),
+    _zoom(1.)
 {
     //setStates();
+}
+
+void
+MyScene::wheelEvent(QGraphicsSceneWheelEvent *event){
+    std::cout << "MyScene::wheelevent" << std::endl;
+
+    int numDegrees = event->delta() / 8;
+    int numSteps = numDegrees / 15;
+
+    if (event->orientation() == Qt::Vertical) {
+        _zoom += _zoom*0.1*float(numSteps);
+
+        event->accept();
+        update();
+    }
 }
 
 void
@@ -90,6 +107,7 @@ MyScene::drawBackground(QPainter *painter, const QRectF &rect){
     };
 
     glMultMatrixd(invertY);
+    glScalef(_zoom, _zoom, _zoom);
 
     glBegin(GL_LINES);
     for(unsigned int i = 0; i != _pSet.size(); i++)
