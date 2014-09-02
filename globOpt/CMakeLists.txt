@@ -137,7 +137,7 @@ INCLUDE_DIRECTORIES( ${PATH_PCLTOOLS_ROOT}/include )
 # vis
 IF(1)
     add_library( libglobOptVis STATIC IMPORTED )
-    set_property( TARGET libglobOptVis PROPERTY IMPORTED_LOCATION_RELEASE ${PATH_VIS_ROOT}/build/Release/lib/libglobOptVis.a )
+    set_property( TARGET libglobOptVis PROPERTY IMPORTED_LOCATION_RELEASE "${PATH_VIS_ROOT}/build/Release/lib/libglobOptVis.a" )
     set_property( TARGET libglobOptVis PROPERTY IMPORTED_LOCATION_DEBUG ${PATH_VIS_ROOT}/build/Debug/lib/libglobOptVisd.a )
     INCLUDE_DIRECTORIES( ${PATH_VIS_ROOT}/include )
     SET( GLOBOPTVIS_LIBRARIES "libglobOptVis" )
@@ -163,24 +163,27 @@ INCLUDE_DIRECTORIES( include
     ${EIGEN_INCLUDE_DIRS}
 )
 
+SET( GLOBOPT_HPP_LIST
+    include/globfit2/optimization/impl/problemSetup.hpp
+    include/globfit2/optimization/impl/merging.hpp
+    include/globfit2/util/diskUtil.hpp
+    include/globfit2/util/util.hpp
+    include/globfit2/util/pcl_util.hpp
+)
+
 SET( GLOBOPT_H_LIST
     #include/params.h
     include/globfit2/parameters.h
     include/globfit2/my_types.h
-    include/globfit2/util/diskUtil.hpp
-    include/globfit2/util/util.hpp
-    include/globfit2/util/pcl_util.hpp
     include/globfit2/ground_truth/gtCreator.h
     include/globfit2/primitives/linePrimitive.h
     include/globfit2/primitives/linePrimitive2.h
     include/globfit2/primitives/pointPrimitive.h
-    #include/globfit2/visualization/visualizer.h
     include/globfit2/optimization/patchDistanceFunctors.h
     include/globfit2/optimization/energyFunctors.h
     include/globfit2/optimization/candidateGenerator.h
-    include/globfit2/optimization/merging.hpp
     include/globfit2/optimization/problemSetup.h
-    include/globfit2/optimization/impl/problemSetup.hpp
+    include/globfit2/optimization/merging.h
     include/optimization/qp/gurobiOpt.h
     include/optimization/qp/MyGRBCallback.h
     include/optimization/qp/solver.h
@@ -190,16 +193,17 @@ SET( GLOBOPT_SRC_LIST
     src/ground_truth/ground_truth.cpp
     src/ground_truth/gtCreator.cpp
     src/qp_main.cpp
-    src/optimization/qp/candidateGenerator.cpp # cached compilation
+    src/optimization/candidateGenerator.cpp # cached compilation
     #src/optimization/qp/visualizer.cpp         # cached compilation
 )
 
-ADD_EXECUTABLE( ${GLOBOPT_TARGET_NAME} ${GLOBOPT_SRC_LIST} ${GLOBOPT_H_LIST})
+ADD_EXECUTABLE( ${GLOBOPT_TARGET_NAME} ${GLOBOPT_SRC_LIST} ${GLOBOPT_HPP_LIST} ${GLOBOPT_H_LIST})
 TARGET_LINK_LIBRARIES( ${GLOBOPT_TARGET_NAME}
     ${GUROBI_LIBRARIES}
     ${MOSEK_LIBRARIES}
     ${BONMIN_LIBRARIES}
     ${GLOBOPTVIS_LIBRARIES}
+    /home/bontius/workspace/globOpt/globOpt/../visualization/build/Release/lib/libglobOptVis.a
     ${OpenCV_LIBRARIES}
     ${PCL_LIBRARIES}
     #pthread
@@ -208,7 +212,7 @@ TARGET_LINK_LIBRARIES( ${GLOBOPT_TARGET_NAME}
     boost_thread
 )
 
-message( ${PCL_LIBRARIES} )
+message( "${PATH_VIS_ROOT}/build/Release/lib/libglobOptVis.a" )
 
 ## _______________________________________________________________________________________________
 SET( TEST_TARGET test_bst)
