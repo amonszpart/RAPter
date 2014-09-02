@@ -2,7 +2,6 @@
 #define PRIMITIVE_H
 
 #include "eigen3/Eigen/Core"
-#include <iostream> // debug only
 
 namespace InputGen{
 
