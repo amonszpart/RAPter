@@ -148,7 +148,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    nlconf = @(x) binary_nlcon( x );</div>
 <div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;</div>
 <div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    </div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;    %% <a class="code" href="main_8cpp.html#a2e2baf265c4171b4472823d96c374a99">solve</a></div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;    %% solve</div>
 <div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    <a class="code" href="fmincon__merged_8m.html#a02eacfd40be9042ceb0f07547365203d">options</a> = optimoptions(&#39;fmincon&#39;,&#39;MaxFunEvals&#39;,10*<a class="code" href="scale__optimization_8m.html#aa3bc9f08cad6c0b386cc994140e1ce2e">size</a>(x0,1), &#39;TolFun&#39;, 1e-10, &#39;TolX&#39;, 1e-20 );</div>
 <div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    %<a class="code" href="fmincon__merged_8m.html#a02eacfd40be9042ceb0f07547365203d">options</a> = optimoptions();</div>
 <div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;    <a class="code" href="globfit_8m.html#aff09b08430658e07eb738015822d1a88">if</a> USE_GA</div>
@@ -295,14 +295,13 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="ttc" id="test__fmincon_8m_html_a227ad4446ff9c0242e6d073fbe4df102"><div class="ttname"><a href="test__fmincon_8m.html#a227ad4446ff9c0242e6d073fbe4df102">Aeq</a></div><div class="ttdeci">Aeq</div><div class="ttdef"><b>Definition:</b> <a href="test__fmincon_8m_source.html#l00045">test_fmincon.m:45</a></div></div>
 <div class="ttc" id="fmincon__merged_8m_html_a87e2a92a5d6e04205f2aa5461cea6b17"><div class="ttname"><a href="fmincon__merged_8m.html#a87e2a92a5d6e04205f2aa5461cea6b17">end</a></div><div class="ttdeci">end[c, ceq]</div><div class="ttdef"><b>Definition:</b> <a href="fmincon__merged_8m_source.html#l00102">fmincon_merged.m:102</a></div></div>
 <div class="ttc" id="fmincon__merged_8m_html_a2e512a58f6a73c7765891148879a4901"><div class="ttname"><a href="fmincon__merged_8m.html#a2e512a58f6a73c7765891148879a4901">objectivef</a></div><div class="ttdeci">objectivef</div><div class="ttdef"><b>Definition:</b> <a href="fmincon__merged_8m_source.html#l00015">fmincon_merged.m:15</a></div></div>
-<div class="ttc" id="main_8cpp_html_a2e2baf265c4171b4472823d96c374a99"><div class="ttname"><a href="main_8cpp.html#a2e2baf265c4171b4472823d96c374a99">solve</a></div><div class="ttdeci">int solve(PointsPtrT cloud, Scalar const working_scale, std::vector&lt; Scalar &gt; const &amp;gf2_desired_angles, std::vector&lt; LinePrimitive &gt; const &amp;gt_lines, bool const show_clusters, int const desiredK, Eigen::Matrix&lt; float,-1, 1 &gt; const lambdas, int const gf2_nThreads, int const gf2_thread_depth, Scalar const gf2_trunc_pw_angle_at, METHOD_TYPE const method, float const gf2_k_explore_ratio, float const gf2_filter_coeff, float const gf2_angle_similarity, int const gf2_add_n_friends, int const argc, char **const argv)</div><div class="ttdef"><b>Definition:</b> <a href="main_8cpp_source.html#l00103">main.cpp:103</a></div></div>
 <div class="ttc" id="scale__optimization_8m_html_aa3bc9f08cad6c0b386cc994140e1ce2e"><div class="ttname"><a href="scale__optimization_8m.html#aa3bc9f08cad6c0b386cc994140e1ce2e">size</a></div><div class="ttdeci">size(unique(A,'rows')) subplot(121) hist(qo</div></div>
 <div class="ttc" id="test_f_min_con_selection_8m_html_a490d0ea8a81608af30b6a68dc453d735"><div class="ttname"><a href="test_f_min_con_selection_8m.html#a490d0ea8a81608af30b6a68dc453d735">A</a></div><div class="ttdeci">global A</div><div class="ttdef"><b>Definition:</b> <a href="test_f_min_con_selection_8m_source.html#l00018">testFMinConSelection.m:18</a></div></div>
 <div class="ttc" id="fmincon__merged_8m_html_aef3025034af75193812b0de4c0bc3192"><div class="ttname"><a href="fmincon__merged_8m.html#aef3025034af75193812b0de4c0bc3192">save</a></div><div class="ttdeci">save Q save([p filesep 'x_solved.mat'], 'x')</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Sep 2 2014 14:33:23 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Sep 2 2014 15:55:37 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

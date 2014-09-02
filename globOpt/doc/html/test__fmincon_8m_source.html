@@ -200,7 +200,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;    nlconf = @(x) my_nlcon2( x, <a class="code" href="test__fmincon_8m.html#a7b9e84336c0608fb11ded2d23672137d">model</a>, bindings );</div>
 <div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;</div>
 <div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;    </div>
-<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;    %% <a class="code" href="main_8cpp.html#a2e2baf265c4171b4472823d96c374a99">solve</a></div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;    %% solve</div>
 <div class="line"><a name="l00113"></a><span class="lineno"><a class="line" href="test__fmincon_8m.html#a02eacfd40be9042ceb0f07547365203d">  113</a></span>&#160;    <a class="code" href="test__fmincon_8m.html#a02eacfd40be9042ceb0f07547365203d">options</a> = optimoptions(&#39;fmincon&#39;,&#39;MaxFunEvals&#39;,1000*<a class="code" href="scale__optimization_8m.html#aa3bc9f08cad6c0b386cc994140e1ce2e">size</a>(x0,1), &#39;TolFun&#39;, 1e-20, &#39;TolX&#39;, 1e-20 );</div>
 <div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;    %<a class="code" href="test__fmincon_8m.html#a02eacfd40be9042ceb0f07547365203d">options</a> = optimoptions();</div>
 <div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;    <a class="code" href="globfit_8m.html#aff09b08430658e07eb738015822d1a88">if</a> <a class="code" href="test__fmincon_8m.html#a620862d7f298a20ac3930b05b8516526">it</a> &lt; 2</div>
@@ -362,13 +362,12 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="ttc" id="fmincon__merged_8m_html_a87e2a92a5d6e04205f2aa5461cea6b17"><div class="ttname"><a href="fmincon__merged_8m.html#a87e2a92a5d6e04205f2aa5461cea6b17">end</a></div><div class="ttdeci">end[c, ceq]</div><div class="ttdef"><b>Definition:</b> <a href="fmincon__merged_8m_source.html#l00102">fmincon_merged.m:102</a></div></div>
 <div class="ttc" id="test__fmincon_8m_html_a82c8c07b8946c1d502b9c32a33c97a82"><div class="ttname"><a href="test__fmincon_8m.html#a82c8c07b8946c1d502b9c32a33c97a82">rot_lines</a></div><div class="ttdeci">_2rects rot_lines</div><div class="ttdef"><b>Definition:</b> <a href="test__fmincon_8m_source.html#l00028">test_fmincon.m:28</a></div></div>
 <div class="ttc" id="test__fmincon_8m_html_aeab71244afb687f16d8c4f5ee9d6ef0e"><div class="ttname"><a href="test__fmincon_8m.html#aeab71244afb687f16d8c4f5ee9d6ef0e">n</a></div><div class="ttdeci">n</div><div class="ttdef"><b>Definition:</b> <a href="test__fmincon_8m_source.html#l00032">test_fmincon.m:32</a></div></div>
-<div class="ttc" id="main_8cpp_html_a2e2baf265c4171b4472823d96c374a99"><div class="ttname"><a href="main_8cpp.html#a2e2baf265c4171b4472823d96c374a99">solve</a></div><div class="ttdeci">int solve(PointsPtrT cloud, Scalar const working_scale, std::vector&lt; Scalar &gt; const &amp;gf2_desired_angles, std::vector&lt; LinePrimitive &gt; const &amp;gt_lines, bool const show_clusters, int const desiredK, Eigen::Matrix&lt; float,-1, 1 &gt; const lambdas, int const gf2_nThreads, int const gf2_thread_depth, Scalar const gf2_trunc_pw_angle_at, METHOD_TYPE const method, float const gf2_k_explore_ratio, float const gf2_filter_coeff, float const gf2_angle_similarity, int const gf2_add_n_friends, int const argc, char **const argv)</div><div class="ttdef"><b>Definition:</b> <a href="main_8cpp_source.html#l00103">main.cpp:103</a></div></div>
 <div class="ttc" id="scale__optimization_8m_html_aa3bc9f08cad6c0b386cc994140e1ce2e"><div class="ttname"><a href="scale__optimization_8m.html#aa3bc9f08cad6c0b386cc994140e1ce2e">size</a></div><div class="ttdeci">size(unique(A,'rows')) subplot(121) hist(qo</div></div>
 <div class="ttc" id="fmincon__merged_8m_html_aef3025034af75193812b0de4c0bc3192"><div class="ttname"><a href="fmincon__merged_8m.html#aef3025034af75193812b0de4c0bc3192">save</a></div><div class="ttdeci">save Q save([p filesep 'x_solved.mat'], 'x')</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Sep 2 2014 14:33:23 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Sep 2 2014 15:55:37 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

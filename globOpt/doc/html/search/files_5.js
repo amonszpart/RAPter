@@ -3,7 +3,6 @@ var searchData=
   ['get_5fline_2em',['get_line.m',['../get__line_8m.html',1,'']]],
   ['get_5fline_5fcount_2em',['get_line_count.m',['../get__line__count_8m.html',1,'']]],
   ['globfit_2em',['globfit.m',['../globfit_8m.html',1,'']]],
-  ['globfit2_2ecpp',['globFit2.cpp',['../glob_fit2_8cpp.html',1,'']]],
   ['globfit2_2eh',['globFit2.h',['../glob_fit2_8h.html',1,'']]],
   ['globfit2_2ehpp',['globFit2.hpp',['../glob_fit2_8hpp.html',1,'']]],
   ['ground_5ftruth_2ecpp',['ground_truth.cpp',['../ground__truth_8cpp.html',1,'']]],

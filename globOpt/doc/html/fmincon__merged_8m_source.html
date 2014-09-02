@@ -158,7 +158,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    nlconf = @(x) my_nlcon2( x, <a class="code" href="test__fmincon_8m.html#a7b9e84336c0608fb11ded2d23672137d">model</a>, bindings );</div>
 <div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;</div>
 <div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    </div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    %% <a class="code" href="main_8cpp.html#a2e2baf265c4171b4472823d96c374a99">solve</a></div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    %% solve</div>
 <div class="line"><a name="l00071"></a><span class="lineno"><a class="line" href="fmincon__merged_8m.html#a02eacfd40be9042ceb0f07547365203d">   71</a></span>&#160;    <a class="code" href="fmincon__merged_8m.html#a02eacfd40be9042ceb0f07547365203d">options</a> = optimoptions(&#39;fmincon&#39;,&#39;MaxFunEvals&#39;,1000*<a class="code" href="scale__optimization_8m.html#aa3bc9f08cad6c0b386cc994140e1ce2e">size</a>(x0,1), &#39;TolFun&#39;, 1e-20, &#39;TolX&#39;, 1e-20 );</div>
 <div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    %<a class="code" href="fmincon__merged_8m.html#a02eacfd40be9042ceb0f07547365203d">options</a> = optimoptions();</div>
 <div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;    x = fmincon( <a class="code" href="fmincon__merged_8m.html#a2e512a58f6a73c7765891148879a4901">objectivef</a>,  ... %fun</div>
@@ -293,7 +293,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="ttc" id="test__fmincon_8m_html_a227ad4446ff9c0242e6d073fbe4df102"><div class="ttname"><a href="test__fmincon_8m.html#a227ad4446ff9c0242e6d073fbe4df102">Aeq</a></div><div class="ttdeci">Aeq</div><div class="ttdef"><b>Definition:</b> <a href="test__fmincon_8m_source.html#l00045">test_fmincon.m:45</a></div></div>
 <div class="ttc" id="fmincon__merged_8m_html_a87e2a92a5d6e04205f2aa5461cea6b17"><div class="ttname"><a href="fmincon__merged_8m.html#a87e2a92a5d6e04205f2aa5461cea6b17">end</a></div><div class="ttdeci">end[c, ceq]</div><div class="ttdef"><b>Definition:</b> <a href="fmincon__merged_8m_source.html#l00102">fmincon_merged.m:102</a></div></div>
 <div class="ttc" id="fmincon__merged_8m_html_a2e512a58f6a73c7765891148879a4901"><div class="ttname"><a href="fmincon__merged_8m.html#a2e512a58f6a73c7765891148879a4901">objectivef</a></div><div class="ttdeci">objectivef</div><div class="ttdef"><b>Definition:</b> <a href="fmincon__merged_8m_source.html#l00015">fmincon_merged.m:15</a></div></div>
-<div class="ttc" id="main_8cpp_html_a2e2baf265c4171b4472823d96c374a99"><div class="ttname"><a href="main_8cpp.html#a2e2baf265c4171b4472823d96c374a99">solve</a></div><div class="ttdeci">int solve(PointsPtrT cloud, Scalar const working_scale, std::vector&lt; Scalar &gt; const &amp;gf2_desired_angles, std::vector&lt; LinePrimitive &gt; const &amp;gt_lines, bool const show_clusters, int const desiredK, Eigen::Matrix&lt; float,-1, 1 &gt; const lambdas, int const gf2_nThreads, int const gf2_thread_depth, Scalar const gf2_trunc_pw_angle_at, METHOD_TYPE const method, float const gf2_k_explore_ratio, float const gf2_filter_coeff, float const gf2_angle_similarity, int const gf2_add_n_friends, int const argc, char **const argv)</div><div class="ttdef"><b>Definition:</b> <a href="main_8cpp_source.html#l00103">main.cpp:103</a></div></div>
 <div class="ttc" id="fmincon__merged_8m_html_aff183fb9b39732dbe5febd1cec997d25"><div class="ttname"><a href="fmincon__merged_8m.html#aff183fb9b39732dbe5febd1cec997d25">x</a></div><div class="ttdeci">x</div><div class="ttdef"><b>Definition:</b> <a href="fmincon__merged_8m_source.html#l00007">fmincon_merged.m:7</a></div></div>
 <div class="ttc" id="fmincon__merged_8m_html_a81b94ba50b782836960e54bcfa99fc88"><div class="ttname"><a href="fmincon__merged_8m.html#a81b94ba50b782836960e54bcfa99fc88">i</a></div><div class="ttdeci">for i</div><div class="ttdef"><b>Definition:</b> <a href="fmincon__merged_8m_source.html#l00026">fmincon_merged.m:26</a></div></div>
 <div class="ttc" id="scale__optimization_8m_html_aa3bc9f08cad6c0b386cc994140e1ce2e"><div class="ttname"><a href="scale__optimization_8m.html#aa3bc9f08cad6c0b386cc994140e1ce2e">size</a></div><div class="ttdeci">size(unique(A,'rows')) subplot(121) hist(qo</div></div>
@@ -302,7 +301,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Sep 2 2014 14:33:23 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Sep 2 2014 15:55:37 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

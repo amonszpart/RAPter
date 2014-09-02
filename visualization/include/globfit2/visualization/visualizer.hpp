@@ -144,7 +144,8 @@ namespace GF2
             {
                 char line_name[64];
                 sprintf( line_name, "line_%d_%d", static_cast<int>(lid), static_cast<int>(lid1) );
-                int gid = primitives[lid][lid1].getTag( PrimitiveT::GID );
+                const int gid     = primitives[lid][lid1].getTag( PrimitiveT::GID     );
+                const int dir_gid = primitives[lid][lid1].getTag( PrimitiveT::DIR_GID );
 
                 Eigen::Matrix<_Scalar,3,1> prim_colour;
                 prim_colour << ((gid >= 0) ? (colours[gid](0) / 255.f) : colour(0)),
@@ -180,7 +181,20 @@ namespace GF2
                     char popstr[255];
                     sprintf( popstr, "%d", populations[gid] );
                     vptr->addText3D( popstr, pclutil::asPointXYZ( primitives[lid][lid1].template pos() )
-                                     , 0.05, prim_colour(0), prim_colour(1), prim_colour(2), line_name + std::string( popstr ), 0 );
+                                     , 0.015, prim_colour(0), prim_colour(1), prim_colour(2), line_name + std::string( popstr ), 0 );
+                }
+
+                // show line gid and dir gid
+                if ( show_ids )
+                {
+                    char gid_name[255],gid_text[255];
+                    sprintf( gid_name, "primgid%d_%d", gid, dir_gid  );
+                    sprintf( gid_text, "%d,%d", gid, dir_gid );
+                    Eigen::Matrix<_Scalar,3,1> pos = primitives[lid][lid1].template pos() + (Eigen::Matrix<_Scalar,3,1>() << scale, scale, 0.).finished();
+                    vptr->addText3D( gid_text
+                                   , pclutil::asPointXYZ( pos )
+                                   , 0.02
+                                   , prim_colour(0)/2., prim_colour(1)/2., prim_colour(2)/2., gid_name, 0 );
                 }
 
                 // draw connections
@@ -233,15 +247,6 @@ namespace GF2
                         }
                     }
                 }
-
-                // draw ID
-                if ( show_ids )
-                {
-                    sprintf( line_name, "%d_%d", static_cast<int>(lid), static_cast<int>(lid1) );
-                    vptr->addText3D( line_name, PCLPointAllocator<3>::create<pcl::PointXYZ>(primitives[lid][lid1].pos()+primitives[lid][lid1].dir().normalized()*scale), scale, 0, 1., 1., line_name + std::string("name"), 0 );
-                }
-
-
             } // ... lid1
 
         MyPoint min_pt, max_pt;
@@ -267,7 +272,7 @@ namespace GF2
                                                                 , Eigen::Matrix<_Scalar,3,1>         const& prim_colour
                                                                 )
     {
-#if 0
+#if 1
         typedef typename PrimitiveContainerT::value_type::value_type PrimitiveT;
         typedef typename PointContainerT::value_type PointT;
 
@@ -330,7 +335,10 @@ namespace GF2
         else if ( indices.size() == 1 )
         {
             pcl::ModelCoefficients circle_coeffs;
-            circle_coeffs.values = { cloud->at(indices[0]).x, cloud->at(indices[0]).y, min_dim1 };
+            circle_coeffs.values.resize(3);
+            circle_coeffs.values[0] = cloud->at(indices[0]).x;
+            circle_coeffs.values[1] = cloud->at(indices[0]).y;
+            circle_coeffs.values[2] = min_dim1;
             vptr->addCircle( circle_coeffs, poly_name, 0 );
         }
 

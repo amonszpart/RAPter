@@ -27,5 +27,5 @@ var searchData=
   ['rot_5fn_5fdim',['rot_n_dim',['../perturb__rects_8m.html#a05718d4428d4aef2b41ff3bc32a6e96e',1,'perturb_rects.m']]],
   ['rotatepoints',['rotatePoints',['../namespace_g_f2.html#a66dbdd5324889fcb1a5e03ebdb273abd',1,'GF2']]],
   ['run',['run',['../classam_1_1_cuboid_ransac.html#a0a15d809e953b4412794306ea12d68f3',1,'am::CuboidRansac::run()'],['../class_g_f2_1_1_post_aligner.html#aa1b9f142abe07747f525cd6bd124fb08',1,'GF2::PostAligner::run()'],['../classam_1_1_schnabel_env.html#a2dbb677f07e40e269dba214a76eff000',1,'am::SchnabelEnv::run()'],['../fmincon__merged_8m.html#ab0415214b5aa9d19959027ba5fe55292',1,'run([p filesep &apos;starting_values.m&apos;])%match normals perp_cnt=0:&#160;fmincon_merged.m'],['../test__fmincon_8m.html#adf81496e96310c9fbbf66f388fe59d56',1,'run([p filesep &apos;starting_values.m&apos;])%rot_lines:&#160;test_fmincon.m']]],
-  ['runsimpler',['runSimpler',['../classam_1_1_local_analysis.html#ad47abbc15ce9d9c1f9512bb2f1a1c044',1,'am::LocalAnalysis']]]
+  ['runsimpler',['runSimpler',['../classam_1_1_local_analysis.html#a08eb5b81803d50c3d3005dcdc64fafe6',1,'am::LocalAnalysis']]]
 ];

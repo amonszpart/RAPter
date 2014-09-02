@@ -53,8 +53,10 @@ Merging::mergeCli( int argc, char** argv )
 
     // read primitives
     _PrimitiveContainerT prims;
+    typedef std::vector<_PrimitiveT> PatchT;
+    std::map< int, std::vector<_PrimitiveT> > prims_map;
     {
-        io::readPrimitives<_PrimitiveT>( prims, prims_path );
+        io::readPrimitives<_PrimitiveT, PatchT>( prims, prims_path, &prims_map );
     } //...read primitives
 
     // Read points
@@ -97,21 +99,18 @@ Merging::mergeCli( int argc, char** argv )
             std::cerr << "[" << __func__ << "]: " << "point assigned to patch with id -1" << std::endl;
     }
 
+    // select unassigned points
+    for ( size_t i = 0; i != points.size(); ++i )
+    {
+        int gid = points[i].getTag( _PointPrimitiveT::GID );
+        if ( !prims_map[gid].size() )
+        {
+            points[i].setTag( _PointPrimitiveT::GID, -2 );
+        }
+    }
 
 
-    //v.addPointCloud( )
-
-    //GF2::vis::lines::showLines( prims, points, params.scale, {0,0,1}, true, &params.angles, false, true );
-
-//    GF2::vis::MyVisPtr vptr = GF2::Visualizer<_PrimitiveContainerT,_PointContainerT>::template show<_Scalar>( /* primitives: */ prims
-//                                                                                  , /*     points: */  points
-//                                                                                  , /*      scale: */ scale
-//                                                                                  , /*     colour: */ {0,0,1}
-//                                                                                  , /*       spin: */ false
-//                                                                                  , /*     angles: */ &angles
-//                                                                                  , /*   show_ids: */ false
-//                                                                                  , /*   use_tags: */ true );
-    // todo: if close, add edge
+    io::writeAssociations<_PointPrimitiveT>( points, "test_assoc.csv" );
 
     return EXIT_SUCCESS;
 }//...Merging::merge()

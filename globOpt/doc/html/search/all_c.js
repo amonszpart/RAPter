@@ -28,7 +28,6 @@ var searchData=
   ['lloyd',['lloyd',['../classam_1_1kmeans_1_1_k_means.html#aae043d463059ca48fe0474b06dc0fc35',1,'am::kmeans::KMeans']]],
   ['local_5fpointprimitivedistance',['local_pointPrimitiveDistance',['../namespaceam.html#a6f41b004543e7e9f4785175703387436',1,'am']]],
   ['localanalysis',['LocalAnalysis',['../classam_1_1_local_analysis.html',1,'am']]],
-  ['localanalysis_2ecpp',['localAnalysis.cpp',['../local_analysis_8cpp.html',1,'']]],
   ['localanalysis_2eh',['localAnalysis.h',['../local_analysis_8h.html',1,'']]],
   ['localanalysis_2ehpp',['localAnalysis.hpp',['../local_analysis_8hpp.html',1,'']]],
   ['lower',['lower',['../read__ply_8m.html#a05147d2000115e5e5e1b78c9e6049992',1,'read_ply.m']]],

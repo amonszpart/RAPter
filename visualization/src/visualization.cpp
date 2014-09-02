@@ -53,7 +53,9 @@ lines::showLinesCli( int argc, char** argv )
                   << "\t--cloud \tthe cloud file name in \"dir\"\n"
                   << "\t[--scale \talgorithm parameter]\n"
                   << "\t[--assoc \tpoint to line associations]\n"
-                  << "\t[--no-rel \tdon't show perfect relationships as gray lines]"
+                  << "\t[--no-rel \tdon't show perfect relationships as gray lines]\n"
+                  << "\t[--use-tags \tuse associations to create line segments]\n"
+                  << "\t[--ids \tshow point GID-s and line GIDs]"
                   << "\t[--no-clusters \tdon't show the \"ellipses\"]"
                   << std::endl;
         return EXIT_SUCCESS;
@@ -74,7 +76,7 @@ lines::showLinesCli( int argc, char** argv )
     }
 
     PrimitiveContainerT lines;
-    err = GF2::io::readPrimitives<PrimitiveT>( lines, dir + "/" + primitives_file );
+    err = GF2::io::readPrimitives<PrimitiveT, typename PrimitiveContainerT::value_type>( lines, dir + "/" + primitives_file );
     if ( EXIT_SUCCESS != err )
     {
         std::cerr << "[" << __func__ << "]: " << "failed to read " << dir + "/" + primitives_file << "...exiting" << std::endl;
@@ -83,8 +85,8 @@ lines::showLinesCli( int argc, char** argv )
 
     // read cloud
     PointContainerT points;
-    std::string cloud_file;
-    if ( pcl::console::parse_argument( argc, argv, "--cloud", cloud_file) < 0 )
+    std::string cloud_file = "cloud.ply";
+    if ( pcl::console::parse_argument( argc, argv, "--cloud", cloud_file) < 0 && !boost::filesystem::exists(cloud_file) )
     {
         std::cerr << "[" << __func__ << "]: " << "no cloud file specified by --cloud ...exiting" << std::endl;
         return EXIT_FAILURE;
@@ -128,16 +130,17 @@ lines::showLinesCli( int argc, char** argv )
     if ( use_tags )
         use_tags += (char)pcl::console::find_switch( argc, argv, "--no-clusters" );
 
-    // GF
     Scalar scale = 0.1;
     pcl::console::parse_argument( argc, argv, "--scale", scale );
+
     bool dont_show_rels = pcl::console::find_switch( argc, argv, "--no-rel" );
+    bool show_ids       = pcl::console::find_switch( argc, argv, "--ids" );
 
     GF2::Visualizer<PrimitiveContainerT,PointContainerT>::show<Scalar>( lines, points, scale
                                                                         , (Eigen::Vector3f() << 1,0,0).finished()
                                                                         , /*        spin: */ true
                                                                         , /* connections: */ dont_show_rels ? NULL : &angles
-                                                                        , /*    show_ids: */ false
+                                                                        , /*    show_ids: */ show_ids
                                                                         , /*    use_tags: */ use_tags
                                                                         );
     return EXIT_SUCCESS;

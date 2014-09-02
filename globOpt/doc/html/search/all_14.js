@@ -8,9 +8,8 @@ var searchData=
   ['test_5ffmincon',['test_fmincon',['../test__fmincon_8m.html#aaad75e185c2c091d6db4e295574dcb69',1,'test_fmincon.m']]],
   ['test_5ffmincon_2em',['test_fmincon.m',['../test__fmincon_8m.html',1,'']]],
   ['test_5fmain_2ecpp',['test_main.cpp',['../test__main_8cpp.html',1,'']]],
-  ['testcuda',['testCuda',['../main_8cpp.html#a7180da18e08cbcc0e9d122b0f6c45705',1,'main.cpp']]],
   ['testfminconselection_2em',['testFMinConSelection.m',['../test_f_min_con_selection_8m.html',1,'']]],
-  ['testopt',['testOpt',['../classam_1_1_optimization.html#aa1e559cede1a7aabcb8c249840123ae1',1,'am::Optimization']]],
+  ['testopt',['testOpt',['../classam_1_1_optimization.html#a667316e778367dc3dba9fa469390713b',1,'am::Optimization']]],
   ['text',['text',['../globfit_8m.html#af575f17e6be3f269b86b041a60560dbf',1,'globfit.m']]],
   ['thread_5fcount',['thread_count',['../struct_g_f2_1_1_gurobi_opt_params.html#a4694b6643c225e1ec668cc95b4901d77',1,'GF2::GurobiOptParams']]],
   ['throwascaller',['throwAsCaller',['../function__handle_8m.html#ae7a7a899646ff652e03f6904e51ae7a0',1,'throwAsCaller(MException(... &apos;function_handle:dir_not_found&apos;,... &apos;Directory &apos;&apos;%s&apos;&apos;not found.&apos;, pth)):&#160;function_handle.m'],['../function__handle_8m.html#aad3874868ab503e4327cb7b220f6e291',1,'throwAsCaller(MException(... &apos;function_handle:fcn_not_found&apos;,...[&apos;Function &apos;&apos;%s&apos;&apos;is not on the MATLAB search path, and does not seem &apos;,... &apos;to be a builtin.&apos;], name)):&#160;function_handle.m'],['../function__handle_8m.html#a63ff2ad04c1ca0430fe4acb7da41d7e6',1,'throwAsCaller(MException(... &apos;function_handle:fcn_invalid&apos;,... &apos;Function or file &apos;&apos;%s&apos;&apos;not found.&apos;, fcn{ii})):&#160;function_handle.m']]],
@@ -29,7 +28,6 @@ var searchData=
   ['tojson',['toJson',['../classam_1_1kmeans_1_1_k_means.html#ae7c115079cfcfbe16f86b78aecb8692a',1,'am::kmeans::KMeans']]],
   ['token',['Token',['../read__ply_8m.html#a6906c0a02922367dd7a5ba547664af1c',1,'read_ply.m']]],
   ['tokens',['tokens',['../globfit_8m.html#a748b7041400e7c1ab0f6667fff0271c7',1,'tokens():&#160;globfit.m'],['../my__ply__read_8m.html#a748b7041400e7c1ab0f6667fff0271c7',1,'tokens():&#160;my_ply_read.m']]],
-  ['tosgbound',['toSGBound',['../mosek__test_8cpp.html#a245ec25c345e830d279dd385002baef8',1,'mosek_test.cpp']]],
   ['tostring',['toString',['../struct_g_f2_1_1_spatial_patch_patch_max_distance_functor_t.html#a850c6590b6beccee5b5d05ed72a24568',1,'GF2::SpatialPatchPatchMaxDistanceFunctorT::toString()'],['../struct_g_f2_1_1_spatial_patch_patch_min_distance_functor_t.html#a57b890701578e9527b74b2067d80cb31',1,'GF2::SpatialPatchPatchMinDistanceFunctorT::toString()'],['../struct_g_f2_1_1_abstract_patch_patch_distance_functor_t.html#a9d3980a718b30d47f1214d033e78148c',1,'GF2::AbstractPatchPatchDistanceFunctorT::toString()'],['../struct_g_f2_1_1_full_linkage_patch_patch_distance_functor_t.html#a1b4fb1bb4751bfccf4c524792ebd3df1',1,'GF2::FullLinkagePatchPatchDistanceFunctorT::toString()'],['../struct_g_f2_1_1_squared_patch_patch_distance_functor_t.html#a41e06e53c7f65742f765c19240a1c9bd',1,'GF2::SquaredPatchPatchDistanceFunctorT::toString()'],['../struct_g_f2_1_1_representative_patch_patch_distance_functor_t.html#aae8beaae09f240da1a2d9f649da4502b',1,'GF2::RepresentativePatchPatchDistanceFunctorT::toString()'],['../class_g_f2_1_1_primitive.html#a609d30324214584936e1179273f82d0e',1,'GF2::Primitive::toString()']]],
   ['trisurf',['trisurf',['../read__ply_8m.html#af340ef0bf3aaef588c1bbea259f33cfd',1,'read_ply.m']]],
   ['trunc_5fat',['trunc_at',['../lp_8m.html#ad126536f101c664d5c5b724783226b3a',1,'lp.m']]]

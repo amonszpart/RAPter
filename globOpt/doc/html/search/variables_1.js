@@ -9,6 +9,6 @@ var searchData=
   ['ang_5fthresh',['ang_thresh',['../patch_cost_function_8m.html#a6340d10cd015437e8f5f2fb724a4e322',1,'patchCostFunction.m']]],
   ['angle_5flimit',['angle_limit',['../struct_g_f2_1_1_candidate_generator_params.html#a9fdfa8c40656407a130a11ee447e3f23',1,'GF2::CandidateGeneratorParams']]],
   ['angle_5flimit_5fdiv',['angle_limit_div',['../struct_g_f2_1_1_candidate_generator_params.html#a70e8b121f637d54712e839bc1d671729',1,'GF2::CandidateGeneratorParams']]],
-  ['angles',['angles',['../struct_g_f2_1_1_problem_setup_params.html#aea20a9c94d97aedba5d88717f6ed9c55',1,'GF2::ProblemSetupParams']]],
+  ['angles',['angles',['../struct_g_f2_1_1_problem_setup_params.html#aea20a9c94d97aedba5d88717f6ed9c55',1,'GF2::ProblemSetupParams::angles()'],['../struct_g_f2_1_1_merge_params.html#aebd7a72755d7d552642bc6de0373b98f',1,'GF2::MergeParams::angles()']]],
   ['ascii',['ASCII',['../read__ply_8m.html#af14a59117298c2b0986241386f9895c4',1,'read_ply.m']]]
 ];

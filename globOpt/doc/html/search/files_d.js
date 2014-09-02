@@ -11,7 +11,6 @@ var searchData=
   ['point_5fplane_2em',['point_plane.m',['../point__plane_8m.html',1,'']]],
   ['pointprimitive_2eh',['pointPrimitive.h',['../globfit2_2primitives_2point_primitive_8h.html',1,'']]],
   ['pointprimitive_2eh',['pointPrimitive.h',['../kmeans_2point_primitive_8h.html',1,'']]],
-  ['postaligner_2ecpp',['postAligner.cpp',['../post_aligner_8cpp.html',1,'']]],
   ['postaligner_2eh',['postAligner.h',['../post_aligner_8h.html',1,'']]],
   ['postaligner_2ehpp',['postAligner.hpp',['../post_aligner_8hpp.html',1,'']]],
   ['primitive_2eh',['primitive.h',['../globfit2_2primitives_2primitive_8h.html',1,'']]],
