@@ -14,6 +14,7 @@ SET(inputGen_SOURCES
   src/myscene.cpp)
 SET(inputGen_HEADERS
   include/mainwindow.h
+  include/samplegenerator.h
   include/samplegeneratorfactory.h
   include/myview.h
   include/myscene.h

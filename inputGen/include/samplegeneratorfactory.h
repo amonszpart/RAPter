@@ -33,8 +33,8 @@ signals:
 private:
     Ui::SampleGeneratorFactory *ui;
     enum GENERATOR_TYPE{
-        GEN_FROM_PRIMTIVE = 0,
-        GEN_FROM_PONCTUAL = 1
+        GEN_FROM_PRIMITIVE = 0,
+        GEN_FROM_PONCTUAL  = 1
     };
 
     std::vector< InputGen::Application::Primitive > *_pSet;
