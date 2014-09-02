@@ -9,15 +9,19 @@ FIND_PACKAGE(Eigen3 REQUIRED)
 SET(inputGen_SOURCES
   src/main.cpp
   src/mainwindow.cpp
+  src/samplegeneratorfactory.cpp
   src/myview.cpp
   src/myscene.cpp)
 SET(inputGen_HEADERS
   include/mainwindow.h
+  include/samplegeneratorfactory.h
   include/myview.h
   include/myscene.h
   include/types.h
   include/primitive.h)
-SET(inputGen_FORMS ui/mainwindow.ui)
+SET(inputGen_FORMS
+  ui/mainwindow.ui
+  ui/samplegeneratorfactory.ui)
 # SET(inputGen_RESOURCES images.qrc)
 
 SET(QT_USE_QTOPENGL TRUE)

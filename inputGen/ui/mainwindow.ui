@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>732</width>
+    <height>675</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -25,7 +25,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>400</width>
+     <width>732</width>
      <height>27</height>
     </rect>
    </property>
@@ -46,6 +46,14 @@
    </attribute>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
+  <widget class="SampleGeneratorFactory" name="_generatorDoc">
+   <property name="windowTitle">
+    <string>Sample Generators</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+  </widget>
   <action name="actionLoad_SVG">
    <property name="text">
     <string>Load SVG</string>
@@ -61,6 +69,12 @@
    <class>MyView</class>
    <extends>QGraphicsView</extends>
    <header>myview.h</header>
+  </customwidget>
+  <customwidget>
+   <class>SampleGeneratorFactory</class>
+   <extends>QDockWidget</extends>
+   <header>samplegeneratorfactory.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>
