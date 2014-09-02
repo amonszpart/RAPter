@@ -81,7 +81,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_8610465afff0bf9a4df36459514a261b.html">src</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -378,7 +378,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160;        }</div>
 <div class="line"><a name="l00317"></a><span class="lineno">  317</span>&#160;</div>
 <div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160;        <span class="comment">// JSON</span></div>
-<div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160;        std::vector&lt;Eigen::Vector3f&gt; colours = am::util::nColoursEigen( angle_labels.size() );</div>
+<div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160;        std::vector&lt;Eigen::Vector3f&gt; colours = <a class="code" href="namespace_g_f2_1_1util.html#af09f25bed2f2c63211dcfd44f2fc717d">am::util::nColoursEigen</a>( angle_labels.size() );</div>
 <div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160;        kmeans::KMeans&lt;std::vector&lt;HoughLine&gt;,HoughLine&gt;::toJson( <span class="stringliteral">&quot;angles.json&quot;</span></div>
 <div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160;                                                                  , hough_lines.data(), hough_lines.size()</div>
 <div class="line"><a name="l00322"></a><span class="lineno">  322</span>&#160;                                                                  , angle_labels</div>
@@ -694,7 +694,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00632"></a><span class="lineno">  632</span>&#160;        <span class="comment">// vis_params</span></div>
 <div class="line"><a name="l00633"></a><span class="lineno">  633</span>&#160;        std::vector&lt;float&gt;    vis_params; <span class="comment">// { scale, x_normalizer, y_normalizer }</span></div>
 <div class="line"><a name="l00634"></a><span class="lineno">  634</span>&#160;        <span class="keyword">const</span> Eigen::Vector3f origin( 1.f, 0.f, 0.f );</div>
-<div class="line"><a name="l00635"></a><span class="lineno">  635</span>&#160;        std::vector&lt;Eigen::Vector3f&gt; colours = am::util::nColoursEigen( primitives.size() );</div>
+<div class="line"><a name="l00635"></a><span class="lineno">  635</span>&#160;        std::vector&lt;Eigen::Vector3f&gt; colours = <a class="code" href="namespace_g_f2_1_1util.html#af09f25bed2f2c63211dcfd44f2fc717d">am::util::nColoursEigen</a>( primitives.size() );</div>
 <div class="line"><a name="l00636"></a><span class="lineno">  636</span>&#160;</div>
 <div class="line"><a name="l00637"></a><span class="lineno">  637</span>&#160;        <span class="comment">// draw points</span></div>
 <div class="line"><a name="l00638"></a><span class="lineno">  638</span>&#160;        showHoughLines( vis_params</div>
@@ -750,6 +750,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="ttc" id="globfit_8m_html_a901eed5bfcfb9d1af7f58c545d1a88c4"><div class="ttname"><a href="globfit_8m.html#a901eed5bfcfb9d1af7f58c545d1a88c4">i</a></div><div class="ttdeci">for i</div><div class="ttdef"><b>Definition:</b> <a href="globfit_8m_source.html#l00015">globfit.m:15</a></div></div>
 <div class="ttc" id="write_q_8m_html_a10d07efd5ac1cb47cf2972c3ef20c28e"><div class="ttname"><a href="write_q_8m.html#a10d07efd5ac1cb47cf2972c3ef20c28e">r</a></div><div class="ttdeci">elements for r</div><div class="ttdef"><b>Definition:</b> <a href="write_q_8m_source.html#l00008">writeQ.m:8</a></div></div>
 <div class="ttc" id="classam_1_1_glob_fit2_html_aead13d199375a4e4c468e4a92ebaa706"><div class="ttname"><a href="classam_1_1_glob_fit2.html#aead13d199375a4e4c468e4a92ebaa706">am::GlobFit2::image_2_2DCloud</a></div><div class="ttdeci">static int image_2_2DCloud(pcl::PointCloud&lt; MyPoint &gt;::Ptr &amp;cloud, cv::Mat const &amp;img, int N_samples=100, float const Z=-1.f, float const scale=1.f)</div><div class="ttdef"><b>Definition:</b> <a href="glob_fit2_8cpp_source.html#l00077">globFit2.cpp:77</a></div></div>
+<div class="ttc" id="namespace_g_f2_1_1util_html_af09f25bed2f2c63211dcfd44f2fc717d"><div class="ttname"><a href="namespace_g_f2_1_1util.html#af09f25bed2f2c63211dcfd44f2fc717d">GF2::util::nColoursEigen</a></div><div class="ttdeci">std::vector&lt; ::Eigen::Vector3f &gt; nColoursEigen(int n, Scalar scale, bool random_shuffle)</div><div class="ttdef"><b>Definition:</b> <a href="util_8hpp_source.html#l00104">util.hpp:104</a></div></div>
 <div class="ttc" id="classam_1_1_cuboid_ransac_html_abf82dd1d9b09d59ebf26e7faaa93f0c4"><div class="ttname"><a href="classam_1_1_cuboid_ransac.html#abf82dd1d9b09d59ebf26e7faaa93f0c4">am::CuboidRansac::getNeighbourhoodIndices</a></div><div class="ttdeci">static int getNeighbourhoodIndices(std::vector&lt; pcl::PointIndices::Ptr &gt; &amp;neighbour_indices, pcl::PointCloud&lt; MyPoint &gt;::ConstPtr cloud, pcl::PointIndices::ConstPtr indices=pcl::PointIndices::ConstPtr(), std::vector&lt; std::vector&lt; float &gt; &gt; *distances=NULL, int K=15)</div><div class="ttdef"><b>Definition:</b> <a href="cuboid_ransac_8cpp_source.html#l00020">cuboidRansac.cpp:20</a></div></div>
 <div class="ttc" id="read__ply_8m_html_ac04e968fceb2af0a5590d4aa4b44f7c9"><div class="ttname"><a href="read__ply_8m.html#ac04e968fceb2af0a5590d4aa4b44f7c9">c</a></div><div class="ttdeci">vertex is a nb vert x array specifying the position of the vertices face is a nb face x array specifying the connectivity of the mesh c</div><div class="ttdef"><b>Definition:</b> <a href="read__ply_8m_source.html#l00014">read_ply.m:14</a></div></div>
 <div class="ttc" id="lp_8m_html_a629c932e04d057de3f60912da6e565c2"><div class="ttname"><a href="lp_8m.html#a629c932e04d057de3f60912da6e565c2">cloud</a></div><div class="ttdeci">cloud[Px, Py, Pz,~]</div><div class="ttdef"><b>Definition:</b> <a href="lp_8m_source.html#l00014">lp.m:14</a></div></div>
@@ -777,7 +778,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Aug 31 2014 20:43:28 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Sep 2 2014 14:33:23 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

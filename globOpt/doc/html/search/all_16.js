@@ -12,7 +12,5 @@ var searchData=
   ['vertex',['vertex',['../read__ply_8m.html#aeaacd144d6d23e8f1de90c08544d00f3',1,'read_ply.m']]],
   ['vi',['vi',['../read__ply_8m.html#ac3bb6f719742fd1e5768d6d1361cfb49',1,'read_ply.m']]],
   ['visualize',['visualize',['../classam_1_1_glob_fit2.html#a234094d912aeae453ccb6add7f6a0b27',1,'am::GlobFit2::visualize(PrimitivesT const &amp;lines, std::vector&lt; int &gt; const &amp;optimized_mask, pcl::PointCloud&lt; MyPoint &gt;::Ptr cloud, const float scale=0.01, std::vector&lt; float &gt; const &amp;desired_angles={0, M_PI_2, M_PI}, MaskType const *real_mask=NULL, pcl::PointIndices::Ptr indices=pcl::PointIndices::Ptr(), std::vector&lt; int &gt; const *labels=NULL, bool const spin=true, bool const show_angles=false, float const gap_threshold=0.2f)'],['../classam_1_1_glob_fit2.html#a090efc8c9bd7359fc44d322c2ec39702',1,'am::GlobFit2::visualize(PrimitivesT const &amp;lines, MaskType const &amp;optimized_mask, pcl::PointCloud&lt; MyPoint &gt;::Ptr cloud, float const scale, std::vector&lt; float &gt; const &amp;desired_angles, MaskType const *real_mask, pcl::PointIndices::Ptr indices, std::vector&lt; int &gt; const *labels, bool const spin, bool const show_angles, float const gap_threshold)'],['../pcd__viewer_2main_8cpp.html#aa774a711da49de54387dd20fddb3d1e9',1,'visualize():&#160;main.cpp']]],
-  ['visualizer',['Visualizer',['../class_g_f2_1_1_visualizer.html',1,'GF2']]],
-  ['visualizer_2ecpp',['visualizer.cpp',['../visualizer_8cpp.html',1,'']]],
-  ['visualizer_2eh',['visualizer.h',['../visualizer_8h.html',1,'']]]
+  ['visualizer_2ecpp',['visualizer.cpp',['../visualizer_8cpp.html',1,'']]]
 ];

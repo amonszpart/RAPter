@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['refitmode',['RefitMode',['../struct_g_f2_1_1_candidate_generator_params.html#af8a5ada6c5c5477443de0914330037b6',1,'GF2::CandidateGeneratorParams']]]
+  ['data_5fcost_5fmode',['DATA_COST_MODE',['../class_g_f2_1_1_problem_setup.html#a1435ec920286d0a310d673dfc1b72205',1,'GF2::ProblemSetup']]]
 ];

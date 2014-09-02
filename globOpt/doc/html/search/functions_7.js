@@ -14,7 +14,7 @@ var searchData=
   ['getdistancesonline',['getDistancesOnLine',['../glob_fit2_8hpp.html#a3bed1a190d1fc0feca2c4ea89681598b',1,'globFit2.hpp']]],
   ['getenergy',['getEnergy',['../classam_1_1_alpha_exp_opt_problem.html#a6b8e95654ac1d17083eed3a9309a1e72',1,'am::AlphaExpOptProblem::getEnergy()'],['../classam_1_1_exhaustive_opt_problem.html#a5d85fac8593933389cdc031948e20e77',1,'am::ExhaustiveOptProblem::getEnergy()'],['../classam_1_1_opt_problem.html#a9cc733b5ae5af104b074c3a23772093b',1,'am::OptProblem::getEnergy()'],['../classam_1_1_sim_ann_opt_problem.html#af1c11c4dcd391d7c883594c9e5399bba',1,'am::SimAnnOptProblem::getEnergy()']]],
   ['getexhaustivebest',['getExhaustiveBest',['../classam_1_1_sim_ann_opt_problem.html#a366906d7a1d545789ba2ffcbf499c782',1,'am::SimAnnOptProblem']]],
-  ['getextent',['getExtent',['../class_g_f2_1_1_line_primitive.html#af070d6b3772bfc65482f5195a445a81a',1,'GF2::LinePrimitive::getExtent()'],['../class_g_f2_1_1_plane_primitive.html#a0bda71cd5dedded2fb7445cdd3121d78',1,'GF2::PlanePrimitive::getExtent()']]],
+  ['getextent',['getExtent',['../class_g_f2_1_1_line_primitive.html#a3b567eac8b87a274a1dd9e2038fb6632',1,'GF2::LinePrimitive::getExtent()'],['../class_g_f2_1_1_plane_primitive.html#a0bda71cd5dedded2fb7445cdd3121d78',1,'GF2::PlanePrimitive::getExtent()']]],
   ['getfromcluster',['getFromCluster',['../classam_1_1_primitive_clustering.html#a669a92c93bf86cfe47589e12e264bc84',1,'am::PrimitiveClustering']]],
   ['getlasttimestamp',['getLastTimeStamp',['../class_g_f2_1_1_my_g_r_b_callback.html#a30d40e50e634c53a522d84fa195762ed',1,'GF2::MyGRBCallback']]],
   ['getline2dnormal',['getLine2DNormal',['../post__opt_2main_8cpp.html#a8ca183a55debcfed15f426b5635b0f9a',1,'main.cpp']]],

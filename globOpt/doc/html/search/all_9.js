@@ -20,6 +20,8 @@ var searchData=
   ['inputs',['inputs',['../struct_functor.html#aca998dd9bd635cb1ec36f29598a24bed',1,'Functor']]],
   ['inputsatcompiletime',['InputsAtCompileTime',['../struct_functor.html#a741d37a863a712fcfb6cfc0e45c9e10ba7950bbb327b1feac88ecafb3c4d08721',1,'Functor']]],
   ['inputtype',['InputType',['../struct_functor.html#acc6ad7f534a7e034d834baab266b52d4',1,'Functor']]],
+  ['instance_5fbased',['INSTANCE_BASED',['../class_g_f2_1_1_problem_setup.html#a1435ec920286d0a310d673dfc1b72205a4f16439ae31908d2d8582b604a8d9517',1,'GF2::ProblemSetup']]],
+  ['instancebaseddatacost',['instanceBasedDataCost',['../namespace_g_f2_1_1problem_setup.html#a3e0aa0a6e8bb6bc9e2c0d0a676bf1141',1,'GF2::problemSetup::instanceBasedDataCost(_OptProblemT &amp;problem, _PrimitiveContainerT const &amp;prims, _PointContainerT const &amp;points, _AssocT const &amp;lids_varids, _WeightsT const &amp;weights, _Scalar const )'],['../namespace_g_f2_1_1problem_setup.html#a3e0aa0a6e8bb6bc9e2c0d0a676bf1141',1,'GF2::problemSetup::instanceBasedDataCost(_OptProblemT &amp;problem, _PrimitiveContainerT const &amp;prims, _PointContainerT const &amp;points, _AssocT const &amp;lids_varids, _WeightsT const &amp;weights, _Scalar const )']]],
   ['io_2eh',['io.h',['../io_8h.html',1,'']]],
   ['io_2ehpp',['io.hpp',['../io_8hpp.html',1,'']]],
   ['ischar',['ischar',['../my__ply__read_8m.html#a8157e3fe9e544ee88b1f511f59a382f2',1,'my_ply_read.m']]],

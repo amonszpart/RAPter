@@ -11,5 +11,7 @@ var searchData=
   ['primitive_3c_204_20_3e',['Primitive&lt; 4 &gt;',['../class_g_f2_1_1_primitive.html',1,'GF2']]],
   ['primitive_3c_206_20_3e',['Primitive&lt; 6 &gt;',['../class_g_f2_1_1_primitive.html',1,'GF2']]],
   ['primitiveclustering',['PrimitiveClustering',['../classam_1_1_primitive_clustering.html',1,'am']]],
-  ['primitiveclustering_3c_20primitivest_20_3e',['PrimitiveClustering&lt; PrimitivesT &gt;',['../classam_1_1_primitive_clustering.html',1,'am']]]
+  ['primitiveclustering_3c_20primitivest_20_3e',['PrimitiveClustering&lt; PrimitivesT &gt;',['../classam_1_1_primitive_clustering.html',1,'am']]],
+  ['problemsetup',['ProblemSetup',['../class_g_f2_1_1_problem_setup.html',1,'GF2']]],
+  ['problemsetupparams',['ProblemSetupParams',['../struct_g_f2_1_1_problem_setup_params.html',1,'GF2']]]
 ];

@@ -134,12 +134,9 @@ namespace GF2
 
         // count populations
         std::map<int,int> populations; // populations[patch_id] = all points with GID==patch_id
-        if ( angles )
+        for ( size_t pid = 0; pid != points.size(); ++pid )
         {
-            for ( size_t pid = 0; pid != points.size(); ++pid )
-            {
-                ++populations[ points[pid].getTag(PointT::GID) ];
-            }
+            ++populations[ points[pid].getTag(PointT::GID) ];
         }
 
         for ( size_t lid = 0; lid != primitives.size(); ++lid )
@@ -177,6 +174,14 @@ namespace GF2
                                                    , /*     stretch: */ _Scalar(1.2)
                                                    );
                 vptr->setShapeRenderingProperties( pcl::visualization::PCL_VISUALIZER_LINE_WIDTH, 2.0, line_name, 0 );
+
+                // add line size
+                {
+                    char popstr[255];
+                    sprintf( popstr, "%d", populations[gid] );
+                    vptr->addText3D( popstr, pclutil::asPointXYZ( primitives[lid][lid1].template pos() )
+                                     , 0.05, prim_colour(0), prim_colour(1), prim_colour(2), line_name + std::string( popstr ), 0 );
+                }
 
                 // draw connections
                 if ( angles )

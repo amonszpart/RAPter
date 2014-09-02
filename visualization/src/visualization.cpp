@@ -13,7 +13,7 @@
 namespace GF2 {
 namespace vis {
 
-inline vis::MyVisPtr
+vis::MyVisPtr
 lines::showLines( vis::lines::PrimitiveContainerT  const& lines
                 , vis::lines::PointContainerT      const& points
                 , vis::lines::Scalar               const  scale
