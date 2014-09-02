@@ -5,10 +5,13 @@
 
 #include "globfit2/primitives/linePrimitive2.h"
 #include "globfit2/primitives/pointPrimitive.h"
-#include "globfit2/visualization/visualizer.hpp" // vis::MyVisPtr
+//#include "globfit2/visualization/visualizer.hpp" // vis::MyVisPtr
 
 namespace GF2 {
 namespace vis {
+
+    //! \brief Return type for visualizer. Convenience reasons (might need to be changed to std::shared_ptr.
+    typedef pcl::visualization::PCLVisualizer::Ptr MyVisPtr;
 
     namespace lines
     {
