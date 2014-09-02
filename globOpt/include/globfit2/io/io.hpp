@@ -1,11 +1,15 @@
 #include "io.h"
 #include <fstream>
-#include "qcqpcpp/io/io.h"
+
+#ifdef WITH_QCQPCPP
+#   include "qcqpcpp/io/io.h"
+#endif
 
 namespace GF2
 {
     namespace io
     {
+#if 0 // deprecated
         template <class PrimitivesT, typename Scalar = typename PrimitivesT::value_type::Scalar> int
         saveSolution( std::string path
                       , MaskType const& opt_mask
@@ -133,22 +137,6 @@ namespace GF2
 
             return EXIT_SUCCESS;
         } // ... readSolution
-
-        template <typename Scalar> int
-        testReadWriteSparse()
-        {
-            Eigen::SparseMatrix<double,Eigen::RowMajor> mx(4,4), mx2;
-            mx.insert( 0,0 ) = 2;
-            mx.insert( 1,1 ) = 4;
-            mx.insert( 2,2 ) = 3;
-            mx.insert( 3,3 ) = 1;
-            mx.insert( 0,3 ) = 9;
-            mx.insert( 2,0 ) = 5;
-            qcqpcpp::io::writeSparseMatrix( mx, "testWriteSparseMatrix.txt", 1 );
-            mx2 = qcqpcpp::io::readSparseMatrix<double>( "testWriteSparseMatrix.txt", -1 );
-            std::cout << mx2 << std::endl;
-            return 1;
-        }
-
+#endif // deprecated
     } // ... ns io
 } // ... ns GF2

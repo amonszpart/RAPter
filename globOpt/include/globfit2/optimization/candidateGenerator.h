@@ -8,7 +8,6 @@
 #include "pcl/kdtree/kdtree.h"          // nearestneighboursearch
 
 #include "pcltools/util.hpp"            // addGaussianNoise, fitLinearPrimitive
-//#include "AMUtilPCL.h"                  // PointXYZ
 #include "globfit2/optimization/patchDistanceFunctors.h" // FullLinkagePointPatchDistanceFunctor
 
 namespace GF2
@@ -66,7 +65,6 @@ namespace GF2
     /// (2)
     class CandidateGenerator
     {
-            //typedef FullLinkagePointPatchDistanceFunctorT<float>         MyPointPatchDistanceFunctorT;
             typedef std::pair<int,int>      PidLid;
 
             template <typename _Scalar, typename _PrimitiveT>
@@ -140,10 +138,8 @@ namespace GF2
                     int         _n;              //!< \brief How many points are averaged in _representative
             }; // ... struct Patch
 
-            //typedef std::vector< Patch<Scalar> >    PatchPointIdsType;          // point_id:     groups[gid][pid_id].first
-                                                                        // primitive_id: groups[gid][pid_id].second
         public:
-            //! \brief generate     Main functionality to generate lines from points.
+            //! \brief Main functionality to generate lines from points.
             template <  class       PrimitivePrimitiveAngleFunctorT // concept: energyFunctors.h::PrimitivePrimitiveAngleFunctor
                       , class       PointPatchDistanceFunctorT      // concept: FullLinkagePointPatchDistanceFunctorT
                       , class       PrimitiveContainerT             // concept: std::vector<std::vector<LinePrimitive2>>
@@ -184,34 +180,6 @@ namespace GF2
                     , bool              const  soft_radius
                     , std::vector<int>       * mapping
                     );
-
-            //! \brief                              Proper agglomerative. Groups points into patches based on their local fit lines and positions. Called from patchify().
-            //! \tparam _PointPatchDistanceFunctorT Concept: FullLinkagePointPatchDistanceFunctor
-            //! \tparam _PatchesT
-            //! \tparam _PrimitiveContainerT        Concept: std::vector<LinePrimitive2>
-            //! \tparam _PointContainerT            Concept: std::vector<PointPrimitive>
-            //! \tparam _PrimitiveT                 Concept: LinePrimitive2
-            //! \tparam _Scalar                     Concept: float
-            //! \tparam _PointT                     Concept: PointPrimitive
-            template < /*class        _PrimitivePrimitiveAngleFunctorT                                             // concept: energyFunctors.h::PrimitivePrimitiveAngleFunctor
-                      ,*/ class       _PointPatchDistanceFunctorT
-                      , class       _PatchesT
-                      , class       _PrimitiveContainerT
-                      , class       _PointContainerT
-                      , class       _PrimitiveT          = typename _PrimitiveContainerT::value_type
-                      , typename    _Scalar              = typename _PrimitiveT::Scalar
-                      , class       _PointT              = typename _PointContainerT::value_type
-                      >
-            static inline int
-            agglomerative( _PointContainerT                 & points
-                         , _PrimitiveContainerT        const& lines
-                         , _Scalar                     const  scale
-                         , std::vector<_Scalar>        const& angles
-                         , CandidateGeneratorParams    const  params
-                         , _PointPatchDistanceFunctorT const& pointPatchDistanceFunctor
-                         , int                         const  gid_tag_name                 = _PointT::GID
-                         , std::vector<int>            const* point_ids_arg                = NULL
-                         , _PatchesT                        * groups                       = NULL          );
 
             //! \brief                              Greedy region growing
             //! \tparam _PointPatchDistanceFunctorT Concept: FullLinkagePointPatchDistanceFunctor
@@ -255,32 +223,10 @@ namespace GF2
                       , class PointContainerT>
             static inline int
             image_2_2DCloud( PointContainerT         & cloud
-                             , cv::Mat         const & img
-                             , int   const             N_samples
-                             , float const             Z
-                             , float const             scale );
-#if 0
-            //! \brief group        Groups points into patches based on their local fit lines and positions. Called from patchify().
-            template < class        PrimitivePrimitiveAngleFunctorT                                             // concept: energyFunctors.h::PrimitivePrimitiveAngleFunctor
-                      , class       PointPatchDistanceFunctorT                                                  // concept: FullLinkagePointPatchDistanceFunctor
-                      , class       PrimitiveContainerT                                                         // concept: std::vector<LinePrimitive2>
-                      , class       PointContainerT                                                             // concept: std::vector<PointPrimitive>
-                      , class       PrimitiveT          = typename PrimitiveContainerT::value_type              // concept: LinePrimitive2
-                      , typename    Scalar              = typename PrimitiveT::Scalar                           // concept: float
-                      , class       PointT              = typename PointContainerT::value_type                  // concept: PointPrimitive
-                      >
-            static inline int
-            group(   PointContainerT                 & points
-                   , PrimitiveContainerT        const& lines
-                   , Scalar                     const  scale
-                   , std::vector<Scalar>        const& angles
-                   , CandidateGeneratorParams   const  params
-                   , PointPatchDistanceFunctorT const& pointPatchDistanceFunctor
-                   , int                        const  gid_tag_name                 = PointT::GID
-                   , std::vector<int>           const* point_ids_arg                = NULL
-                   , PatchPointIdsType               * groups                       = NULL          );
-#endif
-
+                           , cv::Mat         const & img
+                           , int   const             N_samples
+                           , float const             Z
+                           , float const             scale );
         protected:
             template < typename _Scalar
                      , class _PointPatchDistanceFunctorT
@@ -297,43 +243,10 @@ namespace GF2
 //_____________________________________________________________________________________________________________________
 // HPP
 #include "globfit2/my_types.h"          //  PCLPointAllocator
-#include "globfit2/visualization/visualizer.h"   // debug
+//#include "globfit2/visualization/visualization.h"   // debug
 
 namespace GF2
 {
-#if 0
-    // similar, if distance from origin and direction similar
-    template <  class       PrimitivePrimitiveAngleFunctorT
-              , typename    Scalar
-              , class       PrimitiveT>
-    bool
-    linesSimilarFunctor( PrimitiveT     const& cand0
-                         , PrimitiveT   const& line
-                         , Scalar       const  dist_limit
-                         , Scalar       const  ang_limit
-                         , Scalar            * d_diff_out = NULL
-                         , Scalar            * d_ang_out  = NULL )
-    {
-        bool similar = false;
-        static const Eigen::Matrix<Scalar,3,1> origin( Eigen::Matrix<Scalar,3,1>::Zero() );
-
-        Scalar d_cand0 = cand0.point3Distance( origin );
-        Scalar d_l0    = line .point3Distance( origin );
-        Scalar d_diff  = std::abs( d_cand0 - d_l0 );
-
-        Scalar d_ang   = PrimitivePrimitiveAngleFunctorT::template eval<Scalar>( cand0, line, {0,M_PI} );
-
-        similar = (d_diff < dist_limit) && (d_ang < ang_limit);
-
-        if ( d_diff_out )
-            *d_diff_out = d_diff;
-        if ( d_ang_out )
-            *d_ang_out = d_ang;
-
-        return similar;
-    } // ...linesSimilarFunctor()
-#endif
-
     template <  class       _PrimitivePrimitiveAngleFunctorT
               , class       _PatchPatchDistanceFunctorT                                                  // concept: FullLinkagePointPatchDistanceFunctor
               , class       _PrimitiveContainerT
@@ -365,14 +278,14 @@ namespace GF2
             for ( int i = 0; i != patches.size(); ++i )
                 patches[i].push_back( patch_lines[i] );
             //pcl::visualization::PCLVisualizer::Ptr vptr =
-                    Visualizer<_PrimitiveContainerT,_PointContainerT>::template show<_Scalar>( patches
-                                                                                               , points
-                                                                                               , /*     scale: */ scale
-                                                                                               , /*    colour: */ { 0.f, 0.f, 1.f}
-                                                                                               , /*      spin: */ true
-                                                                                               , /* show cons: */ NULL
-                                                                                               , /*       ids: */ false
-                                                                                               , /* tags_only: */ true );
+//                    Visualizer<_PrimitiveContainerT,_PointContainerT>::template show<_Scalar>( patches
+//                                                                                               , points
+//                                                                                               , /*     scale: */ scale
+//                                                                                               , /*    colour: */ { 0.f, 0.f, 1.f}
+//                                                                                               , /*      spin: */ true
+//                                                                                               , /* show cons: */ NULL
+//                                                                                               , /*       ids: */ false
+//                                                                                               , /* tags_only: */ true );
             //vptr->spin();
         }
         // (2) Mix and Filter
@@ -467,17 +380,18 @@ namespace GF2
         std::cout << "[" << __func__ << "]: " << "finished generating, we now have " << nlines << " candidates" << std::endl;
         if ( params.show_candidates )
         {
-            Visualizer<_PrimitiveContainerT,_PointContainerT>::template show<_Scalar>( lines, points
-                                                                                     , /*     scale: */ scale
-                                                                                     , /*    colour: */ { 0.f, 0.f, 1.f}
-                                                                                     , /*      spin: */ true
-                                                                                     , /*    angles: */ NULL
-                                                                                     , /*  show_ids: */ false
-                                                                                     , /* tags_only: */ false );
+
+//            Visualizer<_PrimitiveContainerT,_PointContainerT>::template show<_Scalar>( lines, points
+//                                                                                     , /*     scale: */ scale
+//                                                                                     , /*    colour: */ { 0.f, 0.f, 1.f}
+//                                                                                     , /*      spin: */ true
+//                                                                                     , /*    angles: */ NULL
+//                                                                                     , /*  show_ids: */ false
+//                                                                                     , /* tags_only: */ false );
         }
 
         return EXIT_SUCCESS;
-    } // ...CandidateGenerator::generate
+    } // ...CandidateGenerator::generate()
 
     //! \brief patchify Groups unoriented points into oriented patches represented by a single primitive
     //!                 (1) local fits
@@ -487,12 +401,10 @@ namespace GF2
     //! \param points      Input points that get assigned to the patches.
     //! \param scale       Spatial scale to use for fits.
     //! \param angles      Desired angles to use for groupings
-
-    template </*  class       _PrimitivePrimitiveAngleFunctorT
-              */ class       _PointPatchDistanceFunctorT
-              , class       _PointContainerT
-              , class       _PrimitiveT
-              , typename    _Scalar> int
+    template < class       _PointPatchDistanceFunctorT
+             , class       _PointContainerT
+             , class       _PrimitiveT
+             , typename    _Scalar> int
     CandidateGenerator::patchify( std::vector<_PrimitiveT>         & patch_lines
                                 , _PointContainerT                 & points // non-const, because group tags the points with primitive ids
                                 , _Scalar                     const  scale
@@ -534,19 +446,6 @@ namespace GF2
         // (2) group
         PatchesT groups;
         {
-#if 0
-            std::cout << "[" << __func__ << "]: " << "grouping started..." << std::endl; fflush(stdout);
-            agglomerative                                  ( /* [in/out]  points/pointsWGIDTag: */ points
-                                                           , /* [in]                     lines: */ fit_lines
-                                                           , /* [in]                     scale: */ scale
-                                                           , /* [in]            desired_angles: */ angles
-                                                           , /* [in]  CandidateGeneratorParams: */ params
-                                                           , /* [in] PointPatchDistanceFunctor: */ pointPatchDistanceFunctor
-                                                           , /* [in]              gid_tag_name: */ PointPrimitiveT::GID
-                                                           , /* [in]            lines_pointids: */ &point_ids
-                                                           , /* [out]          groups_pointids: */ &groups );
-            std::cout << "[" << __func__ << "]: " << "group finished..." << std::endl; fflush(stdout);
-#else
             std::cout << "[" << __func__ << "]: " << "grouping started..." << std::endl; fflush(stdout);
             regionGrow                                  ( /* [in/out]  points/pointsWGIDTag: */ points
                                                            , /* [in]                     lines: */ fit_lines
@@ -558,7 +457,6 @@ namespace GF2
                                                            , /* [in]            lines_pointids: */ &point_ids
                                                            , /* [out]          groups_pointids: */ &groups );
             std::cout << "[" << __func__ << "]: " << "group finished..." << std::endl; fflush(stdout);
-#endif
         } // ... (2) group
 
         // (3) refit lines to patches
@@ -625,159 +523,6 @@ namespace GF2
         return EXIT_SUCCESS;
     } // ...CandidateGenerator::patchify()
 
-    //! \brief Proper agglomerative clustering
-    template < /*  class       _PrimitivePrimitiveAngleFunctorT
-               ,*/ class       _PointPatchDistanceFunctorT
-               , class       _PatchesT
-               , class       _PrimitiveContainerT
-               , class       _PointContainerT
-               , class       _PrimitiveT
-               , typename    _Scalar
-               , class       _PointT> int
-    CandidateGenerator::agglomerative( _PointContainerT                 & points
-                                     , _PrimitiveContainerT        const& lines
-                                     , _Scalar                     const  scale
-                                     , std::vector<_Scalar>        const& /*angles*/
-                                     , CandidateGeneratorParams    const  /*params*/
-                                     , _PointPatchDistanceFunctorT const& patchPatchDistanceFunctor
-                                     , int                         const  gid_tag_name
-                                     , std::vector<int>            const* point_ids_arg
-                                     , _PatchesT                          * groups_arg               )
-    {
-        if ( point_ids_arg && (lines.size() != point_ids_arg->size()) )
-        {
-            std::cerr << "[" << __func__ << "]: " << "lines.size() != point_ids_arg->size()" << "...exiting" << std::endl;
-            return EXIT_FAILURE;
-        }
-
-        typedef typename _PatchesT::value_type   PatchT;
-        typedef          std::deque<PatchT>      Patches;
-
-        // create patches with a single point in them
-        Patches patches;
-        const int count = lines.size();
-        for ( int lid = 0; lid != count; ++lid )
-        {
-            const int pid = point_ids_arg ? (*point_ids_arg)[ lid ] : lid;
-            patches.push_back( (PatchT){ PidLid(pid,lid) } );
-            patches.back().update( points );
-        }
-
-        // debug show
-        {
-            std::vector<_PrimitiveContainerT> llines = { lines };
-            Visualizer<std::vector<_PrimitiveContainerT>,_PointContainerT>::template show<_Scalar>( llines
-                                                                                                   , points
-                                                                                                   , /*    scale: */ 0.05f
-                                                                                                   , /*   colour: */ { 0.f, 0.f, 1.f}
-                                                                                                   , /*     spin: */ true
-                                                                                                   , /*   angles: */ NULL
-                                                                                                   , /* show_ids: */ false );
-        }
-
-        // get closest patches
-        _Scalar min_patch_dist  = std::numeric_limits<_Scalar>::max();
-
-        //std::map< std::pair<int,int> > dist_cache;
-        do
-        {
-            // reset search
-            min_patch_dist  = std::numeric_limits<_Scalar>::max();
-            std::pair<typename Patches::iterator,typename Patches::iterator> closest_pair( patches.begin(), patches.begin()+1 );
-            // look for all pairs of patches
-            typename Patches::iterator   end_it = patches.end() - 1; // last pair is (n-1,n)
-            for ( typename Patches::iterator it0 = patches.begin(); it0 != end_it; ++it0 )
-            {
-                for ( typename Patches::iterator it1 = it0+1; it1 != patches.end(); ++it1 )
-                {
-
-                    // patch2patch distance = maximum point2point distance
-                    _Scalar patch_dist = 0;
-                    // compare max angular distance. If spatial distance is too big, angular will be limits::max()
-                    patch_dist = patchPatchDistanceFunctor.eval( *it0, *it1, points, &min_patch_dist );
-#if 0
-
-                    dist = it->getRepresentative().point3Distance( it2->pos() );
-                    if ( dist <= scale )
-                    {
-                        max_point_dist = GF2::angleInRad( it->getRepresentative().dir(), it2->getRepresentative().dir() );
-                    }
-                    else
-                        max_point_dist = std::numeric_limits<_Scalar>::max();
-#endif
-                    // save min max distance
-                    if ( patch_dist < min_patch_dist )
-                    {
-                        min_patch_dist      = patch_dist;
-                        closest_pair.first  = it0;
-                        closest_pair.second = it1;
-                    }
-                }
-            }
-
-            if ( min_patch_dist < patchPatchDistanceFunctor.getAngularThreshold() )
-            {
-                // update representative by weighted average
-                std::cout << "[" << __func__ << "]: "
-                          << "calling update with " << closest_pair.second->getRepresentative().toString() << ", n: " << closest_pair.second->size()
-                          << ", min_patch_dist: " << min_patch_dist << " < " << patchPatchDistanceFunctor.getAngularThreshold()
-                          << ", min_dist: " << patchPatchDistanceFunctor.evalSpatial( *(closest_pair.first), *(closest_pair.second), points ) << " < " << patchPatchDistanceFunctor.getSpatialThreshold()
-                          << std::endl;
-#if 0
-                //debug
-                {
-                        std::vector<_PrimitiveContainerT> plines0(1);
-                        plines0.back().push_back( closest_pair.first->getRepresentative() );
-                        plines0.back().push_back( closest_pair.second->getRepresentative() );
-//                        for ( int i = 0; i != closest_pair.first->size(); ++i )
-//                            plines0.push_back( )
-
-                        Visualizer<std::vector<_PrimitiveContainerT>,_PointContainerT>::template show<_Scalar>( plines0
-                                                                                                               , points
-                                                                                                               , /*    scale: */ 0.05f
-                                                                                                               , /*   colour: */ { 0.f, 0.f, 1.f}
-                                                                                                               , /*     spin: */ true
-                                                                                                               , /*   angles: */ NULL
-                                                                                                               , /* show_ids: */ false );
-                }
-#endif
-                closest_pair.first->update( closest_pair.second->getRepresentative(), closest_pair.second->size() );
-#if 0
-                {
-                    std::vector<_PrimitiveContainerT> plines0(1);
-                    plines0.back().push_back( closest_pair.first->getRepresentative() );
-//                        for ( int i = 0; i != closest_pair.first->size(); ++i )
-//                            plines0.push_back( )
-
-                    Visualizer<std::vector<_PrimitiveContainerT>,_PointContainerT>::template show<_Scalar>( plines0
-                                                                                                           , points
-                                                                                                           , /*    scale: */ 0.05f
-                                                                                                           , /*   colour: */ { 0.f, 0.f, 1.f}
-                                                                                                           , /*     spin: */ true
-                                                                                                           , /*   angles: */ NULL
-                                                                                                           , /* show_ids: */ false );
-                }
-#endif
-
-                // merge points
-                closest_pair.first->insert( closest_pair.first->end(), closest_pair.second->begin(), closest_pair.second->end() );
-
-                patches.erase( closest_pair.second );
-            }
-        }
-        while ( (min_patch_dist < patchPatchDistanceFunctor.getAngularThreshold()) && (patches.size() > 1) );
-
-        // copy patches to groups
-        _PatchesT tmp_groups;                                       // local var, if output not needed
-        _PatchesT *groups = groups_arg ? groups_arg : &tmp_groups;  // relay, if output needed
-        (*groups).insert( (*groups).end(), patches.begin(), patches.end() );
-
-        _tagPointsFromGroups<_Scalar>( points
-                                     , *groups, patchPatchDistanceFunctor, gid_tag_name );
-
-        return EXIT_SUCCESS;
-    } // ...CandidateGenerator::agglomerative()
-
     //! \brief Greedy region growing
     template < class       _PatchPatchDistanceFunctorT
              , class       _PatchesT
@@ -817,13 +562,13 @@ namespace GF2
         // debug show
         {
             std::vector<_PrimitiveContainerT> llines = { lines };
-            Visualizer<std::vector<_PrimitiveContainerT>,_PointContainerT>::template show<_Scalar>( llines
-                                                                                                  , points
-                                                                                                  , /*    scale: */ 0.05f
-                                                                                                  , /*   colour: */ { 0.f, 0.f, 1.f}
-                                                                                                  , /*     spin: */ true
-                                                                                                  , /*   angles: */ NULL
-                                                                                                  , /* show_ids: */ false );
+//            Visualizer<std::vector<_PrimitiveContainerT>,_PointContainerT>::template show<_Scalar>( llines
+//                                                                                                  , points
+//                                                                                                  , /*    scale: */ 0.05f
+//                                                                                                  , /*   colour: */ { 0.f, 0.f, 1.f}
+//                                                                                                  , /*     spin: */ true
+//                                                                                                  , /*   angles: */ NULL
+//                                                                                                  , /* show_ids: */ false );
         }
 
         // prebulid ann cloud

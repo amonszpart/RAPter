@@ -75,10 +75,10 @@ hsv2rgb( ::cv::Point3_<Scalar> const& in )
 // generates n different colours
 // assumes hue [0, 360), saturation [0, 100), lightness [0, 100)
 template <typename Scalar>
-inline std::vector<::cv::Point3f>
+inline std::vector< ::cv::Point3f >
 nColoursCv(int n, Scalar scale, bool random_shuffle )
 {
-    std::vector<::cv::Point3f> out;
+    std::vector< ::cv::Point3f > out;
     //srand(time(NULL));
 
     float step = 360. / n;
@@ -100,20 +100,35 @@ nColoursCv(int n, Scalar scale, bool random_shuffle )
 }
 
 template <typename Scalar>
-inline std::vector<::Eigen::Vector3f>
+inline std::vector< ::Eigen::Vector3f >
 nColoursEigen( int n, Scalar scale, bool random_shuffle )
 {
-    std::vector<::cv::Point3f>     colours = nColoursCv( n, scale, random_shuffle );
-    std::vector<::Eigen::Vector3f> colours_eigen;
-    for ( auto const& colour : colours )
+    typedef std::vector< ::cv::Point3f > CvPointsT;
+    CvPointsT colours = nColoursCv( n, scale, random_shuffle );
+    std::vector< ::Eigen::Vector3f > colours_eigen;
+    //for ( CvPointsT::value_type const& colour : colours )
+    for ( CvPointsT::const_iterator it = colours.begin(); it != colours.end(); ++it )
     {
-        colours_eigen.push_back( (Eigen::Vector3f() << colour.x, colour.y, colour.z).finished() );
+        //colours_eigen.push_back( (Eigen::Vector3f() << colour.x, colour.y, colour.z).finished() );
+        colours_eigen.push_back( (Eigen::Vector3f() << it->x, it->y, it->z).finished() );
     }
 
     return colours_eigen;
 }
 
-extern std::string timestamp2Str();
+inline std::string timestamp2Str()
+{
+    time_t rawtime;
+    struct tm * timeinfo;
+    char buffer [80];
+
+    time ( &rawtime );
+    timeinfo = localtime (&rawtime);
+
+    strftime ( buffer, 80, "_%Y%m%d_%H%M", timeinfo );
+
+    return std::string( buffer );
+} //...timestamp2Str()
 
 } //...namespace util
 } //...namespace GF2

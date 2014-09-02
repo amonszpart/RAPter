@@ -1,4 +1,6 @@
-#include "gurobi_c++.h"
+#ifdef GF2_USE_GUROBI
+#   include "gurobi_c++.h"
+#endif
 
 #include <random>
 #include <limits>
@@ -12,7 +14,7 @@
 //#include "AMUtilPCL.h"
 
 #include "globfit2/primitives/linePrimitive2.h"
-#include "globfit2/visualization/visualizer.h"
+#include "globfit2/visualization/visualization.h"
 #include "globfit2/io/io.h"
 #include "globfit2/optimization/energyFunctors.h"
 //#include "params.h"

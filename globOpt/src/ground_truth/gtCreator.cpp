@@ -13,6 +13,7 @@
 #include "globfit2/ground_truth/ground_truth.h"
 #include "globfit2/optimization/candidateGenerator.h"
 
+#if 0
 int GF2::GTCreator::run( pcl::PointCloud<PointT>::Ptr &cloud, std::string /*gt_name*/, int gt_nPoints, float gt_noise )
 {
     using namespace am;
@@ -81,6 +82,7 @@ int GF2::GTCreator::run( pcl::PointCloud<PointT>::Ptr &cloud, std::string /*gt_n
                                               , &sensor_origin );
     return EXIT_SUCCESS;
 }
+#endif
 
 int GF2::GTCreator::sampleImage( pcl::PointCloud<PointT>::Ptr &cloud
                                  , std::string                  img_path

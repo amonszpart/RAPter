@@ -2,6 +2,7 @@
 #define __GF2_LINEPRIMITIVE_H__
 
 #include <fstream>
+#include <memory> // shared_ptr
 
 #include <Eigen/Dense>
 #include "globfit2/primitives/primitive.h"
@@ -21,10 +22,21 @@ namespace GF2
     //! \warning Note, stores direction, NOT normal.
     class LinePrimitive : public ::GF2::Primitive<6>
     {
+            typedef ::GF2::Primitive<6> ParentT;
         public:
             // ____________________CONSTRUCT____________________
+#if __cplusplus > 199711L
             //! \brief Inherited constructor from Primitive.
             using ::GF2::Primitive<6>::Primitive;
+#else
+            LinePrimitive() : ParentT() {}
+
+            //! \brief Constructor that takes raw data in Eigen format as input.
+            LinePrimitive( Eigen::Matrix<Scalar,Dim,1> coeffs ) : ParentT( coeffs ) {}
+
+            //! \brief Constructor that takes raw data in std::vector format as input.
+            LinePrimitive( std::vector<Scalar> const& coeffs ) : ParentT( coeffs ) {}
+#endif
 
             //! \brief          Creates LinePrimitive from point on line and direction.
             //! \warning        NOT endpoints, use #fromEndPoints for that!
@@ -75,45 +87,56 @@ namespace GF2
             //! \brief                          Calculates the length of the line based on the points in \p cloud, masked by \p indices and the distance from point to line \p threshold.
             //!
             //!                                 The method calculates the inliers and selects the most far away point from #pos() in both directions.
-            //! \tparam     _PointT             Type of endpoints returned in \p minMax. Concept: _PointContainerT::element_type::PointType == pcl::PointXYZRGB.
-            //! \tparam     _PointContainerPtrT Type to store the points to select inliers from. Concept: pcl::PointCloud< _PointT >::Ptr.
+            //! \tparam     _PointT             Type of point stored in \p cloud. Concept: "PointPrimitve".
+            //! \tparam     _Scalar             Precision of data in \p minMax.
+            //! \tparam     _PointContainerPtrT Type to store the points to select inliers from. Concept: "std::vector<PointPrimitive>*" .
             //! \param[out] minMax              Output container holding the two endpoints.
             //! \param[in]  cloud               Point container to look for inlier points in.
             //! \param[in]  threshold           A point in \p cloud is an inlier, if it is closer than this threshold. Usually the "scale".
             //! \param[in]  indices             Optional input to specify subset of points by indices.
             //! \return                         EXIT_SUCCESS
-            //! \todo                           Detach from PCL.
-            template <typename _PointT, typename _PointContainerPtrT>
+            template <typename _PointT, typename _Scalar, typename _PointContainerPtrT>
             int
-            getExtent( std::vector<_PointT>     & minMax
-                     , _PointContainerPtrT        cloud
-                     , const double               threshold = 0.01
-                     , std::vector<int>    const* indices   = NULL ) const
+            getExtent( std::vector<Eigen::Matrix<_Scalar,3,1> >      & minMax
+                     , _PointContainerPtrT          const& cloud
+                     , double                       const  threshold   = 0.01
+                     , std::vector<int>             const* indices_arg = NULL ) const
             {
-#           if GF2_USE_PCL
-                pcl::PointIndices::Ptr                inliers( new pcl::PointIndices() );
-                typename pcl::PointCloud<_PointT>::Ptr on_line_cloud( new pcl::PointCloud<_PointT>() );
+                typedef Eigen::Matrix<_Scalar,3,1> Vec3;
+
+                // select inliers
+                std::vector<int> inliers;
+                inliers.reserve( cloud->size() );
+                const int stop_at = indices_arg ? indices_arg->size() : cloud->size();
+                for ( int i = 0; i != stop_at; ++i )
                 {
-                    pcl::SampleConsensusModelLine<_PointT> sacline( cloud );
-                    if ( indices )
-                        sacline.setIndices( *indices );
-                    sacline.selectWithinDistance(          coeffs(), threshold, inliers->indices      );
-                    sacline.projectPoints       ( inliers->indices ,  coeffs(), *on_line_cloud, false );
+                    const int pid = indices_arg ? (*indices_arg)[i] : i;
+                    if ( this->getDistance( (*cloud)[pid].template pos() ) < threshold )
+                        inliers.push_back( pid );
                 }
 
-                if ( !on_line_cloud->size() )
+                // check size
+                if ( !inliers.size() ) return EXIT_FAILURE;
+
+                // project cloud
+                std::vector<Vec3> on_line_cloud;
+                for ( int pid_id = 0; pid_id != inliers.size(); ++pid_id )
                 {
-                    return EXIT_FAILURE;
+                    const int pid = inliers[ pid_id ];
+                    std::cout << "accessing " << pid_id << " from " << on_line_cloud.size() << ", and " << pid << " from " << cloud->size() << std::endl;
+                    on_line_cloud.push_back( this->projectPoint((*cloud)[pid].template pos()) );
                 }
 
-                float min_dist = 0.f, max_dist = 0.f;
-                int   min_id   = 0  , max_id = 0;
-                Eigen::Vector3f p0       = on_line_cloud->at(0).getVector3fMap();
-                Eigen::Vector3f line_dir = this->dir(); line_dir.normalize();
-                for ( size_t point_id = 1; point_id != on_line_cloud->size(); ++point_id )
+
+                _Scalar min_dist = 0.f, max_dist = 0.f;
+                int     min_id   = 0  , max_id   = 0;
+                Vec3 p0       = on_line_cloud[0];
+                Vec3 line_dir = this->dir();
+
+                for ( size_t point_id = 1; point_id != on_line_cloud.size(); ++point_id )
                 {
-                    Eigen::Vector3f p1 = on_line_cloud->at(point_id).getVector3fMap();
-                    Eigen::Vector3f p0p1 = p1-p0;
+                    Vec3 p1 = on_line_cloud[ point_id ];
+                    Vec3 p0p1 = p1-p0;
                     float dist = p0p1.dot( p0 + line_dir );
                     if ( dist < min_dist )
                     {
@@ -129,15 +152,25 @@ namespace GF2
 
                 // output
                 minMax.resize( 2 );
-                minMax[0] = on_line_cloud->at(min_id);
-                minMax[1] = on_line_cloud->at(max_id);
+                minMax[0] = on_line_cloud[ min_id ];
+                minMax[1] = on_line_cloud[ max_id ];
 
                 return EXIT_SUCCESS;
-#           else
-                std::cerr << "[" << __func__ << "]: " << "Needs PCL to work!!!!"
-                return exit_FAILURE;
-#           endif //...GF2_USE_PCL
             } //...draw()
+
+            template <typename _Scalar>
+            inline Eigen::Matrix<_Scalar,3,1>
+            projectPoint( Eigen::Matrix<_Scalar,3,1> const& point ) const
+            {
+                Eigen::Matrix<_Scalar,4,1> line_pt ; line_pt  << this->pos(), 0;
+                Eigen::Matrix<_Scalar,4,1> line_dir; line_dir << this->dir(), 0;
+                Eigen::Matrix<_Scalar,4,1> pt      ; pt       << point, 0;
+
+                _Scalar k = (pt.dot (line_dir) - line_pt.dot (line_dir)) / line_dir.dot (line_dir);
+
+                Eigen::Matrix<_Scalar,4,1> pp = line_pt + k * line_dir;
+                return pp.template head<3>();
+            } // projectPoint
 
             // ____________________DRAWING____________________
 #if GF2_USE_PCL
@@ -167,31 +200,32 @@ namespace GF2
             //! \tparam PointsPtrT  Holds the points. Is usually a pcl::PointCloud::Ptr of some sort. Assumed to be a pointer.
             //! \tparam PointT      Type of point that is stored in the PointCloud.
             //! \param  stretch     Multiplies the final length with this number, so that the line is a bit longer than the distance between its extrema.
-            template <class PointsPtrT, class PointT = typename PointsPtrT::element_type::PointType, class Scalar = float>
+            template <class _PointT, class _Scalar, class _PointContainerPtrT>
             static inline int
             draw( LinePrimitive                    const& line
-                , PointsPtrT                              cloud
-                , Scalar                                  radius
+                , _PointContainerPtrT              const& cloud
+                , _Scalar                                 radius
                 , std::vector<int>                 const* indices
                 , pcl::visualization::PCLVisualizer::Ptr  v
+//                , std::shared_ptr<pcl::visualization::PCLVisualizer>  v
                 , std::string                             plane_name
                 , double                                  r, double g, double b
                 , int                                     viewport_id = 0
-                , Scalar                                  stretch     = 1.f
+                , _Scalar                                 stretch     = 1.f
                 )
             {
                 int err     = EXIT_SUCCESS;
 
-                std::vector<PointT> minMax;
-                int     it          = 0;
-                int     max_it      = 10;
-                Scalar  tmp_radius  = radius;
+                std::vector< Eigen::Matrix<_Scalar,3,1> > minMax;
+                int      it          = 0;
+                int      max_it      = 10;
+                _Scalar  tmp_radius  = radius;
                 do
                 {
-                    err = line.getExtent( minMax
-                                        , cloud
-                                        , tmp_radius
-                                        , indices   );
+                    err = line.getExtent<_PointT>( minMax
+                                                 , cloud
+                                                 , tmp_radius
+                                                 , indices   );
                     tmp_radius *= 2.f;
                 } while ( (minMax.size() < 2) && (++it < max_it) );
 
@@ -203,12 +237,12 @@ namespace GF2
 
                 std::vector<pcl::PointXYZ> ps;
 
-                Eigen::Map<Eigen::Vector3f> p0 = minMax[0].getVector3fMap();
-                Eigen::Map<Eigen::Vector3f> p1 = minMax[1].getVector3fMap();
-                Eigen::Matrix<Scalar,3,1> diff = p1 - p0;
-                Scalar half_stretch = Scalar(1) + (stretch-Scalar(1)) / Scalar(2.);
-                Eigen::Matrix<Scalar,3,1> p1_final  = p0 + diff * half_stretch;
-                Eigen::Matrix<Scalar,3,1> p0_final  = p1 - diff * half_stretch;
+                Eigen::Matrix<_Scalar,3,1> const& p0 = minMax[0];
+                Eigen::Matrix<_Scalar,3,1> const& p1 = minMax[1];
+                Eigen::Matrix<_Scalar,3,1> diff = p1 - p0;
+                _Scalar half_stretch = _Scalar(1) + (stretch-_Scalar(1)) / _Scalar(2.);
+                Eigen::Matrix<_Scalar,3,1> p1_final  = p0 + diff * half_stretch;
+                Eigen::Matrix<_Scalar,3,1> p0_final  = p1 - diff * half_stretch;
 
                 pcl::PointXYZ pnt;
                 pnt.x = p0_final(0); pnt.y = p0_final(1); pnt.z = p0_final(2);

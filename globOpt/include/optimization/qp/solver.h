@@ -6,12 +6,10 @@
 //////////////
 
 #include "optimization/qp/gurobiOpt.h"
-#include "globfit2/visualization/visualizer.h"
 #include "globfit2/primitives/pointPrimitive.h"
-#include "qcqpcpp/io/io.h"
+#include "qcqpcpp/io/io.h"                      // read/writeSparseMatrix
 
-namespace GF2
-{
+namespace GF2 {
 
 struct SolverParams
 {
@@ -29,36 +27,45 @@ class Solver
         typedef std::vector<PointT>                         PointContainerT;
         typedef Eigen::SparseMatrix<Scalar,Eigen::RowMajor> SparseMatrix;
 
-        //static inline int readPoints ( PointContainerT & points, std::string path, pcl::PointCloud<pcl::PointXYZRGB>::Ptr *cloud_arg = NULL );
-        static inline int show       ( int argc, char** argv );
+        //static inline int show       ( int argc, char** argv );
         static inline int sampleInput( int argc, char** argv );
         static inline int generate   ( int argc, char** argv );
         static inline int formulate  ( int argc, char** argv );
         static inline int solve      ( int argc, char** argv );
         static inline int datafit    ( int argc, char** argv );
 
-        static inline int run        ( std::string img_path, Scalar const scale, std::vector<Scalar> const& angles, int argc, char** argv );
-        static inline int runMosek   ( int argc, char** argv );
+        //static inline int run        ( std::string img_path, Scalar const scale, std::vector<Scalar> const& angles, int argc, char** argv ) __attribute__ ((deprecated));
 
         static inline Eigen::Matrix<Scalar,3,1> checkSolution( std::vector<Scalar>       const& x
-                                               , SparseMatrix              const& qo
-                                               , SparseMatrix              const& Qo
-                                               , SparseMatrix              const& A
-                                               , Eigen::Matrix<Scalar,3,1> const& weights );
+                                                             , SparseMatrix              const& qo
+                                                             , SparseMatrix              const& Qo
+                                                             , SparseMatrix              const& A
+                                                             , Eigen::Matrix<Scalar,3,1> const& weights );
 }; // ... cls Solver
 } // ... ns gf2
+
+
+//__________________________________HPP__________________________________________________
 
 #include "Eigen/Sparse"
 
 #ifdef GF2_USE_PCL
-#   include <pcl/visualization/pcl_visualizer.h>
+//#   include <pcl/visualization/pcl_visualizer.h>
 #   include <pcl/console/parse.h>
 #endif // GF2_USE_PCL
 
-#include "qcqpcpp/mosekOptProblem.h"
-#include "qcqpcpp/bonminOptProblem.h"
+#ifdef GF2_WITH_MOSEK
+#   include "qcqpcpp/mosekOptProblem.h"
+#endif // GF2_WITH_MOSEK
+#ifdef GF2_WITH_BONMIN
+#   include "qcqpcpp/bonminOptProblem.h"
+#endif
+#ifdef GF2_WITH_GUROBI
+//#   include "qcqpcpp/gurobiOptProblem.h"
+#endif
 
 #include "globfit2/util/diskUtil.hpp"
+#include "globfit2/util/util.hpp"                     // timestamp2Str
 
 #include "globfit2/primitives/pointPrimitive.h"
 #include "globfit2/primitives/linePrimitive2.h"
@@ -72,6 +79,11 @@ class Solver
 namespace GF2
 {
 
+#if 0
+//! \brief      Reads a candidates file, a cloud and displays them
+//! \param argc Number of CLI arguments.
+//! \param argv Vector of CLI arguments.
+//! \return     EXIT_SUCCESS.
 int
 Solver::show( int argc, char** argv )
 {
@@ -104,7 +116,7 @@ Solver::show( int argc, char** argv )
     }
 
     PrimitiveContainerT lines;
-    err = io::readPrimitives( lines, dir + "/" + primitives_file );
+    err = io::readPrimitives<PrimitiveT>( lines, dir + "/" + primitives_file );
     if ( EXIT_SUCCESS != err )
     {
         std::cerr << "[" << __func__ << "]: " << "failed to read " << dir + "/" + primitives_file << "...exiting" << std::endl;
@@ -134,18 +146,6 @@ Solver::show( int argc, char** argv )
         std::map<int,int>                linear_indices; // <pid,lid>
         io::readAssociations( points_primitives, dir + "/" + assoc_file, &linear_indices );
 
-#if 0 // old, 1D indexing
-        for ( std::map<int,int>::const_iterator it = linear_indices.begin(); it != linear_indices.end(); ++it )
-        {
-            if ( it->first < static_cast<int>(points.size()) )
-            {
-                std::cout << "points[" << it->first << "].setTag(gid, " << it->second << std::endl;
-                points[ it->first ].setTag( PointT::GID, it->second );
-            }
-            else
-                std::cerr << "[" << __func__ << "]: " << "overindexed pid: " << it->first << " >= " << points.size() << " points.size(), skipping..." << std::endl;
-        }
-#else
         for ( size_t pid = 0; pid != points_primitives.size(); ++pid )
         {
             if ( points_primitives[pid].first < static_cast<int>(points.size()) )
@@ -155,7 +155,6 @@ Solver::show( int argc, char** argv )
             else
                 std::cerr << "[" << __func__ << "]: " << "overindexed pid: " << pid << " >= " << points.size() << " points.size(), skipping..." << std::endl;
         }
-#endif
     }
 
     // angles
@@ -171,13 +170,16 @@ Solver::show( int argc, char** argv )
     pcl::console::parse_argument( argc, argv, "--scale", scale );
     bool dont_show_rels = pcl::console::find_switch( argc, argv, "--no-rel" );
 
-    auto vptr = Visualizer<PrimitiveContainerT,PointContainerT>::show<Scalar>( lines, points, scale
+#warning "Remove this"
+#if 0
+    GF2::MyVisPtr vptr = Visualizer<PrimitiveContainerT,PointContainerT>::show<Scalar>( lines, points, scale
                                                                                , {1,0,0}
                                                                                , /*        spin: */ false
                                                                                , /* connections: */ dont_show_rels ? NULL : &angles
                                                                                , /*    show_ids: */ false
                                                                                , /*    use_tags: */ use_tags
                                                                                );
+
 
     std::string gf_out_path; // input_20140620_1130$ ../Release/bin/gurobi_opt --show --dir . --prims  primitives_1800.txt --cloud cloud_20140620_1130.ply --gf .
     if ( pcl::console::parse_argument( argc, argv, "--gf", gf_out_path) >= 0 )
@@ -193,14 +195,16 @@ Solver::show( int argc, char** argv )
     }
 
     vptr->spin();
+#endif
 
     return EXIT_SUCCESS;
 } // ... Solver::show()
+#endif // Solver::show
 
-//! \brief Solver::sampleInput Takes an image, and samples it to a pointcloud. Saves points to img_path.parent_path/cloud.ply.
-//! \param argc
-//! \param argv
-//! \return EXIT_SUCCESS
+//! \brief      Step 0. Takes an image, and samples it to a pointcloud. Saves points to img_path.parent_path/cloud.ply.
+//! \param argc Number of CLI arguments.
+//! \param argv Vector of CLI arguments.
+//! \return     EXIT_SUCCESS.
 int
 Solver::sampleInput( int argc, char** argv )
 {
@@ -256,10 +260,10 @@ Solver::sampleInput( int argc, char** argv )
     return EXIT_SUCCESS;
 } // ...Solver::sampleInput()
 
-//! \brief Solver::generate Generates primitives from a cloud. Reads "cloud.ply" and saves "candidates.txt".
+//! \brief                  Step 1. Generates primitives from a cloud. Reads "cloud.ply" and saves "candidates.txt".
 //! \param argc             Contains --cloud cloud.ply, and --scale scale.
 //! \param argv             Contains --cloud cloud.ply, and --scale scale.
-//! \return                 EXIT_SUCCESS
+//! \return                 EXIT_SUCCESS.
 int
 Solver::generate(   int    argc
                   , char** argv )
@@ -353,8 +357,9 @@ Solver::generate(   int    argc
     // Read points
     PointContainerT     points;
     {
-        io::readPoints( points, cloud_path );
+        io::readPoints<PointPrimitiveT>( points, cloud_path );
     }
+
 
     // WORK
     PrimitiveContainerT primitives;
@@ -423,10 +428,16 @@ Solver::generate(   int    argc
 
     // backup
     util::saveBackup( candidates_path );
+    return io::savePrimitives<PrimitiveT>( /* what: */ primitives, /* where_to: */ candidates_path );
 
-    return io::savePrimitives( /* what: */ primitives, /* where_to: */ candidates_path );
+    return 0;
 } // ...Solver::generate()
 
+//! \brief      Step 2. Reads the output from generate and sets up the optimization problem in form of sparse matrices.
+//! \param argc Number of CLI arguments.
+//! \param argv Vector of CLI arguments.
+//! \return     Outputs EXIT_SUCCESS or the error the OptProblem implementation returns.
+//! \sa ProblemSetup::largePatchesNeedDirectionConstraint
 int
 Solver::formulate(  int    argc
                   , char** argv )
@@ -482,6 +493,7 @@ Solver::formulate(  int    argc
             else if ( !constr_mode_str.compare( "hybrid" ) ) constr_mode = HYBRID; // hybrid
             else std::cerr << "[" << __func__ << "]: " << "could NOT parse constraint mode, assuming " << (int)constr_mode << std::endl;
         }
+
         // pop_limit
         {
             pcl::console::parse_argument( argc, argv, "--patch-pop-limit", patch_pop_limit );
@@ -512,7 +524,7 @@ Solver::formulate(  int    argc
     PointContainerT     points;
     {
         if ( verbose ) std::cout << "[" << __func__ << "]: " << "reading cloud from " << cloud_path << "...";
-        io::readPoints( points, cloud_path );
+        io::readPoints<_PointPrimitiveT>( points, cloud_path );
         if ( verbose ) std::cout << "reading cloud ok\n";
     } //...read points
 
@@ -520,7 +532,7 @@ Solver::formulate(  int    argc
     PrimitiveContainerT prims;
     {
         if ( verbose ) std::cout << "[" << __func__ << "]: " << "reading primitives from " << candidates_path << "...";
-        io::readPrimitives( prims, candidates_path );
+        io::readPrimitives<_PrimitiveT>( prims, candidates_path );
         if ( verbose ) std::cout << "reading primitives ok\n";
     } //...read primitives
 
@@ -537,8 +549,8 @@ Solver::formulate(  int    argc
 
         points[i].setTag( _PointPrimitiveT::GID, points_primitives[i].first );
 
-        if ( (points[i].getTag( _PointPrimitiveT::GID ) >= static_cast<int>(prims.size())) || (points[i].getTag( _PointPrimitiveT::GID ) < 0) )
-            std::cerr << "points[" << i << "].getTag(GID) >= prims.size() || < 0: " << points[i].getTag( _PointPrimitiveT::GID ) << " >= " << prims.size() << std::endl;
+        if ( points[i].getTag(_PointPrimitiveT::GID) == -1 )
+            std::cerr << "[" << __func__ << "]: " << "point assigned to patch with id -1" << std::endl;
     } //...read associations
 
     // work - formulate problem
@@ -689,7 +701,7 @@ Solver::formulate(  int    argc
     return err;
 } // ...Solver::formulate()
 
-//! \brief      Reads a formulated problem from path and runs qcqpcpp::OptProblem::optimize() on it.
+//! \brief      Step 3. Reads a formulated problem from path and runs qcqpcpp::OptProblem::optimize() on it.
 //! \param argc Number of command line arguments.
 //! \param argv Vector of command line arguments.
 //! \return     Exit code. 0 == EXIT_SUCCESS.
@@ -727,6 +739,18 @@ Solver::solve( int    argc
                 std::cerr << "[" << __func__ << "]: " << "Cannot parse solver " << solver_str << std::endl;
                 valid_input = false;
             }
+#           ifndef GF2_WITH_BONMIN
+                 if ( solver == BONMIN )
+                     throw new std::runtime_error("You have to specify a different solver, the project was not compiled with Bonmin enabled!");
+#           endif // WITH_BONMIN
+#           ifndef GF2_WITH_MOSEK
+                 if ( solver == MOSEK )
+                     throw new std::runtime_error("You have to specify a different solver, the project was not compiled with Mosek enabled!");
+#           endif // WITH_MOSEK
+#           ifndef GF2_WITH_GUROBI
+                 if ( solver == GUROBI )
+                     throw new std::runtime_error("You have to specify a different solver, the project was not compiled with GUROBI enabled!");
+#           endif // WITH_GUROBI
         }
         // problem parsing
         pcl::console::parse_argument( argc, argv, "--problem", project_path );
@@ -769,7 +793,9 @@ Solver::solve( int    argc
     {
         switch ( solver )
         {
-            case MOSEK:     p_problem = new qcqpcpp::MosekOpt<OptScalar>( /* env: */ NULL ); break;
+            case MOSEK:
+                p_problem = new qcqpcpp::MosekOpt<OptScalar>( /* env: */ NULL );
+                break;
             case BONMIN:
                 p_problem = new qcqpcpp::BonminOpt<OptScalar>();
                 break;
@@ -795,7 +821,9 @@ Solver::solve( int    argc
             p_problem->setTimeLimit( max_time );
         if ( solver == BONMIN )
         {
+#           ifdef WITH_BONMIN
             static_cast<qcqpcpp::BonminOpt<OptScalar>*>(p_problem)->setAlgorithm( Bonmin::Algorithm(bmode) );
+#           endif // WITH_BONMIN
         }
     }
 
@@ -879,7 +907,7 @@ Solver::solve( int    argc
                 PrimitiveContainerT prims;
                 {
                     if ( verbose ) std::cout << "[" << __func__ << "]: " << "reading primitives from " << candidates_path << "...";
-                    io::readPrimitives( prims, candidates_path );
+                    io::readPrimitives<PrimitiveT>( prims, candidates_path );
                     if ( verbose ) std::cout << "reading primitives ok\n";
                 } //...read primitives
 
@@ -902,7 +930,7 @@ Solver::solve( int    argc
 
                 std::string out_prim_path = parent_path + rel_out_path + "/primitives." + solver_str + ".txt";
                 util::saveBackup    ( out_prim_path );
-                io::savePrimitives  ( out_prims, out_prim_path, /* verbose: */ true );
+                io::savePrimitives<PrimitiveT>  ( out_prims, out_prim_path, /* verbose: */ true );
             } // if --candidates
             else
             {
@@ -917,6 +945,7 @@ Solver::solve( int    argc
     return err;
 }
 
+//! \brief Unfinished function. Supposed to do GlobFit.
 int
 Solver::datafit( int    argc
                , char** argv )
@@ -954,7 +983,7 @@ Solver::datafit( int    argc
     PointContainerT     points;
     {
         if ( verbose ) std::cout << "[" << __func__ << "]: " << "reading cloud from " << cloud_path << "...";
-        io::readPoints( points, cloud_path );
+        io::readPoints<PointT>( points, cloud_path );
         if ( verbose ) std::cout << "reading cloud ok\n";
     } //...read points
 
@@ -962,7 +991,7 @@ Solver::datafit( int    argc
     PrimitiveContainerT prims;
     {
         if ( verbose ) std::cout << "[" << __func__ << "]: " << "reading primitives from " << primitives_path << "...";
-        io::readPrimitives( prims, primitives_path );
+        io::readPrimitives<PrimitiveT>( prims, primitives_path );
         if ( verbose ) std::cout << "reading primitives ok\n";
     } //...read primitives
 
@@ -1241,6 +1270,8 @@ Solver::datafit( int    argc
     return 0;
 } // ...Solver::datafit()
 
+#if 0
+//! \brief \deprecated Old optimization setup for Gurobi solution.
 int
 Solver::run( std::string                   img_path
              , Scalar               const  scale
@@ -1284,10 +1315,10 @@ Solver::run( std::string                   img_path
     {
         std::cout << "[" << __func__ << "]: " << "Gurobi not resampling image" << std::endl;
         // read points
-        io::readPoints( points, cloud_path, &cloud );
+        io::readPoints<PointT>( points, cloud_path, &cloud );
 
         // primitives
-        io::readPrimitives( lines, candidates_path );
+        io::readPrimitives<PrimitiveT>( lines, candidates_path );
     }
     else if ( !img_path.empty() )
     {
@@ -1348,7 +1379,7 @@ Solver::run( std::string                   img_path
 
     // dump input
     std::string lines_path = store_dir + "/" + "candidates.txt";
-    io::savePrimitives( lines, lines_path );
+    io::savePrimitives<PrimitiveT>( lines, lines_path );
     // cloud
     {
         std::string cloud_name = store_dir + "/" + "cloud.ply";
@@ -1366,21 +1397,22 @@ Solver::run( std::string                   img_path
                                                 , /* verbose: */ false
                                                 , /*  params: */ &gurobiOptParams );
 
-    auto vptr = Visualizer<PrimitiveContainerT,PointContainerT>::show<Scalar>( lines, points, scale, {0,0,1}, false );
+    GF2::vis::MyVisPtr vptr = Visualizer<PrimitiveContainerT,PointContainerT>::show<Scalar>( lines, points, scale, {0,0,1}, false );
     Visualizer<PrimitiveContainerT,PointContainerT>::show<Scalar>( out_lines, points, scale, {1,0,0} );
 
     return EXIT_SUCCESS;
-
-
 } // ... Solver::run()
+#endif
 
-
+//! \brief              Prints energy of solution in \p x using \p weights.
+//! \param[in] x        A solution to calculate the energy of.
+//! \param[in] weights  Problem weights used earlier. \todo Dump to disk together with solution.
 Eigen::Matrix<Solver::Scalar,3,1>
 Solver::checkSolution( std::vector<Scalar> const& x
-                       , Solver::SparseMatrix const& linObj
-                       , Solver::SparseMatrix const& Qo
-                       , Solver::SparseMatrix const& /* A */
-                       , Eigen::Matrix<Scalar,3,1> const& weights )
+                     , Solver::SparseMatrix const& linObj
+                     , Solver::SparseMatrix const& Qo
+                     , Solver::SparseMatrix const& /* A */
+                     , Eigen::Matrix<Scalar,3,1> const& weights )
 {
     Eigen::Matrix<Scalar,3,1> energy; energy.setZero();
 

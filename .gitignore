@@ -19,3 +19,11 @@
 *.exe
 *.out
 *.app
+
+*.json
+*.user
+
+build
+.excludes
+
+globOpt/data
