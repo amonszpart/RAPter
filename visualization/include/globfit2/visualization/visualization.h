@@ -22,11 +22,11 @@ namespace vis {
         typedef typename PointPrimitiveT::Scalar                Scalar;
 
         //! \brief Preimplemented, C++03 version for lines that reads info from disk.
-        extern int
+        int
         showLinesCli( int argc, char** argv );
 
         //! \brief Preimplemented, C++03 version for lines.
-        extern vis::MyVisPtr
+        vis::MyVisPtr
         showLines( vis::lines::PrimitiveContainerT  const& lines
                  , vis::lines::PointContainerT      const& points
                  , vis::lines::Scalar               const  scale    = lines::Scalar(0.05)
