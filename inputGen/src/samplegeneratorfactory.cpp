@@ -12,7 +12,7 @@ SampleGeneratorFactory::SampleGeneratorFactory(QWidget *parent) :
     QDockWidget(parent),
     ui(new Ui::SampleGeneratorFactory),
     _pSet(NULL),
-    _pointSet(new InputGen::Application::PointSet)
+    _pointSet(NULL)
 {
     ui->setupUi(this);
 }
@@ -27,9 +27,9 @@ SampleGeneratorFactory::updateGenerator()
 {
     typedef InputGen::Application::Primitive::vec vec;
 
-    _pointSet->clear();
+    if (_pSet != NULL && _pointSet != NULL){
 
-    if (_pSet != NULL){
+        _pointSet->clear();
 
         switch (ui->toolBox->currentIndex () ){
         case GEN_FROM_PRIMITIVE:

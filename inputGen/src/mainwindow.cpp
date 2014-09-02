@@ -6,6 +6,7 @@
 #include <QFileDialog>
 #include <QSettings>
 #include <QXmlStreamReader>
+#include <QTextStream>
 
 #include "primitive.h"
 #include "types.h"
@@ -22,6 +23,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(_generatorDoc, SIGNAL(samplesChanged(InputGen::Application::PointSet*)),
             _graphicsView, SIGNAL(samplesChanged(InputGen::Application::PointSet*)));
+
+    _generatorDoc->setPoints(&_pointSet);
 }
 
 
@@ -210,4 +213,36 @@ void MainWindow::on_actionLoad_SVG_triggered()
 
     _graphicsView->setPrimitives(&_pSet);
     _generatorDoc->setPrimitives(&_pSet);
+}
+
+void MainWindow::on_actionSave_points_triggered()
+{
+    QSettings settings;
+    QString defaultPath = settings.value("Path/xyzSave").toString();
+
+    QString path =
+    QFileDialog::getSaveFileName(this,
+                                 tr("Save cloud as PTX file"),
+                                 defaultPath,
+                                 "Pointcloud (*.xyz)");
+
+
+    if (! path.isNull()){
+        QFile input(path);
+        if (input.open(QIODevice::WriteOnly |
+                       QIODevice::Truncate  |
+                       QIODevice::Text)) {
+            settings.setValue("Path/xyzSave", path);
+            QTextStream out(&input);
+
+            for(InputGen::Application::PointSet::const_iterator it = _pointSet.begin();
+                it != _pointSet.end(); it++){
+                out << (*it)(0) << " "
+                    << (*it)(1) << " "
+                    << (*it)(2) << endl;
+            }
+
+            input.close();
+        }
+    }
 }

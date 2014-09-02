@@ -23,6 +23,11 @@ public:
         updateGenerator();
     }
 
+    inline void setPoints( InputGen::Application::PointSet*s)
+    {
+        _pointSet = s;
+    }
+
 public slots:
     void updateGenerator();
 
@@ -38,7 +43,6 @@ private:
     };
 
     std::vector< InputGen::Application::Primitive > *_pSet;
-    //! owner
     InputGen::Application::PointSet * _pointSet;
 };
 

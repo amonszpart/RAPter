@@ -16,6 +16,8 @@ public:
 private slots:
     void on_actionLoad_SVG_triggered();
 
+    void on_actionSave_points_triggered();
+
 protected:
     virtual void closeEvent(QCloseEvent*);
 
@@ -23,6 +25,7 @@ private:
     void readSettings();
     //! \brief Primitive set
     std::vector< InputGen::Application::Primitive > _pSet;
+    InputGen::Application::PointSet _pointSet;
 };
 
 #endif // MAINWINDOW_H
