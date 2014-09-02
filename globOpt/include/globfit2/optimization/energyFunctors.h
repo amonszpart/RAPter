@@ -95,7 +95,9 @@ namespace GF2
     template <typename Scalar, class PrimitiveT>
     struct SqrtPrimitivePrimitiveEnergyFunctor : public AbstractPrimitivePrimitiveEnergyFunctor<Scalar,PrimitiveT>
     {
+#if __cplusplus > 199711L
         using AbstractPrimitivePrimitiveEnergyFunctor<Scalar,PrimitiveT>::AbstractPrimitivePrimitiveEnergyFunctor;
+#endif
         virtual ~SqrtPrimitivePrimitiveEnergyFunctor() {};
 
         virtual inline Scalar
@@ -111,7 +113,9 @@ namespace GF2
     template <typename Scalar, class PrimitiveT>
     struct CExpPrimitivePrimitiveEnergyFunctor : public AbstractPrimitivePrimitiveEnergyFunctor<Scalar,PrimitiveT>
     {
+#if __cplusplus > 199711L
         using AbstractPrimitivePrimitiveEnergyFunctor<Scalar,PrimitiveT>::AbstractPrimitivePrimitiveEnergyFunctor;
+#endif
         virtual ~CExpPrimitivePrimitiveEnergyFunctor() {};
 
         virtual inline Scalar

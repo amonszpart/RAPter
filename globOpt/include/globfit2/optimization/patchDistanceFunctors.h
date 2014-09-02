@@ -6,7 +6,7 @@
 namespace GF2
 {
 
-//! \brief SpatialPatchPatchMaxDistanceFunctorT     Spatial patch-patch distance is the maximum distance between any two members (farthest two points).
+//! \brief Spatial patch-patch distance is the maximum distance between any two members (farthest two points).
 template <typename _Scalar>
 struct SpatialPatchPatchMaxDistanceFunctorT
 {
@@ -40,7 +40,7 @@ struct SpatialPatchPatchMaxDistanceFunctorT
         static std::string toString() { return "SpatialPatchPatchMaxDistanceFunctorT"; }
 }; //...struct SpatialPatchPatchMaxDistanceFunctorT
 
-//! \brief SpatialPatchPatchMinDistanceFunctorT     Spatial patch-patch distance is the minimum distance between any two members (closest two points).
+//! \brief Spatial patch-patch distance is the minimum distance between any two members (closest two points).
 template <typename _Scalar>
 struct SpatialPatchPatchMinDistanceFunctorT
 {
@@ -70,7 +70,7 @@ struct SpatialPatchPatchMinDistanceFunctorT
 
 //_________________________________________________________________________________________________________________________________________________________________________________
 
-//! \brief AbstractPatchPatchDistanceFunctorT       Calculates and merges distance in spatial and angular domain between two patches.
+//! \brief Calculates and merges distance in spatial and angular domain between two patches.
 template <typename _Scalar, class _SpatialPatchPatchDistanceFunctorT>
 struct AbstractPatchPatchDistanceFunctorT
 {
@@ -105,7 +105,7 @@ struct AbstractPatchPatchDistanceFunctorT
     _Scalar _spatial_threshold, _angle_threshold, _scale;
 }; //...struct AbstractPointPatchDistanceFunctorT
 
-//! \brief FullLinkagePatchPatchDistanceFunctorT    Distance between patches is the maximum angular distance, given the spatial distance is within threshold.
+//! \brief Distance between patches is the maximum angular distance, given the spatial distance is within threshold.
 template <typename _Scalar
          , class   _SpatialPatchPatchDistanceFunctorT = SpatialPatchPatchMaxDistanceFunctorT<_Scalar> > // Max: proper full linkage, Min: hybrid linkage (max angle, min space)
 struct FullLinkagePatchPatchDistanceFunctorT : public AbstractPatchPatchDistanceFunctorT<_Scalar, _SpatialPatchPatchDistanceFunctorT>
@@ -155,7 +155,7 @@ struct FullLinkagePatchPatchDistanceFunctorT : public AbstractPatchPatchDistance
         virtual std::string toString() const override { return "FullLinkagePointPatchDistanceFunctorT with " + _SpatialPatchPatchDistanceFunctorT::toString(); }
 }; // ...struct FullLinkagePointPatchDistanceFunctorT
 
-//! \brief SquaredPatchPatchDistanceFunctorT        Distance between patches is the minimum, weighted 6D squared distance.
+//! \brief Distance between patches is the minimum, weighted 6D squared distance.
 template <typename _Scalar
          , class   _SpatialPatchPatchDistanceFunctorT = SpatialPatchPatchMinDistanceFunctorT<_Scalar> >
 struct SquaredPatchPatchDistanceFunctorT : public AbstractPatchPatchDistanceFunctorT<_Scalar, _SpatialPatchPatchDistanceFunctorT>
@@ -214,7 +214,7 @@ struct SquaredPatchPatchDistanceFunctorT : public AbstractPatchPatchDistanceFunc
 
 }; // ...struct SquaredPointPatchDistanceFunctorT
 
-//! \brief RepresentativePatchPatchDistanceFunctorT Distance between patches is the angle of the representatives, given the minimum spatial distance is within threshold
+//! \brief Distance between patches is the angle of the representatives, given the minimum spatial distance is within threshold
 template <typename _Scalar
          , class   _SpatialPatchPatchDistanceFunctorT = SpatialPatchPatchMaxDistanceFunctorT<_Scalar> >
 struct RepresentativePatchPatchDistanceFunctorT : public AbstractPatchPatchDistanceFunctorT<_Scalar, _SpatialPatchPatchDistanceFunctorT>

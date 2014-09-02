@@ -11,6 +11,7 @@ namespace GF2
     //! \tparam _Scalar Internal data type. Concept: float.
     class PointPrimitive : public ::GF2::Primitive<6>, public ::GF2::Taggable
     {
+            typedef ::GF2::Primitive<6> ParentT;
         public:
             //! \brief custom tags for taggable
             enum TAGS {
@@ -21,8 +22,18 @@ namespace GF2
             }; //...enum TAGS
 
             // ____________________CONSTRUCTORS____________________
+#if __cplusplus > 199711L
             //! \brief Inherited constructors from parent class.
             using ::GF2::Primitive<Dim>::Primitive;
+#else
+            PointPrimitive() : ParentT() {}
+
+            //! \brief Constructor that takes raw data in Eigen format as input.
+            PointPrimitive( Eigen::Matrix<Scalar,Dim,1> coeffs ) : ParentT( coeffs ) {}
+
+            //! \brief Constructor that takes raw data in std::vector format as input.
+            PointPrimitive( std::vector<Scalar> const& coeffs ) : ParentT( coeffs ) {}
+#endif
             //! \brief ::GF2::Primitive<Dim>::operator() are inherited convenience getters from parent class. \todo Use explicit operator VectorType() instead.
             using ::GF2::Primitive<Dim>::operator();
 
@@ -59,10 +70,10 @@ namespace GF2
             // ____________________GETTERS____________________
             //! \brief  Additional convenience getter to convert oriented point to 3D point.
             //! \return The position of the point as a 3D Eigen::Vector.
-            explicit operator Eigen::Matrix<Scalar,3,1>() const { return this->pos(); }
+            /*explicit*/ operator Eigen::Matrix<Scalar,3,1>() const { return this->pos(); }
             //! \brief  Additional convenience const getter to convert oriented point to 3D point.
             //! \return The position of the point as a 3D Eigen::Vector.
-            explicit operator Eigen::Matrix<Scalar,3,1>()       { return this->pos(); }
+            /*explicit*/ operator Eigen::Matrix<Scalar,3,1>()       { return this->pos(); }
 
             // ____________________STATICS____________________
             //! \brief                      Convenience conversion of an STL container of this class' objects to another container using the provided allocator functor and the push_back() function of \p cloud.

@@ -1,12 +1,14 @@
-#include <pcl/console/parse.h>
-#include "optimization/qp/solver.h"
-#include "globfit2/optimization/merging.hpp"
+#include <iostream>
 
+#include <pcl/console/parse.h>
+
+#include "optimization/qp/solver.h"
+
+#include "globfit2/optimization/merging.hpp"
 #include "globfit2/io/io.h"
 
 int main( int argc, char *argv[] )
 {
-
     if ( (argc == 2) &&
          (   (pcl::console::find_switch(argc,argv,"--help"))
           || (pcl::console::find_switch(argc,argv,"-h"    ))
@@ -51,17 +53,20 @@ int main( int argc, char *argv[] )
     }
     else if ( pcl::console::find_switch(argc,argv,"--show") )
     {
-        return GF2::Solver::show( argc, argv );
+        std::cerr << "[" << __func__ << "]: " << "the show option has been moved to a separate executable, please use thatt one" << std::endl;
+        return 1;
+        //return GF2::Solver::show( argc, argv );
     }
 
-    std::string img_path( "input2.png" );
-    pcl::console::parse_argument( argc, argv, "--img", img_path );
-    float scale = 0.1f;
-    pcl::console::parse_argument( argc, argv, "--scale", scale );
+    return 1;
 
-    return GF2::Solver::run( img_path, scale, {0, M_PI_2, M_PI}, argc, argv );
+    // --show --dir . --cloud cloud.ply --scale 0.05f --assoc points_primitives.txt --use-tags --no-clusters --prims primitives.bonmin.txt
 
-    using qcqpcpp::MosekOpt;
-    MosekOpt<double> mosek; // precompile dummy;
+//    std::string img_path( "input2.png" );
+//    pcl::console::parse_argument( argc, argv, "--img", img_path );
+//    float scale = 0.1f;
+//    pcl::console::parse_argument( argc, argv, "--scale", scale );
+
+//    return GF2::Solver::run( img_path, scale, {0, M_PI_2, M_PI}, argc, argv );
 }
 

@@ -13,7 +13,7 @@ namespace GF2
         public:
             typedef pcl::PointXYZRGB PointT;
 
-            static int run( pcl::PointCloud<PointT>::Ptr &cloud, std::string gt_name, int gt_nPoints, float gt_noise );
+            //static int run( pcl::PointCloud<PointT>::Ptr &cloud, std::string gt_name, int gt_nPoints, float gt_noise );
             static int sampleImage( pcl::PointCloud<PointT>::Ptr &cloud
                                     , std::string image_path
                                     , int gt_nPoints

@@ -2,7 +2,8 @@
 #define GF2_MERGING_HPP
 
 #include <iostream>
-#include "globfit2/visualization/visualizer.h"
+#include "globfit2/visualization/visualization.h"
+#include "globfit2/io/io.h"
 
 namespace GF2 {
 
@@ -12,15 +13,18 @@ class Merging
 
         template < class    _PrimitiveContainerT
                  , class    _PointContainerT
-                 , typename _Scalar              = float
-                 , class    _PointPrimitiveT = typename _PointContainerT::value_type >
+                 , typename _Scalar          = float
+                 , class    _PointPrimitiveT = typename _PointContainerT::value_type
+                 , class    _PrimitiveT      = typename _PrimitiveContainerT::value_type::value_type
+                 >
         static inline int merge( int argc, char** argv );
 
 };
 
 } //... namespace GF2
 
-//____________________________________________________
+
+//_______________________HPP_____________________________
 
 namespace GF2 {
 
@@ -28,6 +32,7 @@ template < class    _PrimitiveContainerT
          , class    _PointContainerT
          , typename _Scalar
          , class    _PointPrimitiveT
+         , class    _PrimitiveT
          >
 int
 Merging::merge( int argc, char** argv )
@@ -60,13 +65,13 @@ Merging::merge( int argc, char** argv )
     // read primitives
     _PrimitiveContainerT prims;
     {
-        io::readPrimitives( prims, prims_path );
+        io::readPrimitives<_PrimitiveT>( prims, prims_path );
     } //...read primitives
 
     // Read points
     _PointContainerT points;
     {
-        io::readPoints( points, cloud_path );
+        io::readPoints<_PointPrimitiveT>( points, cloud_path );
     }
 
     // Read desired angles
@@ -93,18 +98,18 @@ Merging::merge( int argc, char** argv )
         }
         points[i].setTag( _PointPrimitiveT::GID, points_primitives[i].first );
 
-        if ( (points[i].getTag( _PointPrimitiveT::GID ) >= static_cast<int>(prims.size())) || (points[i].getTag( _PointPrimitiveT::GID ) < 0) )
-            std::cerr << "points[" << i << "].getTag(GID) >= prims.size() || < 0: " << points[i].getTag( _PointPrimitiveT::GID ) << " >= " << prims.size() << std::endl;
+        if ( points[i].getTag(_PointPrimitiveT::GID) == -1 )
+            std::cerr << "[" << __func__ << "]: " << "point assigned to patch with id -1" << std::endl;
     }
 
-    auto vptr = GF2::Visualizer<_PrimitiveContainerT,_PointContainerT>::template show<_Scalar>( /* primitives: */ prims
-                                                                                  , /*     points: */  points
-                                                                                  , /*      scale: */ scale
-                                                                                  , /*     colour: */ {0,0,1}
-                                                                                  , /*       spin: */ false
-                                                                                  , /*     angles: */ &angles
-                                                                                  , /*   show_ids: */ false
-                                                                                  , /*   use_tags: */ true );
+//    GF2::vis::MyVisPtr vptr = GF2::Visualizer<_PrimitiveContainerT,_PointContainerT>::template show<_Scalar>( /* primitives: */ prims
+//                                                                                  , /*     points: */  points
+//                                                                                  , /*      scale: */ scale
+//                                                                                  , /*     colour: */ {0,0,1}
+//                                                                                  , /*       spin: */ false
+//                                                                                  , /*     angles: */ &angles
+//                                                                                  , /*   show_ids: */ false
+//                                                                                  , /*   use_tags: */ true );
     // todo: if close, add edge
 
     return EXIT_SUCCESS;

@@ -1,81 +1,82 @@
-#ifndef __GF2_VISUALIZER_H__
-#define __GF2_VISUALIZER_H__
+#ifndef __GF2_VISUALIZER_HPP__
+#define __GF2_VISUALIZER_HPP__
 
 #if GF2_USE_PCL
 #   include "pcl/point_types.h"
 #   include "pcl/visualization/pcl_visualizer.h"
 #endif
 
-#include "globfit2/util/util.hpp"
+#include "globfit2/visualization/visualization.h" // MyVisPtr
 
-namespace GF2
-{
+namespace GF2 {
+    //! \brief Visualizer class to show points, primitives and their relations
+    //! \tparam PrimitiveContainerT     Patch-wise grouped primitive container type. Concept: vector< vector< GF2::LinePrimitive2> >.
+    //! \tparam PointContainerT         Cloud of possibly oriented 3D points. Concept: vector< GF2::PointPrimitive >.
     template <class PrimitiveContainerT, class PointContainerT>
     class Visualizer
     {
-            typedef pcl::PointXYZRGB MyPoint;
+            typedef pcl::PointXYZRGB         MyPoint;
             typedef pcl::PointCloud<MyPoint> MyCloud;
         public:
-            //! \brief show         Visualize lines and points
-            //! \tparam _Scalar     Floating point type used in points to store data.
+            //! \brief              Visualize lines and points
+            //! \tparam _Scalar     Floating point type used in points to store data. Concept: typename PointContainerT::value_type::Scalar.
             //! \param spin         Halts execution and allows interactive viewing, if true
             //! \param draw_cons    Draw perfect angles
             //! \param show_ids     Draw line ids (lid,lid1)
             //! \param use_tags     Restrict line extent to GID tagged points. case 1: colour coded points with ellipses. case 2: colour coded points with no ellipses
-            template <typename _Scalar = typename PointContainerT::value_type::Scalar>
-            static inline pcl::visualization::PCLVisualizer::Ptr
+            //! \return             The visualizer for further display and manipulation
+            template <typename _Scalar> static inline vis::MyVisPtr
             show( PrimitiveContainerT  const& primitives
                 , PointContainerT      const& points
                 , _Scalar              const  scale
-                , Eigen::Vector3f      const& colour    = { 0.f, 0.f, 1.f}
+                , Eigen::Vector3f      const& colour    = (Eigen::Vector3f() << 0.f, 0.f, 1.f).finished()
                 , bool                 const  spin      = true
                 , std::vector<_Scalar> const* angles    = NULL
                 , bool                 const  show_ids  = false
                 , char                 const  use_tags  = false  );
 
+            //! \brief Shows a polygon that approximates the bounding ellipse of a cluster
             template <typename _Scalar> static inline int
-            drawEllipse( pcl::visualization::PCLVisualizer::Ptr    vptr
+            drawEllipse( vis::MyVisPtr                             vptr
                        , MyCloud::Ptr                              cloud
                        , std::vector<int>                   const& indices
                        , _Scalar                            const  scale
                        , int                                const  prim_tag
                        , Eigen::Matrix<_Scalar,3,1>         const& prim_colour
                        );
-    };
+    }; //...class Visualizer
+} // ns GF2
 
-
-} // ns gf2
+//_________________________________________________________________
+//______________________________HPP________________________________
+//_________________________________________________________________
 
 #if GF2_USE_PCL
+#   include <pcl/common/common.h>        // getMinMax3D
 #   include <pcl/visualization/pcl_visualizer.h>
-#   include <pcl/common/common.h> // getMinMax3D
 #   include <pcl/common/pca.h>
+#   include "globfit2/util/pcl_util.hpp" // pclutil::asPointXYZ
 #endif
 
-//#include "AMUtil2.h"
 #include "globfit2/my_types.h"
+#include "globfit2/util/util.hpp" // util::nColoursEigen
 #include "globfit2/optimization/energyFunctors.h"
 
 namespace GF2
 {
-    inline ::pcl::PointXYZ
-    asPointXYZ( Eigen::Vector3f const& vector3f )
-    {
-        return ::pcl::PointXYZ( vector3f.x(), vector3f.y(), vector3f.z() );
-    }
-
     template <class PrimitiveContainerT, class PointContainerT>
     template <typename _Scalar>
-    pcl::visualization::PCLVisualizer::Ptr
+    vis::MyVisPtr
     Visualizer<PrimitiveContainerT,PointContainerT>::show( PrimitiveContainerT    const& primitives
                                                            , PointContainerT      const& points
                                                            , _Scalar              const  scale
-                                                           , Eigen::Vector3f      const& colour
-                                                           , bool                 const  spin
+                                                           , Eigen::Vector3f      const& colour    /* = {0,0,1} */
+                                                           , bool                 const  spin      /* = true */
                                                            , std::vector<_Scalar> const* angles    /* = NULL */
                                                            , bool                 const  show_ids  /* = false */
                                                            , char                 const  use_tags  /* = false */ )
     {
+#if 1
         typedef typename PrimitiveContainerT::value_type::value_type PrimitiveT;
         typedef typename PointContainerT::value_type PointT;
 
@@ -98,7 +99,10 @@ namespace GF2
                   << ", max_group_id: " << max_group_id << std::endl;
         std::vector<Eigen::Vector3f> colours = util::nColoursEigen( max_group_id+1, /* scale: */ 255.f, /* shuffle: */ false );
 
-        pcl::visualization::PCLVisualizer::Ptr vptr( new pcl::visualization::PCLVisualizer() );
+        std::cout << "[" << __func__ << "]: " << " initing vis" << std::endl; fflush(stdout);
+        //pcl::visualization::PCLVisualizer::Ptr vptr( new pcl::visualization::PCLVisualizer() );
+        vis::MyVisPtr vptr( new pcl::visualization::PCLVisualizer() );
+        std::cout << "[" << __func__ << "]: " << " finished initing vis" << std::endl; fflush(stdout);
         vptr->setBackgroundColor( .7, .7, .7 );
         MyCloud::Ptr cloud( new MyCloud );
         {
@@ -129,7 +133,7 @@ namespace GF2
         vptr->setPointCloudRenderingProperties( pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 4.0, "cloud", 0 );
 
         // count populations
-        std::vector<int> populations( primitives.size() ); // populations[patch_id] = all points with GID==patch_id
+        std::map<int,int> populations; // populations[patch_id] = all points with GID==patch_id
         if ( angles )
         {
             for ( size_t pid = 0; pid != points.size(); ++pid )
@@ -143,45 +147,45 @@ namespace GF2
             {
                 char line_name[64];
                 sprintf( line_name, "line_%d_%d", static_cast<int>(lid), static_cast<int>(lid1) );
-                int prim_tag = primitives[lid][lid1].getTag( PrimitiveT::GID );
+                int gid = primitives[lid][lid1].getTag( PrimitiveT::GID );
 
                 Eigen::Matrix<_Scalar,3,1> prim_colour;
-                prim_colour << ((prim_tag >= 0) ? (colours[prim_tag](0) / 255.f) : colour(0)),
-                               ((prim_tag >= 0) ? (colours[prim_tag](1) / 255.f) : colour(1)),
-                               ((prim_tag >= 0) ? (colours[prim_tag](2) / 255.f) : colour(2));
+                prim_colour << ((gid >= 0) ? (colours[gid](0) / 255.f) : colour(0)),
+                               ((gid >= 0) ? (colours[gid](1) / 255.f) : colour(1)),
+                               ((gid >= 0) ? (colours[gid](2) / 255.f) : colour(2));
 
                 // if use tags, collect GID tagged point indices
                 std::vector<int> indices;
                 if ( use_tags )
                 {
                     for ( int pid = 0; pid != points.size(); ++pid )
-                        if ( points[pid].getTag(PointT::GID) == prim_tag )
+                        if ( points[pid].getTag(PointT::GID) == gid )
                             indices.push_back( pid );
                     if ( use_tags == 1 ) // mode2 means no ellipses
-                        drawEllipse( vptr, cloud, indices, scale, prim_tag, prim_colour );
+                        drawEllipse( vptr, cloud, indices, scale, gid, prim_colour );
 
                 } //...if use_tags
 
-                PrimitiveT::draw( primitives[lid][lid1]
-                                  , cloud
-                                  , scale * _Scalar(10)
-                                  , /*     indices: */ use_tags ? &indices : NULL
-                                  , /*      viewer: */ vptr
-                                  , /*   unique_id: */ line_name
-                                  , /*      colour: */ prim_colour(0), prim_colour(1), prim_colour(2)
-                                  , /* viewport_id: */ 0
-                                  , /*     stretch: */ _Scalar(1.2)
-                                  );
+                PrimitiveT::template draw<PointT>( primitives[lid][lid1]
+                                                   , &points //cloud
+                                                   , /*   threshold: */ scale * _Scalar(10)
+                                                   , /*     indices: */ use_tags ? &indices : NULL
+                                                   , /*      viewer: */ vptr
+                                                   , /*   unique_id: */ line_name
+                                                   , /*      colour: */ prim_colour(0), prim_colour(1), prim_colour(2)
+                                                   , /* viewport_id: */ 0
+                                                   , /*     stretch: */ _Scalar(1.2)
+                                                   );
                 vptr->setShapeRenderingProperties( pcl::visualization::PCL_VISUALIZER_LINE_WIDTH, 2.0, line_name, 0 );
 
                 // draw connections
                 if ( angles )
                 {
-                    if ( populations[lid] > 10 )
+                    if ( populations[gid] > 10 )
                     {
                         for ( size_t lid2 = lid; lid2 != primitives.size(); ++lid2 )
                         {
-                            if ( populations[lid2] < 10 )
+                            if ( populations[ primitives[lid2].at(0).getTag(PrimitiveT::GID) ]< 10 )
                                 continue;
 
                             for ( size_t lid3 = lid1; lid3 < primitives[lid2].size(); ++lid3 )
@@ -193,9 +197,9 @@ namespace GF2
                                 {
                                     char name[255];
                                     sprintf( name, "conn_l%lu%lu_l%lu%lu", lid, lid1, lid2, lid3 );
-                                    vptr->addLine( asPointXYZ( primitives[lid][lid1].pos() )
-                                                 , asPointXYZ( primitives[lid2][lid3].pos() )
-                                                 , .6, .6, .5, name, 0 );
+                                    vptr->addLine( pclutil::asPointXYZ( primitives[lid][lid1].pos() )
+                                                   , pclutil::asPointXYZ( primitives[lid2][lid3].pos() )
+                                                   , .6, .6, .5, name, 0 );
                                     vptr->setShapeRenderingProperties( pcl::visualization::PCL_VISUALIZER_OPACITY, 0.7, name, 0 );
                                 } //... if angle close enough
                             } //...for lid3
@@ -216,8 +220,8 @@ namespace GF2
                             {
                                 char name[255];
                                 sprintf( name, "same_l%lu%lu_l%lu%lu", lid, lid1, lid2, lid3 );
-                                vptr->addLine( asPointXYZ( primitives[lid][lid1].pos() )
-                                               , asPointXYZ( primitives[lid2][lid3].pos() )
+                                vptr->addLine( pclutil::asPointXYZ( primitives[lid][lid1].pos() )
+                                               , pclutil::asPointXYZ( primitives[lid2][lid3].pos() )
                                                , 1., .0, .0, name, 0 );
                                 vptr->setShapeRenderingProperties( pcl::visualization::PCL_VISUALIZER_OPACITY, 0.7, name, 0 );
                             }
@@ -244,11 +248,13 @@ namespace GF2
             vptr->spinOnce();
 
         return vptr;
-    } // ... show
+#endif
+        return vis::MyVisPtr();
+    } // ...Visualizer::show()
 
     template <class PrimitiveContainerT, class PointContainerT>
     template <typename _Scalar> int
-    Visualizer<PrimitiveContainerT,PointContainerT>::drawEllipse( pcl::visualization::PCLVisualizer::Ptr    vptr
+    Visualizer<PrimitiveContainerT,PointContainerT>::drawEllipse( vis::MyVisPtr                             vptr
                                                                 , MyCloud::Ptr                              cloud
                                                                 , std::vector<int>                   const& indices
                                                                 , _Scalar                            const  scale
@@ -256,6 +262,7 @@ namespace GF2
                                                                 , Eigen::Matrix<_Scalar,3,1>         const& prim_colour
                                                                 )
     {
+#if 0
         typedef typename PrimitiveContainerT::value_type::value_type PrimitiveT;
         typedef typename PointContainerT::value_type PointT;
 
@@ -322,8 +329,9 @@ namespace GF2
             vptr->addCircle( circle_coeffs, poly_name, 0 );
         }
 
+#endif
         return 0;
     } // ... Visulazier::drawEllipse
 } // ns gf2
 
-#endif // __GF2_VISUALIZER_H__
+#endif // __GF2_VISUALIZER_HPP__

@@ -2,8 +2,9 @@
 #define __GF2_IO_H__
 
 #include <string>
-#include "Eigen/Sparse"
 #include <iomanip>
+#include <fstream> // ifstream
+#include "Eigen/Sparse"
 
 #if GF2_USE_PCL
 #   include <pcl/io/ply_io.h>
@@ -17,19 +18,10 @@ namespace GF2
 {
     namespace io
     {
-        extern int
-        readSolution( std::string const path );
-
-        template <class PrimitivesT, typename Scalar = typename PrimitivesT::value_type::Scalar> int
-        saveSolution( std::string path
-                      , MaskType const& opt_mask
-                      , PrimitivesT const& candidates
-                      , Scalar const working_scale
-                      , std::vector<Scalar> const& gf2_desired_angles
-                      , int  argc
-                      , char **argv);
-
-        template <class PrimitiveContainerT, class PrimitiveT = typename PrimitiveContainerT::value_type::value_type> inline int
+        //! \brief Dumps primitives with GID and DIR_GID to disk.
+        //! \tparam PrimitiveT Concept: PrimitiveContainerT::value_type::value_type aka GF2::LinePrimitive2.
+        //! \tparam PrimitiveContainerT Concept: vector< vector< GF2::LinePrimitive2 > >.
+        template <class PrimitiveT /* = typename PrimitiveContainerT::value_type::value_type*/, class PrimitiveContainerT> inline int
         savePrimitives( PrimitiveContainerT const& primitives, std::string out_file_name, bool verbose = false )
         {
             const int Dim = PrimitiveT::Dim;
@@ -54,32 +46,33 @@ namespace GF2
             return EXIT_SUCCESS;
         }
 
-        template <class         PrimitiveContainerT
-                  , class       PrimitiveT          = typename PrimitiveContainerT::value_type::value_type
-                  , int         Dim                 = PrimitiveT::Dim
-                  , typename    Scalar              = typename PrimitiveT::Scalar
-                  >
+        template <
+                   class       PrimitiveT          /*= typename PrimitiveContainerT::value_type::value_type*/
+                 , class       PrimitiveContainerT
+                 >
         inline int readPrimitives( PrimitiveContainerT &lines, std::string const& path )
         {
-            std::ifstream f( path );
-            if ( !f.is_open() )
+            typedef typename PrimitiveT::Scalar Scalar;
+            enum {                              Dim    = PrimitiveT::Dim };
+            typedef typename PrimitiveContainerT::value_type PatchT;
+            typedef std::map<int, PatchT>                    PatchMap; // <GID, vector<primitives> >
+
+            // open file
+            std::ifstream file( path.c_str() );
+            if ( !file.is_open() )
             {
                 std::cerr << "[" << __func__ << "] couldn't open file" << std::endl;
                 return EXIT_FAILURE;
             }
 
-            int lid = 0;
+            std::map<int, PatchT> tmp_lines;
+            int lid        = 0; // deprecated, tracks linear id
             int line_count = 0;
             std::string line;
-            while ( getline(f, line) )
+            while ( getline(file, line) )
             {
-                if ( line[0] == '#' )
-                    continue;
-                if ( line.empty() )
-                {
-                    ++lid;
-                    continue;
-                }
+                if ( line[0] == '#' )          continue;   // skip comments
+                if ( line.empty()   ) { ++lid; continue; } // deprecated, groups used to be separated by empty lines
 
                 std::vector<Scalar> floats;
                 std::istringstream iss( line );
@@ -108,24 +101,39 @@ namespace GF2
                     }
                 } // if patch information
 
+                // insert into proper patch, if gid specified
                 if ( gid > -1 )
                 {
-                    if ( gid >= lines.size() )
-                        lines.resize( gid+1 );
+//                    if ( gid >= lines.size() )
+//                        lines.resize( gid+1 );
 
-                    lines[ gid ].emplace_back( PrimitiveT(floats) );
-                    lines[ gid ].back().setTag( PrimitiveT::GID, gid );
-                    lines[ gid ].back().setTag( PrimitiveT::DIR_GID, dir_gid );
+//                    lines[ gid ].emplace_back( PrimitiveT(floats) );
+//                    lines[ gid ].back().setTag( PrimitiveT::GID, gid );
+//                    lines[ gid ].back().setTag( PrimitiveT::DIR_GID, dir_gid );
+                    tmp_lines[ gid ].push_back( PrimitiveT(floats) );
+                    tmp_lines[ gid ].back().setTag( PrimitiveT::GID    , gid     );
+                    tmp_lines[ gid ].back().setTag( PrimitiveT::DIR_GID, dir_gid );
                 }
-                else
+                else // just make a new patch for it
                 {
-                    lines.resize( lid+1 );
-                    lines[lid].emplace_back( PrimitiveT(floats) );
+                    lines.push_back( PatchT() );
+                    lines[lid].push_back( PrimitiveT(floats) );
                     lines[lid].back().setTag( PrimitiveT::GID, line_count ); // 1D indexing only
                 }
 
                 ++line_count;
             } // while getline
+
+            // copy all patches from map to vector (so that there are no empty patches in the vector)
+            lines.reserve( lines.size() + tmp_lines.size() );
+            typename PatchMap::const_iterator end_it = tmp_lines.end();
+            for ( typename PatchMap::const_iterator it = tmp_lines.begin(); it != end_it; ++it )
+            {
+                lines.push_back( PatchT() );
+                lines.back().insert( lines.back().end(), it->second.begin(), it->second.end() );
+            }
+
+            file.close();
 
             return EXIT_SUCCESS;
         } // ... readPrimitives()
@@ -139,7 +147,7 @@ namespace GF2
                                      , std::string                    const& path
                                      , std::map<int,int>                   * linear_indices )
         {
-            std::ifstream f( path );
+            std::ifstream f( path.c_str() );
             if ( !f.is_open() )
             {
                 std::cerr << "[" << __func__ << "] couldn't open file" << std::endl;
@@ -188,8 +196,9 @@ namespace GF2
         //! \param [out]points        Output point vector
         //! \param [in] path          PLY source path
         //! \return EXIT_SUCCESS
-        template < class _PointContainerT
-                 , class _PointT = typename _PointContainerT::value_type >
+        template < class _PointT /*= typename _PointContainerT::value_type */
+                   , class _PointContainerT
+                 >
         inline int
         readPoints( _PointContainerT &points
                   , std::string        path
@@ -220,6 +229,20 @@ namespace GF2
 
             return EXIT_SUCCESS;
         } // ...Solver::readPoints()
+
+#if 0 // deprecated
+        extern int
+        readSolution( std::string const path );
+
+        template <class PrimitivesT, typename Scalar = typename PrimitivesT::value_type::Scalar> int
+        saveSolution( std::string path
+                      , MaskType const& opt_mask
+                      , PrimitivesT const& candidates
+                      , Scalar const working_scale
+                      , std::vector<Scalar> const& gf2_desired_angles
+                      , int  argc
+                      , char **argv);
+#endif
     } // ... ns io
 } // ... ns GF2
 

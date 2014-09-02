@@ -50,10 +50,10 @@ namespace GF2
             Eigen::Matrix<Scalar,_Dim,1>      & operator()()       { return _coeffs; }
             //! \brief Converts to Eigen::Matrix<...> to avoid operator() as getter.
             //! \return Copy of internally stored data.
-            explicit operator VectorType()          { return _coeffs; }
+            /*explicit */ operator VectorType()          { return _coeffs; }
             //! \brief Converts to Eigen::Matrix<...> to avoid operator() as getter. Const version.
             //! \return Copy of internally stored data.
-            explicit operator VectorType() const    { return _coeffs; }
+            /*explicit */ operator VectorType() const    { return _coeffs; }
 
             // ____________________VIRTUALS____________________
             //! \brief  Pure virtual function to return the location of the primitive.
