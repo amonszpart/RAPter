@@ -123,7 +123,7 @@ namespace GF2
                 for ( int pid_id = 0; pid_id != inliers.size(); ++pid_id )
                 {
                     const int pid = inliers[ pid_id ];
-                    std::cout << "accessing " << pid_id << " from " << on_line_cloud.size() << ", and " << pid << " from " << cloud->size() << std::endl;
+                    //std::cout << "accessing " << pid_id << " from " << on_line_cloud.size() << ", and " << pid << " from " << cloud->size() << std::endl;
                     on_line_cloud.push_back( this->projectPoint((*cloud)[pid].template pos()) );
                 }
 
@@ -255,7 +255,7 @@ namespace GF2
                 return err;
             }
 #endif // GF2_USE_PCL
-
+#if 0
             // ____________________DEPRECATED____________________
             //! \deprecated Decides, if two lines are different up to a position and and an angle threshold.
             static bool
@@ -269,7 +269,7 @@ namespace GF2
                 return ( angle > ang_diff );
             } //...different()
 
-#if 0
+
             static Scalar
             distanceToPoint( Eigen::Matrix<Scalar,Dim,1> line, Eigen::Matrix<Scalar,4,1> point, bool squared = false )
             {

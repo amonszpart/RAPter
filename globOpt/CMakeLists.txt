@@ -170,6 +170,7 @@ SET( GLOBOPT_H_LIST
     include/globfit2/util/util.hpp
     include/globfit2/util/pcl_util.hpp
     include/globfit2/ground_truth/gtCreator.h
+    include/globfit2/primitives/linePrimitive.h
     include/globfit2/primitives/linePrimitive2.h
     include/globfit2/primitives/pointPrimitive.h
     #include/globfit2/visualization/visualizer.h
