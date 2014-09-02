@@ -7,7 +7,7 @@
 #include <iostream>
 
 
-
+// Utility functions
 void qgluPerspective(GLdouble fovy, GLdouble aspect, GLdouble zNear, GLdouble zFar)
 {
     const GLdouble ymax = zNear * tan(fovy * M_PI / 360.0);
@@ -16,6 +16,28 @@ void qgluPerspective(GLdouble fovy, GLdouble aspect, GLdouble zNear, GLdouble zF
     const GLdouble xmax = ymax * aspect;
     glFrustum(xmin, xmax, ymin, ymax, zNear, zFar);
 }
+
+
+//! Convenience wrapper to call OpenGL command with compile-time vertex definitions
+template <typename _Scalar>
+struct GLDisplayFunctor{
+    static inline void displayVertex(const _Scalar *) {}
+};
+
+template <>
+void
+GLDisplayFunctor<double>::displayVertex(const double* data){
+    glVertex3dv(data);
+}
+
+template <>
+void
+GLDisplayFunctor<float>::displayVertex(const float* data){
+    glVertex3fv(data);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
 
 
 
@@ -47,8 +69,8 @@ MyScene::setStates(){
 
 void
 MyScene::drawBackground(QPainter *painter, const QRectF &rect){
-    float width = float(painter->device()->width());
-    float height = float(painter->device()->height());
+    //float width = float(painter->device()->width());
+    //float height = float(painter->device()->height());
 
     painter->beginNativePainting();
     setStates();
@@ -58,15 +80,20 @@ MyScene::drawBackground(QPainter *painter, const QRectF &rect){
     glMatrixMode(GL_PROJECTION);
     //qgluPerspective(60.0, width / height, 0.01, 15.0);
 
+    glLoadIdentity();
     glMatrixMode(GL_MODELVIEW);
+    static GLdouble invertY [16]  = {
+        1.0, 0.0, 0.0, 0.0,
+        0.0,-1.0, 0.0, 0.0,
+        0.0, 0.0, 1.0, 0.0,
+        0.0, 0.0, 0.0, 1.0
+    };
+
+    glMultMatrixd(invertY);
 
     glBegin(GL_LINES);
-    for(unsigned int i = 0; i != _pSet.size(); i++){
-        InputGen::Application::Primitive& p = _pSet[i];
-        glVertex3dv((p.coord() - p.dir() * 1000.f).eval().data());
-        glVertex3dv((p.coord() + p.dir() * 1000.f).eval().data());
-
-    }
+    for(unsigned int i = 0; i != _pSet.size(); i++)
+        _pSet[i].displayAsLine<GLDisplayFunctor>();
     glEnd();
 
 
