@@ -100,6 +100,10 @@ public:
 
     }
 
+    inline vec getMidPoint() const {
+        return _coord+0.5*getTangentVector()*_dim(0);
+    }
+
 
     static inline int getUID() {
         static int uid = 0;
