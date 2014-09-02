@@ -189,7 +189,7 @@ SET( GLOBOPT_H_LIST
 SET( GLOBOPT_SRC_LIST
     src/ground_truth/ground_truth.cpp
     src/ground_truth/gtCreator.cpp
-    src/optimization/qp/qp_main.cpp
+    src/qp_main.cpp
     src/optimization/qp/candidateGenerator.cpp # cached compilation
     #src/optimization/qp/visualizer.cpp         # cached compilation
 )
