@@ -3,6 +3,7 @@
 #include <pcl/console/parse.h>
 
 #include "optimization/qp/solver.h"
+#include "globfit2/optimization/problemSetup.h"
 
 #include "globfit2/optimization/merging.hpp"
 #include "globfit2/io/io.h"
@@ -37,7 +38,7 @@ int main( int argc, char *argv[] )
     }
     else if ( pcl::console::find_switch(argc,argv,"--formulate") )
     {
-        return GF2::Solver::formulate( argc, argv );
+        return GF2::ProblemSetup::formulateCli<GF2::Solver::PrimitiveContainerT, GF2::Solver::PointContainerT>( argc, argv );
     }
     else if ( pcl::console::find_switch(argc,argv,"--solver") )
     {

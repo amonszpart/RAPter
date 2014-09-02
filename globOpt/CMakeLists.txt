@@ -165,6 +165,7 @@ INCLUDE_DIRECTORIES( include
 
 SET( GLOBOPT_H_LIST
     #include/params.h
+    include/globfit2/parameters.h
     include/globfit2/my_types.h
     include/globfit2/util/diskUtil.hpp
     include/globfit2/util/util.hpp
@@ -178,7 +179,8 @@ SET( GLOBOPT_H_LIST
     include/globfit2/optimization/energyFunctors.h
     include/globfit2/optimization/candidateGenerator.h
     include/globfit2/optimization/merging.hpp
-    include/globfit2/optimization/problemSetup.hpp
+    include/globfit2/optimization/problemSetup.h
+    include/globfit2/optimization/impl/problemSetup.hpp
     include/optimization/qp/gurobiOpt.h
     include/optimization/qp/MyGRBCallback.h
     include/optimization/qp/solver.h
