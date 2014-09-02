@@ -133,6 +133,8 @@ void MainWindow::on_actionLoad_SVG_triggered()
 
                                 cout << "Reading new set of lines" << endl;
 
+                                bool relativeCoord = attrList.front().compare("M");
+
                                 attrList.pop_front();
 
 
@@ -148,8 +150,8 @@ void MainWindow::on_actionLoad_SVG_triggered()
                                             line.setCoord(Primitive::vec(coordLists.at(0).toDouble(),
                                                                          coordLists.at(1).toDouble(),
                                                                          0));
-                                            // in svg, path coordinates are stored relatively
-                                            if ( lines.size() != 0)
+                                            
+                                            if ( relativeCoord && lines.size() != 0)
                                                 line.setCoord(line.coord() + lines.back().coord());
                                             lines.push_back(line);
                                         }
