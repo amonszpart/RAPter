@@ -155,19 +155,19 @@ void MainWindow::on_actionLoad_SVG_triggered()
                                     Primitive& l1 = lines[i];
                                     const Primitive& l2 = lines[i+1];
                                     const Primitive::vec dortho= (l2.coord() - l1.coord()).normalized();
-                                    const Primitive::vec dir ( dortho(1), - dortho(0), Scalar(0.) );
+                                    const Primitive::vec normal ( dortho(1), - dortho(0), Scalar(0.) );
                                     const Primitive::vec2 dim (-(l2.coord() - l1.coord()).norm(), Scalar(0.));
 
                                     l1.setDim(dim);
-                                    l1.setDir(dir);
+                                    l1.setNormal(normal);
 
                                     cout << "l1=" << l1.coord().transpose() << endl;
                                     cout << "l2=" << l2.coord().transpose() << endl;
 
-                                    cout << l1.coord().transpose() << " "
-                                         << l1.dir().transpose() << " "
-                                         << l1.dim()(0)
-                                         << endl;
+//                                    cout << l1.coord().transpose() << " "
+//                                         << l1.dir().transpose() << " "
+//                                         << l1.dim()(0)
+//                                         << endl;
                                 }
 
                                 // second step of the extraction, we now compute the directions
@@ -178,19 +178,19 @@ void MainWindow::on_actionLoad_SVG_triggered()
                                     Primitive& l1 = lines.back();
                                     const Primitive& l2 = lines.front();
                                     const Primitive::vec dortho= (l2.coord() - l1.coord()).normalized();
-                                    const Primitive::vec dir ( dortho(1), - dortho(0), Scalar(0.) );
+                                    const Primitive::vec normal ( dortho(1), - dortho(0), Scalar(0.) );
                                     const Primitive::vec2 dim (-(l2.coord() - l1.coord()).norm(), Scalar(0.));
 
                                     l1.setDim(dim);
-                                    l1.setDir(dir);
+                                    l1.setNormal(normal);
 
                                     cout << "l1=" << l1.coord().transpose() << endl;
                                     cout << "l2=" << l2.coord().transpose() << endl;
 
-                                    cout << l1.coord().transpose() << " "
-                                         << l1.dir().transpose() << " "
-                                         << l1.dim()(0)
-                                         << endl;
+                                    //cout << l1.coord().transpose() << " "
+                                    //     << l1.dir().transpose() << " "
+                                    //     << l1.dim()(0)
+                                    //     << endl;
                                 }
                             }
                             // update with transformations
