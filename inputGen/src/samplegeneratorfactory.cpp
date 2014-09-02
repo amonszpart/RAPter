@@ -1,7 +1,6 @@
 #include "samplegeneratorfactory.h"
 #include "ui_samplegeneratorfactory.h"
 
-#include "samplegenerator.h"
 #include "types.h"
 
 #include <iostream>
@@ -22,6 +21,7 @@ SampleGeneratorFactory::~SampleGeneratorFactory()
     delete ui;
 }
 
+
 void
 SampleGeneratorFactory::updateGenerator()
 {
@@ -34,21 +34,23 @@ SampleGeneratorFactory::updateGenerator()
         switch (ui->toolBox->currentIndex () ){
         case GEN_FROM_PRIMITIVE:
         {
+            InputGen::PrimitiveSampleGenerator<InputGen::Application::Scalar,
+                    InputGen::Application::GLDisplayFunctor > lgen;
+
             // set generator parameters
-            InputGen::PrimitiveSampleGenerator<InputGen::Application::Scalar> generator;
-            generator.spacing = ui->_generatorPrimitivesParamSpacing->value();
+            lgen.spacing = ui->_generatorPrimitivesParamSpacing->value();
 
             // generate points
-            generator.generateSamples(*_pointSet, *_pSet);
+            lgen.generateSamples(*_pointSet, *_pSet);
+
+            emit samplesChanged(_pointSet, &lgen);
 
             break;
         }
         default:
-            break;
+            emit samplesChanged(_pointSet, NULL);
         };
 
     }
-
-    // send the generated set
-    emit samplesChanged(_pointSet);
+    //emit samplesChanged(_pointSet, _generator);
 }

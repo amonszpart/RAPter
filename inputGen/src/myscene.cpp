@@ -1,8 +1,8 @@
 #include "myscene.h"
+#include "typesGL.h"
 
 
 //#include "Eigen/OpenGLSupport"
-#include <QtOpenGL>
 
 #include <iostream>
 
@@ -18,26 +18,6 @@ void qgluPerspective(GLdouble fovy, GLdouble aspect, GLdouble zNear, GLdouble zF
     glFrustum(xmin, xmax, ymin, ymax, zNear, zFar);
 }
 
-
-//! Convenience wrapper to call OpenGL command with compile-time vertex definitions
-template <typename _Scalar>
-struct GLDisplayFunctor{
-    static inline void displayVertex(const _Scalar *) {}
-};
-
-template <>
-void
-GLDisplayFunctor<double>::displayVertex(const double* data){
-    glVertex3dv(data);
-}
-
-template <>
-void
-GLDisplayFunctor<float>::displayVertex(const float* data){
-    glVertex3fv(data);
-}
-
-
 ///////////////////////////////////////////////////////////////////////////////
 
 
@@ -46,7 +26,8 @@ MyScene::MyScene(QObject *parent) :
     QGraphicsScene(parent),
     _pSet(NULL),
     _pointSet(NULL),
-    _zoom(1.)
+    _zoom(1.),
+    _generator(NULL)
 {
     //setStates();
 }
@@ -119,7 +100,7 @@ MyScene::drawBackground(QPainter *painter, const QRectF &rect){
         glBegin(GL_LINES);
         std::vector< InputGen::Application::Primitive >::const_iterator it;
         for(it = _pSet->begin(); it != _pSet->end(); it++)
-            (*it).displayAsLine<GLDisplayFunctor>();
+            (*it).displayAsLine<InputGen::Application::GLDisplayFunctor>();
         glEnd();
     }
 
@@ -129,10 +110,12 @@ MyScene::drawBackground(QPainter *painter, const QRectF &rect){
         glBegin(GL_POINTS);
         InputGen::Application::PointSet::const_iterator it;
         for(it = _pointSet->begin(); it != _pointSet->end(); it++){
-            GLDisplayFunctor<Scalar>::displayVertex((*it).data());
+            InputGen::Application::GLDisplayFunctor<Scalar>::displayVertex((*it).data());
         }
         glEnd();
     }
+
+    if (_generator != NULL) _generator->display();
 
 
     painter->endNativePainting();

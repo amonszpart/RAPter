@@ -2,7 +2,9 @@
 #define SAMPLEGENERATORFACTORY_H
 
 #include <QDockWidget>
+#include "samplegenerator.h"
 #include "types.h"
+#include "typesGL.h"
 
 namespace Ui {
 class SampleGeneratorFactory;
@@ -32,16 +34,19 @@ public slots:
     void updateGenerator();
 
 signals:
-    //! \warning The reference is invalid outside of the connected slots
-    void samplesChanged(InputGen::Application::PointSet *set);
+    //! \warning Pointers are invalid outside of the connected slots
+    void samplesChanged(InputGen::Application::PointSet *,
+                        InputGen::Application::SampleGenerator*);
 
 private:
-    Ui::SampleGeneratorFactory *ui;
+    typedef InputGen::Application::SampleGenerator SampleGenerator;
+
     enum GENERATOR_TYPE{
         GEN_FROM_PRIMITIVE = 0,
         GEN_FROM_PONCTUAL  = 1
     };
 
+    Ui::SampleGeneratorFactory *ui;
     std::vector< InputGen::Application::Primitive > *_pSet;
     InputGen::Application::PointSet * _pointSet;
 };

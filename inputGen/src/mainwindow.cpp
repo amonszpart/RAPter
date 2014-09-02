@@ -21,8 +21,10 @@ MainWindow::MainWindow(QWidget *parent) :
     setupUi(this);
     readSettings();
 
-    connect(_generatorDoc, SIGNAL(samplesChanged(InputGen::Application::PointSet*)),
-            _graphicsView, SIGNAL(samplesChanged(InputGen::Application::PointSet*)));
+    connect(_generatorDoc, SIGNAL(samplesChanged(InputGen::Application::PointSet*,
+                                                 InputGen::Application::SampleGenerator*)),
+            _graphicsView, SIGNAL(samplesChanged(InputGen::Application::PointSet*,
+                                                 InputGen::Application::SampleGenerator*)));
 
     _generatorDoc->setPoints(&_pointSet);
 }

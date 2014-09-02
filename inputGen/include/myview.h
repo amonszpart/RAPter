@@ -5,6 +5,8 @@
 
 #include "primitive.h"
 #include "types.h"
+#include "typesGL.h"
+#include "samplegenerator.h"
 
 class MyScene;
 
@@ -17,7 +19,8 @@ public:
     void setPrimitives(std::vector<InputGen::Application::Primitive> *s);
 
 signals:
-    void samplesChanged(InputGen::Application::PointSet *set);
+    void samplesChanged(InputGen::Application::PointSet *,
+                        InputGen::Application::SampleGenerator*);
 
 public slots:
 

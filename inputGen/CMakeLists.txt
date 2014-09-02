@@ -19,6 +19,7 @@ SET(inputGen_HEADERS
   include/myview.h
   include/myscene.h
   include/types.h
+  include/typesGL.h
   include/primitive.h)
 SET(inputGen_FORMS
   ui/mainwindow.ui
