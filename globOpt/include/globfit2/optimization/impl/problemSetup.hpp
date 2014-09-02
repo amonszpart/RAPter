@@ -113,7 +113,7 @@ ProblemSetup::formulateCli( int    argc
     _PrimitiveContainerT prims;
     {
         if ( verbose ) std::cout << "[" << __func__ << "]: " << "reading primitives from " << candidates_path << "...";
-        io::readPrimitives<_PrimitiveT>( prims, candidates_path );
+        io::readPrimitives<_PrimitiveT, typename _PrimitiveContainerT::value_type>( prims, candidates_path );
         if ( verbose ) std::cout << "reading primitives ok\n";
     } //...read primitives
 
