@@ -19,6 +19,9 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     setupUi(this);
     readSettings();
+
+    connect(_generatorDoc, SIGNAL(samplesChanged(InputGen::Application::PointSet*)),
+            _graphicsView, SIGNAL(samplesChanged(InputGen::Application::PointSet*)));
 }
 
 
@@ -59,7 +62,7 @@ void MainWindow::on_actionLoad_SVG_triggered()
                                  defaultPath,
                                  "Scalable Vector Graphics (*.svg)");
 
-    std::vector< Primitive > primitiveSet;
+    _pSet.clear();
 
     if (! path.isNull()){
         QFile input(path);
@@ -196,7 +199,7 @@ void MainWindow::on_actionLoad_SVG_triggered()
                             }
 
 
-                            primitiveSet.insert(primitiveSet.end(), lines.begin(), lines.end());
+                            _pSet.insert(_pSet.end(), lines.begin(), lines.end());
                         }
                     }
                     reader.readNext();
@@ -205,5 +208,6 @@ void MainWindow::on_actionLoad_SVG_triggered()
         }
     }
 
-    _graphicsView->setPrimitives(primitiveSet);
+    _graphicsView->setPrimitives(&_pSet);
+    _generatorDoc->setPrimitives(&_pSet);
 }

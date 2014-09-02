@@ -44,6 +44,8 @@ GLDisplayFunctor<float>::displayVertex(const float* data){
 
 MyScene::MyScene(QObject *parent) :
     QGraphicsScene(parent),
+    _pSet(NULL),
+    _pointSet(NULL),
     _zoom(1.)
 {
     //setStates();
@@ -51,7 +53,6 @@ MyScene::MyScene(QObject *parent) :
 
 void
 MyScene::wheelEvent(QGraphicsSceneWheelEvent *event){
-    std::cout << "MyScene::wheelevent" << std::endl;
 
     int numDegrees = event->delta() / 8;
     int numSteps = numDegrees / 15;
@@ -89,10 +90,14 @@ MyScene::drawBackground(QPainter *painter, const QRectF &rect){
     //float width = float(painter->device()->width());
     //float height = float(painter->device()->height());
 
+    using InputGen::Application::Scalar;
+
     painter->beginNativePainting();
     setStates();
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    if(_pSet==NULL) return
 
     glMatrixMode(GL_PROJECTION);
     //qgluPerspective(60.0, width / height, 0.01, 15.0);
@@ -109,10 +114,25 @@ MyScene::drawBackground(QPainter *painter, const QRectF &rect){
     glMultMatrixd(invertY);
     glScalef(_zoom, _zoom, _zoom);
 
-    glBegin(GL_LINES);
-    for(unsigned int i = 0; i != _pSet.size(); i++)
-        _pSet[i].displayAsLine<GLDisplayFunctor>();
-    glEnd();
+    // display lines
+    {
+        glBegin(GL_LINES);
+        std::vector< InputGen::Application::Primitive >::const_iterator it;
+        for(it = _pSet->begin(); it != _pSet->end(); it++)
+            (*it).displayAsLine<GLDisplayFunctor>();
+        glEnd();
+    }
+
+    // display samples
+    if (_pointSet != NULL){
+        glPointSize(2.f);
+        glBegin(GL_POINTS);
+        InputGen::Application::PointSet::const_iterator it;
+        for(it = _pointSet->begin(); it != _pointSet->end(); it++){
+            GLDisplayFunctor<Scalar>::displayVertex((*it).data());
+        }
+        glEnd();
+    }
 
 
     painter->endNativePainting();

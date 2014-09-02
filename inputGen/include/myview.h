@@ -14,9 +14,10 @@ class MyView : public QGraphicsView
 public:
 
     explicit MyView(QWidget *parent = 0);
-    void setPrimitives(const std::vector< InputGen::Application::Primitive >&s);
+    void setPrimitives(std::vector<InputGen::Application::Primitive> *s);
 
 signals:
+    void samplesChanged(InputGen::Application::PointSet *set);
 
 public slots:
 

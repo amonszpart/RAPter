@@ -21,6 +21,8 @@ protected:
 
 private:
     void readSettings();
+    //! \brief Primitive set
+    std::vector< InputGen::Application::Primitive > _pSet;
 };
 
 #endif // MAINWINDOW_H

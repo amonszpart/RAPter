@@ -13,7 +13,7 @@ class MyScene : public QGraphicsScene
 public:
     explicit MyScene(QObject *parent = 0);
     inline void setPrimitives(
-            const std::vector< InputGen::Application::Primitive >&s)
+            std::vector< InputGen::Application::Primitive >*s)
     {
         _pSet = s;
         update();
@@ -29,9 +29,14 @@ private:
 signals:
 
 public slots:
+    inline void updateSamples(InputGen::Application::PointSet *set){
+        _pointSet = set;
+        update();
+    }
 
 private:
-    std::vector< InputGen::Application::Primitive > _pSet;
+    std::vector< InputGen::Application::Primitive > *_pSet;
+    InputGen::Application::PointSet *_pointSet;
     float _zoom;
 
 };
