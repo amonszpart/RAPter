@@ -17,7 +17,7 @@ var searchData=
   ['getdistancesonline',['getDistancesOnLine',['../glob_fit2_8hpp.html#a3bed1a190d1fc0feca2c4ea89681598b',1,'globFit2.hpp']]],
   ['getenergy',['getEnergy',['../classam_1_1_alpha_exp_opt_problem.html#a6b8e95654ac1d17083eed3a9309a1e72',1,'am::AlphaExpOptProblem::getEnergy()'],['../classam_1_1_exhaustive_opt_problem.html#a5d85fac8593933389cdc031948e20e77',1,'am::ExhaustiveOptProblem::getEnergy()'],['../classam_1_1_opt_problem.html#a9cc733b5ae5af104b074c3a23772093b',1,'am::OptProblem::getEnergy()'],['../classam_1_1_sim_ann_opt_problem.html#af1c11c4dcd391d7c883594c9e5399bba',1,'am::SimAnnOptProblem::getEnergy()']]],
   ['getexhaustivebest',['getExhaustiveBest',['../classam_1_1_sim_ann_opt_problem.html#a366906d7a1d545789ba2ffcbf499c782',1,'am::SimAnnOptProblem']]],
-  ['getextent',['getExtent',['../class_g_f2_1_1_line_primitive.html#af070d6b3772bfc65482f5195a445a81a',1,'GF2::LinePrimitive::getExtent()'],['../class_g_f2_1_1_plane_primitive.html#a0bda71cd5dedded2fb7445cdd3121d78',1,'GF2::PlanePrimitive::getExtent()']]],
+  ['getextent',['getExtent',['../class_g_f2_1_1_line_primitive.html#a3b567eac8b87a274a1dd9e2038fb6632',1,'GF2::LinePrimitive::getExtent()'],['../class_g_f2_1_1_plane_primitive.html#a0bda71cd5dedded2fb7445cdd3121d78',1,'GF2::PlanePrimitive::getExtent()']]],
   ['getfromcluster',['getFromCluster',['../classam_1_1_primitive_clustering.html#a669a92c93bf86cfe47589e12e264bc84',1,'am::PrimitiveClustering']]],
   ['getlasttimestamp',['getLastTimeStamp',['../class_g_f2_1_1_my_g_r_b_callback.html#a30d40e50e634c53a522d84fa195762ed',1,'GF2::MyGRBCallback']]],
   ['getline2dnormal',['getLine2DNormal',['../post__opt_2main_8cpp.html#a8ca183a55debcfed15f426b5635b0f9a',1,'main.cpp']]],
@@ -30,6 +30,7 @@ var searchData=
   ['getstepcount',['getStepCount',['../classam_1_1_sim_ann_opt_problem.html#a504cd31f27bfc2f709f6c0ad1222bb98',1,'am::SimAnnOptProblem']]],
   ['gettag',['getTag',['../class_g_f2_1_1_taggable.html#a948ad34f07461de03bb017fc26084240',1,'GF2::Taggable::getTag(int key) const '],['../class_g_f2_1_1_taggable.html#a61873fbd37e6c08ade2c33aa55e4be23',1,'GF2::Taggable::getTag(std::string key) const ']]],
   ['gf2',['GF2',['../namespace_g_f2.html',1,'']]],
+  ['gf2_5finc_5fproblemsetup_5fhpp',['GF2_INC_PROBLEMSETUP_HPP',['../problem_setup_8h.html#a2150ac6f9c3a7452c0e2e83dea8ef8a1',1,'problemSetup.h']]],
   ['gf2_5fmethod',['GF2_METHOD',['../main_8cpp.html#a0ef01500d2c586bdaccb823536ebfc2face89cb6e0896990e7dc31a5a98c99ec6',1,'main.cpp']]],
   ['gid',['GID',['../class_g_f2_1_1_line_primitive2.html#a66f2b9e27bc70ff50837a2bb0be70f26aedf35fcfdef8fdd420c26fdc58547944',1,'GF2::LinePrimitive2::GID()'],['../class_g_f2_1_1_point_primitive.html#adac543bf5f7b4b639dda512ddb5c95b0a5b70cf743ab33511651dbd93d58ca166',1,'GF2::PointPrimitive::GID()']]],
   ['globfit',['globFit',['../class_g_f2_1_1_gurobi_opt.html#a3f0039daa219b479dd5bd0c9f3cb923f',1,'GF2::GurobiOpt']]],
@@ -61,5 +62,6 @@ var searchData=
   ['gurobitosparsetxt',['gurobiToSparseTxt',['../gurobi_to_sparse_txt_8m.html#a021a4a469754df035553cb6013b4d88d',1,'gurobiToSparseTxt.m']]],
   ['gurobitosparsetxt_2em',['gurobiToSparseTxt.m',['../gurobi_to_sparse_txt_8m.html',1,'']]],
   ['io',['io',['../namespace_g_f2_1_1io.html',1,'GF2']]],
-  ['problemsetup',['ProblemSetup',['../namespace_g_f2_1_1_problem_setup.html',1,'GF2']]]
+  ['problemsetup',['problemSetup',['../namespace_g_f2_1_1problem_setup.html',1,'GF2']]],
+  ['util',['util',['../namespace_g_f2_1_1util.html',1,'GF2']]]
 ];

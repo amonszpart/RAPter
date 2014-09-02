@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['sqr',['SQR',['../angle_primitive_8h.html#ad41630f833e920c1ffa34722f45a8e77',1,'SQR():&#160;anglePrimitive.h'],['../kmeans_2point_primitive_8h.html#ad41630f833e920c1ffa34722f45a8e77',1,'SQR():&#160;pointPrimitive.h']]]
+  ['retic',['RETIC',['../glob_fit2_8hpp.html#a037ad9ce13368bed9e6e87031949c691',1,'globFit2.hpp']]]
 ];

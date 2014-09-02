@@ -81,7 +81,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li><li class="navelem"><a class="el" href="dir_0f49da351b17ac9197042ce4d8ceb91d.html">globfit2</a></li><li class="navelem"><a class="el" href="dir_d5cde434325fbfe8611d7f9994d05de5.html">util</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_e01fc40d2b7505b29a2defa0d6c40691.html">include</a></li><li class="navelem"><a class="el" href="dir_a06271ff063861600d6d08430c32feea.html">globfit2</a></li><li class="navelem"><a class="el" href="dir_80e21f160e0168fc59c1f8d75f97d690.html">util</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -92,41 +92,46 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a href="disk_util_8hpp.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="preprocessor">#ifndef GF2_DISKUTIL_HPP</span></div>
 <div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define GF2_DISKUTIL_HPP</span></div>
 <div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;<span class="preprocessor"></span></div>
-<div class="line"><a name="l00004"></a><span class="lineno"><a class="line" href="namespaceutil.html">    4</a></span>&#160;<span class="keyword">namespace </span>util {</div>
-<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;</div>
-<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="keyword">inline</span> std::string</div>
-<div class="line"><a name="l00010"></a><span class="lineno"><a class="line" href="namespaceutil.html#a9db1fad619e4fe6be6c81cc84ba12cee">   10</a></span>&#160;<a class="code" href="namespaceutil.html#a9db1fad619e4fe6be6c81cc84ba12cee">saveBackup</a>( std::string <a class="code" href="function__handle_8m.html#a03d2a3685385f82943527be28e035ad9">path</a> )</div>
-<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;{</div>
-<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;    std::string bak_path = <a class="code" href="function__handle_8m.html#a03d2a3685385f82943527be28e035ad9">path</a>;</div>
-<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;    <span class="keywordflow">if</span> ( boost::filesystem::exists(path) )</div>
-<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;    {</div>
-<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;        <span class="keywordtype">int</span> <a class="code" href="globfit_8m.html#a901eed5bfcfb9d1af7f58c545d1a88c4">i</a> = -1;</div>
-<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;        <span class="keywordflow">do</span></div>
-<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;        {</div>
-<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;            ++<a class="code" href="globfit_8m.html#a901eed5bfcfb9d1af7f58c545d1a88c4">i</a>;</div>
-<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;            std::stringstream ss;</div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;            ss &lt;&lt; path &lt;&lt; <span class="stringliteral">&quot;.&quot;</span> &lt;&lt; i &lt;&lt; <span class="stringliteral">&quot;.bak&quot;</span>;</div>
-<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;            bak_path = ss.str();</div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;</div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;        } <span class="keywordflow">while</span> ( boost::filesystem::exists(bak_path) );</div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;</div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;        std::cout &lt;&lt; <span class="stringliteral">&quot;saving backup of &quot;</span> &lt;&lt; path &lt;&lt; <span class="stringliteral">&quot; to &quot;</span> &lt;&lt; bak_path &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;        boost::filesystem::copy( path, bak_path );</div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;    }</div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#include &lt;string&gt;</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="preprocessor">#include &quot;boost/filesystem.hpp&quot;</span></div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;</div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="keyword">namespace </span>GF2 {</div>
+<div class="line"><a name="l00008"></a><span class="lineno"><a class="line" href="namespace_g_f2_1_1util.html">    8</a></span>&#160;<span class="keyword">namespace </span>util {</div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;</div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="keyword">inline</span> std::string</div>
+<div class="line"><a name="l00014"></a><span class="lineno"><a class="line" href="namespace_g_f2_1_1util.html#a76af03f83085374160be9ba6570d1955">   14</a></span>&#160;<a class="code" href="namespace_g_f2_1_1util.html#a76af03f83085374160be9ba6570d1955">saveBackup</a>( std::string <a class="code" href="function__handle_8m.html#a03d2a3685385f82943527be28e035ad9">path</a> )</div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;{</div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;    std::string bak_path = <a class="code" href="function__handle_8m.html#a03d2a3685385f82943527be28e035ad9">path</a>;</div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;    <span class="keywordflow">if</span> ( boost::filesystem::exists(path) )</div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;    {</div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;        <span class="keywordtype">int</span> <a class="code" href="globfit_8m.html#a901eed5bfcfb9d1af7f58c545d1a88c4">i</a> = -1;</div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;        <span class="keywordflow">do</span></div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;        {</div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;            ++<a class="code" href="globfit_8m.html#a901eed5bfcfb9d1af7f58c545d1a88c4">i</a>;</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;            std::stringstream ss;</div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;            ss &lt;&lt; path &lt;&lt; <span class="stringliteral">&quot;.&quot;</span> &lt;&lt; i &lt;&lt; <span class="stringliteral">&quot;.bak&quot;</span>;</div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;            bak_path = ss.str();</div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;        } <span class="keywordflow">while</span> ( boost::filesystem::exists(bak_path) );</div>
 <div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;</div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;    <span class="keywordflow">return</span> bak_path;</div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;} <span class="comment">// ..._saveSafe()</span></div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;</div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;} <span class="comment">//...namespace  util</span></div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="preprocessor">#endif // GF2_DISKUTIL_HPP</span></div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;        std::cout &lt;&lt; <span class="stringliteral">&quot;saving backup of &quot;</span> &lt;&lt; path &lt;&lt; <span class="stringliteral">&quot; to &quot;</span> &lt;&lt; bak_path &lt;&lt; std::endl;</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;        boost::filesystem::copy( path, bak_path );</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;    }</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;    <span class="keywordflow">return</span> bak_path;</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;} <span class="comment">// ..._saveSafe()</span></div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;} <span class="comment">//...namespace util</span></div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;} <span class="comment">//...namespace GF2</span></div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="preprocessor">#endif // GF2_DISKUTIL_HPP</span></div>
+<div class="ttc" id="namespace_g_f2_1_1util_html_a76af03f83085374160be9ba6570d1955"><div class="ttname"><a href="namespace_g_f2_1_1util.html#a76af03f83085374160be9ba6570d1955">GF2::util::saveBackup</a></div><div class="ttdeci">std::string saveBackup(std::string path)</div><div class="ttdoc">_saveSafe Saves backups of the path to be overwritten. If .0.bak exists, try .1.bak, etc. </div><div class="ttdef"><b>Definition:</b> <a href="disk_util_8hpp_source.html#l00014">diskUtil.hpp:14</a></div></div>
 <div class="ttc" id="globfit_8m_html_a901eed5bfcfb9d1af7f58c545d1a88c4"><div class="ttname"><a href="globfit_8m.html#a901eed5bfcfb9d1af7f58c545d1a88c4">i</a></div><div class="ttdeci">for i</div><div class="ttdef"><b>Definition:</b> <a href="globfit_8m_source.html#l00015">globfit.m:15</a></div></div>
-<div class="ttc" id="namespaceutil_html_a9db1fad619e4fe6be6c81cc84ba12cee"><div class="ttname"><a href="namespaceutil.html#a9db1fad619e4fe6be6c81cc84ba12cee">util::saveBackup</a></div><div class="ttdeci">std::string saveBackup(std::string path)</div><div class="ttdoc">_saveSafe Saves backups of the path to be overwritten. If .0.bak exists, try .1.bak, etc. </div><div class="ttdef"><b>Definition:</b> <a href="disk_util_8hpp_source.html#l00010">diskUtil.hpp:10</a></div></div>
 <div class="ttc" id="function__handle_8m_html_a03d2a3685385f82943527be28e035ad9"><div class="ttname"><a href="function__handle_8m.html#a03d2a3685385f82943527be28e035ad9">path</a></div><div class="ttdeci">function it is only possible to succesfully evaluate the resulting handle when the function the handle refers to was on the MATLAB search at the time the handle was created To create valid handles to arbitrarty functions possibly not on the search path</div><div class="ttdef"><b>Definition:</b> <a href="function__handle_8m_source.html#l00001">function_handle.m:1</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Aug 31 2014 20:43:28 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Sep 2 2014 14:33:23 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

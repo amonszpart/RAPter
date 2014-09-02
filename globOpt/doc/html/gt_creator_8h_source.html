@@ -81,7 +81,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li><li class="navelem"><a class="el" href="dir_0f49da351b17ac9197042ce4d8ceb91d.html">globfit2</a></li><li class="navelem"><a class="el" href="dir_5e51f07dcdebd9689e640da8502eeddf.html">ground_truth</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_e01fc40d2b7505b29a2defa0d6c40691.html">include</a></li><li class="navelem"><a class="el" href="dir_a06271ff063861600d6d08430c32feea.html">globfit2</a></li><li class="navelem"><a class="el" href="dir_acb372d661ad0eb6e3c391db0ef83cbe.html">ground_truth</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -104,7 +104,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;        <span class="keyword">public</span>:</div>
 <div class="line"><a name="l00014"></a><span class="lineno"><a class="line" href="class_g_f2_1_1_g_t_creator.html#aebc9730c67aeb4fb6eca86cc8ad3acdd">   14</a></span>&#160;            <span class="keyword">typedef</span> pcl::PointXYZRGB <a class="code" href="class_g_f2_1_1_g_t_creator.html#aebc9730c67aeb4fb6eca86cc8ad3acdd">PointT</a>;</div>
 <div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;</div>
-<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;            <span class="keyword">static</span> <span class="keywordtype">int</span> <a class="code" href="class_g_f2_1_1_g_t_creator.html#a5dae39d000b61b2305166e9a7b8a68ba">run</a>( pcl::PointCloud&lt;PointT&gt;::Ptr &amp;<a class="code" href="lp_8m.html#a629c932e04d057de3f60912da6e565c2">cloud</a>, std::string gt_name, <span class="keywordtype">int</span> gt_nPoints, <span class="keywordtype">float</span> gt_noise );</div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;            <span class="comment">//static int run( pcl::PointCloud&lt;PointT&gt;::Ptr &amp;cloud, std::string gt_name, int gt_nPoints, float gt_noise );</span></div>
 <div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;            <span class="keyword">static</span> <span class="keywordtype">int</span> <a class="code" href="class_g_f2_1_1_g_t_creator.html#aa6983d213ef48c890941d6a36cc94894">sampleImage</a>( pcl::PointCloud&lt;PointT&gt;::Ptr &amp;<a class="code" href="lp_8m.html#a629c932e04d057de3f60912da6e565c2">cloud</a></div>
 <div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;                                    , std::string image_path</div>
 <div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;                                    , <span class="keywordtype">int</span> gt_nPoints</div>
@@ -118,16 +118,15 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;} <span class="comment">// ns GF2</span></div>
 <div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;</div>
 <div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="preprocessor">#endif // __GF2_GTCREATOR_H__</span></div>
-<div class="ttc" id="class_g_f2_1_1_g_t_creator_html_a5dae39d000b61b2305166e9a7b8a68ba"><div class="ttname"><a href="class_g_f2_1_1_g_t_creator.html#a5dae39d000b61b2305166e9a7b8a68ba">GF2::GTCreator::run</a></div><div class="ttdeci">static int run(pcl::PointCloud&lt; PointT &gt;::Ptr &amp;cloud, std::string gt_name, int gt_nPoints, float gt_noise)</div><div class="ttdef"><b>Definition:</b> <a href="gt_creator_8cpp_source.html#l00016">gtCreator.cpp:16</a></div></div>
 <div class="ttc" id="lp_8m_html_a629c932e04d057de3f60912da6e565c2"><div class="ttname"><a href="lp_8m.html#a629c932e04d057de3f60912da6e565c2">cloud</a></div><div class="ttdeci">cloud[Px, Py, Pz,~]</div><div class="ttdef"><b>Definition:</b> <a href="lp_8m_source.html#l00014">lp.m:14</a></div></div>
-<div class="ttc" id="class_g_f2_1_1_g_t_creator_html_aa6983d213ef48c890941d6a36cc94894"><div class="ttname"><a href="class_g_f2_1_1_g_t_creator.html#aa6983d213ef48c890941d6a36cc94894">GF2::GTCreator::sampleImage</a></div><div class="ttdeci">static int sampleImage(pcl::PointCloud&lt; PointT &gt;::Ptr &amp;cloud, std::string image_path, int gt_nPoints, float gt_noise, float gt_scene_size=1.f, float filter_size=0.075f, Eigen::Vector3f *sensor_origin=NULL)</div><div class="ttdef"><b>Definition:</b> <a href="gt_creator_8cpp_source.html#l00085">gtCreator.cpp:85</a></div></div>
+<div class="ttc" id="class_g_f2_1_1_g_t_creator_html_aa6983d213ef48c890941d6a36cc94894"><div class="ttname"><a href="class_g_f2_1_1_g_t_creator.html#aa6983d213ef48c890941d6a36cc94894">GF2::GTCreator::sampleImage</a></div><div class="ttdeci">static int sampleImage(pcl::PointCloud&lt; PointT &gt;::Ptr &amp;cloud, std::string image_path, int gt_nPoints, float gt_noise, float gt_scene_size=1.f, float filter_size=0.075f, Eigen::Vector3f *sensor_origin=NULL)</div><div class="ttdef"><b>Definition:</b> <a href="gt_creator_8cpp_source.html#l00087">gtCreator.cpp:87</a></div></div>
 <div class="ttc" id="my__types_8h_html"><div class="ttname"><a href="my__types_8h.html">my_types.h</a></div></div>
 <div class="ttc" id="class_g_f2_1_1_g_t_creator_html_aebc9730c67aeb4fb6eca86cc8ad3acdd"><div class="ttname"><a href="class_g_f2_1_1_g_t_creator.html#aebc9730c67aeb4fb6eca86cc8ad3acdd">GF2::GTCreator::PointT</a></div><div class="ttdeci">pcl::PointXYZRGB PointT</div><div class="ttdef"><b>Definition:</b> <a href="gt_creator_8h_source.html#l00014">gtCreator.h:14</a></div></div>
 <div class="ttc" id="class_g_f2_1_1_g_t_creator_html"><div class="ttname"><a href="class_g_f2_1_1_g_t_creator.html">GF2::GTCreator</a></div><div class="ttdef"><b>Definition:</b> <a href="gt_creator_8h_source.html#l00011">gtCreator.h:11</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Aug 31 2014 20:43:28 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Sep 2 2014 14:33:23 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

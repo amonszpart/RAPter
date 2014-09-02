@@ -14,5 +14,7 @@ var searchData=
   ['houghline',['HoughLine',['../classam_1_1_hough_line.html#abcaa6a3cfe6048f4773296c815b03cc1',1,'am::HoughLine::HoughLine()'],['../classam_1_1_hough_line.html#aa2e70dece23f49794b0b981ebb900618',1,'am::HoughLine::HoughLine(Scalar r, Scalar angle)']]],
   ['houghline',['HoughLine',['../classam_1_1_hough_line.html',1,'am']]],
   ['houghline_2eh',['houghLine.h',['../hough_line_8h.html',1,'']]],
-  ['hw',['hw',['../read_sparse_matrix_8m.html#ab67f5bd69fb707530c4fb25c3b71ac2c',1,'readSparseMatrix.m']]]
+  ['hsv2rgb',['hsv2rgb',['../namespace_g_f2_1_1util.html#a6a09a2912316073cfba053eb16f9e588',1,'GF2::util']]],
+  ['hw',['hw',['../read_sparse_matrix_8m.html#ab67f5bd69fb707530c4fb25c3b71ac2c',1,'readSparseMatrix.m']]],
+  ['hybrid',['HYBRID',['../class_g_f2_1_1_problem_setup.html#a8399b83e842d43dd98e996176975f3aba6339793b70b6d691664ccf1007a6cd9e',1,'GF2::ProblemSetup']]]
 ];

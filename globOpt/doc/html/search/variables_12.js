@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['scale',['scale',['../globfit_8m.html#a3d6cbfbc95fcc0bac7015e7f5743e466',1,'scale():&#160;globfit.m'],['../patch_cost_function_8m.html#acec6d8ad52a28972fa74e071c1a63b6a',1,'scale():&#160;patchCostFunction.m']]],
+  ['scale',['scale',['../struct_g_f2_1_1_problem_setup_params.html#a3ee3f11fe8d9dc44b56057c65fe92ef5',1,'GF2::ProblemSetupParams::scale()'],['../globfit_8m.html#a3d6cbfbc95fcc0bac7015e7f5743e466',1,'scale():&#160;globfit.m'],['../patch_cost_function_8m.html#acec6d8ad52a28972fa74e071c1a63b6a',1,'scale():&#160;patchCostFunction.m']]],
   ['selection',['selection',['../lp_8m.html#a79d1b0e96e042367a41a73d13a4a09f1',1,'lp.m']]],
   ['show_5fcandidates',['show_candidates',['../struct_g_f2_1_1_candidate_generator_params.html#abcdf4553f9549d8d5a27d6e97089f7d3',1,'GF2::CandidateGeneratorParams']]],
   ['show_5ffit_5flines',['show_fit_lines',['../struct_g_f2_1_1_candidate_generator_params.html#a9dadf49837c359afc1e1fbc57388a9fd',1,'GF2::CandidateGeneratorParams']]],

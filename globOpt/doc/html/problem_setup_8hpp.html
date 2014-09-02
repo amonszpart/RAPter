@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.6"/>
-<title>globOpt: include/globfit2/optimization/problemSetup.hpp File Reference</title>
+<title>globOpt: include/globfit2/optimization/impl/problemSetup.hpp File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -81,17 +81,23 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li><li class="navelem"><a class="el" href="dir_0f49da351b17ac9197042ce4d8ceb91d.html">globfit2</a></li><li class="navelem"><a class="el" href="dir_fa64362523afef21caf716e93c77b04f.html">optimization</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_e01fc40d2b7505b29a2defa0d6c40691.html">include</a></li><li class="navelem"><a class="el" href="dir_a06271ff063861600d6d08430c32feea.html">globfit2</a></li><li class="navelem"><a class="el" href="dir_763fb2c265f38c1017b67df34d2ee3ec.html">optimization</a></li><li class="navelem"><a class="el" href="dir_11ec1105867bd10ed267fa05876e7dc9.html">impl</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#namespaces">Namespaces</a>  </div>
+<a href="#namespaces">Namespaces</a> &#124;
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">problemSetup.hpp File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;vector&gt;</code><br/>
+<div class="textblock"><code>#include &lt;iostream&gt;</code><br/>
+<code>#include &quot;Eigen/Dense&quot;</code><br/>
+<code>#include &quot;<a class="el" href="problem_setup_8h_source.html">globfit2/optimization/problemSetup.h</a>&quot;</code><br/>
+<code>#include &quot;<a class="el" href="energy_functors_8h_source.html">globfit2/optimization/energyFunctors.h</a>&quot;</code><br/>
+<code>#include &quot;qcqpcpp/optProblem.h&quot;</code><br/>
+<code>#include &quot;<a class="el" href="parameters_8h_source.html">globfit2/parameters.h</a>&quot;</code><br/>
 </div>
 <p><a href="problem_setup_8hpp_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -100,13 +106,38 @@ Namespaces</h2></td></tr>
 <tr class="memitem:namespace_g_f2"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_g_f2.html">GF2</a></td></tr>
 <tr class="memdesc:namespace_g_f2"><td class="mdescLeft">&#160;</td><td class="mdescRight">GUROBIOPT. <br/></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:namespace_g_f2_1_1_problem_setup"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_g_f2_1_1_problem_setup.html">GF2::ProblemSetup</a></td></tr>
+<tr class="memitem:namespace_g_f2_1_1problem_setup"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_g_f2_1_1problem_setup.html">GF2::problemSetup</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:a1b0396be5186f8f141d421ca748bee59"><td class="memTemplParams" colspan="2">template&lt;class _PointPrimitiveDistanceFunctor , class _PrimitiveT , class _PointPrimitiveT , typename _Scalar , class _OptProblemT , class _PrimitiveContainerT , class _PointContainerT , class _AssocT , class _WeightsT &gt; </td></tr>
+<tr class="memitem:a1b0396be5186f8f141d421ca748bee59"><td class="memTemplItemLeft" align="right" valign="top">static int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespace_g_f2_1_1problem_setup.html#a1b0396be5186f8f141d421ca748bee59">GF2::problemSetup::associationBasedDataCost</a> (_OptProblemT &amp;<a class="el" href="test0_8m.html#a60ccbcd450c9447c51f60d68cafad936">problem</a>, _PrimitiveContainerT const &amp;<a class="el" href="lp_8m.html#ae8954d9790c81e762964bce1b5bcda08">prims</a>, _PointContainerT const &amp;<a class="el" href="my__ply__read_8m.html#a89e43a853a4a07e7e9741ad321fd2819">points</a>, _AssocT const &amp;lids_varids, _WeightsT const &amp;weights, _Scalar const )</td></tr>
+<tr class="memdesc:a1b0396be5186f8f141d421ca748bee59"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds unary costs to problem based on point to primitive associations.  <a href="#a1b0396be5186f8f141d421ca748bee59">More...</a><br/></td></tr>
+<tr class="separator:a1b0396be5186f8f141d421ca748bee59"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a16dfa546232f01a3282ffdfb60fc79a8"><td class="memTemplParams" colspan="2">template&lt;class _PointPrimitiveDistanceFunctor , class _PrimitiveT , class _PointPrimitiveT , typename _Scalar , class _OptProblemT , class _PrimitiveContainerT , class _PointContainerT , class _AssocT , class _WeightsT &gt; </td></tr>
+<tr class="memitem:a16dfa546232f01a3282ffdfb60fc79a8"><td class="memTemplItemLeft" align="right" valign="top">static int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespace_g_f2_1_1problem_setup.html#a16dfa546232f01a3282ffdfb60fc79a8">GF2::problemSetup::everyPatchNeedsDirectionConstraint</a> (_OptProblemT &amp;<a class="el" href="test0_8m.html#a60ccbcd450c9447c51f60d68cafad936">problem</a>, _PrimitiveContainerT const &amp;<a class="el" href="lp_8m.html#ae8954d9790c81e762964bce1b5bcda08">prims</a>, _PointContainerT const &amp;, _AssocT const &amp;lids_varids, _WeightsT const &amp;, _Scalar const )</td></tr>
+<tr class="separator:a16dfa546232f01a3282ffdfb60fc79a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1b8fa7d0f5ce7e0627ba0c0aeac33c74"><td class="memTemplParams" colspan="2">template&lt;class _PointPrimitiveDistanceFunctor , class _PrimitiveT , class _PointPrimitiveT , typename _Scalar , class _OptProblemT , class _PrimitiveContainerT , class _PointContainerT , class _AssocT , class _WeightsT &gt; </td></tr>
+<tr class="memitem:a1b8fa7d0f5ce7e0627ba0c0aeac33c74"><td class="memTemplItemLeft" align="right" valign="top">static int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespace_g_f2_1_1problem_setup.html#a1b8fa7d0f5ce7e0627ba0c0aeac33c74">GF2::problemSetup::largePatchesNeedDirectionConstraint</a> (_OptProblemT &amp;<a class="el" href="test0_8m.html#a60ccbcd450c9447c51f60d68cafad936">problem</a>, _PrimitiveContainerT const &amp;<a class="el" href="lp_8m.html#ae8954d9790c81e762964bce1b5bcda08">prims</a>, _PointContainerT const &amp;<a class="el" href="my__ply__read_8m.html#a89e43a853a4a07e7e9741ad321fd2819">points</a>, _AssocT const &amp;lids_varids, _WeightsT const &amp;, _Scalar const <a class="el" href="patch_cost_function_8m.html#acec6d8ad52a28972fa74e071c1a63b6a">scale</a>, int const pop_limit)</td></tr>
+<tr class="memdesc:a1b8fa7d0f5ce7e0627ba0c0aeac33c74"><td class="mdescLeft">&#160;</td><td class="mdescRight">Hybrid mode, large patches need one direction, points in small patches need to be assigned to one.  <a href="#a1b8fa7d0f5ce7e0627ba0c0aeac33c74">More...</a><br/></td></tr>
+<tr class="separator:a1b8fa7d0f5ce7e0627ba0c0aeac33c74"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3e0aa0a6e8bb6bc9e2c0d0a676bf1141"><td class="memTemplParams" colspan="2">template&lt;class _PointPrimitiveDistanceFunctor , class _PrimitiveT , class _PointPrimitiveT , typename _Scalar , class _OptProblemT , class _PrimitiveContainerT , class _PointContainerT , class _AssocT , class _WeightsT &gt; </td></tr>
+<tr class="memitem:a3e0aa0a6e8bb6bc9e2c0d0a676bf1141"><td class="memTemplItemLeft" align="right" valign="top">static int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespace_g_f2_1_1problem_setup.html#a3e0aa0a6e8bb6bc9e2c0d0a676bf1141">GF2::problemSetup::instanceBasedDataCost</a> (_OptProblemT &amp;<a class="el" href="test0_8m.html#a60ccbcd450c9447c51f60d68cafad936">problem</a>, _PrimitiveContainerT const &amp;<a class="el" href="lp_8m.html#ae8954d9790c81e762964bce1b5bcda08">prims</a>, _PointContainerT const &amp;<a class="el" href="my__ply__read_8m.html#a89e43a853a4a07e7e9741ad321fd2819">points</a>, _AssocT const &amp;lids_varids, _WeightsT const &amp;weights, _Scalar const )</td></tr>
+<tr class="memdesc:a3e0aa0a6e8bb6bc9e2c0d0a676bf1141"><td class="mdescLeft">&#160;</td><td class="mdescRight">Nic's version.  <a href="#a3e0aa0a6e8bb6bc9e2c0d0a676bf1141">More...</a><br/></td></tr>
+<tr class="separator:a3e0aa0a6e8bb6bc9e2c0d0a676bf1141"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac3adb4595ac34c9610acaa4836e36ddb"><td class="memTemplParams" colspan="2">template&lt;class _PointPrimitiveDistanceFunctor , class _PrimitiveT , class _PointPrimitiveT , typename _Scalar , class _OptProblemT , class _PrimitiveContainerT , class _PointContainerT , class _AssocT , class _WeightsT &gt; </td></tr>
+<tr class="memitem:ac3adb4595ac34c9610acaa4836e36ddb"><td class="memTemplItemLeft" align="right" valign="top">static int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespace_g_f2_1_1problem_setup.html#ac3adb4595ac34c9610acaa4836e36ddb">GF2::problemSetup::bandBasedDataCost</a> (_OptProblemT &amp;<a class="el" href="test0_8m.html#a60ccbcd450c9447c51f60d68cafad936">problem</a>, _PrimitiveContainerT const &amp;<a class="el" href="lp_8m.html#ae8954d9790c81e762964bce1b5bcda08">prims</a>, _PointContainerT const &amp;<a class="el" href="my__ply__read_8m.html#a89e43a853a4a07e7e9741ad321fd2819">points</a>, _AssocT const &amp;lids_varids, _WeightsT const &amp;weights, _Scalar const <a class="el" href="patch_cost_function_8m.html#acec6d8ad52a28972fa74e071c1a63b6a">scale</a>)</td></tr>
+<tr class="memdesc:ac3adb4595ac34c9610acaa4836e36ddb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds unary costs to problem based on scale wide band assocation.  <a href="#ac3adb4595ac34c9610acaa4836e36ddb">More...</a><br/></td></tr>
+<tr class="separator:ac3adb4595ac34c9610acaa4836e36ddb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaca9668906484db365db364bc762207e"><td class="memTemplParams" colspan="2">template&lt;class _PointPrimitiveDistanceFunctor , class _PrimitiveT , class _PointPrimitiveT , typename _Scalar , class _OptProblemT , class _PrimitiveContainerT , class _PointContainerT , class _AssocT , class _WeightsT &gt; </td></tr>
+<tr class="memitem:aaca9668906484db365db364bc762207e"><td class="memTemplItemLeft" align="right" valign="top">static int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespace_g_f2_1_1problem_setup.html#aaca9668906484db365db364bc762207e">GF2::problemSetup::everyPointNeedsPatchConstraint</a> (_OptProblemT &amp;<a class="el" href="test0_8m.html#a60ccbcd450c9447c51f60d68cafad936">problem</a>, _PrimitiveContainerT const &amp;<a class="el" href="lp_8m.html#ae8954d9790c81e762964bce1b5bcda08">prims</a>, _PointContainerT const &amp;<a class="el" href="my__ply__read_8m.html#a89e43a853a4a07e7e9741ad321fd2819">points</a>, _AssocT const &amp;lids_varids, _WeightsT const &amp;, _Scalar const <a class="el" href="patch_cost_function_8m.html#acec6d8ad52a28972fa74e071c1a63b6a">scale</a>)</td></tr>
+<tr class="separator:aaca9668906484db365db364bc762207e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Aug 31 2014 20:43:28 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Sep 2 2014 14:33:23 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

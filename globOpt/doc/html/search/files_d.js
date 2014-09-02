@@ -1,8 +1,10 @@
 var searchData=
 [
+  ['parameters_2eh',['parameters.h',['../parameters_8h.html',1,'']]],
   ['params_2eh',['params.h',['../params_8h.html',1,'']]],
   ['patchcostfunction_2em',['patchCostFunction.m',['../patch_cost_function_8m.html',1,'']]],
   ['patchdistancefunctors_2eh',['patchDistanceFunctors.h',['../patch_distance_functors_8h.html',1,'']]],
+  ['pcl_5futil_2ehpp',['pcl_util.hpp',['../pcl__util_8hpp.html',1,'']]],
   ['pearl_5fspecialize_2ecpp',['pearl_specialize.cpp',['../pearl__specialize_8cpp.html',1,'']]],
   ['perturb_5frects_2em',['perturb_rects.m',['../perturb__rects_8m.html',1,'']]],
   ['planeprimitive_2eh',['planePrimitive.h',['../plane_primitive_8h.html',1,'']]],
@@ -12,8 +14,9 @@ var searchData=
   ['postaligner_2ecpp',['postAligner.cpp',['../post_aligner_8cpp.html',1,'']]],
   ['postaligner_2eh',['postAligner.h',['../post_aligner_8h.html',1,'']]],
   ['postaligner_2ehpp',['postAligner.hpp',['../post_aligner_8hpp.html',1,'']]],
-  ['primitive_2eh',['primitive.h',['../kmeans_2primitive_8h.html',1,'']]],
   ['primitive_2eh',['primitive.h',['../globfit2_2primitives_2primitive_8h.html',1,'']]],
+  ['primitive_2eh',['primitive.h',['../kmeans_2primitive_8h.html',1,'']]],
+  ['problemsetup_2eh',['problemSetup.h',['../problem_setup_8h.html',1,'']]],
   ['problemsetup_2ehpp',['problemSetup.hpp',['../problem_setup_8hpp.html',1,'']]],
   ['pw_5fcost_2em',['pw_cost.m',['../pw__cost_8m.html',1,'']]]
 ];

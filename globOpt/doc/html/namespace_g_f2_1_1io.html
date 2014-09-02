@@ -94,30 +94,20 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a5a3f1d53992843fdc960b87d029510de"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_g_f2_1_1io.html#a5a3f1d53992843fdc960b87d029510de">readSolution</a> (std::string const <a class="el" href="gurobi_to_sparse_txt_8m.html#a46173fab2c6d6ba8a310c1be844ca796">path</a>)</td></tr>
-<tr class="separator:a5a3f1d53992843fdc960b87d029510de"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9fc6636592d49578891f5cbe2c4ba80a"><td class="memTemplParams" colspan="2">template&lt;class PrimitivesT , typename Scalar  = typename PrimitivesT::value_type::Scalar&gt; </td></tr>
-<tr class="memitem:a9fc6636592d49578891f5cbe2c4ba80a"><td class="memTemplItemLeft" align="right" valign="top">int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespace_g_f2_1_1io.html#a9fc6636592d49578891f5cbe2c4ba80a">saveSolution</a> (std::string <a class="el" href="gurobi_to_sparse_txt_8m.html#a46173fab2c6d6ba8a310c1be844ca796">path</a>, <a class="el" href="namespace_g_f2.html#af9ca2fafa8af7848cb0e458ad24e9c05">MaskType</a> const &amp;opt_mask, PrimitivesT const &amp;candidates, Scalar const working_scale, std::vector&lt; Scalar &gt; const &amp;gf2_desired_angles, int argc, char **argv)</td></tr>
-<tr class="separator:a9fc6636592d49578891f5cbe2c4ba80a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6e9a4bb9170f3c9393087f91eca421e4"><td class="memTemplParams" colspan="2">template&lt;class PrimitiveContainerT , class PrimitiveT  = typename PrimitiveContainerT::value_type::value_type&gt; </td></tr>
+<tr class="memitem:a6e9a4bb9170f3c9393087f91eca421e4"><td class="memTemplParams" colspan="2">template&lt;class PrimitiveT , class PrimitiveContainerT &gt; </td></tr>
 <tr class="memitem:a6e9a4bb9170f3c9393087f91eca421e4"><td class="memTemplItemLeft" align="right" valign="top">int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespace_g_f2_1_1io.html#a6e9a4bb9170f3c9393087f91eca421e4">savePrimitives</a> (PrimitiveContainerT const &amp;<a class="el" href="globfit_8m.html#aaa2020b443560284c949661ae094df40">primitives</a>, std::string out_file_name, bool verbose=false)</td></tr>
+<tr class="memdesc:a6e9a4bb9170f3c9393087f91eca421e4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Dumps primitives with GID and DIR_GID to disk.  <a href="#a6e9a4bb9170f3c9393087f91eca421e4">More...</a><br/></td></tr>
 <tr class="separator:a6e9a4bb9170f3c9393087f91eca421e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a04d0ce6301b6382cf4a8e9d766955100"><td class="memTemplParams" colspan="2">template&lt;class PrimitiveContainerT , class PrimitiveT  = typename PrimitiveContainerT::value_type::value_type, int Dim = PrimitiveT::Dim, typename Scalar  = typename PrimitiveT::Scalar&gt; </td></tr>
-<tr class="memitem:a04d0ce6301b6382cf4a8e9d766955100"><td class="memTemplItemLeft" align="right" valign="top">int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespace_g_f2_1_1io.html#a04d0ce6301b6382cf4a8e9d766955100">readPrimitives</a> (PrimitiveContainerT &amp;lines, std::string const &amp;<a class="el" href="gurobi_to_sparse_txt_8m.html#a46173fab2c6d6ba8a310c1be844ca796">path</a>)</td></tr>
-<tr class="separator:a04d0ce6301b6382cf4a8e9d766955100"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a088fc75b1e094d6ee6ead5d45d2587a1"><td class="memTemplParams" colspan="2">template&lt;class PrimitiveT , class PrimitiveContainerT &gt; </td></tr>
+<tr class="memitem:a088fc75b1e094d6ee6ead5d45d2587a1"><td class="memTemplItemLeft" align="right" valign="top">int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespace_g_f2_1_1io.html#a088fc75b1e094d6ee6ead5d45d2587a1">readPrimitives</a> (PrimitiveContainerT &amp;lines, std::string const &amp;<a class="el" href="gurobi_to_sparse_txt_8m.html#a46173fab2c6d6ba8a310c1be844ca796">path</a>)</td></tr>
+<tr class="separator:a088fc75b1e094d6ee6ead5d45d2587a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9bce496e4ce752c26c024362e8bca2d9"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_g_f2_1_1io.html#a9bce496e4ce752c26c024362e8bca2d9">readAssociations</a> (std::vector&lt; std::pair&lt; int, int &gt; &gt; &amp;points_primitives, std::string const &amp;<a class="el" href="gurobi_to_sparse_txt_8m.html#a46173fab2c6d6ba8a310c1be844ca796">path</a>, std::map&lt; int, int &gt; *linear_indices)</td></tr>
 <tr class="memdesc:a9bce496e4ce752c26c024362e8bca2d9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads point-primitive associations from file.  <a href="#a9bce496e4ce752c26c024362e8bca2d9">More...</a><br/></td></tr>
 <tr class="separator:a9bce496e4ce752c26c024362e8bca2d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3e6a9c58eb7a7260d47fe912e26dbef1"><td class="memTemplParams" colspan="2">template&lt;class _PointContainerT , class _PointT  = typename _PointContainerT::value_type&gt; </td></tr>
+<tr class="memitem:a3e6a9c58eb7a7260d47fe912e26dbef1"><td class="memTemplParams" colspan="2">template&lt;class _PointT , class _PointContainerT &gt; </td></tr>
 <tr class="memitem:a3e6a9c58eb7a7260d47fe912e26dbef1"><td class="memTemplItemLeft" align="right" valign="top">int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespace_g_f2_1_1io.html#a3e6a9c58eb7a7260d47fe912e26dbef1">readPoints</a> (_PointContainerT &amp;<a class="el" href="my__ply__read_8m.html#a89e43a853a4a07e7e9741ad321fd2819">points</a>, std::string <a class="el" href="gurobi_to_sparse_txt_8m.html#a46173fab2c6d6ba8a310c1be844ca796">path</a>, pcl::PointCloud&lt; pcl::PointXYZRGB &gt;::Ptr *cloud_arg=NULL)</td></tr>
 <tr class="memdesc:a3e6a9c58eb7a7260d47fe912e26dbef1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solver::readPoints Read stored points, and convert them to non-PCL format.  <a href="#a3e6a9c58eb7a7260d47fe912e26dbef1">More...</a><br/></td></tr>
 <tr class="separator:a3e6a9c58eb7a7260d47fe912e26dbef1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aef9f1ea3e006aed8ee6a29219aecd6fb"><td class="memTemplParams" colspan="2">template&lt;class PrimitivesT &gt; </td></tr>
-<tr class="memitem:aef9f1ea3e006aed8ee6a29219aecd6fb"><td class="memTemplItemLeft" align="right" valign="top">int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespace_g_f2_1_1io.html#aef9f1ea3e006aed8ee6a29219aecd6fb">readSolution</a> (<a class="el" href="namespace_g_f2.html#af9ca2fafa8af7848cb0e458ad24e9c05">MaskType</a> &amp;mask, std::string const &amp;<a class="el" href="gurobi_to_sparse_txt_8m.html#a46173fab2c6d6ba8a310c1be844ca796">path</a>, PrimitivesT *<a class="el" href="globfit_8m.html#aaa2020b443560284c949661ae094df40">primitives</a>)</td></tr>
-<tr class="separator:aef9f1ea3e006aed8ee6a29219aecd6fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac10e298f9867d1d8b9849d0f5084d093"><td class="memTemplParams" colspan="2">template&lt;typename Scalar &gt; </td></tr>
-<tr class="memitem:ac10e298f9867d1d8b9849d0f5084d093"><td class="memTemplItemLeft" align="right" valign="top">int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespace_g_f2_1_1io.html#ac10e298f9867d1d8b9849d0f5084d093">testReadWriteSparse</a> ()</td></tr>
-<tr class="separator:ac10e298f9867d1d8b9849d0f5084d093"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
 <a class="anchor" id="a9bce496e4ce752c26c024362e8bca2d9"></a>
@@ -169,7 +159,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>EXIT_SUCCESS if could open file </dd></dl>
 
-<p>Definition at line <a class="el" href="io_8h_source.html#l00136">136</a> of file <a class="el" href="io_8h_source.html">io.h</a>.</p>
+<p>Definition at line <a class="el" href="io_8h_source.html#l00146">146</a> of file <a class="el" href="io_8h_source.html">io.h</a>.</p>
 
 </div>
 </div>
@@ -177,7 +167,7 @@ Functions</h2></td></tr>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class _PointContainerT , class _PointT  = typename _PointContainerT::value_type&gt; </div>
+template&lt;class _PointT , class _PointContainerT &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -223,15 +213,15 @@ template&lt;class _PointContainerT , class _PointT  = typename _PointContainerT:
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>EXIT_SUCCESS </dd></dl>
 
-<p>Definition at line <a class="el" href="io_8h_source.html#l00192">192</a> of file <a class="el" href="io_8h_source.html">io.h</a>.</p>
+<p>Definition at line <a class="el" href="io_8h_source.html#l00203">203</a> of file <a class="el" href="io_8h_source.html">io.h</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a04d0ce6301b6382cf4a8e9d766955100"></a>
+<a class="anchor" id="a088fc75b1e094d6ee6ead5d45d2587a1"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class PrimitiveContainerT , class PrimitiveT  = typename PrimitiveContainerT::value_type::value_type, int Dim = PrimitiveT::Dim, typename Scalar  = typename PrimitiveT::Scalar&gt; </div>
+template&lt;class PrimitiveT , class PrimitiveContainerT &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -261,59 +251,7 @@ template&lt;class PrimitiveContainerT , class PrimitiveT  = typename PrimitiveCo
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="io_8h_source.html#l00060">60</a> of file <a class="el" href="io_8h_source.html">io.h</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="a5a3f1d53992843fdc960b87d029510de"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int GF2::io::readSolution </td>
-          <td>(</td>
-          <td class="paramtype">std::string const&#160;</td>
-          <td class="paramname"><em>path</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a class="anchor" id="aef9f1ea3e006aed8ee6a29219aecd6fb"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;class PrimitivesT &gt; </div>
-      <table class="memname">
-        <tr>
-          <td class="memname">int GF2::io::readSolution </td>
-          <td>(</td>
-          <td class="paramtype">MaskType &amp;&#160;</td>
-          <td class="paramname"><em>mask</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::string const &amp;&#160;</td>
-          <td class="paramname"><em>path</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">PrimitivesT *&#160;</td>
-          <td class="paramname"><em>primitives</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="io_8hpp_source.html#l00046">46</a> of file <a class="el" href="io_8hpp_source.html">io.hpp</a>.</p>
+<p>Definition at line <a class="el" href="io_8h_source.html#l00053">53</a> of file <a class="el" href="io_8h_source.html">io.h</a>.</p>
 
 </div>
 </div>
@@ -321,7 +259,7 @@ template&lt;class PrimitivesT &gt; </div>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class PrimitiveContainerT , class PrimitiveT  = typename PrimitiveContainerT::value_type::value_type&gt; </div>
+template&lt;class PrimitiveT , class PrimitiveContainerT &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -357,93 +295,23 @@ template&lt;class PrimitiveContainerT , class PrimitiveT  = typename PrimitiveCo
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="io_8h_source.html#l00031">31</a> of file <a class="el" href="io_8h_source.html">io.h</a>.</p>
+<p>Dumps primitives with GID and DIR_GID to disk. </p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">PrimitiveT</td><td>Concept: PrimitiveContainerT::value_type::value_type aka <a class="el" href="class_g_f2_1_1_line_primitive2.html" title="Taggable LinePrimitive. Separate class for historical reasons. ">GF2::LinePrimitive2</a>. </td></tr>
+    <tr><td class="paramname">PrimitiveContainerT</td><td>Concept: vector&lt; vector&lt; GF2::LinePrimitive2 &gt; &gt;. </td></tr>
+  </table>
+  </dd>
+</dl>
 
-</div>
-</div>
-<a class="anchor" id="a9fc6636592d49578891f5cbe2c4ba80a"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;class PrimitivesT , typename Scalar  = typename PrimitivesT::value_type::Scalar&gt; </div>
-      <table class="memname">
-        <tr>
-          <td class="memname">int GF2::io::saveSolution </td>
-          <td>(</td>
-          <td class="paramtype">std::string&#160;</td>
-          <td class="paramname"><em>path</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">MaskType const &amp;&#160;</td>
-          <td class="paramname"><em>opt_mask</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">PrimitivesT const &amp;&#160;</td>
-          <td class="paramname"><em>candidates</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">Scalar const&#160;</td>
-          <td class="paramname"><em>working_scale</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::vector&lt; Scalar &gt; const &amp;&#160;</td>
-          <td class="paramname"><em>gf2_desired_angles</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>argc</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">char **&#160;</td>
-          <td class="paramname"><em>argv</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="io_8hpp_source.html#l00010">10</a> of file <a class="el" href="io_8hpp_source.html">io.hpp</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="ac10e298f9867d1d8b9849d0f5084d093"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename Scalar &gt; </div>
-      <table class="memname">
-        <tr>
-          <td class="memname">int GF2::io::testReadWriteSparse </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="io_8hpp_source.html#l00138">138</a> of file <a class="el" href="io_8hpp_source.html">io.hpp</a>.</p>
+<p>Definition at line <a class="el" href="io_8h_source.html#l00025">25</a> of file <a class="el" href="io_8h_source.html">io.h</a>.</p>
 
 </div>
 </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Aug 31 2014 20:43:29 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Sep 2 2014 14:33:23 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>
