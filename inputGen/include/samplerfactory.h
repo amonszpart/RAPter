@@ -19,10 +19,10 @@ public:
     explicit SamplerFactory(QWidget *parent = 0);
     ~SamplerFactory();
 
-    inline void setProject(InputGen::Application::Project*p)
+    inline void setProject(InputGen::Application::Project*p, bool updateSamples = false)
     {
         _project = p;
-        updateSampler();
+        if (updateSamples) updateSampler();
     }
 
 public slots:

@@ -26,10 +26,13 @@ MainWindow::MainWindow(QWidget *parent) :
     connect( _samplerDoc,   SIGNAL(projectUpdated()),
              _graphicsView, SIGNAL(projectUpdated()));
 
+    connect( this,        SIGNAL(currentProjectUpdated()),
+             _samplerDoc, SLOT(updateSampler()));
+
     _samplerDoc->setProject(_project);
     _graphicsView->setProject(_project);
 
-    emit currentProjectUpdated();
+    //emit currentProjectUpdated();
 }
 
 
