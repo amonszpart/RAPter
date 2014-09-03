@@ -251,7 +251,7 @@ void MainWindow::on_actionSave_points_triggered()
             settings.setValue("Path/xyzSave", path);
             QTextStream out(&input);
 
-            for(InputGen::Application::PointSet::const_iterator it = _project->samples.begin();
+            for(InputGen::Application::SampleSet::const_iterator it = _project->samples.begin();
                 it != _project->samples.end(); it++){
                 out << (*it)(0) << " "
                     << (*it)(1) << " "
