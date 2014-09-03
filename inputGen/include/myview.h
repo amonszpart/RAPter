@@ -7,6 +7,7 @@
 #include "types.h"
 #include "typesGL.h"
 #include "sampler.h"
+#include "project.h"
 
 class MyScene;
 
@@ -16,11 +17,10 @@ class MyView : public QGraphicsView
 public:
 
     explicit MyView(QWidget *parent = 0);
-    void setPrimitives(std::vector<InputGen::Application::Primitive> *s);
+    void setProject(InputGen::Application::Project* p);
 
 signals:
-    void samplesChanged(InputGen::Application::PointSet *,
-                        InputGen::Application::Sampler*);
+    void projectUpdated();
 
 public slots:
 

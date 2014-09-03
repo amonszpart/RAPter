@@ -4,8 +4,7 @@
 #include <QGraphicsScene>
 #include <QWheelEvent>
 
-#include "primitive.h"
-#include "sampler.h"
+#include "project.h"
 #include "typesGL.h"
 #include "types.h"
 
@@ -14,10 +13,10 @@ class MyScene : public QGraphicsScene
     Q_OBJECT
 public:
     explicit MyScene(QObject *parent = 0);
-    inline void setPrimitives(
-            std::vector< InputGen::Application::Primitive >*s)
+
+    inline void setProject(InputGen::Application::Project* p)
     {
-        _pSet = s;
+        _project = p;
         update();
     }
 
@@ -31,21 +30,12 @@ private:
 signals:
 
 public slots:
-    inline void updateSamples(InputGen::Application::PointSet *set,
-                              InputGen::Application::Sampler* sampler){
-        delete (_sampler);
-
-        // both input pointer are invalid out of this function
-        _pointSet  = set;
-
-        _sampler = sampler!=NULL ? sampler->copy() : NULL;
+    inline void projectUpdated(){
         update();
     }
 
 private:
-    std::vector< InputGen::Application::Primitive > *_pSet;
-    InputGen::Application::PointSet *_pointSet;
-    InputGen::Application::Sampler *_sampler;
+    InputGen::Application::Project *_project;
     float _zoom;
 
 };

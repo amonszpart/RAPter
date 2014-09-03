@@ -14,19 +14,22 @@
 using std::cout;
 using std::endl;
 using InputGen::Application::Primitive;
+using InputGen::Application::Project;
 
 MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent)
+    QMainWindow(parent),
+    _project(new Project)
 {
     setupUi(this);
     readSettings();
 
-    connect(_samplerDoc,   SIGNAL(samplesChanged(InputGen::Application::PointSet*,
-                                                 InputGen::Application::Sampler*)),
-            _graphicsView, SIGNAL(samplesChanged(InputGen::Application::PointSet*,
-                                                 InputGen::Application::Sampler*)));
+    connect( _samplerDoc,   SIGNAL(projectUpdated()),
+             _graphicsView, SIGNAL(projectUpdated()));
 
-    _samplerDoc->setPoints(&_pointSet);
+    _samplerDoc->setProject(_project);
+    _graphicsView->setProject(_project);
+
+    emit currentProjectUpdated();
 }
 
 
@@ -67,7 +70,8 @@ void MainWindow::on_actionLoad_SVG_triggered()
                                  defaultPath,
                                  "Scalable Vector Graphics (*.svg)");
 
-    _pSet.clear();
+    // can be replaced by a new project to handle multi-view
+    _project->clear();
 
     if (! path.isNull()){
         QFile input(path);
@@ -206,7 +210,9 @@ void MainWindow::on_actionLoad_SVG_triggered()
                             }
 
 
-                            _pSet.insert(_pSet.end(), lines.begin(), lines.end());
+                            _project->primitives.insert(_project->primitives.end(),
+                                                        lines.begin(),
+                                                        lines.end());
                         }
                     }
                     reader.readNext();
@@ -215,12 +221,15 @@ void MainWindow::on_actionLoad_SVG_triggered()
         }
     }
 
-    _graphicsView->setPrimitives(&_pSet);
-    _samplerDoc->setPrimitives(&_pSet);
+    emit currentProjectUpdated();
+
 }
 
 void MainWindow::on_actionSave_points_triggered()
 {
+    if (_project == NULL)
+        return;
+
     QSettings settings;
     QString defaultPath = settings.value("Path/xyzSave").toString();
 
@@ -239,8 +248,8 @@ void MainWindow::on_actionSave_points_triggered()
             settings.setValue("Path/xyzSave", path);
             QTextStream out(&input);
 
-            for(InputGen::Application::PointSet::const_iterator it = _pointSet.begin();
-                it != _pointSet.end(); it++){
+            for(InputGen::Application::PointSet::const_iterator it = _project->samples.begin();
+                it != _project->samples.end(); it++){
                 out << (*it)(0) << " "
                     << (*it)(1) << " "
                     << (*it)(2) << endl;
