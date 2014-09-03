@@ -21,12 +21,12 @@ MainWindow::MainWindow(QWidget *parent) :
     setupUi(this);
     readSettings();
 
-    connect(_generatorDoc, SIGNAL(samplesChanged(InputGen::Application::PointSet*,
-                                                 InputGen::Application::SampleGenerator*)),
+    connect(_samplerDoc,   SIGNAL(samplesChanged(InputGen::Application::PointSet*,
+                                                 InputGen::Application::Sampler*)),
             _graphicsView, SIGNAL(samplesChanged(InputGen::Application::PointSet*,
-                                                 InputGen::Application::SampleGenerator*)));
+                                                 InputGen::Application::Sampler*)));
 
-    _generatorDoc->setPoints(&_pointSet);
+    _samplerDoc->setPoints(&_pointSet);
 }
 
 
@@ -216,7 +216,7 @@ void MainWindow::on_actionLoad_SVG_triggered()
     }
 
     _graphicsView->setPrimitives(&_pSet);
-    _generatorDoc->setPrimitives(&_pSet);
+    _samplerDoc->setPrimitives(&_pSet);
 }
 
 void MainWindow::on_actionSave_points_triggered()

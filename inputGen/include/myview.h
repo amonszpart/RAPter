@@ -6,7 +6,7 @@
 #include "primitive.h"
 #include "types.h"
 #include "typesGL.h"
-#include "samplegenerator.h"
+#include "sampler.h"
 
 class MyScene;
 
@@ -20,7 +20,7 @@ public:
 
 signals:
     void samplesChanged(InputGen::Application::PointSet *,
-                        InputGen::Application::SampleGenerator*);
+                        InputGen::Application::Sampler*);
 
 public slots:
 

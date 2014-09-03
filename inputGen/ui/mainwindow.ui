@@ -47,9 +47,9 @@
    </attribute>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
-  <widget class="SampleGeneratorFactory" name="_generatorDoc">
+  <widget class="SamplerFactory" name="_samplerDoc">
    <property name="windowTitle">
-    <string>Sample Generators</string>
+    <string>Samplers</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>2</number>
@@ -77,9 +77,9 @@
    <header>myview.h</header>
   </customwidget>
   <customwidget>
-   <class>SampleGeneratorFactory</class>
+   <class>SamplerFactory</class>
    <extends>QDockWidget</extends>
-   <header>samplegeneratorfactory.h</header>
+   <header>samplerfactory.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

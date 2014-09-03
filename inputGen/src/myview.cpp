@@ -17,9 +17,9 @@ MyView::MyView(QWidget *parent) :
     setScene(scene);
 
     connect(this, SIGNAL(samplesChanged(InputGen::Application::PointSet*,
-                                        InputGen::Application::SampleGenerator*)),
+                                        InputGen::Application::Sampler*)),
               scene, SLOT(updateSamples(InputGen::Application::PointSet*,
-                                        InputGen::Application::SampleGenerator*)));
+                                        InputGen::Application::Sampler*)));
 }
 
 

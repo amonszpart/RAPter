@@ -5,7 +5,7 @@
 #include <QWheelEvent>
 
 #include "primitive.h"
-#include "samplegenerator.h"
+#include "sampler.h"
 #include "typesGL.h"
 #include "types.h"
 
@@ -32,20 +32,20 @@ signals:
 
 public slots:
     inline void updateSamples(InputGen::Application::PointSet *set,
-                              InputGen::Application::SampleGenerator* generator){
-        delete (_generator);
+                              InputGen::Application::Sampler* sampler){
+        delete (_sampler);
 
         // both input pointer are invalid out of this function
         _pointSet  = set;
 
-        _generator = generator!=NULL ? generator->copy() : NULL;
+        _sampler = sampler!=NULL ? sampler->copy() : NULL;
         update();
     }
 
 private:
     std::vector< InputGen::Application::Primitive > *_pSet;
     InputGen::Application::PointSet *_pointSet;
-    InputGen::Application::SampleGenerator *_generator;
+    InputGen::Application::Sampler *_sampler;
     float _zoom;
 
 };

@@ -2,7 +2,7 @@
 #define TYPESGL_H
 
 #include "types.h"
-#include "samplegenerator.h"
+#include "sampler.h"
 #include <QtOpenGL>
 
 namespace InputGen{
@@ -25,9 +25,9 @@ GLDisplayFunctor<float>::displayVertex(const float* data){
     glVertex3fv(data);
 }
 
-typedef VisibleSampleGenerator<InputGen::Application::Scalar,
+typedef VisibleSampler<InputGen::Application::Scalar,
                                InputGen::Application::GLDisplayFunctor>
-        SampleGenerator;
+        Sampler;
 }
 }
 
