@@ -7,6 +7,7 @@
 #endif
 
 #include "globfit2/visualization/visualization.h" // MyVisPtr
+#include "globfit2/processing/util.hpp"           // getPopulations()
 
 namespace GF2 {
     //! \brief Visualizer class to show points, primitives and their relations
@@ -133,11 +134,8 @@ namespace GF2
         vptr->setPointCloudRenderingProperties( pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 4.0, "cloud", 0 );
 
         // count populations
-        std::map<int,int> populations; // populations[patch_id] = all points with GID==patch_id
-        for ( size_t pid = 0; pid != points.size(); ++pid )
-        {
-            ++populations[ points[pid].getTag(PointT::GID) ];
-        }
+        GidIntMap populations; // populations[patch_id] = all points with GID==patch_id
+        processing::calcPopulations( populations, points );
 
         for ( size_t lid = 0; lid != primitives.size(); ++lid )
             for ( size_t lid1 = 0; lid1 != primitives[lid].size(); ++lid1 )

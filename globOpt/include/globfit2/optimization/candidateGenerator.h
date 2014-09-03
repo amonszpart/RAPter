@@ -244,6 +244,7 @@ namespace GF2
 // HPP
 #include "globfit2/my_types.h"          //  PCLPointAllocator
 //#include "globfit2/visualization/visualization.h"   // debug
+#include "globfit2/processing/util.hpp" // calcPopulations()
 
 namespace GF2
 {
@@ -272,33 +273,11 @@ namespace GF2
                                                , angles
                                                , patchPatchDistanceFunctor
                                                , params );
-        if ( params.show_candidates )
-        {
-            _PrimitiveContainerT patches( patch_lines.size() );
-            for ( int i = 0; i != patches.size(); ++i )
-                patches[i].push_back( patch_lines[i] );
-            //pcl::visualization::PCLVisualizer::Ptr vptr =
-//                    Visualizer<_PrimitiveContainerT,_PointContainerT>::template show<_Scalar>( patches
-//                                                                                               , points
-//                                                                                               , /*     scale: */ scale
-//                                                                                               , /*    colour: */ { 0.f, 0.f, 1.f}
-//                                                                                               , /*      spin: */ true
-//                                                                                               , /* show cons: */ NULL
-//                                                                                               , /*       ids: */ false
-//                                                                                               , /* tags_only: */ true );
-            //vptr->spin();
-        }
         // (2) Mix and Filter
 
         // count patch populations
-        std::vector<int> populations( patch_lines.size() ); // populations[patch_id] = all points with GID==patch_id
-        for ( size_t pid = 0; pid != points.size(); ++pid )
-        {
-            ++populations[ points[pid].getTag(_PointPrimitiveT::GID) ];
-
-            if ( patch_lines[ points[pid].getTag(_PointPrimitiveT::GID) ].getTag(_PrimitiveT::GID) != points[pid].getTag(_PointPrimitiveT::GID)  )
-                std::cerr << "[" << __func__ << "]: " << "wtf" << std::endl;
-        }
+        GidIntMap populations; // populations[patch_id] = all points with GID==patch_id
+        processing::calcPopulations( populations, points );
 
         // convert local fits
         const _Scalar angle_limit( params.angle_limit / params.angle_limit_div );

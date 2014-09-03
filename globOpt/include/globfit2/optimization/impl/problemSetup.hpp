@@ -7,6 +7,7 @@
 #include "globfit2/optimization/energyFunctors.h" // AbstractPrimitivePrimitiveEnergyFunctor,
 #include "qcqpcpp/optProblem.h"                   // OptProblem
 #include "globfit2/parameters.h"                  // ProblemSetupParams
+#include "globfit2/processing/util.hpp"           // getPopulation()
 
 namespace GF2 {
 
@@ -455,31 +456,21 @@ namespace problemSetup {
         typedef typename _AssocT::key_type      IntPair;        // <lid,lid1> pair to retrieve the linear index of a variable in the problem using lids_varids
         typedef typename _OptProblemT::Scalar   ProblemScalar;  // Scalar in OptProblem, usually has to be double because of the implementation
         typedef std::vector<ProblemScalar>      RowInA;         // "A" is the constraint matrix
-        typedef std::set<int>                   PIdList;        // unique list of point ids
         std::pair<int,int> stats(0,0); // debug
 
         int err = EXIT_SUCCESS;
 
         // count populations
-        typedef std::map<int,PIdList> PopT;
-        PopT populations; // populations[gid] = list of points with GID==patch_id
-        {
-            for ( size_t pid = 0; pid != points.size(); ++pid )
-            {
-                const int gid = points[pid].getTag(_PointPrimitiveT::GID);
-                populations[gid].insert( pid );
-                //++populations[ gid ];
-            }
-            // debug
-            for ( PopT::const_iterator it = populations.begin(); it != populations.end(); ++it )
-                std::cout << "[" << __func__ << "]: " << "pop[" << it->first << "]: " << it->second.size() << std::endl;
-        }
+        //typedef std::set<int>         PIdList;        // unique list of point ids
+        //typedef std::map<int,PIdList> PopT;
+        GidPidSetMap populations; // populations[gid] = list of points with GID==patch_id
+        processing::getPopulations( populations, points );
 
         // Work on large patches, and record small patches
         // One direction / patch needs to be choosen for large patches
         RowInA             coeffs ( problem.getVarCount(), 0 ); // constraint coefficient line in A
         std::set< RowInA > uniqueA;                             // to ensure unique constraints
-        PIdList            smalls_points;                       // contains point ids for points that are in small patches
+        PidSet             smalls_points;                       // contains point ids for points that are in small patches
 
         // for all patches
         for ( size_t lid = 0; lid != prims.size(); ++lid )
@@ -493,8 +484,8 @@ namespace problemSetup {
             { // small patch
                 if ( populations[gid].size() < 1 ) std::cerr << "[" << __func__ << "]: " << "patch with no points...needs to be expensive!! TODO" << std::endl;
                 // add all points to point-wise constraints todo list
-                PIdList::const_iterator end_it = populations[gid].end();
-                for ( PIdList::const_iterator it = populations[gid].begin(); it != end_it; ++it )
+                PidSet::const_iterator end_it = populations[gid].end();
+                for ( PidSet::const_iterator it = populations[gid].begin(); it != end_it; ++it )
                     smalls_points.insert( *it );
             }
             else
@@ -518,8 +509,8 @@ namespace problemSetup {
         } // ... for each patch
 
         // set-up point-wise constraints for small patches
-        PIdList::const_iterator end_it = smalls_points.end();
-        for ( PIdList::const_iterator it = smalls_points.begin(); it != end_it; ++it )
+        PidSet::const_iterator end_it = smalls_points.end();
+        for ( PidSet::const_iterator it = smalls_points.begin(); it != end_it; ++it )
         {
             const int pid = *it;
 
