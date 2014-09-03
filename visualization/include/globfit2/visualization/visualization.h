@@ -39,6 +39,6 @@ namespace vis {
     } //...ns lines
 
 } //...ns vis
-} //...ns GF2
+} //...ns GF2    
 
 #endif // GF2_VISUALIZATION_H

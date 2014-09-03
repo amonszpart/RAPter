@@ -1,6 +1,7 @@
 #ifndef GF2_PARAMETERS_H
 #define GF2_PARAMETERS_H
 
+#include <vector>
 #include "Eigen/Dense"
 
 namespace GF2 {
@@ -10,13 +11,22 @@ namespace GF2 {
     struct CandidateGeneratorParams
     {
             enum RefitMode { SPATIAL, AVG_DIR };
+            enum PatchPatchDistMode { FULL_MIN, FULL_MAX, SQR_MIN, REPR_MIN };
 
-            _Scalar   angle_limit                 = 0.08f;   //!< \brief angle threshold for similar lines
-            _Scalar   angle_limit_div             = 10.f;    //!< \brief Determines, how much the angle_limit is divided by, to get the patch-similarity threshold
-            _Scalar   patch_dist_limit            = 1.f;     //!< \brief Patchify takes "patch_dist_limit * scale" as maximum spatial distance
-            int       nn_K                        = 15;      //!< \brief Number of points used for primitive fitting
-            int       patch_population_limit      = 10;      //!< \brief Threshold, on when a patch can distribute its directions
-            RefitMode refit_mode                  = AVG_DIR; //!< \brief Determines, how a patch gets it's final direction. A NL-LSQ to the points, or the average of local orientations.
+            _Scalar   scale                       = 0.05;     //!< \brief Scale parameter of input.
+            std::vector<_Scalar> angles           = {0, M_PI_2, M_PI }; //!< \brief Desired angles.
+            _Scalar   angle_limit                 = 0.08f;    //!< \brief angle threshold for similar lines
+            _Scalar   angle_limit_div             = 10.f;     //!< \brief Determines, how much the angle_limit is divided by, to get the patch-similarity threshold
+            _Scalar   patch_dist_limit            = 1.f;      //!< \brief Patchify takes "patch_dist_limit * scale" as maximum spatial distance
+            int       nn_K                        = 15;       //!< \brief Number of points used for primitive fitting
+            int       patch_population_limit      = 10;       //!< \brief Threshold, on when a patch can distribute its directions
+            RefitMode refit_mode                  = AVG_DIR;  //!< \brief Determines, how a patch gets it's final direction. A NL-LSQ to the points, or the average of local orientations.
+
+            //! \brief Regiongrow uses these options to determine which functor to use for a patch-patch distance.
+            //! \sa \ref FullLinkagePatchPatchDistanceFunctorT, \ref SquaredPatchPatchDistanceFunctorT, \ref RepresentativePatchPatchDistanceFunctorT, \ref SpatialPatchPatchMinDistanceFunctorT, \ref SpatialPatchPatchMaxDistanceFunctorT
+            PatchPatchDistMode patch_dist_mode    = REPR_MIN;
+
+            //___Parsers___
 
             inline std::string printRefitMode() const
             {
@@ -49,6 +59,48 @@ namespace GF2 {
 
                 return err;
             } // ...parseRefitMode()
+
+            inline int parsePatchDistMode( std::string const& patch_dist_mode_string )
+            {
+                int err = EXIT_SUCCESS;
+
+                if ( !patch_dist_mode_string.compare("full_min") )
+                {
+                    this->patch_dist_mode = FULL_MIN;
+                }
+                else if ( !patch_dist_mode_string.compare("full_max") )
+                {
+                    this->patch_dist_mode = FULL_MAX;
+                }
+                else if ( !patch_dist_mode_string.compare("squared_min") )
+                {
+                    this->patch_dist_mode = SQR_MIN;
+                }
+                else if ( !patch_dist_mode_string.compare("representative_min") )
+                {
+                    this->patch_dist_mode = REPR_MIN;
+                }
+                else
+                {
+                    err = EXIT_FAILURE;
+                    std::cerr << "[" << __func__ << "]: " << "Could NOT parse " << patch_dist_mode_string << ", assuming " << printPatchDistMode() << std::endl;
+                }
+
+                return err;
+            } // ...parsePatchDistMode()
+
+            inline std::string printPatchDistMode() const
+            {
+                switch ( patch_dist_mode )
+                {
+                    case FULL_MIN: return std::string("full_min"); break;
+                    case FULL_MAX: return std::string("full_max"); break;
+                    case SQR_MIN:  return std::string("squared_min"); break;
+                    case REPR_MIN: return std::string("representative_min"); break;
+                    default:       return "UNKNOWN"; break;
+                }
+            } // ...printPatchDistMode()
+
     }; // ...struct CandidateGeneratorParams
 
     //! \brief Collection of parameters the \ref ProblemSetup::formulate needs.

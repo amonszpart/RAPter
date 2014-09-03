@@ -169,6 +169,7 @@ SET( GLOBOPT_HPP_LIST
     include/globfit2/util/diskUtil.hpp
     include/globfit2/util/util.hpp
     include/globfit2/util/pcl_util.hpp
+    include/globfit2/util/containers.hpp
 )
 
 SET( GLOBOPT_H_LIST

@@ -74,132 +74,11 @@ class Solver
 #include "globfit2/ground_truth/gtCreator.h"
 #include "globfit2/optimization/candidateGenerator.h"
 #include "globfit2/optimization/energyFunctors.h"     // PointLineDistanceFunctor,
-#include "globfit2/optimization/problemSetup.h"     // everyPatchNeedsDirection()
+#include "globfit2/optimization/problemSetup.h"       // everyPatchNeedsDirection()
+#include "globfit2/optimization/segmentation.h"       // orientPoints, patchify
 
 namespace GF2
 {
-
-#if 0
-//! \brief      Reads a candidates file, a cloud and displays them
-//! \param argc Number of CLI arguments.
-//! \param argv Vector of CLI arguments.
-//! \return     EXIT_SUCCESS.
-int
-Solver::show( int argc, char** argv )
-{
-    if ( pcl::console::find_switch(argc,argv,"--help") || pcl::console::find_switch(argc,argv,"-h") )
-    {
-        std::cout << "[" << __func__ << "]: " << "Usage: gurobi_opt --show\n"
-                  << "\t--dir \tthe directory containing the files to display\n"
-                  << "\t--prims \tthe primitives file name in \"dir\"\n"
-                  << "\t--cloud \tthe cloud file name in \"dir\"\n"
-                  << "\t[--scale \talgorithm parameter]\n"
-                  << "\t[--assoc \tpoint to line associations]\n"
-                  << "\t[--no-rel \tdon't show perfect relationships as gray lines]"
-                  << "\t[--no-clusters \tdon't show the \"ellipses\"]"
-                  << std::endl;
-        return EXIT_SUCCESS;
-    }
-    std::string dir;
-    if ( pcl::console::parse_argument( argc, argv, "--dir", dir) < 0 )
-    {
-        std::cerr << "[" << __func__ << "]: " << "no directory specified by --dir ...exiting" << std::endl;
-        return EXIT_FAILURE;
-    }
-    int err = EXIT_SUCCESS;
-
-    std::string primitives_file;
-    if ( pcl::console::parse_argument( argc, argv, "--prims", primitives_file) < 0 )
-    {
-        std::cerr << "[" << __func__ << "]: " << "no primitive file specified by --prims ...exiting" << std::endl;
-        return EXIT_FAILURE;
-    }
-
-    PrimitiveContainerT lines;
-    err = io::readPrimitives<PrimitiveT>( lines, dir + "/" + primitives_file );
-    if ( EXIT_SUCCESS != err )
-    {
-        std::cerr << "[" << __func__ << "]: " << "failed to read " << dir + "/" + primitives_file << "...exiting" << std::endl;
-        return err;
-    }
-
-    // read cloud
-    PointContainerT points;
-    std::string cloud_file;
-    if ( pcl::console::parse_argument( argc, argv, "--cloud", cloud_file) < 0 )
-    {
-        std::cerr << "[" << __func__ << "]: " << "no cloud file specified by --cloud ...exiting" << std::endl;
-        return EXIT_FAILURE;
-    }
-
-    // convert cloud
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud( new pcl::PointCloud<pcl::PointXYZRGB> );
-    pcl::io::loadPLYFile( dir + "/" + cloud_file, *cloud );
-    pclutil::cloudToVector<PointT::Allocator>( points, cloud );
-
-    // parse associations
-
-    std::string assoc_file;
-    if ( pcl::console::parse_argument(argc,argv,"--assoc",assoc_file) > 0 )
-    {
-        std::vector<std::pair<int,int> > points_primitives;
-        std::map<int,int>                linear_indices; // <pid,lid>
-        io::readAssociations( points_primitives, dir + "/" + assoc_file, &linear_indices );
-
-        for ( size_t pid = 0; pid != points_primitives.size(); ++pid )
-        {
-            if ( points_primitives[pid].first < static_cast<int>(points.size()) )
-            {
-                points[ pid ].setTag( PointT::GID, points_primitives[pid].first );
-            }
-            else
-                std::cerr << "[" << __func__ << "]: " << "overindexed pid: " << pid << " >= " << points.size() << " points.size(), skipping..." << std::endl;
-        }
-    }
-
-    // angles
-    std::vector<Scalar> angles = { 0, M_PI_2, M_PI };
-
-    // tags = point colours
-    char use_tags = pcl::console::find_switch( argc, argv, "--use-tags" );
-    if ( use_tags )
-        use_tags += (char)pcl::console::find_switch( argc, argv, "--no-clusters" );
-
-    // GF
-    Scalar scale = 0.1;
-    pcl::console::parse_argument( argc, argv, "--scale", scale );
-    bool dont_show_rels = pcl::console::find_switch( argc, argv, "--no-rel" );
-
-#warning "Remove this"
-#if 0
-    GF2::MyVisPtr vptr = Visualizer<PrimitiveContainerT,PointContainerT>::show<Scalar>( lines, points, scale
-                                                                               , {1,0,0}
-                                                                               , /*        spin: */ false
-                                                                               , /* connections: */ dont_show_rels ? NULL : &angles
-                                                                               , /*    show_ids: */ false
-                                                                               , /*    use_tags: */ use_tags
-                                                                               );
-
-
-    std::string gf_out_path; // input_20140620_1130$ ../Release/bin/gurobi_opt --show --dir . --prims  primitives_1800.txt --cloud cloud_20140620_1130.ply --gf .
-    if ( pcl::console::parse_argument( argc, argv, "--gf", gf_out_path) >= 0 )
-    {
-        std::cout << "[" << __func__ << "]: " << " optimizing GF to " << gf_out_path << std::endl;
-        PrimitiveContainerT out_lines;
-        GurobiOpt<Scalar,PrimitiveT,PointT>::globFit( out_lines
-                                                      , lines
-                                                      , points
-                                                      , scale
-                                                      );
-
-    }
-
-    vptr->spin();
-#endif
-
-    return EXIT_SUCCESS;
-} // ... Solver::show()
-#endif // Solver::show
 
 //! \brief      Step 0. Takes an image, and samples it to a pointcloud. Saves points to img_path.parent_path/cloud.ply.
 //! \param argc Number of CLI arguments.
@@ -265,27 +144,37 @@ Solver::sampleInput( int argc, char** argv )
 //! \param argv             Contains --cloud cloud.ply, and --scale scale.
 //! \return                 EXIT_SUCCESS.
 int
-Solver::generateCli(   int    argc
-                  , char** argv )
+Solver::generateCli( int    argc
+                   , char** argv )
 {
     typedef typename PointContainerT::value_type PointPrimitiveT;
+    int err = EXIT_SUCCESS;
 
     CandidateGeneratorParams<Scalar> generatorParams;
-    std::string                 cloud_path              = "cloud.ply";
-    Scalar                      scale                   = Scalar( 0.05 );
+    std::string                 cloud_path              = "./cloud.ply";
     Scalar                      angle_gen               = M_PI_2;
     std::string                 mode_string             = "representative_min";
     std::vector<std::string>    mode_opts               = { "full_min", "full_max", "squared_min", "representative_min" };
-    std::string                 patch_refit_mode_string = "avg_dir";
-    std::vector<std::string>    patch_refit_mode_opts   = { "spatial", "avg_dir" };
+    //std::string                 patch_refit_mode_string = "avg_dir";
+    //std::vector<std::string>    patch_refit_mode_opts   = { "spatial", "avg_dir" };
 
     // parse input
+    if ( err == EXIT_SUCCESS )
     {
         bool valid_input = true;
-        if (    (pcl::console::parse_argument( argc, argv, "--cloud", cloud_path) < 0)
-             || (pcl::console::parse_argument( argc, argv, "--scale", scale     ) < 0) )
+
+        // cloud
+        if ( (pcl::console::parse_argument( argc, argv, "--cloud", cloud_path) < 0)
+             && !boost::filesystem::exists( cloud_path ) )
         {
-            std::cerr << "[" << __func__ << "]: " << "--cloud and --scale are compulsory" << std::endl;
+            std::cerr << "[" << __func__ << "]: " << "--cloud does not exist: " << cloud_path << std::endl;
+            valid_input = false;
+        }
+
+        // scale
+        if ( (pcl::console::parse_argument( argc, argv, "--scale", generatorParams.scale) < 0) )
+        {
+            std::cerr << "[" << __func__ << "]: " << "--scale is compulsory" << std::endl;
             valid_input = false;
         }
 
@@ -293,8 +182,14 @@ Solver::generateCli(   int    argc
         pcl::console::parse_argument( argc, argv, "--angle-limit-div", generatorParams.angle_limit_div );
         pcl::console::parse_argument( argc, argv, "--patch-dist-limit", generatorParams.patch_dist_limit ); // gets multiplied by scale
         pcl::console::parse_argument( argc, argv, "--mode", mode_string );
-        pcl::console::parse_argument( argc, argv, "--patch-refit", patch_refit_mode_string );
-        generatorParams.parseRefitMode( patch_refit_mode_string );
+        generatorParams.parsePatchDistMode( mode_string );
+        if ( pcl::console::find_switch( argc, argv, "--patch-refit" ) )
+        {
+            std::cerr << "[" << __func__ << "]: " << "--patch-refit option has been DEPRECATED. exiting." << std::endl;
+            return EXIT_FAILURE;
+        }
+        //pcl::console::parse_argument( argc, argv, "--patch-refit", patch_refit_mode_string );
+        //generatorParams.parseRefitMode( patch_refit_mode_string );
         pcl::console::parse_argument( argc, argv, "--angle-gen", angle_gen );
         pcl::console::parse_argument( argc, argv, "--patch-pop-limit", generatorParams.patch_population_limit );
 
@@ -302,19 +197,19 @@ Solver::generateCli(   int    argc
         {
             std::cerr << "[" << __func__ << "]: " << "Usage:\t gurobi_opt --generate \n";
             std::cerr << "\t --cloud " << cloud_path << "\n";
-            std::cerr << "\t --scale " << scale      << "\n";
+            std::cerr << "\t --scale " << generatorParams.scale      << "\n";
 
-            // linkage mode (full_min, full_max, squared_min)
-            std::cerr << "\t [--mode *" << mode_string << "*\t";
+            // linkage mode (full_min, full_max, squared_min, repr_min)
+            std::cerr << "\t [--mode *" << generatorParams.printPatchDistMode() << "*\t";
             for ( size_t m = 0; m != mode_opts.size(); ++m )
                 std::cerr << "|" << mode_opts[m];
             std::cerr << "]\n";
 
             // patch refit mode (spatial, avg_dir)
-            std::cerr << "\t [--patch-refit *" << generatorParams.printRefitMode() << "*\t";
-            for ( size_t m = 0; m != patch_refit_mode_opts.size(); ++m )
-                std::cerr << "|" << patch_refit_mode_opts[m];
-            std::cerr << "]\n";
+//            std::cerr << "\t [--patch-refit *" << generatorParams.printRefitMode() << "*\t";
+//            for ( size_t m = 0; m != patch_refit_mode_opts.size(); ++m )
+//                std::cerr << "|" << patch_refit_mode_opts[m];
+//            std::cerr << "]\n";
 
             std::cerr << "\t [--angle-limit " << generatorParams.angle_limit << "]\n";
             std::cerr << "\t [--angle-limit-div " << generatorParams.angle_limit_div << "]\n";
@@ -340,76 +235,154 @@ Solver::generateCli(   int    argc
     } // ... parse input
 
     // Read desired angles
-    std::vector<Scalar> angles = { Scalar(0) };
+    if ( EXIT_SUCCESS == err )
     {
+        generatorParams.angles = { Scalar(0) };
         // generate
         for ( Scalar angle = angle_gen; angle < M_PI; angle+= angle_gen )
-            angles.push_back( angle );
-        angles.push_back( M_PI );
+            generatorParams.angles.push_back( angle );
+        generatorParams.angles.push_back( M_PI );
 
         // print
         std::cout << "Desired angles: {";
-        for ( size_t vi=0;vi!=angles.size();++vi)
-            std::cout << angles[vi] << ((vi==angles.size()-1) ? "" : ", ");
+        for ( size_t vi=0;vi!=generatorParams.angles.size();++vi)
+            std::cout << generatorParams.angles[vi] << ((vi==generatorParams.angles.size()-1) ? "" : ", ");
         std::cout << "}\n";
-    } // ... read angles
+    } //...read angles
 
     // Read points
-    PointContainerT     points;
+    PointContainerT points;
+    if ( EXIT_SUCCESS == err )
     {
-        io::readPoints<PointPrimitiveT>( points, cloud_path );
+        err = io::readPoints<PointPrimitiveT>( points, cloud_path );
+        if ( err != EXIT_SUCCESS )  std::cerr << "[" << __func__ << "]: " << "readPoints returned error " << err << std::endl;
+    } //...read points
+
+    //_____________________WORK_______________________
+    //_______________________________________________
+
+    // orientPoints
+    if ( EXIT_SUCCESS == err )
+    {
+        err = Segmentation::orientPoints<PointPrimitiveT,PrimitiveT>( points, generatorParams.scale, generatorParams.nn_K );
+        if ( err != EXIT_SUCCESS ) std::cerr << "[" << __func__ << "]: " << "orientPoints exited with error! Code: " << err << std::endl;
+    } //...orientPoints
+
+    PrimitiveContainerT initial_primitives;
+    if ( EXIT_SUCCESS == err )
+    {
+        switch ( generatorParams.patch_dist_mode )
+        {
+            case CandidateGeneratorParams<Scalar>::FULL_MIN:
+            {
+                // "full min": merge minimum largest angle between any two points, IF smallest spatial distance between points < scale * patch_dist_limit
+                FullLinkagePatchPatchDistanceFunctorT<Scalar, SpatialPatchPatchMinDistanceFunctorT<Scalar>
+                                                     > patchPatchDistanceFunctor( generatorParams.patch_dist_limit * generatorParams.scale
+                                                                                , generatorParams.angle_limit
+                                                                                , generatorParams.scale );
+
+                err = Segmentation::patchify<PrimitiveT>( initial_primitives           // tagged lines at GID with patch_id
+                                            , points                // filled points with directions and tagged at GID with patch_id
+                                            , generatorParams.scale
+                                            , generatorParams.angles
+                                            , patchPatchDistanceFunctor
+                                            );
+            }
+                break;
+
+            case CandidateGeneratorParams<Scalar>::FULL_MAX:
+            {
+                // "full max": merge minimum largest angle between any two points, IF biggest spatial distance between points < scale * patch_dist_limit
+                FullLinkagePatchPatchDistanceFunctorT<Scalar, SpatialPatchPatchMaxDistanceFunctorT<Scalar>
+                                                     > patchPatchDistanceFunctor( generatorParams.patch_dist_limit * generatorParams.scale
+                                                                                , generatorParams.angle_limit
+                                                                                , generatorParams.scale );
+                err = Segmentation::patchify<PrimitiveT>( initial_primitives           // tagged lines at GID with patch_id
+                                            , points                // filled points with directions and tagged at GID with patch_id
+                                            , generatorParams.scale
+                                            , generatorParams.angles
+                                            , patchPatchDistanceFunctor
+                                            );
+            }
+                break;
+
+            case CandidateGeneratorParams<Scalar>::SQR_MIN:
+            {
+                // "squared min": merge minimum, "max_angle^2 + (pi^2 / 4scale^2) * min_distance", IF smallest spatial distance between points < scale * patch_dist_limit. NOTE: use angle_thresh = 1..5
+                SquaredPatchPatchDistanceFunctorT<Scalar, SpatialPatchPatchMinDistanceFunctorT<Scalar>
+                                                 > patchPatchDistanceFunctor( generatorParams.patch_dist_limit * generatorParams.scale
+                                                                            , generatorParams.angle_limit
+                                                                            , generatorParams.scale );
+                err = Segmentation::patchify<PrimitiveT>( initial_primitives           // tagged lines at GID with patch_id
+                                            , points                // filled points with directions and tagged at GID with patch_id
+                                            , generatorParams.scale
+                                            , generatorParams.angles
+                                            , patchPatchDistanceFunctor
+                                            );
+            }
+                break;
+
+            case CandidateGeneratorParams<Scalar>::REPR_MIN:
+            {
+                // "representative min:" merge closest representative angles, IF smallest spatial distance between points < scale * patch_dist_limit.
+                RepresentativePatchPatchDistanceFunctorT< Scalar,SpatialPatchPatchMinDistanceFunctorT<Scalar>
+                                                        > patchPatchDistanceFunctor( generatorParams.patch_dist_limit * generatorParams.scale
+                                                                                   , generatorParams.angle_limit
+                                                                                   , generatorParams.scale );
+                err = Segmentation::patchify<PrimitiveT>( initial_primitives           // tagged lines at GID with patch_id
+                                            , points                // filled points with directions and tagged at GID with patch_id
+                                            , generatorParams.scale
+                                            , generatorParams.angles
+                                            , patchPatchDistanceFunctor
+                                            );
+            }
+                break;
+
+            default:
+                std::cerr << "unknown patch patch distance mode!" << std::endl;
+                err = EXIT_FAILURE;
+                break;
+        }
+
+        if ( err != EXIT_SUCCESS ) std::cerr << "[" << __func__ << "]: " << "patchify exited with error! Code: " << err << std::endl;
     }
 
-
-    // WORK
+    // Generate
     PrimitiveContainerT primitives;
+    if ( EXIT_SUCCESS == err )
     {
+        err = CandidateGenerator::generate< MyPrimitivePrimitiveAngleFunctor >
+                                          ( primitives, initial_primitives, points, generatorParams.scale, generatorParams.angles, generatorParams );
 
-        // "full min": merge minimum largest angle between any two points, IF smallest spatial distance between points < scale * patch_dist_limit
-        if ( !mode_string.compare("full_min") )
-        {
-            CandidateGenerator::generate< MyPrimitivePrimitiveAngleFunctor
-                                        , FullLinkagePatchPatchDistanceFunctorT<Scalar,SpatialPatchPatchMinDistanceFunctorT<Scalar> >
-                                        >( primitives, points, scale, angles, generatorParams );
-        }
-        // "full max": merge minimum largest angle between any two points, IF biggest spatial distance between points < scale * patch_dist_limit
-        else if ( !mode_string.compare("full_max") ) // full_max
-        {
-            CandidateGenerator::generate< MyPrimitivePrimitiveAngleFunctor
-                                        , FullLinkagePatchPatchDistanceFunctorT<Scalar,SpatialPatchPatchMaxDistanceFunctorT<Scalar> >
-                                        >( primitives, points, scale, angles, generatorParams );
-        }
-        // "squared min": merge minimum, "max_angle^2 + (pi^2 / 4scale^2) * min_distance", IF smallest spatial distance between points < scale * patch_dist_limit. NOTE: use angle_thresh = 1..5
-        else if ( !mode_string.compare("squared_min") ) // squared min
-        {
-            CandidateGenerator::generate< MyPrimitivePrimitiveAngleFunctor
-                                        , SquaredPatchPatchDistanceFunctorT< Scalar,SpatialPatchPatchMinDistanceFunctorT<Scalar> >
-                                        > ( primitives, points, scale, angles, generatorParams );
-        }
-        // "representative min:" merge closest representative angles, IF smallest spatial distance between points < scale * patch_dist_limit.
-        else if ( !mode_string.compare("representative_min") )
-        {
-            //../Release/bin/gurobi_opt --generate --cloud . --scale 0.05 --angle-limit 0.01 --mode representative_min --patch-refit avg_dir --patch-dist-limit 0.5
-            CandidateGenerator::generate< MyPrimitivePrimitiveAngleFunctor
-                                        , RepresentativePatchPatchDistanceFunctorT< Scalar,SpatialPatchPatchMinDistanceFunctorT<Scalar> >
-                                        > ( primitives, points, scale, angles, generatorParams );
-        }
-    } // ...work
+        if ( err != EXIT_SUCCESS ) std::cerr << "[" << __func__ << "]: " << "generate exited with error! Code: " << err << std::endl;
+    } //...generate
 
     // Save point GID tags
+    if ( EXIT_SUCCESS == err )
     {
-        std::string f_assoc_path = boost::filesystem::path( cloud_path ).parent_path().string() + "/" + "points_primitives.txt";
-        util::saveBackup( f_assoc_path );
-        io::writeAssociations<PointPrimitiveT>( points, f_assoc_path );
-        std::cout << "[" << __func__ << "]: " << "wrote to " << f_assoc_path << std::endl;
-    }
+        std::string assoc_path = boost::filesystem::path( cloud_path ).parent_path().string() + "/" + "points_primitives.txt";
+
+        util::saveBackup( assoc_path );
+        err = io::writeAssociations<PointPrimitiveT>( points, assoc_path );
+
+        if ( err != EXIT_SUCCESS )  std::cerr << "[" << __func__ << "]: " << "saveBackup or writeAssociations exited with error! Code: " << err << std::endl;
+        else                        std::cout << "[" << __func__ << "]: " << "wrote to " << assoc_path << std::endl;
+
+    } //...save Associations
 
     // save primitives
-    std::string candidates_path = boost::filesystem::path( cloud_path ).parent_path().string() + "/" + "candidates.txt";
-    util::saveBackup( candidates_path );
-    return io::savePrimitives<PrimitiveT>( /* what: */ primitives, /* where_to: */ candidates_path );
+    if ( EXIT_SUCCESS == err )
+    {
+        std::string candidates_path = boost::filesystem::path( cloud_path ).parent_path().string() + "/" + "candidates.txt";
 
-    return 0;
+        util::saveBackup( candidates_path );
+        err = io::savePrimitives<PrimitiveT>( /* what: */ primitives, /* where_to: */ candidates_path );
+
+        if ( err != EXIT_SUCCESS )  std::cerr << "[" << __func__ << "]: " << "saveBackup or savePrimitive exited with error! Code: " << err << std::endl;
+        else                        std::cout << "[" << __func__ << "]: " << "wrote to " << candidates_path << std::endl;
+    } //...save primitives
+
+    return err;
 } // ...Solver::generate()
 
 
