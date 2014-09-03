@@ -34,7 +34,7 @@ int main( int argc, char *argv[] )
     }
     else if ( pcl::console::find_switch(argc,argv,"--generate") )
     {
-        return GF2::Solver::generate( argc, argv );
+        return GF2::Solver::generateCli( argc, argv );
     }
     else if ( pcl::console::find_switch(argc,argv,"--formulate") )
     {
