@@ -55,6 +55,11 @@
     <number>2</number>
    </attribute>
   </widget>
+  <widget class="DisplacementFactory" name="_displacementDoc">
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+  </widget>
   <action name="actionLoad_SVG">
    <property name="text">
     <string>Load SVG</string>
@@ -80,6 +85,12 @@
    <class>SamplerFactory</class>
    <extends>QDockWidget</extends>
    <header>samplerfactory.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>DisplacementFactory</class>
+   <extends>QDockWidget</extends>
+   <header>displacementfactory.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

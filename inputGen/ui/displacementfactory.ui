@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DisplacementFactory</class>
+ <widget class="QDockWidget" name="DisplacementFactory">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Displacement/Noise</string>
+  </property>
+  <widget class="QWidget" name="dockWidgetContents">
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="2" column="1">
+     <widget class="QComboBox" name="_displacementLayerAddCombo">
+      <item>
+       <property name="text">
+        <string>Random Noise</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Bias</string>
+       </property>
+      </item>
+     </widget>
+    </item>
+    <item row="0" column="0" colspan="2">
+     <widget class="QLabel" name="label">
+      <property name="text">
+       <string>Existing Layers:</string>
+      </property>
+      <property name="buddy">
+       <cstring>_displacementLayerTable</cstring>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="2">
+     <widget class="QPushButton" name="_displacementLayerAddButton">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string>Add</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0" colspan="3">
+     <widget class="QTableWidget" name="_displacementLayerTable">
+      <property name="alternatingRowColors">
+       <bool>true</bool>
+      </property>
+      <property name="selectionBehavior">
+       <enum>QAbstractItemView::SelectRows</enum>
+      </property>
+      <property name="columnCount">
+       <number>2</number>
+      </property>
+      <row>
+       <property name="text">
+        <string>1</string>
+       </property>
+      </row>
+      <row>
+       <property name="text">
+        <string>2</string>
+       </property>
+      </row>
+      <column>
+       <property name="text">
+        <string>Name</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Enabled</string>
+       </property>
+      </column>
+      <item row="0" column="0">
+       <property name="text">
+        <string>Toto</string>
+       </property>
+      </item>
+      <item row="0" column="1">
+       <property name="text">
+        <string/>
+       </property>
+       <property name="checkState">
+        <enum>Checked</enum>
+       </property>
+      </item>
+      <item row="1" column="0">
+       <property name="text">
+        <string>dsfsdf</string>
+       </property>
+      </item>
+      <item row="1" column="1">
+       <property name="text">
+        <string/>
+       </property>
+       <property name="checkState">
+        <enum>Unchecked</enum>
+       </property>
+      </item>
+     </widget>
+    </item>
+    <item row="2" column="0">
+     <widget class="QLabel" name="label_2">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string>New layer:</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>_displacementLayerAddButton</sender>
+   <signal>clicked()</signal>
+   <receiver>DisplacementFactory</receiver>
+   <slot>addLayerTriggerred()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>348</x>
+     <y>275</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>_displacementLayerTable</sender>
+   <signal>itemChanged(QTableWidgetItem*)</signal>
+   <receiver>DisplacementFactory</receiver>
+   <slot>refreshFromView()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>199</x>
+     <y>157</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>addLayerTriggerred()</slot>
+  <slot>refreshFromView()</slot>
+ </slots>
+</ui>

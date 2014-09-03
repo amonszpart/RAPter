@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "typesGL.h"
+#include "displacement.h"
 
 namespace InputGen{
 namespace Application{
@@ -21,11 +22,22 @@ private:
     //! \brief Structure storing a set of displacement vectors
     struct InternalDisplacementLayer: public DisplacementLayer{
         bool enabled;
+        InputGen::DisplacementKernel<Scalar>* kernel;
 
         InternalDisplacementLayer( int size,
-                            bool isEnabled = true)
-            : enabled(isEnabled)
+                                   InputGen::DisplacementKernel<Scalar>* k,
+                                   bool isEnabled = true)
+            : enabled(isEnabled), kernel(k)
         { DisplacementLayer::resize(size, Primitive::vec::Zero()); }
+
+        ~InternalDisplacementLayer(){
+            // we need smart pointers here, a layer can be copied (and thus destroyed)
+            // when a layer is duplicated during layer container resizing
+            // \todo Fix that, huge memory leak
+            // FIXME Fix that, huge memory leak
+            // \warning Need to fix that, huge memory leak
+            // delete(kernel);
+        }
     };
 
     const DisplacementLayer::iterator _nullDisplacementIterator;
@@ -49,12 +61,29 @@ public:
 
 
     //! Noise Layers
-    inline void addDisplacementLayer(bool isEnabled)
-    { _displ.push_back(InternalDisplacementLayer(samples.size(), isEnabled)); }
+    inline void addDisplacementLayer(InputGen::DisplacementKernel<Scalar>* kernel, bool isEnabled = true)
+    { _displ.push_back(InternalDisplacementLayer(samples.size(), kernel, isEnabled)); }
 
     inline bool isDisplacementLayerEnabled(int layerId) {
         if (layerId >= _displ.size()) return false;
         return _displ[layerId].enabled;
+    }
+
+    inline void enableDisplacementLayerEnabled(int layerId, bool enabled = true) {
+        if (layerId < _displ.size())
+            _displ[layerId].enabled = enabled;
+    }
+
+    // Ugly, but for now required by DisplacementKernels
+    inline Primitive::vec* displacementLayerPtr (int layerId){
+        if (layerId >= _displ.size()) return NULL;
+        return _displ[layerId].data();
+    }
+
+    // Ugly, but for now required by DisplacementKernels
+    inline InputGen::DisplacementKernel<Scalar>* displacementKernel (int layerId){
+        if (layerId >= _displ.size()) return NULL;
+        return _displ[layerId].kernel;
     }
 
     inline DisplacementLayer::iterator beginDisplacementLayer(int layerId) {
@@ -87,6 +116,8 @@ public:
 
         return displ;
     }
+
+    inline int nbDisplacementLayers() const { return _displ.size(); }
 };
 }
 }

@@ -31,6 +31,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     _samplerDoc->setProject(_project);
     _graphicsView->setProject(_project);
+    _displacementDoc->setProject(_project);
 
     //emit currentProjectUpdated();
 }

@@ -10,12 +10,15 @@ SET(inputGen_SOURCES
   src/main.cpp
   src/mainwindow.cpp
   src/samplerfactory.cpp
+  src/displacementfactory.cpp
   src/myview.cpp
   src/myscene.cpp)
 SET(inputGen_HEADERS
   include/mainwindow.h
   include/sampler.h
   include/samplerfactory.h
+  include/displacement.h
+  include/displacementfactory.h
   include/myview.h
   include/myscene.h
   include/types.h
@@ -24,7 +27,8 @@ SET(inputGen_HEADERS
   include/primitive.h)
 SET(inputGen_FORMS
   ui/mainwindow.ui
-  ui/samplerfactory.ui)
+  ui/samplerfactory.ui
+  ui/displacementfactory.ui)
 # SET(inputGen_RESOURCES images.qrc)
 
 SET(QT_USE_QTOPENGL TRUE)
