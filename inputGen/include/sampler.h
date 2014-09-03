@@ -45,7 +45,7 @@ struct PrimitiveSampler : public VisibleSampler<
     inline void generateSamples(      SampleContainer&    scontainer,
                                 const PrimitiveContainer& pcontainer);
 
-    virtual void display() const {std::cout <<"display Me !! " << std::endl;}
+    virtual void display() const { }
 
     virtual VisibleSampler<_Scalar, _DisplayFunctor>* copy(){
         return new PrimitiveSampler<_Scalar, _DisplayFunctor>(this);
