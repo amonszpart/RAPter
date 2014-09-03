@@ -63,6 +63,7 @@ PrimitiveSampler<_Scalar, T>::generateSamples(
               SampleContainer&    scontainer,
         const PrimitiveContainer& pcontainer){
     typedef typename PrimitiveContainer::value_type::vec vec;
+    typedef typename SampleContainer::value_type Sample;
 
     typename PrimitiveContainer::const_iterator it;
 
@@ -72,19 +73,21 @@ PrimitiveSampler<_Scalar, T>::generateSamples(
         unsigned int nbSampleX = int(std::abs((*it).dim()(0)) / spacing);
         unsigned int nbSampleY = int(std::abs((*it).dim()(1)) / spacing);
 
+        const uint& primitiveUID = (*it).uid();
+
         vec midPoint   = (*it).getMidPoint();
         vec tangentVec = (*it).getTangentVector();
 
         if (nbSampleX == 0 && nbSampleY == 0) // generate a single sample at the primitive midpoint
-            scontainer.push_back(midPoint);
+            scontainer.push_back(Sample(midPoint, primitiveUID));
         else{
 
             if (nbSampleX != 0 && nbSampleY == 0){
                 scontainer.push_back(midPoint);
                 for (unsigned int i = 1; i< nbSampleX/2+1; i++){
                     vec offset = Scalar(i)*spacing*tangentVec;
-                    scontainer.push_back(midPoint + offset);
-                    scontainer.push_back(midPoint - offset);
+                    scontainer.push_back(Sample(midPoint + offset, primitiveUID));
+                    scontainer.push_back(Sample(midPoint - offset, primitiveUID));
                 }
                 //if ((*it).dim())
             }else if (nbSampleX == 0 && nbSampleY != 0){
