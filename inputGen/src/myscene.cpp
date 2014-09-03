@@ -106,9 +106,11 @@ MyScene::drawBackground(QPainter *painter, const QRectF &rect){
     if (_project->samples.size() != 0){
         glPointSize(2.f);
         glBegin(GL_POINTS);
-        InputGen::Application::PointSet::const_iterator it;
-        for(it = _project->samples.begin(); it != _project->samples.end(); it++){
-            InputGen::Application::GLDisplayFunctor<Scalar>::displayVertex((*it).data());
+        InputGen::Application::SampleSet::const_iterator it;
+        int sampleId = 0;
+        for(it = _project->samples.begin(); it != _project->samples.end(); it++, sampleId++){
+            InputGen::Application::GLDisplayFunctor<Scalar>::displayVertex(
+                        ((*it) + _project->computeTotalDisplacement(sampleId)).eval().data());
         }
         glEnd();
     }
