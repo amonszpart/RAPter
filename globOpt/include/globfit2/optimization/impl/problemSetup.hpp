@@ -3,11 +3,17 @@
 
 #include <iostream>                               // cout, cerr, endl
 #include "Eigen/Dense"
-#include "globfit2/optimization/problemSetup.h"
-#include "globfit2/optimization/energyFunctors.h" // AbstractPrimitivePrimitiveEnergyFunctor,
+
+#if GF2_USE_PCL
+#   include "pcl/console/parse.h" // pcl::console::parse_argument
+#endif
+
 #include "qcqpcpp/optProblem.h"                   // OptProblem
+
+#include "globfit2/optimization/energyFunctors.h" // AbstractPrimitivePrimitiveEnergyFunctor,
 #include "globfit2/parameters.h"                  // ProblemSetupParams
 #include "globfit2/processing/util.hpp"           // getPopulation()
+#include "globfit2/io/io.h"                       // readPrimitives(), readPoints()
 
 namespace GF2 {
 
@@ -25,7 +31,7 @@ ProblemSetup::formulateCli( int    argc
     typedef          MyPointPrimitiveDistanceFunctor               _PointPrimitiveDistanceFunctor;
     typedef typename _PointPrimitiveT::Scalar                      Scalar;
 
-    ProblemSetupParams<Scalar> params;
+    GF2::ProblemSetupParams<Scalar> params;
 
     //Scalar                    scale            = 0.05f;
     std::string               cloud_path       = "cloud.ply",
@@ -60,9 +66,9 @@ ProblemSetup::formulateCli( int    argc
         // data_cost_mode
         {
             pcl::console::parse_argument( argc, argv, "--data-mode", data_cost_mode_str );
-            /**/ if ( !data_cost_mode_str.compare( "assoc"   ) ) params.data_cost_mode = ASSOC_BASED; // default
-            else if ( !data_cost_mode_str.compare( "band"    ) ) params.data_cost_mode = BAND_BASED;  // banded
-            else if ( !data_cost_mode_str.compare( "instance") ) params.data_cost_mode = INSTANCE_BASED;
+            /**/ if ( !data_cost_mode_str.compare( "assoc"   ) ) params.data_cost_mode = ProblemSetupParams<Scalar>::ASSOC_BASED; // default
+            else if ( !data_cost_mode_str.compare( "band"    ) ) params.data_cost_mode = ProblemSetupParams<Scalar>::BAND_BASED;  // banded
+            else if ( !data_cost_mode_str.compare( "instance") ) params.data_cost_mode = ProblemSetupParams<Scalar>::INSTANCE_BASED;
             else std::cerr << "[" << __func__ << "]: " << "could NOT parse data mode, assuming " << (int)params.data_cost_mode << std::endl;
         }
 
@@ -70,9 +76,9 @@ ProblemSetup::formulateCli( int    argc
         {
             pcl::console::parse_argument( argc, argv, "--constr-mode", constr_mode_str );
             std::cout << "parsed constr_mode_str: " << constr_mode_str << std::endl;
-            /**/ if ( !constr_mode_str.compare( "patch"  ) ) params.constr_mode = PATCH_WISE; // default
-            else if ( !constr_mode_str.compare( "point"  ) ) params.constr_mode = POINT_WISE; // banded
-            else if ( !constr_mode_str.compare( "hybrid" ) ) params.constr_mode = HYBRID; // hybrid
+            /**/ if ( !constr_mode_str.compare( "patch"  ) ) params.constr_mode = ProblemSetupParams<Scalar>::PATCH_WISE; // default
+            else if ( !constr_mode_str.compare( "point"  ) ) params.constr_mode = ProblemSetupParams<Scalar>::POINT_WISE; // banded
+            else if ( !constr_mode_str.compare( "hybrid" ) ) params.constr_mode = ProblemSetupParams<Scalar>::HYBRID; // hybrid
             else std::cerr << "[" << __func__ << "]: " << "could NOT parse constraint mode, assuming " << (int)params.constr_mode << std::endl;
         }
 
@@ -183,8 +189,8 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
                        , _PrimitiveContainerT                                          const& prims
                        , _PointContainerT                                              const& points
                        //, std::vector<std::pair<int,int> >                              const& points_primitives
-                       , CONSTR_MODE                                                   const  constr_mode
-                       , DATA_COST_MODE                                                const  data_cost_mode
+                       , typename ProblemSetupParams<_Scalar>::CONSTR_MODE             const  constr_mode
+                       , typename ProblemSetupParams<_Scalar>::DATA_COST_MODE          const  data_cost_mode
                        , _Scalar                                                       const  scale
                        , Eigen::Matrix<_Scalar,-1,1>                                   const& weights
                        , AbstractPrimitivePrimitiveEnergyFunctor<_Scalar,_PrimitiveT>* const& primPrimDistFunctor
@@ -228,15 +234,15 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
     {
         switch ( constr_mode )
         {
-            case CONSTR_MODE::POINT_WISE:
+            case ProblemSetupParams<_Scalar>::CONSTR_MODE::POINT_WISE:
                 err = problemSetup::everyPointNeedsPatchConstraint<_PointPrimitiveDistanceFunctor, _PrimitiveT, _PointPrimitiveT>
                         ( problem, prims, points, lids_varids, weights, scale );
                 break;
-            case CONSTR_MODE::PATCH_WISE:
+            case ProblemSetupParams<_Scalar>::CONSTR_MODE::PATCH_WISE:
                 err = problemSetup::everyPatchNeedsDirectionConstraint<_PointPrimitiveDistanceFunctor, _PrimitiveT, _PointPrimitiveT>
                         ( problem, prims, points, lids_varids, weights, scale );
                 break;
-            case CONSTR_MODE::HYBRID:
+            case ProblemSetupParams<_Scalar>::CONSTR_MODE::HYBRID:
                 err = problemSetup::largePatchesNeedDirectionConstraint<_PointPrimitiveDistanceFunctor, _PrimitiveT, _PointPrimitiveT>
                         ( problem, prims, points, lids_varids, weights, scale, patch_pop_limit );
                 break;
@@ -256,17 +262,17 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
     {
         switch ( data_cost_mode )
         {
-            case ASSOC_BASED:
+            case ProblemSetupParams<_Scalar>::DATA_COST_MODE::ASSOC_BASED:
                 err = problemSetup::associationBasedDataCost<_PointPrimitiveDistanceFunctor, _PrimitiveT, _PointPrimitiveT>
                         ( problem, prims, points, lids_varids, weights, scale );
                 break;
 
-            case INSTANCE_BASED:
+            case ProblemSetupParams<_Scalar>::DATA_COST_MODE::INSTANCE_BASED:
                 err = problemSetup::instanceBasedDataCost<_PointPrimitiveDistanceFunctor, _PrimitiveT, _PointPrimitiveT>
                         ( problem, prims, points, lids_varids, weights, scale );
                 break;
 
-            case BAND_BASED:
+            case ProblemSetupParams<_Scalar>::DATA_COST_MODE::BAND_BASED:
             default:
                 err = problemSetup::bandBasedDataCost<_PointPrimitiveDistanceFunctor, _PrimitiveT, _PointPrimitiveT>
                         ( problem, prims, points, lids_varids, weights, scale );

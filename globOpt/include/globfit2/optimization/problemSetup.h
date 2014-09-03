@@ -6,7 +6,6 @@
 #include <set>
 
 #include "qcqpcpp/optProblem.h"  // OptProblem
-//#include "globfit2/parameters.h" // ProblemSetupParams
 
 namespace GF2
 {
@@ -148,13 +147,6 @@ namespace GF2
     class ProblemSetup
     {
         public:
-            //! \brief Options to calculate data cost of primitive by.
-            enum DATA_COST_MODE { ASSOC_BASED    = 0 //!< \brief \sa \ref problemSetup::associationBasedDataCost
-                                , BAND_BASED     = 1 //!< \brief \sa \ref problemSetup::bandBasedDataCost
-                                , INSTANCE_BASED = 2 //!< \brief \sa \ref problemSetup::instanceBasedDataCost
-                                };
-            enum CONSTR_MODE    { PATCH_WISE = 0, POINT_WISE = 1, HYBRID = 2 };
-
             //! \brief                          Step 2. Reads the output from generate and sets up the optimization problem in form of sparse matrices.
             //! \tparam _PrimitiveContainerT    Concept: vector< vector< \ref GF2::LinePrimitive2 > >
             //! \tparam _PointContainerT        Concept: vector< \ref GF2::PointPrimitive >
@@ -190,8 +182,8 @@ namespace GF2
                      , _PrimitiveContainerT                                               const& prims
                      , _PointContainerT                                                   const& points
                      //, std::vector<std::pair<int,int> >                                   const& points_primitives
-                     , CONSTR_MODE                                                        const  constr_mode
-                     , DATA_COST_MODE                                                     const  data_cost_mode
+                     , typename ProblemSetupParams<_Scalar>::CONSTR_MODE                  const  constr_mode
+                     , typename ProblemSetupParams<_Scalar>::DATA_COST_MODE               const  data_cost_mode
                      , _Scalar                                                            const  scale
                      , Eigen::Matrix<_Scalar,-1,1>                                        const& weights
                      , GF2::AbstractPrimitivePrimitiveEnergyFunctor<_Scalar,_PrimitiveT>* const& primPrimDistFunctor

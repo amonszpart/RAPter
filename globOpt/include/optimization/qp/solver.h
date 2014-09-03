@@ -270,7 +270,7 @@ Solver::generateCli(   int    argc
 {
     typedef typename PointContainerT::value_type PointPrimitiveT;
 
-    CandidateGeneratorParams    generatorParams;
+    CandidateGeneratorParams<Scalar> generatorParams;
     std::string                 cloud_path              = "cloud.ply";
     Scalar                      scale                   = Scalar( 0.05 );
     Scalar                      angle_gen               = M_PI_2;

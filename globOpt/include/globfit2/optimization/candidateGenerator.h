@@ -4,59 +4,19 @@
 #include <opencv2/core/core.hpp>        // Mat
 #include <opencv2/highgui/highgui.hpp>  // imread
 #include <opencv2/imgproc/imgproc.hpp>  // cvtColor
-#include "pcl/common/intersections.h"   // lineWithLineIntersection
-#include "pcl/kdtree/kdtree.h"          // nearestneighboursearch
 
-#include "pcltools/util.hpp"            // addGaussianNoise, fitLinearPrimitive
+#if GF2_USE_PCL
+#   include "pcl/common/intersections.h"   // lineWithLineIntersection
+#   include "pcl/kdtree/kdtree.h"          // nearestneighboursearch
+#   include "pcltools/util.hpp"            // addGaussianNoise, fitLinearPrimitive
+#endif // GF2_USE_PCL
+
 #include "globfit2/optimization/patchDistanceFunctors.h" // FullLinkagePointPatchDistanceFunctor
+#include "globfit2/parameters.h"        // CandidateGeneratorParams
 
 namespace GF2
 {
-    struct CandidateGeneratorParams
-    {
-            enum RefitMode { SPATIAL, AVG_DIR };
 
-            float     angle_limit                 = 0.08f;   //!< \brief angle threshold for similar lines
-            float     angle_limit_div             = 10.f;    //!< \brief Determines, how much the angle_limit is divided by, to get the patch-similarity threshold
-            float     patch_dist_limit            = 1.f;     //!< \brief Patchify takes "patch_dist_limit * scale" as maximum spatial distance
-            int       nn_K                        = 15;      //!< \brief Number of points used for primitive fitting
-            int       patch_population_limit      = 10;      //!< \brief Threshold, on when a patch can distribute its directions
-            RefitMode refit_mode                  = AVG_DIR; //!< \brief Determines, how a patch gets it's final direction. A NL-LSQ to the points, or the average of local orientations.
-            bool      show_fit_lines              = false;
-            bool      show_candidates             = true;
-
-            inline std::string printRefitMode() const
-            {
-                switch ( refit_mode )
-                {
-                    case AVG_DIR: return "avg_dir"; break;
-                    case SPATIAL: return "spatial"; break;
-                    default:      return "UNKNOWN"; break;
-                }
-            } // ...printRefitMode()
-
-            inline int parseRefitMode( std::string const& refit_mode_string )
-            {
-                int err = EXIT_SUCCESS;
-
-                if ( !refit_mode_string.compare("avg_dir") )
-                {
-                    this->refit_mode = AVG_DIR;
-                }
-                else if ( !refit_mode_string.compare("spatial") )
-                {
-                    this->refit_mode = SPATIAL;
-                }
-                else
-                {
-                    err = EXIT_FAILURE;
-                    this->refit_mode = SPATIAL;
-                    std::cerr << "[" << __func__ << "]: " << "Could NOT parse " << refit_mode_string << ", assuming SPATIAL" << std::endl;
-                }
-
-                return err;
-            } // ...parseRefitMode()
-    }; // ...struct CandidateGeneratorParams
 
     // generate
     /// (1) patchify
@@ -152,11 +112,10 @@ namespace GF2
                       , PointContainerT               &  points // non-const to be able to add group tags
                       , Scalar                   const   scale
                       , std::vector<Scalar>      const&  angles
-                      , CandidateGeneratorParams const&  params );
+                      , CandidateGeneratorParams<Scalar> const&  params );
 
             //! \brief patchify     Groups points into patches based on their local fit lines and positions.
-            template < /*class        _PrimitivePrimitiveAngleFunctorT
-                      ,*/ class       _PointPatchDistanceFunctorT
+            template <  class       _PointPatchDistanceFunctorT
                       , class       _PointContainerT
                       , class       _PrimitiveT
                       , typename    _Scalar>
@@ -165,10 +124,10 @@ namespace GF2
                                         , _Scalar                     const  scale
                                         , std::vector<_Scalar>        const& angles
                                         , _PointPatchDistanceFunctorT const& pointPatchDistanceFunctor
-                                        , CandidateGeneratorParams    const& params
+                                        , CandidateGeneratorParams<_Scalar>    const& params
                                         );
 
-            //! \brief propose      Create local fits for local neighbourhoods.
+            //! \brief propose      Create local fits to local neighbourhoods, these will be the point orientations.
             template <  class       TLines
                       , class       PointsPtrT>
             static inline int
@@ -202,7 +161,7 @@ namespace GF2
                       , _PrimitiveContainerT        const& lines
                       , _Scalar                     const  scale
                       , std::vector<_Scalar>        const& /*angles*/
-                      , CandidateGeneratorParams    const  /*params*/
+                      , CandidateGeneratorParams<_Scalar>    const  /*params*/
                       , _PatchPatchDistanceFunctorT const& patchPatchDistanceFunctor
                       , int                         const  gid_tag_name              = _PointT::GID
                       , std::vector<int>            const* point_ids_arg             = NULL
@@ -243,7 +202,6 @@ namespace GF2
 //_____________________________________________________________________________________________________________________
 // HPP
 #include "globfit2/my_types.h"          //  PCLPointAllocator
-//#include "globfit2/visualization/visualization.h"   // debug
 #include "globfit2/processing/util.hpp" // calcPopulations()
 
 namespace GF2
@@ -258,32 +216,36 @@ namespace GF2
                                 , _PointContainerT                 & points // non-const to be able to add group tags
                                 , _Scalar                     const  scale
                                 , std::vector<_Scalar>        const& angles
-                                , CandidateGeneratorParams    const& params )
+                                , CandidateGeneratorParams<_Scalar>    const& params )
     {
         typedef typename _PointContainerT::value_type _PointPrimitiveT;
 
+        // init distance functor by angle and distance threshold
         _PatchPatchDistanceFunctorT patchPatchDistanceFunctor( params.patch_dist_limit * scale, params.angle_limit, scale );
+
+        // log
         std::cout << "[" << __func__ << "]: " << "PatchPatchDistance by " << patchPatchDistanceFunctor.toString() << std::endl;
 
         // (1) Create patches
         std::vector<_PrimitiveT> patch_lines;
         patchify<_PatchPatchDistanceFunctorT>( patch_lines // tagged lines at GID with patch_id
-                                               , points    // filled points with directions and tagged at GID with patch_id
-                                               , scale
-                                               , angles
-                                               , patchPatchDistanceFunctor
-                                               , params );
+                                             , points    // filled points with directions and tagged at GID with patch_id
+                                             , scale
+                                             , angles
+                                             , patchPatchDistanceFunctor
+                                             , params );
         // (2) Mix and Filter
-
         // count patch populations
         GidIntMap populations; // populations[patch_id] = all points with GID==patch_id
-        processing::calcPopulations( populations, points );
+        {
+            processing::calcPopulations( populations, points );
+        }
 
         // convert local fits
         const _Scalar angle_limit( params.angle_limit / params.angle_limit_div );
         int nlines = 0;
         lines.resize( patch_lines.size() );
-        for ( size_t patch_id0 = 0; patch_id0 != patch_lines.size(); ++patch_id0 ) // patch_id
+        for ( size_t patch_id0 = 0; patch_id0 != patch_lines.size(); ++patch_id0 )
         {
             lines[patch_id0].reserve( lines.size() );
             for ( size_t patch_id1 = patch_id0; patch_id1 != patch_lines.size(); ++patch_id1 )
@@ -325,19 +287,19 @@ namespace GF2
                 if ( !add0 && !add1 )
                     continue;
 
-                Eigen::Matrix<_Scalar,3,1> dir0 = patch_lines[patch_id1].dir(), dir1 = patch_lines[patch_id0].dir();
+                Eigen::Matrix<_Scalar,3,1> dir0 = patch_lines[patch_id1].dir(),
+                                           dir1 = patch_lines[patch_id0].dir();
                 if ( (closest_angle > 0.f) && (closest_angle < M_PI) )
                 {
                     dir0 = Eigen::AngleAxisf(-closest_angle, Eigen::Matrix<_Scalar,3,1>::UnitZ() ) * dir0;
                     dir1 = Eigen::AngleAxisf( closest_angle, Eigen::Matrix<_Scalar,3,1>::UnitZ() ) * dir1;
                 }
 
-                _PrimitiveT cand0 = _PrimitiveT( patch_lines[patch_id0].pos(), dir0 );
-                _PrimitiveT cand1 = _PrimitiveT( patch_lines[patch_id1].pos(), dir1 );
-
                 // copy line from pid to pid1
                 if ( add0 )
                 {
+                    _PrimitiveT cand0 = _PrimitiveT( patch_lines[patch_id0].pos(), dir0 );
+
                     lines[patch_id0].emplace_back( cand0 );
                     lines[patch_id0].back().setTag( _PrimitiveT::GID    , patch_lines[patch_id0].getTag(_PrimitiveT::GID) );
                     lines[patch_id0].back().setTag( _PrimitiveT::DIR_GID, patch_lines[patch_id1].getTag(_PrimitiveT::GID) );
@@ -346,6 +308,8 @@ namespace GF2
 
                 if ( (patch_id0 != patch_id1) && add1 )
                 {
+                    _PrimitiveT cand1 = _PrimitiveT( patch_lines[patch_id1].pos(), dir1 );
+
                     // copy line from pid1 to pid
                     lines[patch_id1].emplace_back( cand1 );
                     lines[patch_id1].back().setTag( _PrimitiveT::GID    , patch_lines[patch_id1].getTag(_PrimitiveT::GID) );
@@ -354,20 +318,9 @@ namespace GF2
                 }
             }
         }
-        //vptr->spin();
 
+        // log
         std::cout << "[" << __func__ << "]: " << "finished generating, we now have " << nlines << " candidates" << std::endl;
-        if ( params.show_candidates )
-        {
-
-//            Visualizer<_PrimitiveContainerT,_PointContainerT>::template show<_Scalar>( lines, points
-//                                                                                     , /*     scale: */ scale
-//                                                                                     , /*    colour: */ { 0.f, 0.f, 1.f}
-//                                                                                     , /*      spin: */ true
-//                                                                                     , /*    angles: */ NULL
-//                                                                                     , /*  show_ids: */ false
-//                                                                                     , /* tags_only: */ false );
-        }
 
         return EXIT_SUCCESS;
     } // ...CandidateGenerator::generate()
@@ -389,7 +342,7 @@ namespace GF2
                                 , _Scalar                     const  scale
                                 , std::vector<_Scalar>        const& angles
                                 , _PointPatchDistanceFunctorT const& pointPatchDistanceFunctor
-                                , CandidateGeneratorParams    const& params
+                                , CandidateGeneratorParams<_Scalar>    const& params
                                 )
     {
         typedef Patch<_Scalar,_PrimitiveT> PatchT;
@@ -439,7 +392,7 @@ namespace GF2
         } // ... (2) group
 
         // (3) refit lines to patches
-        if ( params.refit_mode == CandidateGeneratorParams::AVG_DIR )
+        if ( params.refit_mode == CandidateGeneratorParams<_Scalar>::AVG_DIR )
         {
             patch_lines.reserve( groups.size() );
             for ( size_t gid = 0; gid != groups.size(); ++gid )
@@ -514,7 +467,7 @@ namespace GF2
                                   , _PrimitiveContainerT        const& lines
                                   , _Scalar                     const  scale
                                   , std::vector<_Scalar>        const& /*angles*/
-                                  , CandidateGeneratorParams    const  /*params*/
+                                  , CandidateGeneratorParams<_Scalar>    const  /*params*/
                                   , _PatchPatchDistanceFunctorT const& patchPatchDistanceFunctor
                                   , int                         const  gid_tag_name
                                   , std::vector<int>            const* point_ids_arg
