@@ -1,7 +1,7 @@
 #ifndef PRIMITIVE_H
 #define PRIMITIVE_H
 
-#include "eigen3/Eigen/Core"
+#include "Eigen/Core"
 #include <iostream>
 
 

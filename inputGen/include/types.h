@@ -4,7 +4,7 @@
 #include "primitive.h"
 
 #include <vector>
-#include "eigen3/Eigen/StdVector"
+#include "Eigen/StdVector"
 
 namespace InputGen{
 namespace Application{
@@ -28,7 +28,7 @@ struct Sample: public Primitive::vec{
 };
 
 typedef std::vector<Sample,
-                    Eigen::aligned_allocator<Sample> > PointSet;
+                    Eigen::aligned_allocator<Sample> > SampleSet;
 }
 }
 
