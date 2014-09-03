@@ -70,7 +70,7 @@ public:
     inline void setDim  (const vec2Derived& dim )
     { _dim = dim; if (_type == LINE_2D) _dim(1) = 0; }
 
-    inline uint uid() const { return _uid; }
+    inline const uint& uid() const { return _uid; }
 
     inline int& did()       { return _did; }
     inline int  did() const { return _did; }
