@@ -27,7 +27,7 @@ MyScene::MyScene(QObject *parent) :
     _pSet(NULL),
     _pointSet(NULL),
     _zoom(1.),
-    _generator(NULL)
+    _sampler(NULL)
 {
     //setStates();
 }
@@ -115,7 +115,7 @@ MyScene::drawBackground(QPainter *painter, const QRectF &rect){
         glEnd();
     }
 
-    if (_generator != NULL) _generator->display();
+    if (_sampler != NULL) _sampler->display();
 
 
     painter->endNativePainting();

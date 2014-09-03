@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>SampleGeneratorFactory</class>
- <widget class="QDockWidget" name="SampleGeneratorFactory">
+ <class>SamplerFactory</class>
+ <widget class="QDockWidget" name="SamplerFactory">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Sample Generators</string>
+   <string>Samplers</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
    <layout class="QGridLayout" name="gridLayout_2">
@@ -20,7 +20,7 @@
       <property name="currentIndex">
        <number>0</number>
       </property>
-      <widget class="QWidget" name="_generatorPrimitives">
+      <widget class="QWidget" name="_samplerPrimitives">
        <property name="geometry">
         <rect>
          <x>0</x>
@@ -37,17 +37,17 @@
        </attribute>
        <layout class="QGridLayout" name="gridLayout_3">
         <item row="0" column="0">
-         <widget class="QLabel" name="_generatorPrimitivesParamSpacingLabel">
+         <widget class="QLabel" name="_samplerPrimitivesParamSpacingLabel">
           <property name="text">
            <string>Spacing</string>
           </property>
           <property name="buddy">
-           <cstring>_generatorPrimitivesParamSpacing</cstring>
+           <cstring>_samplerPrimitivesParamSpacing</cstring>
           </property>
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QDoubleSpinBox" name="_generatorPrimitivesParamSpacing">
+         <widget class="QDoubleSpinBox" name="_samplerPrimitivesParamSpacing">
           <property name="buttonSymbols">
            <enum>QAbstractSpinBox::PlusMinus</enum>
           </property>
@@ -83,7 +83,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="_generatorPonctual">
+      <widget class="QWidget" name="_samplerPonctual">
        <property name="geometry">
         <rect>
          <x>0</x>
@@ -107,10 +107,10 @@
  <resources/>
  <connections>
   <connection>
-   <sender>_generatorPrimitivesParamSpacing</sender>
+   <sender>_samplerPrimitivesParamSpacing</sender>
    <signal>valueChanged(double)</signal>
-   <receiver>SampleGeneratorFactory</receiver>
-   <slot>updateGenerator()</slot>
+   <receiver>SamplerFactory</receiver>
+   <slot>updateSampler()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>172</x>
@@ -125,8 +125,8 @@
   <connection>
    <sender>toolBox</sender>
    <signal>currentChanged(int)</signal>
-   <receiver>SampleGeneratorFactory</receiver>
-   <slot>updateGenerator()</slot>
+   <receiver>SamplerFactory</receiver>
+   <slot>updateSampler()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>144</x>
@@ -140,6 +140,6 @@
   </connection>
  </connections>
  <slots>
-  <slot>updateGenerator()</slot>
+  <slot>updateSampler()</slot>
  </slots>
 </ui>

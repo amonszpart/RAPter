@@ -1,28 +1,28 @@
-#ifndef SAMPLEGENERATORFACTORY_H
-#define SAMPLEGENERATORFACTORY_H
+#ifndef SAMPLERFACTORY_H
+#define SAMPLERFACTORY_H
 
 #include <QDockWidget>
-#include "samplegenerator.h"
+#include "sampler.h"
 #include "types.h"
 #include "typesGL.h"
 
 namespace Ui {
-class SampleGeneratorFactory;
+class SamplerFactory;
 }
 
-class SampleGeneratorFactory : public QDockWidget
+class SamplerFactory : public QDockWidget
 {
     Q_OBJECT
 
 public:
-    explicit SampleGeneratorFactory(QWidget *parent = 0);
-    ~SampleGeneratorFactory();
+    explicit SamplerFactory(QWidget *parent = 0);
+    ~SamplerFactory();
 
     inline void setPrimitives(
             std::vector< InputGen::Application::Primitive >*s)
     {
         _pSet = s;
-        updateGenerator();
+        updateSampler();
     }
 
     inline void setPoints( InputGen::Application::PointSet*s)
@@ -31,24 +31,22 @@ public:
     }
 
 public slots:
-    void updateGenerator();
+    void updateSampler();
 
 signals:
     //! \warning Pointers are invalid outside of the connected slots
     void samplesChanged(InputGen::Application::PointSet *,
-                        InputGen::Application::SampleGenerator*);
+                        InputGen::Application::Sampler*);
 
 private:
-    typedef InputGen::Application::SampleGenerator SampleGenerator;
-
-    enum GENERATOR_TYPE{
+    enum SAMPLER_TYPE{
         GEN_FROM_PRIMITIVE = 0,
         GEN_FROM_PONCTUAL  = 1
     };
 
-    Ui::SampleGeneratorFactory *ui;
+    Ui::SamplerFactory *ui;
     std::vector< InputGen::Application::Primitive > *_pSet;
     InputGen::Application::PointSet * _pointSet;
 };
 
-#endif // SAMPLEGENERATORFACTORY_H
+#endif // SAMPLERFACTORY_H

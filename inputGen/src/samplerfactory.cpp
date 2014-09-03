@@ -1,5 +1,5 @@
-#include "samplegeneratorfactory.h"
-#include "ui_samplegeneratorfactory.h"
+#include "samplerfactory.h"
+#include "ui_samplerfactory.h"
 
 #include "types.h"
 
@@ -7,23 +7,23 @@
 
 using namespace std;
 
-SampleGeneratorFactory::SampleGeneratorFactory(QWidget *parent) :
+SamplerFactory::SamplerFactory(QWidget *parent) :
     QDockWidget(parent),
-    ui(new Ui::SampleGeneratorFactory),
+    ui(new Ui::SamplerFactory),
     _pSet(NULL),
     _pointSet(NULL)
 {
     ui->setupUi(this);
 }
 
-SampleGeneratorFactory::~SampleGeneratorFactory()
+SamplerFactory::~SamplerFactory()
 {
     delete ui;
 }
 
 
 void
-SampleGeneratorFactory::updateGenerator()
+SamplerFactory::updateSampler()
 {
     typedef InputGen::Application::Primitive::vec vec;
 
@@ -34,11 +34,11 @@ SampleGeneratorFactory::updateGenerator()
         switch (ui->toolBox->currentIndex () ){
         case GEN_FROM_PRIMITIVE:
         {
-            InputGen::PrimitiveSampleGenerator<InputGen::Application::Scalar,
+            InputGen::PrimitiveSampler<InputGen::Application::Scalar,
                     InputGen::Application::GLDisplayFunctor > lgen;
 
-            // set generator parameters
-            lgen.spacing = ui->_generatorPrimitivesParamSpacing->value();
+            // set sampler parameters
+            lgen.spacing = ui->_samplerPrimitivesParamSpacing->value();
 
             // generate points
             lgen.generateSamples(*_pointSet, *_pSet);
@@ -52,5 +52,5 @@ SampleGeneratorFactory::updateGenerator()
         };
 
     }
-    //emit samplesChanged(_pointSet, _generator);
+    //emit samplesChanged(_pointSet, _sampler);
 }

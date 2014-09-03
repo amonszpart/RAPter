@@ -1,5 +1,5 @@
-#ifndef SAMPLEGENERATOR_H
-#define SAMPLEGENERATOR_H
+#ifndef SAMPLER_H
+#define SAMPLER_H
 
 #include "primitive.h"
 
@@ -7,31 +7,21 @@ namespace InputGen{
 
 
 template <typename _Scalar, template <class> class _DisplayFunctor>
-class VisibleSampleGenerator{
+class VisibleSampler{
 protected:
     typedef _Scalar Scalar;
     typedef _DisplayFunctor<_Scalar> DisplayFunctor;
 
 public:
     virtual void display() const = 0;
-    virtual VisibleSampleGenerator<_Scalar, _DisplayFunctor>* copy() = 0;
+    virtual VisibleSampler<_Scalar, _DisplayFunctor>* copy() = 0;
 
 };
 
-/*
- * Generator concept:
- *
-\code*/
-/*\encode
- *
- * \warning Generators should not have random behaviors, and copied instances
- *          should always generate samples at the same positions.
-*/
-
-//! Basic generator, sampling the primitive regularly
+//! Basic sampler, sampling the primitive regularly
 template <typename _Scalar,
           template <class> class _DisplayFunctor>
-struct PrimitiveSampleGenerator : public VisibleSampleGenerator<
+struct PrimitiveSampler : public VisibleSampler<
         _Scalar,
         _DisplayFunctor>{
     typedef _Scalar Scalar;
@@ -43,10 +33,10 @@ struct PrimitiveSampleGenerator : public VisibleSampleGenerator<
 
     ///// copy constructor
     /// inline
-    PrimitiveSampleGenerator(PrimitiveSampleGenerator<_Scalar, _DisplayFunctor>* other)
+    PrimitiveSampler(PrimitiveSampler<_Scalar, _DisplayFunctor>* other)
         : spacing(other->spacing)
     {}
-    PrimitiveSampleGenerator()
+    PrimitiveSampler()
         : spacing(1.)
     {}
 
@@ -57,8 +47,8 @@ struct PrimitiveSampleGenerator : public VisibleSampleGenerator<
 
     virtual void display() const {std::cout <<"display Me !! " << std::endl;}
 
-    virtual VisibleSampleGenerator<_Scalar, _DisplayFunctor>* copy(){
-        return new PrimitiveSampleGenerator<_Scalar, _DisplayFunctor>(this);
+    virtual VisibleSampler<_Scalar, _DisplayFunctor>* copy(){
+        return new PrimitiveSampler<_Scalar, _DisplayFunctor>(this);
     }
 
 };
@@ -69,13 +59,14 @@ template <typename _Scalar,
           template <class> class T>
 template <class SampleContainer, class PrimitiveContainer>
 void
-PrimitiveSampleGenerator<_Scalar, T>::generateSamples(
+PrimitiveSampler<_Scalar, T>::generateSamples(
               SampleContainer&    scontainer,
         const PrimitiveContainer& pcontainer){
     typedef typename PrimitiveContainer::value_type::vec vec;
 
     typename PrimitiveContainer::const_iterator it;
 
+    // Iterate over all the primitives and generate samples using uniform spacing
     for(it = pcontainer.begin(); it != pcontainer.end(); it++){
 
         unsigned int nbSampleX = int(std::abs((*it).dim()(0)) / spacing);
@@ -109,4 +100,4 @@ PrimitiveSampleGenerator<_Scalar, T>::generateSamples(
 
 }
 
-#endif // SAMPLEGENERATOR_H
+#endif // SAMPLER_H
