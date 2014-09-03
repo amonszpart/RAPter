@@ -29,7 +29,7 @@ class Solver
 
         //static inline int show       ( int argc, char** argv );
         static inline int sampleInput( int argc, char** argv );
-        static inline int generate   ( int argc, char** argv );
+        static inline int generateCli   ( int argc, char** argv );
         //static inline int formulate  ( int argc, char** argv );
         static inline int solve      ( int argc, char** argv );
         static inline int datafit    ( int argc, char** argv );
@@ -265,7 +265,7 @@ Solver::sampleInput( int argc, char** argv )
 //! \param argv             Contains --cloud cloud.ply, and --scale scale.
 //! \return                 EXIT_SUCCESS.
 int
-Solver::generate(   int    argc
+Solver::generateCli(   int    argc
                   , char** argv )
 {
     typedef typename PointContainerT::value_type PointPrimitiveT;
@@ -397,27 +397,15 @@ Solver::generate(   int    argc
     } // ...work
 
     // Save point GID tags
-    std::string candidates_path = boost::filesystem::path( cloud_path ).parent_path().string() + "/" + "candidates.txt";
     {
-        int cnt_sync = 0, dir_gid_ex = 0;
-        for ( size_t lid = 0; lid != primitives.size(); ++lid )
-            for ( size_t lid1 = 0; lid1 != primitives[lid].size(); ++lid1 )
-            {
-                if ( primitives[lid][lid1].getTag( PrimitiveT::GID ) != static_cast<int>(lid) )
-                    ++cnt_sync;
-                if (   (primitives[lid][lid1].getTag( PrimitiveT::DIR_GID ) >= static_cast<int>(primitives.size()))
-                   ||  (primitives[lid][lid1].getTag( PrimitiveT::DIR_GID ) <  static_cast<int>(0)                ) )
-                    ++dir_gid_ex;
-            }
-        std::cout << "syncno: " << cnt_sync << ", dir_gid_exists_no: " << dir_gid_ex << std::endl;
-
         std::string f_assoc_path = boost::filesystem::path( cloud_path ).parent_path().string() + "/" + "points_primitives.txt";
         util::saveBackup( f_assoc_path );
         io::writeAssociations<PointPrimitiveT>( points, f_assoc_path );
         std::cout << "[" << __func__ << "]: " << "wrote to " << f_assoc_path << std::endl;
     }
 
-    // backup
+    // save primitives
+    std::string candidates_path = boost::filesystem::path( cloud_path ).parent_path().string() + "/" + "candidates.txt";
     util::saveBackup( candidates_path );
     return io::savePrimitives<PrimitiveT>( /* what: */ primitives, /* where_to: */ candidates_path );
 
