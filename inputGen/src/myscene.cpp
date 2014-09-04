@@ -84,12 +84,13 @@ MyScene::drawBackground(QPainter *painter, const QRectF &rect){
     glLoadIdentity();
     glMatrixMode(GL_MODELVIEW);
     static GLdouble invertY [16]  = {
-        1.0, 0.0, 0.0, 0.0,
-        0.0,-1.0, 0.0, 0.0,
-        0.0, 0.0, 1.0, 0.0,
+        2.0, 0.0, 0.0, 0.0, // center the current view to 0.5,0.5
+        0.0,-2.0, 0.0, 0.0, // scale to view [0:1]
+        0.0, 0.0, 2.0, 0.0,
         0.0, 0.0, 0.0, 1.0
     };
 
+    glTranslatef(-1.f, 1.f, 0.f);
     glMultMatrixd(invertY);
     glScalef(_zoom, _zoom, _zoom);
 
