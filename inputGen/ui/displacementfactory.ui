@@ -159,7 +159,7 @@
   </connection>
   <connection>
    <sender>_displacementLayerTable</sender>
-   <signal>itemChanged(QTableWidgetItem*)</signal>
+   <signal>currentItemChanged(QTableWidgetItem*,QTableWidgetItem*)</signal>
    <receiver>DisplacementFactory</receiver>
    <slot>refreshFromView()</slot>
    <hints>
@@ -205,10 +205,27 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>_displacementLayerTable</sender>
+   <signal>itemChanged(QTableWidgetItem*)</signal>
+   <receiver>DisplacementFactory</receiver>
+   <slot>itemChanged(QTableWidgetItem*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>199</x>
+     <y>117</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>addLayerTriggerred()</slot>
   <slot>refreshFromView()</slot>
   <slot>currentLayerChanged()</slot>
+  <slot>itemChanged(QTableWidgetItem*)</slot>
  </slots>
 </ui>

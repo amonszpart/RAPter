@@ -119,6 +119,22 @@ DisplacementFactory::addLayerTriggerred(){
 
 }
 
+void
+DisplacementFactory::itemChanged(QTableWidgetItem *item){
+    std::cout << "itemChanged()" << std::endl;
+
+    // the current cell is in the "enable" column
+    if (ui->_displacementLayerTable->column(item) != 1 || _project == NULL)
+        return;
+
+    int layerId = ui->_displacementLayerTable->row(item);
+    if (layerId < 0) return;
+
+    _project->enableDisplacementLayer(layerId, item->checkState()==Qt::Checked);
+
+    emit projectUpdated();
+}
+
 int
 DisplacementFactory::getSelectedLayerFromUI(){
 

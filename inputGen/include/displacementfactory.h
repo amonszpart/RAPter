@@ -35,6 +35,9 @@ private slots:
     //! \brief Triggered by UI
     void currentLayerChanged();
 
+    //! \brief Track selection changes
+    void itemChanged ( QTableWidgetItem * item );
+
 private:
     int getSelectedLayerFromUI();
     void configureFromUI(InputGen::Application::Project::DisplacementKernel* kernel);
