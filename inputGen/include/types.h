@@ -4,7 +4,7 @@
 #include "primitive.h"
 
 #include <vector>
-#include "eigen3/Eigen/StdVector"
+#include "Eigen/StdVector"
 
 namespace InputGen{
 namespace Application{
@@ -18,17 +18,19 @@ struct Sample: public Primitive::vec{
     typedef Base::Scalar Scalar;
     int primitiveId;
 
-    inline Sample(): Base(), primitiveId(-1) {}
+    inline Sample(int id = -1): Base(), primitiveId(id) {}
     template <class Derived>
-    inline Sample(const Derived&v): Base(v), primitiveId(-1) {}
+    inline Sample(const Derived&v, int id = -1): Base(v), primitiveId(id) {}
     inline Sample(const Scalar&x,
                   const Scalar&y,
-                  const Scalar&z): Base(x,y,z), primitiveId(-1) {}
+                  const Scalar&z,
+                  int id = -1): Base(x,y,z), primitiveId(id) {}
 };
 
 typedef std::vector<Sample,
-                    Eigen::aligned_allocator<Sample> > PointSet;
+                    Eigen::aligned_allocator<Sample> > SampleSet;
 }
 }
+
 
 #endif // TYPES_H

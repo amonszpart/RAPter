@@ -5,6 +5,7 @@
 #include "sampler.h"
 #include "types.h"
 #include "typesGL.h"
+#include "project.h"
 
 namespace Ui {
 class SamplerFactory;
@@ -18,25 +19,17 @@ public:
     explicit SamplerFactory(QWidget *parent = 0);
     ~SamplerFactory();
 
-    inline void setPrimitives(
-            std::vector< InputGen::Application::Primitive >*s)
+    inline void setProject(InputGen::Application::Project*p, bool updateSamples = false)
     {
-        _pSet = s;
-        updateSampler();
-    }
-
-    inline void setPoints( InputGen::Application::PointSet*s)
-    {
-        _pointSet = s;
+        _project = p;
+        if (updateSamples) updateSampler();
     }
 
 public slots:
     void updateSampler();
 
 signals:
-    //! \warning Pointers are invalid outside of the connected slots
-    void samplesChanged(InputGen::Application::PointSet *,
-                        InputGen::Application::Sampler*);
+    void samplerUpdated();
 
 private:
     enum SAMPLER_TYPE{
@@ -45,8 +38,7 @@ private:
     };
 
     Ui::SamplerFactory *ui;
-    std::vector< InputGen::Application::Primitive > *_pSet;
-    InputGen::Application::PointSet * _pointSet;
+    InputGen::Application::Project * _project;
 };
 
 #endif // SAMPLERFACTORY_H

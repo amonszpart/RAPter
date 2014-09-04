@@ -10,8 +10,7 @@ using namespace std;
 SamplerFactory::SamplerFactory(QWidget *parent) :
     QDockWidget(parent),
     ui(new Ui::SamplerFactory),
-    _pSet(NULL),
-    _pointSet(NULL)
+    _project(NULL)
 {
     ui->setupUi(this);
 }
@@ -27,9 +26,9 @@ SamplerFactory::updateSampler()
 {
     typedef InputGen::Application::Primitive::vec vec;
 
-    if (_pSet != NULL && _pointSet != NULL){
+    if (_project != NULL){
 
-        _pointSet->clear();
+        _project->samples.clear();
 
         switch (ui->toolBox->currentIndex () ){
         case GEN_FROM_PRIMITIVE:
@@ -41,16 +40,16 @@ SamplerFactory::updateSampler()
             lgen.spacing = ui->_samplerPrimitivesParamSpacing->value();
 
             // generate points
-            lgen.generateSamples(*_pointSet, *_pSet);
+            lgen.generateSamples(_project->samples, _project->primitives);
 
-            emit samplesChanged(_pointSet, &lgen);
+            _project->copySampler(&lgen);
 
             break;
         }
         default:
-            emit samplesChanged(_pointSet, NULL);
+            ;
         };
 
     }
-    //emit samplesChanged(_pointSet, _sampler);
+    emit samplerUpdated();
 }

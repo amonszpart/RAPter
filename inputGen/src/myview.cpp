@@ -16,19 +16,17 @@ MyView::MyView(QWidget *parent) :
     MyScene* scene = new MyScene(this);
     setScene(scene);
 
-    connect(this, SIGNAL(samplesChanged(InputGen::Application::PointSet*,
-                                        InputGen::Application::Sampler*)),
-              scene, SLOT(updateSamples(InputGen::Application::PointSet*,
-                                        InputGen::Application::Sampler*)));
+    connect(this, SIGNAL(projectUpdated()),
+            scene, SLOT(projectUpdated()));
 }
 
 
 void
-MyView::setPrimitives(std::vector<InputGen::Application::Primitive> *s)
+MyView::setProject(InputGen::Application::Project* p)
 {
     MyScene* sc = dynamic_cast<MyScene*> (scene());
     if (sc)
-        sc->setPrimitives(s);
+        sc->setProject(p);
     else
         std::cerr << "Unsupported scene type" << std::endl;
 }

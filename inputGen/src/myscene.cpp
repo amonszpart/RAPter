@@ -24,10 +24,8 @@ void qgluPerspective(GLdouble fovy, GLdouble aspect, GLdouble zNear, GLdouble zF
 
 MyScene::MyScene(QObject *parent) :
     QGraphicsScene(parent),
-    _pSet(NULL),
-    _pointSet(NULL),
-    _zoom(1.),
-    _sampler(NULL)
+    _project(NULL),
+    _zoom(1.)
 {
     //setStates();
 }
@@ -78,7 +76,7 @@ MyScene::drawBackground(QPainter *painter, const QRectF &rect){
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    if(_pSet==NULL) return
+    if(_project==NULL) return
 
     glMatrixMode(GL_PROJECTION);
     //qgluPerspective(60.0, width / height, 0.01, 15.0);
@@ -99,24 +97,25 @@ MyScene::drawBackground(QPainter *painter, const QRectF &rect){
     {
         glBegin(GL_LINES);
         std::vector< InputGen::Application::Primitive >::const_iterator it;
-        for(it = _pSet->begin(); it != _pSet->end(); it++)
+        for(it = _project->primitives.begin(); it != _project->primitives.end(); it++)
             (*it).displayAsLine<InputGen::Application::GLDisplayFunctor>();
         glEnd();
     }
 
     // display samples
-    if (_pointSet != NULL){
+    if (_project->samples.size() != 0){
         glPointSize(2.f);
         glBegin(GL_POINTS);
-        InputGen::Application::PointSet::const_iterator it;
-        for(it = _pointSet->begin(); it != _pointSet->end(); it++){
-            InputGen::Application::GLDisplayFunctor<Scalar>::displayVertex((*it).data());
+        InputGen::Application::SampleSet::const_iterator it;
+        int sampleId = 0;
+        for(it = _project->samples.begin(); it != _project->samples.end(); it++, sampleId++){
+            InputGen::Application::GLDisplayFunctor<Scalar>::displayVertex(
+                        ((*it) + _project->computeTotalDisplacement(sampleId)).eval().data());
         }
         glEnd();
     }
 
-    if (_sampler != NULL) _sampler->display();
-
+    if (_project->sampler() != NULL) _project->sampler()->display();
 
     painter->endNativePainting();
 }

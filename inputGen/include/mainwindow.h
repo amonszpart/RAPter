@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include "ui_mainwindow.h"
+#include "project.h"
 #include <QMainWindow>
 
 
@@ -15,17 +16,17 @@ public:
 
 private slots:
     void on_actionLoad_SVG_triggered();
-
     void on_actionSave_points_triggered();
+
+signals:
+    void currentProjectUpdated();
 
 protected:
     virtual void closeEvent(QCloseEvent*);
 
 private:
     void readSettings();
-    //! \brief Primitive set
-    std::vector< InputGen::Application::Primitive > _pSet;
-    InputGen::Application::PointSet _pointSet;
+    InputGen::Application::Project* _project;
 };
 
 #endif // MAINWINDOW_H
