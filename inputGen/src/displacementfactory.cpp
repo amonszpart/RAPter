@@ -59,29 +59,15 @@ DisplacementFactory::addLayerTriggerred(){
     InputGen::Application::Project::DisplacementKernel *kernel = NULL;
 
     switch(ktype){
-    case InputGen::DISPLACEMENT_KERNEL_TYPE::DISPLACEMENT_RANDOM:
-    {
-        InputGen::RandomDisplacementKernel<Scalar,SampleContainer,PrimitiveContainer>* lkernel =
-                new InputGen::RandomDisplacementKernel<Scalar,SampleContainer,PrimitiveContainer>;
-
-        // set parameters
-
-        // store for processing
-        kernel = lkernel;
+    case InputGen::DISPLACEMENT_KERNEL_TYPE::DISPLACEMENT_RANDOM_UNIFORM:
+        kernel = new InputGen::UniformRandomDisplacementKernel<Scalar,SampleContainer,PrimitiveContainer>;
         break;
-    }
+    case InputGen::DISPLACEMENT_KERNEL_TYPE::DISPLACEMENT_RANDOM_NORMAL:
+        kernel = new InputGen::NormalRandomDisplacementKernel<Scalar,SampleContainer,PrimitiveContainer>;
+        break;
     case InputGen::DISPLACEMENT_KERNEL_TYPE::DISPLACEMENT_BIAS:
-    {
-        InputGen::BiasDisplacementKernel<Scalar,SampleContainer,PrimitiveContainer>* lkernel =
-                new InputGen::BiasDisplacementKernel<Scalar,SampleContainer,PrimitiveContainer>;
-
-        // set parameters
-        lkernel->bias = 0.2;
-
-        // store for processing
-        kernel = lkernel;
+        kernel = new InputGen::BiasDisplacementKernel<Scalar,SampleContainer,PrimitiveContainer>;
         break;
-    }
     }
 
 
@@ -173,10 +159,10 @@ DisplacementFactory::configureFromUI(InputGen::Application::Project::Displacemen
 
         break;
     }
-    case::InputGen::DISPLACEMENT_KERNEL_TYPE::DISPLACEMENT_RANDOM:
+    case::InputGen::DISPLACEMENT_KERNEL_TYPE::DISPLACEMENT_RANDOM_UNIFORM:
     {
-        InputGen::RandomDisplacementKernel<S,SC,PC>* lkernel =
-                dynamic_cast<InputGen::RandomDisplacementKernel<S,SC,PC>*> (kernel);
+        InputGen::UniformRandomDisplacementKernel<S,SC,PC>* lkernel =
+                dynamic_cast<InputGen::UniformRandomDisplacementKernel<S,SC,PC>*> (kernel);
         if(lkernel == NULL) {
             std::cerr << "This should nerver happen... "
                       << __FILE__ << " "
@@ -185,6 +171,25 @@ DisplacementFactory::configureFromUI(InputGen::Application::Project::Displacemen
         }
 
         // set parameters
+        lkernel->setDistributionRange(ui->_displacementParamRandomUniformMinValue->value(),
+                                      ui->_displacementParamRandomUniformMaxValue->value());
+
+        break;
+    }
+    case::InputGen::DISPLACEMENT_KERNEL_TYPE::DISPLACEMENT_RANDOM_NORMAL:
+    {
+        InputGen::NormalRandomDisplacementKernel<S,SC,PC>* lkernel =
+                dynamic_cast<InputGen::NormalRandomDisplacementKernel<S,SC,PC>*> (kernel);
+        if(lkernel == NULL) {
+            std::cerr << "This should nerver happen... "
+                      << __FILE__ << " "
+                      << __LINE__ << std::endl;
+            return;
+        }
+
+        // set parameters
+        lkernel->setDistributionProperties(ui->_displacementParamRandomNormalMeanValue->value(),
+                                           ui->_displacementParamRandomNormalStddevValue->value());
 
         break;
     }
@@ -205,6 +210,8 @@ DisplacementFactory::currentLayerChanged(){
     // hide all param groups
     if (layerId == -1){
         ui->_displacementParamBiasGroup->hide();
+        ui->_displacementParamRandomUniformGroup->hide();
+        ui->_displacementParamRandomNormalGroup->hide();
     }
 
     if (_project == NULL) return;
@@ -216,7 +223,6 @@ DisplacementFactory::currentLayerChanged(){
     switch(kernel->type){
     case::InputGen::DISPLACEMENT_KERNEL_TYPE::DISPLACEMENT_BIAS:
     {
-
         InputGen::BiasDisplacementKernel<S,SC,PC>* lkernel =
                 dynamic_cast<InputGen::BiasDisplacementKernel<S,SC,PC>*> (kernel);
         if(lkernel == NULL) {
@@ -227,12 +233,48 @@ DisplacementFactory::currentLayerChanged(){
         }
 
         ui->_displacementParamBiasValue->setValue(lkernel->bias);
+
         ui->_displacementParamBiasGroup->show();
+        ui->_displacementParamRandomUniformGroup->hide();
+        ui->_displacementParamRandomNormalGroup->hide();
         break;
     }
-    case::InputGen::DISPLACEMENT_KERNEL_TYPE::DISPLACEMENT_RANDOM:
+    case::InputGen::DISPLACEMENT_KERNEL_TYPE::DISPLACEMENT_RANDOM_UNIFORM:
     {
+        InputGen::UniformRandomDisplacementKernel<S,SC,PC>* lkernel =
+                dynamic_cast<InputGen::UniformRandomDisplacementKernel<S,SC,PC>*> (kernel);
+        if(lkernel == NULL) {
+            std::cerr << "This should nerver happen... "
+                      << __FILE__ << " "
+                      << __LINE__ << std::endl;
+            return;
+        }
+
+        ui->_displacementParamRandomUniformMinValue->setValue(lkernel->distributionMin());
+        ui->_displacementParamRandomUniformMaxValue->setValue(lkernel->distributionMax());
+
         ui->_displacementParamBiasGroup->hide();
+        ui->_displacementParamRandomUniformGroup->show();
+        ui->_displacementParamRandomNormalGroup->hide();
+        break;
+    }
+    case::InputGen::DISPLACEMENT_KERNEL_TYPE::DISPLACEMENT_RANDOM_NORMAL:
+    {
+        InputGen::NormalRandomDisplacementKernel<S,SC,PC>* lkernel =
+                dynamic_cast<InputGen::NormalRandomDisplacementKernel<S,SC,PC>*> (kernel);
+        if(lkernel == NULL) {
+            std::cerr << "This should nerver happen... "
+                      << __FILE__ << " "
+                      << __LINE__ << std::endl;
+            return;
+        }
+
+        ui->_displacementParamRandomNormalMeanValue->setValue(lkernel->distributionMean());
+        ui->_displacementParamRandomNormalStddevValue->setValue(lkernel->distributionStdDev());
+
+        ui->_displacementParamBiasGroup->hide();
+        ui->_displacementParamRandomUniformGroup->hide();
+        ui->_displacementParamRandomNormalGroup->show();
         break;
     }
     }
