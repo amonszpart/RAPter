@@ -23,11 +23,14 @@ MainWindow::MainWindow(QWidget *parent) :
     setupUi(this);
     readSettings();
 
-    connect( _samplerDoc,   SIGNAL(projectUpdated()),
-             _graphicsView, SIGNAL(projectUpdated()));
+    connect( this,             SIGNAL(currentProjectUpdated()),
+             _samplerDoc,      SLOT(updateSampler()));
 
-    connect( this,        SIGNAL(currentProjectUpdated()),
-             _samplerDoc, SLOT(updateSampler()));
+    connect( _samplerDoc,      SIGNAL(samplerUpdated()),
+             _displacementDoc, SLOT  (recomputeDisplacement()));
+
+    connect( _displacementDoc, SIGNAL(projectUpdated()),
+             _graphicsView,    SIGNAL(projectUpdated()));
 
     _samplerDoc->setProject(_project);
     _graphicsView->setProject(_project);

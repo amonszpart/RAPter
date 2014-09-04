@@ -19,6 +19,13 @@ public:
 
     void setProject(InputGen::Application::Project* p);
 
+signals:
+    void projectUpdated();
+
+public slots:
+    void recomputeDisplacement();
+    void recomputeDisplacementLayer(int layerId, bool triggerSignal=true);
+
 private slots:
     //! \brief Add a new layer according to the
     void addLayerTriggerred();
