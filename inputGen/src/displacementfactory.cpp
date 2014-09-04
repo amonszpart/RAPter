@@ -113,7 +113,10 @@ DisplacementFactory::addLayerTriggerred(){
         _qtablewidgetitem3->setCheckState(Qt::Checked);
         ui->_displacementLayerTable->setItem(rowId, 1, _qtablewidgetitem3);
 
-        emit projectUpdated();
+        ui->_displacementLayerTable->selectRow(rowId);
+
+        // implicitely call during the row selection (above)
+        //emit projectUpdated();
     }
 
 
