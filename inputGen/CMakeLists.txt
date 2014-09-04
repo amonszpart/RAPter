@@ -5,6 +5,7 @@ FIND_PACKAGE(Qt4 COMPONENTS QtCore QtGui QtOpenGL REQUIRED)
 
 FIND_PACKAGE(OpenGL REQUIRED)
 FIND_PACKAGE(Eigen3 REQUIRED)
+FIND_PACKAGE(Boost COMPONENTS random REQUIRED)
 
 SET(inputGen_SOURCES
   src/main.cpp
@@ -24,7 +25,9 @@ SET(inputGen_HEADERS
   include/types.h
   include/typesGL.h
   include/project.h
-  include/primitive.h)
+  include/primitive.h
+  include/impl/randomdisplacement.hpp
+  include/impl/biasdisplacement.hpp)
 SET(inputGen_FORMS
   ui/mainwindow.ui
   ui/samplerfactory.ui
@@ -50,4 +53,4 @@ ADD_EXECUTABLE(inputGen ${inputGen_SOURCES}
     ${inputGen_HEADERS}
     ${inputGen_HEADERS_MOC}
     ${inputGen_FORMS_HEADERS} )
-TARGET_LINK_LIBRARIES(inputGen ${OPENGL_LIBRARIES} ${QT_LIBRARIES})
+TARGET_LINK_LIBRARIES(inputGen ${OPENGL_LIBRARIES} ${QT_LIBRARIES} ${Boost_LIBRARIES})
