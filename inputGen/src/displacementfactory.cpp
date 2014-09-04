@@ -36,6 +36,7 @@ DisplacementFactory::setProject(InputGen::Application::Project *p){
 
 void
 DisplacementFactory::addLayerTriggerred(){
+    std::cout << "addLayerTriggerred" << std::endl;
 
     typedef InputGen::Application::Scalar Scalar;
     typedef InputGen::Application::Primitive::vec vec;
@@ -51,34 +52,32 @@ DisplacementFactory::addLayerTriggerred(){
 
     int layerId = _project->nbDisplacementLayers();
 
-    InputGen::DisplacementKernel<Scalar> *kernel = NULL;
+    typedef InputGen::Application::Project::SampleContainer    SampleContainer;
+    typedef InputGen::Application::Project::PrimitiveContainer PrimitiveContainer;
+
+    InputGen::Application::Project::DisplacementKernel *kernel = NULL;
 
     switch(ktype){
     case InputGen::DISPLACEMENT_KERNEL_TYPE::DISPLACEMENT_RANDOM:
     {
-        InputGen::RandomDisplacementKernel<Scalar>* lkernel =
-                new InputGen::RandomDisplacementKernel<Scalar>;
+        InputGen::RandomDisplacementKernel<Scalar,SampleContainer,PrimitiveContainer>* lkernel =
+                new InputGen::RandomDisplacementKernel<Scalar,SampleContainer,PrimitiveContainer>;
 
-        _project->addDisplacementLayer(lkernel);
+        // set parameters
 
-        lkernel->generateDisplacement( _project->displacementLayerPtr(layerId),
-                                      _project->samples,
-                                      _project->primitives);
-
+        // store for processing
         kernel = lkernel;
         break;
     }
     case InputGen::DISPLACEMENT_KERNEL_TYPE::DISPLACEMENT_BIAS:
     {
-        InputGen::BiasDisplacementKernel<Scalar>* lkernel =
-                new InputGen::BiasDisplacementKernel<Scalar>;
+        InputGen::BiasDisplacementKernel<Scalar,SampleContainer,PrimitiveContainer>* lkernel =
+                new InputGen::BiasDisplacementKernel<Scalar,SampleContainer,PrimitiveContainer>;
+
+        // set parameters
         lkernel->bias = 0.2;
 
-        _project->addDisplacementLayer(lkernel);
-
-        lkernel->generateDisplacement( _project->displacementLayerPtr(layerId),
-                                      _project->samples,
-                                      _project->primitives);
+        // store for processing
         kernel = lkernel;
         break;
     }
@@ -88,6 +87,12 @@ DisplacementFactory::addLayerTriggerred(){
     // Update UI
     if (kernel != NULL)
     {
+        // add layer and compute it
+        _project->addDisplacementLayer(kernel);
+
+        kernel->generateDisplacement( _project->displacementLayerPtr(layerId),
+                                      _project->samples,
+                                      _project->primitives);
         // add new row in the table
         int rowId = ui->_displacementLayerTable->rowCount();
         ui->_displacementLayerTable->setRowCount(rowId+1);
@@ -104,6 +109,8 @@ DisplacementFactory::addLayerTriggerred(){
         QTableWidgetItem *_qtablewidgetitem3 = new QTableWidgetItem();
         _qtablewidgetitem3->setCheckState(Qt::Checked);
         ui->_displacementLayerTable->setItem(rowId, 1, _qtablewidgetitem3);
+
+        emit projectUpdated();
     }
 
 
@@ -111,5 +118,40 @@ DisplacementFactory::addLayerTriggerred(){
 
 void
 DisplacementFactory::refreshFromView(){
-    std::cout << "refresh from view" << std::endl;
+
+
+    emit projectUpdated();
+}
+
+void
+DisplacementFactory::recomputeDisplacement(){
+    std::cout << "recomputeDisplacement()" << std::endl;
+
+    if(_project == NULL) return;
+
+    for(unsigned int i = 0; i<_project->nbDisplacementLayers(); i++)
+        recomputeDisplacementLayer(i, false);
+
+    // this signal must be emitted even without displacement layers,
+    // to transmit the update information to other application elements
+    emit projectUpdated();
+}
+
+void
+DisplacementFactory::recomputeDisplacementLayer(int layerId, bool triggerSignal){
+    std::cout << "recomputeDisplacementLayer()" << std::endl;
+
+    if(_project == NULL) return;
+
+    InputGen::Application::Project::DisplacementKernel *kernel = _project->displacementKernel(layerId);
+    if(kernel == NULL) return;
+
+
+    kernel->generateDisplacement( _project->displacementLayerPtr(layerId),
+                                  _project->samples,
+                                  _project->primitives);
+
+    if(triggerSignal)
+        emit projectUpdated();
+
 }
