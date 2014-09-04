@@ -238,31 +238,176 @@ void MainWindow::on_actionSave_points_triggered()
         return;
 
     QSettings settings;
-    QString defaultPath = settings.value("Path/xyzSave").toString();
+    QString defaultPath = settings.value("Path/plySave").toString();
 
     QString path =
     QFileDialog::getSaveFileName(this,
-                                 tr("Save cloud as PTX file"),
+                                 tr("Save cloud as PLY file"),
                                  defaultPath,
-                                 "Pointcloud (*.xyz)");
+                                 "Pointcloud (*.ply)");
 
 
     if (! path.isNull()){
-        QFile input(path);
-        if (input.open(QIODevice::WriteOnly |
-                       QIODevice::Truncate  |
-                       QIODevice::Text)) {
-            settings.setValue("Path/xyzSave", path);
-            QTextStream out(&input);
+        writeSamples(path);
+    }
+}
 
-            for(InputGen::Application::SampleSet::const_iterator it = _project->samples.begin();
-                it != _project->samples.end(); it++){
-                out << (*it)(0) << " "
-                    << (*it)(1) << " "
-                    << (*it)(2) << endl;
-            }
+void MainWindow::on_actionSave_primitives_triggered()
+{
+    if (_project == NULL)
+        return;
 
-            input.close();
+    QSettings settings;
+    QString defaultPath = settings.value("Path/priSave").toString();
+
+    QString path =
+    QFileDialog::getSaveFileName(this,
+                                 tr("Save primitives as CSV file"),
+                                 defaultPath,
+                                 "CSV (*.csv)");
+
+
+    if (! path.isNull()){
+        writePrimitives(path);
+    }
+}
+
+void MainWindow::on_actionSave_assignement_triggered()
+{
+    if (_project == NULL)
+        return;
+
+    QSettings settings;
+    QString defaultPath = settings.value("Path/assPath").toString();
+
+    QString path =
+    QFileDialog::getSaveFileName(this,
+                                 tr("Save assignements as CSV file"),
+                                 defaultPath,
+                                 "CSV (*.csv)");
+
+
+    if (! path.isNull()){
+        writeAssignement(path);
+    }
+}
+
+void MainWindow::on_actionSave_all_triggered()
+{
+    if (_project == NULL)
+        return;
+
+    QSettings settings;
+    QString defaultPath = settings.value("Path/allPath").toString();
+
+    QString path =
+            QFileDialog::getExistingDirectory(
+                this,
+                tr("Select output folder"),
+                defaultPath);
+
+
+    if (! path.isNull()){
+        writePrimitives (path+QString("/points_primitives.csv"));
+        writeAssignement(path+QString("/primitives.csv"));
+        writeSamples    (path+QString("/cloud.ply"));
+    }
+}
+
+void MainWindow::writePrimitives(QString path){
+    if (_project == NULL)
+        return;
+
+    QFile outfile(path);
+    if (outfile.open(QIODevice::WriteOnly |
+                   QIODevice::Truncate  |
+                   QIODevice::Text)) {
+
+        QSettings settings;
+        settings.setValue("Path/priSave", path);
+
+        QTextStream out(&outfile);
+
+        out << "#Describes primitives of the scene" << endl;
+        out << "#x,y,z,nx,ny,nz,primitiveId,orientationId" << endl;
+
+        for(InputGen::Application::Project::PrimitiveContainer::const_iterator it = _project->primitives.begin();
+            it != _project->primitives.end(); it++){
+            out << (*it).coord()(0)  << ","
+                << (*it).coord()(1)  << ","
+                << (*it).coord()(2)  << ","
+                << (*it).normal()(2) << ","
+                << (*it).normal()(2) << ","
+                << (*it).uid()       << ","
+                << (*it).did()       << endl;
         }
+        outfile.close();
+    }
+}
+
+void MainWindow::writeAssignement(QString path){
+    if (_project == NULL)
+        return;
+
+    QFile outfile(path);
+    if (outfile.open(QIODevice::WriteOnly |
+                   QIODevice::Truncate  |
+                   QIODevice::Text)) {
+
+        QSettings settings;
+        settings.setValue("Path/assPath", path);
+
+        QTextStream out(&outfile);
+
+        out << "#Describes point to primitive assignation" << endl;
+        out << "#pointId,primitiveId,orientationId" << endl;
+
+        unsigned int sampleId = 0;
+        for(InputGen::Application::SampleSet::const_iterator it = _project->samples.begin();
+            it != _project->samples.end(); it++, sampleId++){
+            out << sampleId << "," << (*it).primitiveId << ",-1" << endl;
+        }
+        outfile.close();
+    }
+}
+
+void MainWindow::writeSamples(QString path){
+
+    if (_project == NULL)
+        return;
+
+    QFile outfile(path);
+    if (outfile.open(QIODevice::WriteOnly |
+                   QIODevice::Truncate  |
+                   QIODevice::Text)) {
+
+        QSettings settings;
+        settings.setValue("Path/plySave", path);
+
+        QTextStream out(&outfile);
+
+        out << "ply\n"
+            << "format ascii 1.0\n"
+            << "comment Generated by InputGen\n"
+            << "element vertex " << _project->samples.size() << "\n"
+            << "property float x\n"
+            << "property float y\n"
+            << "property float z\n"
+            << "property float nx\n"
+            << "property float ny\n"
+            << "property float nz\n"
+            << "end_header\n";
+
+        unsigned int sampleId = 0;
+        for(InputGen::Application::SampleSet::const_iterator it = _project->samples.begin();
+            it != _project->samples.end(); it++, sampleId++){
+            InputGen::Application::Primitive::vec pos =
+                    ((*it) + _project->computeTotalDisplacement(sampleId));
+            out << pos(0) << " "
+                << InputGen::Application::Scalar(1.) - pos(1) << " "     // flip Y
+                << pos(2) << " 0 0 0" << endl;
+        }
+
+        outfile.close();
     }
 }

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>445</width>
+    <height>513</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,18 +15,33 @@
   </property>
   <widget class="QWidget" name="dockWidgetContents">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="2" column="1">
-     <widget class="QComboBox" name="_displacementLayerAddCombo">
-      <item>
-       <property name="text">
-        <string>Random Noise</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Bias</string>
-       </property>
-      </item>
+    <item row="6" column="0">
+     <spacer name="verticalSpacer">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>40</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="2" column="0">
+     <widget class="QLabel" name="label_2">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string>New layer:</string>
+      </property>
+      <property name="buddy">
+       <cstring>_displacementLayerAddCombo</cstring>
+      </property>
      </widget>
     </item>
     <item row="0" column="0" colspan="2">
@@ -52,6 +67,95 @@
       </property>
      </widget>
     </item>
+    <item row="4" column="0" colspan="3">
+     <widget class="QGroupBox" name="_displacementParamRandomUniformGroup">
+      <property name="title">
+       <string>Distribution range</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_3">
+       <item row="0" column="1">
+        <widget class="QDoubleSpinBox" name="_displacementParamRandomUniformMinValue">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="decimals">
+          <number>5</number>
+         </property>
+         <property name="minimum">
+          <double>-999999.000000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>999999.000000000000000</double>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="_displacementParamRandomUniformMinValueLabel">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>Min</string>
+         </property>
+         <property name="buddy">
+          <cstring>_displacementParamRandomUniformMinValue</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="4">
+        <widget class="QDoubleSpinBox" name="_displacementParamRandomUniformMaxValue">
+         <property name="decimals">
+          <number>5</number>
+         </property>
+         <property name="minimum">
+          <double>-999999.000000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>999999.000000000000000</double>
+         </property>
+         <property name="value">
+          <double>1.000000000000000</double>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="3">
+        <widget class="QLabel" name="_displacementParamRandomUniformMaxValueLabel">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>Max</string>
+         </property>
+         <property name="buddy">
+          <cstring>_displacementParamRandomUniformMaxValue</cstring>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
     <item row="1" column="0" colspan="3">
      <widget class="QTableWidget" name="_displacementLayerTable">
       <property name="alternatingRowColors">
@@ -75,17 +179,122 @@
       </column>
      </widget>
     </item>
-    <item row="2" column="0">
-     <widget class="QLabel" name="label_2">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
+    <item row="2" column="1">
+     <widget class="QComboBox" name="_displacementLayerAddCombo">
+      <item>
+       <property name="text">
+        <string>Random Noise (Uniform)</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Random Noise (Normal)</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Bias</string>
+       </property>
+      </item>
+     </widget>
+    </item>
+    <item row="3" column="0" colspan="3">
+     <widget class="QGroupBox" name="_displacementParamBiasGroup">
+      <property name="title">
+       <string>Parameters</string>
       </property>
-      <property name="text">
-       <string>New layer:</string>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="0" column="0">
+        <widget class="QLabel" name="_displacementParamBiasValueLabel">
+         <property name="text">
+          <string>Bias</string>
+         </property>
+         <property name="buddy">
+          <cstring>_displacementParamBiasValue</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QDoubleSpinBox" name="_displacementParamBiasValue">
+         <property name="decimals">
+          <number>5</number>
+         </property>
+         <property name="minimum">
+          <double>-9999999.000000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>9999999.000000000000000</double>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="5" column="0" colspan="3">
+     <widget class="QGroupBox" name="_displacementParamRandomNormalGroup">
+      <property name="title">
+       <string>Distribution properties</string>
       </property>
+      <layout class="QGridLayout" name="gridLayout_4">
+       <item row="0" column="0">
+        <widget class="QLabel" name="_displacementParamRandomNormalMeanValueLabel">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>Mean</string>
+         </property>
+         <property name="buddy">
+          <cstring>_displacementParamRandomNormalMeanValue</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QDoubleSpinBox" name="_displacementParamRandomNormalMeanValue">
+         <property name="decimals">
+          <number>5</number>
+         </property>
+         <property name="minimum">
+          <double>-999999.000000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>999999.000000000000000</double>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QLabel" name="_displacementParamRandomNormalStddevValueLabel">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>Std. Dev</string>
+         </property>
+         <property name="buddy">
+          <cstring>_displacementParamRandomNormalStddevValue</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="3">
+        <widget class="QDoubleSpinBox" name="_displacementParamRandomNormalStddevValue">
+         <property name="decimals">
+          <number>5</number>
+         </property>
+         <property name="maximum">
+          <double>99999.000000000000000</double>
+         </property>
+         <property name="value">
+          <double>0.100000000000000</double>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </widget>
     </item>
    </layout>
@@ -111,7 +320,7 @@
   </connection>
   <connection>
    <sender>_displacementLayerTable</sender>
-   <signal>itemChanged(QTableWidgetItem*)</signal>
+   <signal>currentItemChanged(QTableWidgetItem*,QTableWidgetItem*)</signal>
    <receiver>DisplacementFactory</receiver>
    <slot>refreshFromView()</slot>
    <hints>
@@ -125,9 +334,123 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>_displacementParamBiasValue</sender>
+   <signal>editingFinished()</signal>
+   <receiver>DisplacementFactory</receiver>
+   <slot>refreshFromView()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>294</x>
+     <y>264</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>_displacementLayerTable</sender>
+   <signal>itemSelectionChanged()</signal>
+   <receiver>DisplacementFactory</receiver>
+   <slot>currentLayerChanged()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>199</x>
+     <y>120</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>_displacementLayerTable</sender>
+   <signal>itemChanged(QTableWidgetItem*)</signal>
+   <receiver>DisplacementFactory</receiver>
+   <slot>itemChanged(QTableWidgetItem*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>199</x>
+     <y>117</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>_displacementParamRandomUniformMinValue</sender>
+   <signal>editingFinished()</signal>
+   <receiver>DisplacementFactory</receiver>
+   <slot>refreshFromView()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>93</x>
+     <y>429</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>252</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>_displacementParamRandomUniformMaxValue</sender>
+   <signal>editingFinished()</signal>
+   <receiver>DisplacementFactory</receiver>
+   <slot>refreshFromView()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>343</x>
+     <y>429</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>252</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>_displacementParamRandomNormalMeanValue</sender>
+   <signal>editingFinished()</signal>
+   <receiver>DisplacementFactory</receiver>
+   <slot>refreshFromView()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>144</x>
+     <y>456</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>222</x>
+     <y>256</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>_displacementParamRandomNormalStddevValue</sender>
+   <signal>editingFinished()</signal>
+   <receiver>DisplacementFactory</receiver>
+   <slot>refreshFromView()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>358</x>
+     <y>456</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>222</x>
+     <y>256</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>addLayerTriggerred()</slot>
   <slot>refreshFromView()</slot>
+  <slot>currentLayerChanged()</slot>
+  <slot>itemChanged(QTableWidgetItem*)</slot>
  </slots>
 </ui>

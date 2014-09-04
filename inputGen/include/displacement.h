@@ -2,14 +2,17 @@
 #define DISPLACEMENT_H
 
 #include "primitive.h"
+#include <random>
+#include <chrono>
 
 
 namespace InputGen{
     //! Values of this enum are consistent and can be used to set UI
     enum DISPLACEMENT_KERNEL_TYPE{
-        DISPLACEMENT_RANDOM = 0,
-        DISPLACEMENT_BIAS   = 1,
-        INVALID_KERNEL      = 2
+        DISPLACEMENT_RANDOM_UNIFORM = 0,
+        DISPLACEMENT_RANDOM_NORMAL  = 1,
+        DISPLACEMENT_BIAS           = 2,
+        INVALID_KERNEL              = 3
     };
 
     template <typename _Scalar, class _SampleContainer, class _PrimitiveContainer>
@@ -32,27 +35,105 @@ namespace InputGen{
             :name(n), type(t) {}
     };
 
+//    template <typename _Scalar, class _SampleContainer, class _PrimitiveContainer>
+//    struct RandomDisplacementKernel:
+//            public AbstractDisplacementKernel<_Scalar, _SampleContainer, _PrimitiveContainer>{
+//        typedef _Scalar Scalar;
+//        virtual void setDistributionRange(Scalar min, Scalar max) = 0;
 
-    template <typename _Scalar, class _SampleContainer, class _PrimitiveContainer>
+//        virtual Scalar distributionMin() const = 0;
+//        virtual Scalar distributionMax() const = 0;
+//    protected:
+//        inline
+//        RandomDisplacementKernel(const std::string& n,
+//                                 DISPLACEMENT_KERNEL_TYPE t)
+//            :AbstractDisplacementKernel<_Scalar, _SampleContainer, _PrimitiveContainer>(n, t) {}
+
+//    };
+
+    template <typename _Scalar, class _SampleContainer, class _PrimitiveContainer, template<typename> class _NumberDistribution>
     struct RandomDisplacementKernel:
+            //public RandomDisplacementKernel<_Scalar, _SampleContainer, _PrimitiveContainer>{
             public AbstractDisplacementKernel<_Scalar, _SampleContainer, _PrimitiveContainer>{
+
+    private:
+        //! Seed used to generate the samples
+        unsigned int _seed;
+        std::mt19937 _generator;
+
+    protected:
+        typedef _NumberDistribution<_Scalar> NumberDistribution;
+        NumberDistribution _distribution;
+
+    public:
         typedef _Scalar Scalar;
         typedef _SampleContainer    SampleContainer;
         typedef _PrimitiveContainer PrimitiveContainer;
 
-        inline RandomDisplacementKernel() :
-            AbstractDisplacementKernel<_Scalar, _SampleContainer, _PrimitiveContainer>(
-                "Random",
-                DISPLACEMENT_KERNEL_TYPE::DISPLACEMENT_RANDOM)
-        {}
+        inline RandomDisplacementKernel(const std::string& n,
+                                        DISPLACEMENT_KERNEL_TYPE t) :
+            AbstractDisplacementKernel<_Scalar, _SampleContainer, _PrimitiveContainer>(n,t),
+            _seed( std::chrono::system_clock::now().time_since_epoch().count()),
+            _generator( _seed ),
+            _distribution(Scalar(0), Scalar(1))
+        {std::cout << "New random kernel " << _seed << std::endl;}
 
-        //! Right now, do nothing
+        inline RandomDisplacementKernel(const RandomDisplacementKernel &other) :
+            AbstractDisplacementKernel<_Scalar, _SampleContainer, _PrimitiveContainer>(
+                other.name,
+                other.type),
+            _seed( other._seed ),
+            _generator( _seed ),
+            _distribution( other._distribution )
+        {std::cout << "Duplicate random kernel" << _seed << std::endl;}
+
         virtual void generateDisplacement(
-                typename PrimitiveContainer::value_type::vec* /*darray*/,
-                const SampleContainer& /*scontainer*/,
-                const PrimitiveContainer& /*pcontainer*/) {}
+                typename PrimitiveContainer::value_type::vec* darray,
+                const SampleContainer& scontainer,
+                const PrimitiveContainer& pcontainer);
     };
 
+    /*!
+     * Random numbers generated using std::uniform_real_distribution
+     */
+    template <typename _Scalar, class _SampleContainer, class _PrimitiveContainer>
+    struct UniformRandomDisplacementKernel:
+            public RandomDisplacementKernel<_Scalar, _SampleContainer, _PrimitiveContainer, std::uniform_real_distribution > {
+    protected:
+        typedef RandomDisplacementKernel<_Scalar, _SampleContainer, _PrimitiveContainer, std::uniform_real_distribution > Base;
+    public:
+        inline
+        void setDistributionRange(_Scalar min, _Scalar max) {
+            Base::_distribution = typename Base::NumberDistribution(min, max);
+        }
+
+        inline
+        UniformRandomDisplacementKernel()
+            : Base( "Random (Uniform)", DISPLACEMENT_KERNEL_TYPE::DISPLACEMENT_RANDOM_UNIFORM) {}
+
+        inline _Scalar distributionMin() const { return Base::_distribution.a(); }
+        inline _Scalar distributionMax() const { return Base::_distribution.b(); }
+    };
+
+    template <typename _Scalar, class _SampleContainer, class _PrimitiveContainer>
+    struct NormalRandomDisplacementKernel:
+            public RandomDisplacementKernel<_Scalar, _SampleContainer, _PrimitiveContainer, std::normal_distribution > {
+    protected:
+        typedef RandomDisplacementKernel<_Scalar, _SampleContainer, _PrimitiveContainer, std::normal_distribution > Base;
+    public:
+        inline
+        void setDistributionProperties(_Scalar mean, _Scalar stddev) {
+            Base::_distribution = typename Base::NumberDistribution(mean, stddev);
+        }
+
+        inline
+        NormalRandomDisplacementKernel()
+            : Base( "Random (Normal)", DISPLACEMENT_KERNEL_TYPE::DISPLACEMENT_RANDOM_NORMAL) {}
+
+        inline _Scalar distributionMean() const { return Base::_distribution.mean(); }
+        inline _Scalar distributionStdDev() const { return Base::_distribution.stddev(); }
+
+    };
 
     template <typename _Scalar, class _SampleContainer, class _PrimitiveContainer>
     struct BiasDisplacementKernel:
@@ -91,47 +172,9 @@ namespace InputGen{
     };
 
 
-    template <typename _Scalar, class _SampleContainer, class _PrimitiveContainer>
-    void BiasDisplacementKernel<_Scalar,_SampleContainer,_PrimitiveContainer>::generateDisplacement(
-        typename _PrimitiveContainer::value_type::vec* darray,
-        const _SampleContainer& scontainer,
-        const _PrimitiveContainer& pcontainer){
-    typedef typename _PrimitiveContainer::value_type::vec vec;
+#include "impl/biasdisplacement.hpp"
+#include "impl/randomdisplacement.hpp"
 
-    if (this->biasDirection >= BIAS_DIRECTION::INVALID)
-        return;
-
-    // direction of the bias. This is updated by sample according to its assignment
-    vec dir (0., 0., 0.);
-
-
-    switch(biasDirection){
-    case BIAS_DIRECTION::PRIMITIVE_NORMAL_VECTOR:
-    {
-        for (typename SampleContainer::const_iterator it = scontainer.cbegin();
-             it != scontainer.cend(); it++, darray++){
-            // update direction
-            // here we need to iterate over all the primitives to find the one assigned to the point...
-            // it is a very slow and unefficient implementation, feel free to change it if you have nothing
-            // better to do !
-            for (typename PrimitiveContainer::const_iterator itp = pcontainer.cbegin();
-                 itp != pcontainer.cend(); itp++){
-                if ((*itp).uid() == (*it).primitiveId){
-                    dir = (*itp).normal();
-                    break;
-                }
-            }
-            // add bias
-            *darray = dir*bias;
-        }
-
-        break;
-    }
-    default:
-        ;
-    }
-
-}
 
 }
 

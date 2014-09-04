@@ -32,6 +32,16 @@ private slots:
     //! \brief Refresh displacement values wrt to UI
     void refreshFromView();
 
+    //! \brief Triggered by UI
+    void currentLayerChanged();
+
+    //! \brief Track selection changes
+    void itemChanged ( QTableWidgetItem * item );
+
+private:
+    int getSelectedLayerFromUI();
+    void configureFromUI(InputGen::Application::Project::DisplacementKernel* kernel);
+
 private:
     Ui::DisplacementFactory *ui;
 

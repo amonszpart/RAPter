@@ -94,7 +94,7 @@ public:
         return _displ[layerId].enabled;
     }
 
-    inline void enableDisplacementLayerEnabled(int layerId, bool enabled = true) {
+    inline void enableDisplacementLayer(int layerId, bool enabled = true) {
         if (layerId < _displ.size())
             _displ[layerId].enabled = enabled;
     }
@@ -137,7 +137,7 @@ public:
         for(std::vector<InternalDisplacementLayer>::const_iterator it = _displ.begin();
             it != _displ.end();
             it++)
-            displ += (*it)[sampleId];
+            if ((*it).enabled) displ += (*it)[sampleId];
 
         return displ;
     }
