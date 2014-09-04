@@ -13,6 +13,12 @@
 <script type="text/javascript">
   $(document).ready(function() { searchBox.OnSelectItem(0); });
 </script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script><script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js"></script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
@@ -98,16 +104,25 @@ Functions</h2></td></tr>
 <tr class="memitem:a6e9a4bb9170f3c9393087f91eca421e4"><td class="memTemplItemLeft" align="right" valign="top">int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespace_g_f2_1_1io.html#a6e9a4bb9170f3c9393087f91eca421e4">savePrimitives</a> (PrimitiveContainerT const &amp;<a class="el" href="globfit_8m.html#aaa2020b443560284c949661ae094df40">primitives</a>, std::string out_file_name, bool verbose=false)</td></tr>
 <tr class="memdesc:a6e9a4bb9170f3c9393087f91eca421e4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Dumps primitives with GID and DIR_GID to disk.  <a href="#a6e9a4bb9170f3c9393087f91eca421e4">More...</a><br/></td></tr>
 <tr class="separator:a6e9a4bb9170f3c9393087f91eca421e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a088fc75b1e094d6ee6ead5d45d2587a1"><td class="memTemplParams" colspan="2">template&lt;class PrimitiveT , class PrimitiveContainerT &gt; </td></tr>
-<tr class="memitem:a088fc75b1e094d6ee6ead5d45d2587a1"><td class="memTemplItemLeft" align="right" valign="top">int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespace_g_f2_1_1io.html#a088fc75b1e094d6ee6ead5d45d2587a1">readPrimitives</a> (PrimitiveContainerT &amp;lines, std::string const &amp;<a class="el" href="gurobi_to_sparse_txt_8m.html#a46173fab2c6d6ba8a310c1be844ca796">path</a>)</td></tr>
-<tr class="separator:a088fc75b1e094d6ee6ead5d45d2587a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad0b245a95d11640b1711a239f46c7de2"><td class="memTemplParams" colspan="2">template&lt;class PrimitiveT , class PatchT , class PrimitiveContainerT &gt; </td></tr>
+<tr class="memitem:ad0b245a95d11640b1711a239f46c7de2"><td class="memTemplItemLeft" align="right" valign="top">int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespace_g_f2_1_1io.html#ad0b245a95d11640b1711a239f46c7de2">readPrimitives</a> (PrimitiveContainerT &amp;lines, std::string const &amp;<a class="el" href="gurobi_to_sparse_txt_8m.html#a46173fab2c6d6ba8a310c1be844ca796">path</a>, std::map&lt; int, typename PrimitiveContainerT::value_type &gt; *patches=NULL)</td></tr>
+<tr class="memdesc:ad0b245a95d11640b1711a239f46c7de2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads primitives with their GIDs and dir_GIDs from file.  <a href="#ad0b245a95d11640b1711a239f46c7de2">More...</a><br/></td></tr>
+<tr class="separator:ad0b245a95d11640b1711a239f46c7de2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9bce496e4ce752c26c024362e8bca2d9"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_g_f2_1_1io.html#a9bce496e4ce752c26c024362e8bca2d9">readAssociations</a> (std::vector&lt; std::pair&lt; int, int &gt; &gt; &amp;points_primitives, std::string const &amp;<a class="el" href="gurobi_to_sparse_txt_8m.html#a46173fab2c6d6ba8a310c1be844ca796">path</a>, std::map&lt; int, int &gt; *linear_indices)</td></tr>
 <tr class="memdesc:a9bce496e4ce752c26c024362e8bca2d9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads point-primitive associations from file.  <a href="#a9bce496e4ce752c26c024362e8bca2d9">More...</a><br/></td></tr>
 <tr class="separator:a9bce496e4ce752c26c024362e8bca2d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3921075da843c4fb93adbeac13a5e153"><td class="memTemplParams" colspan="2">template&lt;class _PointPrimitiveT , class _PointContainerT &gt; </td></tr>
+<tr class="memitem:a3921075da843c4fb93adbeac13a5e153"><td class="memTemplItemLeft" align="right" valign="top">int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespace_g_f2_1_1io.html#a3921075da843c4fb93adbeac13a5e153">writeAssociations</a> (_PointContainerT const &amp;<a class="el" href="my__ply__read_8m.html#a89e43a853a4a07e7e9741ad321fd2819">points</a>, std::string const &amp;f_assoc_path)</td></tr>
+<tr class="memdesc:a3921075da843c4fb93adbeac13a5e153"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write points' associations to GID and DIR_GID.  <a href="#a3921075da843c4fb93adbeac13a5e153">More...</a><br/></td></tr>
+<tr class="separator:a3921075da843c4fb93adbeac13a5e153"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3e6a9c58eb7a7260d47fe912e26dbef1"><td class="memTemplParams" colspan="2">template&lt;class _PointT , class _PointContainerT &gt; </td></tr>
 <tr class="memitem:a3e6a9c58eb7a7260d47fe912e26dbef1"><td class="memTemplItemLeft" align="right" valign="top">int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespace_g_f2_1_1io.html#a3e6a9c58eb7a7260d47fe912e26dbef1">readPoints</a> (_PointContainerT &amp;<a class="el" href="my__ply__read_8m.html#a89e43a853a4a07e7e9741ad321fd2819">points</a>, std::string <a class="el" href="gurobi_to_sparse_txt_8m.html#a46173fab2c6d6ba8a310c1be844ca796">path</a>, pcl::PointCloud&lt; pcl::PointXYZRGB &gt;::Ptr *cloud_arg=NULL)</td></tr>
-<tr class="memdesc:a3e6a9c58eb7a7260d47fe912e26dbef1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solver::readPoints Read stored points, and convert them to non-PCL format.  <a href="#a3e6a9c58eb7a7260d47fe912e26dbef1">More...</a><br/></td></tr>
+<tr class="memdesc:a3e6a9c58eb7a7260d47fe912e26dbef1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read stored points, and convert them to non-PCL format.  <a href="#a3e6a9c58eb7a7260d47fe912e26dbef1">More...</a><br/></td></tr>
 <tr class="separator:a3e6a9c58eb7a7260d47fe912e26dbef1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abd561af48cfe2c0b3ef47e6aa085fb29"><td class="memTemplParams" colspan="2">template&lt;class _PointT , class _PointContainerT &gt; </td></tr>
+<tr class="memitem:abd561af48cfe2c0b3ef47e6aa085fb29"><td class="memTemplItemLeft" align="right" valign="top">int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespace_g_f2_1_1io.html#abd561af48cfe2c0b3ef47e6aa085fb29">writePoints</a> (_PointContainerT &amp;<a class="el" href="my__ply__read_8m.html#a89e43a853a4a07e7e9741ad321fd2819">points</a>, std::string <a class="el" href="gurobi_to_sparse_txt_8m.html#a46173fab2c6d6ba8a310c1be844ca796">path</a>)</td></tr>
+<tr class="memdesc:abd561af48cfe2c0b3ef47e6aa085fb29"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write points to almost PLY.  <a href="#abd561af48cfe2c0b3ef47e6aa085fb29">More...</a><br/></td></tr>
+<tr class="separator:abd561af48cfe2c0b3ef47e6aa085fb29"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
 <a class="anchor" id="a9bce496e4ce752c26c024362e8bca2d9"></a>
@@ -159,7 +174,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>EXIT_SUCCESS if could open file </dd></dl>
 
-<p>Definition at line <a class="el" href="io_8h_source.html#l00146">146</a> of file <a class="el" href="io_8h_source.html">io.h</a>.</p>
+<p>Definition at line <a class="el" href="io_8h_source.html#l00166">166</a> of file <a class="el" href="io_8h_source.html">io.h</a>.</p>
 
 </div>
 </div>
@@ -203,25 +218,25 @@ template&lt;class _PointT , class _PointContainerT &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Solver::readPoints Read stored points, and convert them to non-PCL format. </p>
+<p>Read stored points, and convert them to non-PCL format. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[out]</td><td class="paramname"></td><td>Output point vector </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">points</td><td>Output point vector </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">path</td><td>PLY source path </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>EXIT_SUCCESS </dd></dl>
 
-<p>Definition at line <a class="el" href="io_8h_source.html#l00203">203</a> of file <a class="el" href="io_8h_source.html">io.h</a>.</p>
+<p>Definition at line <a class="el" href="io_8h_source.html#l00257">257</a> of file <a class="el" href="io_8h_source.html">io.h</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a088fc75b1e094d6ee6ead5d45d2587a1"></a>
+<a class="anchor" id="ad0b245a95d11640b1711a239f46c7de2"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class PrimitiveT , class PrimitiveContainerT &gt; </div>
+template&lt;class PrimitiveT , class PatchT , class PrimitiveContainerT &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -236,7 +251,13 @@ template&lt;class PrimitiveT , class PrimitiveContainerT &gt; </div>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">std::string const &amp;&#160;</td>
-          <td class="paramname"><em>path</em>&#160;</td>
+          <td class="paramname"><em>path</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::map&lt; int, typename PrimitiveContainerT::value_type &gt; *&#160;</td>
+          <td class="paramname"><em>patches</em> = <code>NULL</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -251,7 +272,15 @@ template&lt;class PrimitiveT , class PrimitiveContainerT &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="io_8h_source.html#l00053">53</a> of file <a class="el" href="io_8h_source.html">io.h</a>.</p>
+<p>Reads primitives with their GIDs and dir_GIDs from file. </p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">PatchT</td><td>Concept: vector&lt; <a class="el" href="class_g_f2_1_1_line_primitive2.html">GF2::LinePrimitive2</a> &gt;. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p>Definition at line <a class="el" href="io_8h_source.html#l00059">59</a> of file <a class="el" href="io_8h_source.html">io.h</a>.</p>
 
 </div>
 </div>
@@ -308,10 +337,113 @@ template&lt;class PrimitiveT , class PrimitiveContainerT &gt; </div>
 
 </div>
 </div>
+<a class="anchor" id="a3921075da843c4fb93adbeac13a5e153"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class _PointPrimitiveT , class _PointContainerT &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int GF2::io::writeAssociations </td>
+          <td>(</td>
+          <td class="paramtype">_PointContainerT const &amp;&#160;</td>
+          <td class="paramname"><em>points</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string const &amp;&#160;</td>
+          <td class="paramname"><em>f_assoc_path</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Write points' associations to GID and DIR_GID. </p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">_PointPrimitiveT</td><td>Concept: <a class="el" href="class_g_f2_1_1_point_primitive.html">GF2::PointPrimitive</a>. </td></tr>
+    <tr><td class="paramname">_PointContainerT</td><td>Concept: vector&lt; <a class="el" href="class_g_f2_1_1_point_primitive.html">GF2::PointPrimitive</a> &gt; </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">points</td><td>Output point vector </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">path</td><td>PLY source path </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>EXIT_SUCCESS </dd></dl>
+
+<p>Definition at line <a class="el" href="io_8h_source.html#l00224">224</a> of file <a class="el" href="io_8h_source.html">io.h</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="abd561af48cfe2c0b3ef47e6aa085fb29"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class _PointT , class _PointContainerT &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int GF2::io::writePoints </td>
+          <td>(</td>
+          <td class="paramtype">_PointContainerT &amp;&#160;</td>
+          <td class="paramname"><em>points</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string&#160;</td>
+          <td class="paramname"><em>path</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Write points to almost PLY. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">points</td><td>Points </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">path</td><td>PLY destination path </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>EXIT_SUCCESS </dd></dl>
+
+<p>Definition at line <a class="el" href="io_8h_source.html#l00295">295</a> of file <a class="el" href="io_8h_source.html">io.h</a>.</p>
+
+</div>
+</div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Sep 2 2014 15:55:37 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Sep 4 2014 18:07:38 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

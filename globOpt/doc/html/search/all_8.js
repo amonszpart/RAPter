@@ -16,5 +16,5 @@ var searchData=
   ['houghline_2eh',['houghLine.h',['../hough_line_8h.html',1,'']]],
   ['hsv2rgb',['hsv2rgb',['../namespace_g_f2_1_1util.html#a6a09a2912316073cfba053eb16f9e588',1,'GF2::util']]],
   ['hw',['hw',['../read_sparse_matrix_8m.html#ab67f5bd69fb707530c4fb25c3b71ac2c',1,'readSparseMatrix.m']]],
-  ['hybrid',['HYBRID',['../class_g_f2_1_1_problem_setup.html#a8399b83e842d43dd98e996176975f3aba6339793b70b6d691664ccf1007a6cd9e',1,'GF2::ProblemSetup']]]
+  ['hybrid',['HYBRID',['../struct_g_f2_1_1_problem_setup_params.html#a0f227e156de223c62fa8fa15939b75f0a35c5005afd462eb1d5f8d9ca507a4c84',1,'GF2::ProblemSetupParams']]]
 ];

@@ -13,6 +13,12 @@
 <script type="text/javascript">
   $(document).ready(function() { searchBox.OnSelectItem(0); });
 </script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script><script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js"></script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
@@ -86,7 +92,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#namespaces">Namespaces</a>  </div>
+<a href="#namespaces">Namespaces</a> &#124;
+<a href="#define-members">Macros</a>  </div>
   <div class="headertitle">
 <div class="title">merging.hpp File Reference</div>  </div>
 </div><!--header-->
@@ -95,6 +102,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <code>#include &quot;<a class="el" href="parameters_8h_source.html">globfit2/parameters.h</a>&quot;</code><br/>
 <code>#include &quot;globfit2/visualization/visualization.h&quot;</code><br/>
 <code>#include &quot;<a class="el" href="io_8h_source.html">globfit2/io/io.h</a>&quot;</code><br/>
+<code>#include &quot;<a class="el" href="processing_2util_8hpp_source.html">globfit2/processing/util.hpp</a>&quot;</code><br/>
 </div>
 <p><a href="merging_8hpp_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -103,11 +111,45 @@ Namespaces</h2></td></tr>
 <tr class="memitem:namespace_g_f2"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_g_f2.html">GF2</a></td></tr>
 <tr class="memdesc:namespace_g_f2"><td class="mdescLeft">&#160;</td><td class="mdescRight">GUROBIOPT. <br/></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
+Macros</h2></td></tr>
+<tr class="memitem:ade362cef44735595de208e05d466fc5c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="merging_8hpp.html#ade362cef44735595de208e05d466fc5c">CHECK</a>(err, <a class="el" href="globfit_8m.html#af575f17e6be3f269b86b041a60560dbf">text</a>)&#160;&#160;&#160;{ <a class="el" href="lp_8m.html#aa2d7a046563556d378644ded23e8524a">if</a> ( err != EXIT_SUCCESS )  std::cerr &lt;&lt; &quot;[&quot; &lt;&lt; __func__ &lt;&lt; &quot;]: &quot; &lt;&lt; <a class="el" href="globfit_8m.html#af575f17e6be3f269b86b041a60560dbf">text</a> &lt;&lt; &quot; returned an error! Code: &quot; &lt;&lt; err &lt;&lt; std::endl; }</td></tr>
+<tr class="separator:ade362cef44735595de208e05d466fc5c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Macro Definition Documentation</h2>
+<a class="anchor" id="ade362cef44735595de208e05d466fc5c"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define CHECK</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">err, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><a class="el" href="globfit_8m.html#af575f17e6be3f269b86b041a60560dbf">text</a>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td>&#160;&#160;&#160;{ <a class="el" href="lp_8m.html#aa2d7a046563556d378644ded23e8524a">if</a> ( err != EXIT_SUCCESS )  std::cerr &lt;&lt; &quot;[&quot; &lt;&lt; __func__ &lt;&lt; &quot;]: &quot; &lt;&lt; <a class="el" href="globfit_8m.html#af575f17e6be3f269b86b041a60560dbf">text</a> &lt;&lt; &quot; returned an error! Code: &quot; &lt;&lt; err &lt;&lt; std::endl; }</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="merging_8hpp_source.html#l00011">11</a> of file <a class="el" href="merging_8hpp_source.html">merging.hpp</a>.</p>
+
+</div>
+</div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Sep 2 2014 15:55:37 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Sep 4 2014 18:07:38 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

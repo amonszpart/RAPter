@@ -14,5 +14,6 @@ var searchData=
   ['options',['options',['../fmincon__merged_8m.html#a02eacfd40be9042ceb0f07547365203d',1,'options():&#160;fmincon_merged.m'],['../test__fmincon_8m.html#a02eacfd40be9042ceb0f07547365203d',1,'options():&#160;test_fmincon.m'],['../test0_8m.html#a02eacfd40be9042ceb0f07547365203d',1,'options():&#160;test0.m']]],
   ['optproblem',['OptProblem',['../classam_1_1_opt_problem.html',1,'am']]],
   ['optproblem_2eh',['optProblem.h',['../opt_problem_8h.html',1,'']]],
-  ['optproblemt',['OptProblemT',['../namespace_g_f2_1_1problem_setup.html#a22d94ef9bbac504c10480be5922bc805',1,'GF2::problemSetup']]]
+  ['optproblemt',['OptProblemT',['../namespace_g_f2_1_1problem_setup.html#a22d94ef9bbac504c10480be5922bc805',1,'GF2::problemSetup']]],
+  ['orientpoints',['orientPoints',['../class_g_f2_1_1_segmentation.html#ab540cb80acb78ea18b5306b7ffbbd389',1,'GF2::Segmentation']]]
 ];

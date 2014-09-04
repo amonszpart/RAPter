@@ -13,6 +13,12 @@
 <script type="text/javascript">
   $(document).ready(function() { searchBox.OnSelectItem(0); });
 </script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script><script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js"></script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
@@ -88,6 +94,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-attribs">Public Attributes</a> &#124;
 <a href="struct_g_f2_1_1_problem_setup_params-members.html">List of all members</a>  </div>
   <div class="headertitle">
@@ -95,11 +102,26 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>Collection of parameters the <a class="el" href="class_g_f2_1_1_problem_setup.html#a24c0d41521dfc1e1bd3d6190be530cd8">ProblemSetup::formulate</a> needs.  
+<p>Collection of parameters the <a class="el" href="class_g_f2_1_1_problem_setup.html#ac0b593cf6470b65e3e6a0d680ad79ff9">ProblemSetup::formulate</a> needs.  
  <a href="struct_g_f2_1_1_problem_setup_params.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="parameters_8h_source.html">parameters.h</a>&gt;</code></p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a29f561b77c951dc2e6dc14bbadd81c2b"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_problem_setup_params.html#a29f561b77c951dc2e6dc14bbadd81c2b">DATA_COST_MODE</a> { <a class="el" href="struct_g_f2_1_1_problem_setup_params.html#a29f561b77c951dc2e6dc14bbadd81c2ba66b2408351195ebf4702a12a37e3fc96">ASSOC_BASED</a> = 0, 
+<a class="el" href="struct_g_f2_1_1_problem_setup_params.html#a29f561b77c951dc2e6dc14bbadd81c2ba68e56a27022f33175229b1640da5d3bf">BAND_BASED</a> = 1, 
+<a class="el" href="struct_g_f2_1_1_problem_setup_params.html#a29f561b77c951dc2e6dc14bbadd81c2ba960c7c34aeebaf08576dc0b3d0f1860d">INSTANCE_BASED</a> = 2
+ }</td></tr>
+<tr class="memdesc:a29f561b77c951dc2e6dc14bbadd81c2b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Options to calculate data cost of primitive by.  <a href="struct_g_f2_1_1_problem_setup_params.html#a29f561b77c951dc2e6dc14bbadd81c2b">More...</a><br/></td></tr>
+<tr class="separator:a29f561b77c951dc2e6dc14bbadd81c2b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0f227e156de223c62fa8fa15939b75f0"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_problem_setup_params.html#a0f227e156de223c62fa8fa15939b75f0">CONSTR_MODE</a> { <a class="el" href="struct_g_f2_1_1_problem_setup_params.html#a0f227e156de223c62fa8fa15939b75f0a0c22c1c8cf2882443ee874666ffd7137">PATCH_WISE</a> = 0, 
+<a class="el" href="struct_g_f2_1_1_problem_setup_params.html#a0f227e156de223c62fa8fa15939b75f0a39ff52e28cd66c07b64adf7601369a3b">POINT_WISE</a> = 1, 
+<a class="el" href="struct_g_f2_1_1_problem_setup_params.html#a0f227e156de223c62fa8fa15939b75f0a35c5005afd462eb1d5f8d9ca507a4c84">HYBRID</a> = 2
+ }</td></tr>
+<tr class="memdesc:a0f227e156de223c62fa8fa15939b75f0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Options to calculate constraints for patches in optimization.  <a href="struct_g_f2_1_1_problem_setup_params.html#a0f227e156de223c62fa8fa15939b75f0">More...</a><br/></td></tr>
+<tr class="separator:a0f227e156de223c62fa8fa15939b75f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:a3ee3f11fe8d9dc44b56057c65fe92ef5"><td class="memItemLeft" align="right" valign="top">_Scalar&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_problem_setup_params.html#a3ee3f11fe8d9dc44b56057c65fe92ef5">scale</a> = 0.05</td></tr>
@@ -111,12 +133,12 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:a7069a872d02c3d98c2589b4f4ba7e3a2"><td class="memItemLeft" align="right" valign="top">Eigen::Matrix&lt; _Scalar,-1, 1 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_problem_setup_params.html#a7069a872d02c3d98c2589b4f4ba7e3a2">weights</a> = (Eigen::Matrix&lt;_Scalar,-1,1&gt;(3,1) &lt;&lt; 10000, 10, 1).finished()</td></tr>
 <tr class="memdesc:a7069a872d02c3d98c2589b4f4ba7e3a2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Optimization weights. [ 0: unary, 1: pairwise, 2: complexity ].  <a href="#a7069a872d02c3d98c2589b4f4ba7e3a2">More...</a><br/></td></tr>
 <tr class="separator:a7069a872d02c3d98c2589b4f4ba7e3a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a663a00b70e24b4225541fc59ad331bfe"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_g_f2_1_1_problem_setup.html#a8399b83e842d43dd98e996176975f3ab">ProblemSetup::CONSTR_MODE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_problem_setup_params.html#a663a00b70e24b4225541fc59ad331bfe">constr_mode</a> = <a class="el" href="class_g_f2_1_1_problem_setup.html#a8399b83e842d43dd98e996176975f3abac91de41c47bf1649e5508a8555bf9c03">ProblemSetup::PATCH_WISE</a></td></tr>
-<tr class="memdesc:a663a00b70e24b4225541fc59ad331bfe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Options defined in <a class="el" href="class_g_f2_1_1_problem_setup.html#a8399b83e842d43dd98e996176975f3ab">ProblemSetup::CONSTR_MODE</a>.  <a href="#a663a00b70e24b4225541fc59ad331bfe">More...</a><br/></td></tr>
-<tr class="separator:a663a00b70e24b4225541fc59ad331bfe"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a41a53f7c47c539688a7e2380ac4356ae"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_g_f2_1_1_problem_setup.html#a1435ec920286d0a310d673dfc1b72205">ProblemSetup::DATA_COST_MODE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_problem_setup_params.html#a41a53f7c47c539688a7e2380ac4356ae">data_cost_mode</a> = <a class="el" href="class_g_f2_1_1_problem_setup.html#a1435ec920286d0a310d673dfc1b72205a12a8aeff7c65ddca3541ceda0ca97148">ProblemSetup::ASSOC_BASED</a></td></tr>
-<tr class="memdesc:a41a53f7c47c539688a7e2380ac4356ae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Optoins defined <a class="el" href="class_g_f2_1_1_problem_setup.html#a1435ec920286d0a310d673dfc1b72205">ProblemSetup::DATA_COST_MODE</a>.  <a href="#a41a53f7c47c539688a7e2380ac4356ae">More...</a><br/></td></tr>
-<tr class="separator:a41a53f7c47c539688a7e2380ac4356ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a78614a5b049c8a2b62eb415c4d86c04d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="struct_g_f2_1_1_problem_setup_params.html#a0f227e156de223c62fa8fa15939b75f0">CONSTR_MODE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_problem_setup_params.html#a78614a5b049c8a2b62eb415c4d86c04d">constr_mode</a> = <a class="el" href="struct_g_f2_1_1_problem_setup_params.html#a0f227e156de223c62fa8fa15939b75f0a0c22c1c8cf2882443ee874666ffd7137">PATCH_WISE</a></td></tr>
+<tr class="memdesc:a78614a5b049c8a2b62eb415c4d86c04d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Options to calculate constraints for patches in optimization.  <a href="#a78614a5b049c8a2b62eb415c4d86c04d">More...</a><br/></td></tr>
+<tr class="separator:a78614a5b049c8a2b62eb415c4d86c04d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a56cfb8c77632a2bfd5c2a67049ec1ee3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="struct_g_f2_1_1_problem_setup_params.html#a29f561b77c951dc2e6dc14bbadd81c2b">DATA_COST_MODE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_problem_setup_params.html#a56cfb8c77632a2bfd5c2a67049ec1ee3">data_cost_mode</a> = <a class="el" href="struct_g_f2_1_1_problem_setup_params.html#a29f561b77c951dc2e6dc14bbadd81c2ba66b2408351195ebf4702a12a37e3fc96">ASSOC_BASED</a></td></tr>
+<tr class="memdesc:a56cfb8c77632a2bfd5c2a67049ec1ee3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Options to calculate data cost of primitive by.  <a href="#a56cfb8c77632a2bfd5c2a67049ec1ee3">More...</a><br/></td></tr>
+<tr class="separator:a56cfb8c77632a2bfd5c2a67049ec1ee3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a679b05b7ae53c9627d510ece0749f747"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_problem_setup_params.html#a679b05b7ae53c9627d510ece0749f747">patch_pop_limit</a> = 5</td></tr>
 <tr class="memdesc:a679b05b7ae53c9627d510ece0749f747"><td class="mdescLeft">&#160;</td><td class="mdescRight">Point-count threshold, that decides if a patch is big or small.  <a href="#a679b05b7ae53c9627d510ece0749f747">More...</a><br/></td></tr>
 <tr class="separator:a679b05b7ae53c9627d510ece0749f747"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -125,10 +147,69 @@ Public Attributes</h2></td></tr>
 <div class="textblock"><h3>template&lt;typename _Scalar&gt;<br/>
 struct GF2::ProblemSetupParams&lt; _Scalar &gt;</h3>
 
-<p>Collection of parameters the <a class="el" href="class_g_f2_1_1_problem_setup.html#a24c0d41521dfc1e1bd3d6190be530cd8">ProblemSetup::formulate</a> needs. </p>
+<p>Collection of parameters the <a class="el" href="class_g_f2_1_1_problem_setup.html#ac0b593cf6470b65e3e6a0d680ad79ff9">ProblemSetup::formulate</a> needs. </p>
 
-<p>Definition at line <a class="el" href="parameters_8h_source.html#l00011">11</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
-</div><h2 class="groupheader">Member Data Documentation</h2>
+<p>Definition at line <a class="el" href="parameters_8h_source.html#l00129">129</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
+</div><h2 class="groupheader">Member Enumeration Documentation</h2>
+<a class="anchor" id="a0f227e156de223c62fa8fa15939b75f0"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename _Scalar&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="struct_g_f2_1_1_problem_setup_params.html#a0f227e156de223c62fa8fa15939b75f0">GF2::ProblemSetupParams::CONSTR_MODE</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Options to calculate constraints for patches in optimization. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><em><a class="anchor" id="a0f227e156de223c62fa8fa15939b75f0a0c22c1c8cf2882443ee874666ffd7137"></a>PATCH_WISE</em>&#160;</td><td class="fielddoc">
+<dl class="section see"><dt>See Also</dt><dd><a class="el" href="namespace_g_f2_1_1problem_setup.html#a16dfa546232f01a3282ffdfb60fc79a8">problemSetup::everyPatchNeedsDirectionConstraint</a> </dd></dl>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a0f227e156de223c62fa8fa15939b75f0a39ff52e28cd66c07b64adf7601369a3b"></a>POINT_WISE</em>&#160;</td><td class="fielddoc">
+<dl class="section see"><dt>See Also</dt><dd><a class="el" href="namespace_g_f2_1_1problem_setup.html#aaca9668906484db365db364bc762207e">problemSetup::everyPointNeedsPatchConstraint</a> </dd></dl>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a0f227e156de223c62fa8fa15939b75f0a35c5005afd462eb1d5f8d9ca507a4c84"></a>HYBRID</em>&#160;</td><td class="fielddoc">
+<dl class="section see"><dt>See Also</dt><dd><a class="el" href="namespace_g_f2_1_1problem_setup.html#a1b8fa7d0f5ce7e0627ba0c0aeac33c74">problemSetup::largePatchesNeedDirectionConstraint</a> </dd></dl>
+</td></tr>
+</table>
+
+<p>Definition at line <a class="el" href="parameters_8h_source.html#l00137">137</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a29f561b77c951dc2e6dc14bbadd81c2b"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename _Scalar&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="struct_g_f2_1_1_problem_setup_params.html#a29f561b77c951dc2e6dc14bbadd81c2b">GF2::ProblemSetupParams::DATA_COST_MODE</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Options to calculate data cost of primitive by. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><em><a class="anchor" id="a29f561b77c951dc2e6dc14bbadd81c2ba66b2408351195ebf4702a12a37e3fc96"></a>ASSOC_BASED</em>&#160;</td><td class="fielddoc">
+<dl class="section see"><dt>See Also</dt><dd><a class="el" href="namespace_g_f2_1_1problem_setup.html#a1b0396be5186f8f141d421ca748bee59">problemSetup::associationBasedDataCost</a> </dd></dl>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a29f561b77c951dc2e6dc14bbadd81c2ba68e56a27022f33175229b1640da5d3bf"></a>BAND_BASED</em>&#160;</td><td class="fielddoc">
+<dl class="section see"><dt>See Also</dt><dd><a class="el" href="namespace_g_f2_1_1problem_setup.html#ac3adb4595ac34c9610acaa4836e36ddb">problemSetup::bandBasedDataCost</a> </dd></dl>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a29f561b77c951dc2e6dc14bbadd81c2ba960c7c34aeebaf08576dc0b3d0f1860d"></a>INSTANCE_BASED</em>&#160;</td><td class="fielddoc">
+<dl class="section see"><dt>See Also</dt><dd><a class="el" href="namespace_g_f2_1_1problem_setup.html#a3e0aa0a6e8bb6bc9e2c0d0a676bf1141">problemSetup::instanceBasedDataCost</a> </dd></dl>
+</td></tr>
+</table>
+
+<p>Definition at line <a class="el" href="parameters_8h_source.html#l00132">132</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
+
+</div>
+</div>
+<h2 class="groupheader">Member Data Documentation</h2>
 <a class="anchor" id="aea20a9c94d97aedba5d88717f6ed9c55"></a>
 <div class="memitem">
 <div class="memproto">
@@ -143,43 +224,43 @@ template&lt;typename _Scalar&gt; </div>
 
 <p>Desired angles. </p>
 
-<p>Definition at line <a class="el" href="parameters_8h_source.html#l00016">16</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
+<p>Definition at line <a class="el" href="parameters_8h_source.html#l00145">145</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a663a00b70e24b4225541fc59ad331bfe"></a>
+<a class="anchor" id="a78614a5b049c8a2b62eb415c4d86c04d"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
 template&lt;typename _Scalar&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="class_g_f2_1_1_problem_setup.html#a8399b83e842d43dd98e996176975f3ab">ProblemSetup::CONSTR_MODE</a> <a class="el" href="struct_g_f2_1_1_problem_setup_params.html">GF2::ProblemSetupParams</a>&lt; _Scalar &gt;::constr_mode = <a class="el" href="class_g_f2_1_1_problem_setup.html#a8399b83e842d43dd98e996176975f3abac91de41c47bf1649e5508a8555bf9c03">ProblemSetup::PATCH_WISE</a></td>
+          <td class="memname"><a class="el" href="struct_g_f2_1_1_problem_setup_params.html#a0f227e156de223c62fa8fa15939b75f0">CONSTR_MODE</a> <a class="el" href="struct_g_f2_1_1_problem_setup_params.html">GF2::ProblemSetupParams</a>&lt; _Scalar &gt;::constr_mode = <a class="el" href="struct_g_f2_1_1_problem_setup_params.html#a0f227e156de223c62fa8fa15939b75f0a0c22c1c8cf2882443ee874666ffd7137">PATCH_WISE</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Options defined in <a class="el" href="class_g_f2_1_1_problem_setup.html#a8399b83e842d43dd98e996176975f3ab">ProblemSetup::CONSTR_MODE</a>. </p>
+<p>Options to calculate constraints for patches in optimization. </p>
 
-<p>Definition at line <a class="el" href="parameters_8h_source.html#l00020">20</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
+<p>Definition at line <a class="el" href="parameters_8h_source.html#l00149">149</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a41a53f7c47c539688a7e2380ac4356ae"></a>
+<a class="anchor" id="a56cfb8c77632a2bfd5c2a67049ec1ee3"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
 template&lt;typename _Scalar&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="class_g_f2_1_1_problem_setup.html#a1435ec920286d0a310d673dfc1b72205">ProblemSetup::DATA_COST_MODE</a> <a class="el" href="struct_g_f2_1_1_problem_setup_params.html">GF2::ProblemSetupParams</a>&lt; _Scalar &gt;::data_cost_mode = <a class="el" href="class_g_f2_1_1_problem_setup.html#a1435ec920286d0a310d673dfc1b72205a12a8aeff7c65ddca3541ceda0ca97148">ProblemSetup::ASSOC_BASED</a></td>
+          <td class="memname"><a class="el" href="struct_g_f2_1_1_problem_setup_params.html#a29f561b77c951dc2e6dc14bbadd81c2b">DATA_COST_MODE</a> <a class="el" href="struct_g_f2_1_1_problem_setup_params.html">GF2::ProblemSetupParams</a>&lt; _Scalar &gt;::data_cost_mode = <a class="el" href="struct_g_f2_1_1_problem_setup_params.html#a29f561b77c951dc2e6dc14bbadd81c2ba66b2408351195ebf4702a12a37e3fc96">ASSOC_BASED</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Optoins defined <a class="el" href="class_g_f2_1_1_problem_setup.html#a1435ec920286d0a310d673dfc1b72205">ProblemSetup::DATA_COST_MODE</a>. </p>
+<p>Options to calculate data cost of primitive by. </p>
 
-<p>Definition at line <a class="el" href="parameters_8h_source.html#l00022">22</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
+<p>Definition at line <a class="el" href="parameters_8h_source.html#l00151">151</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
 
 </div>
 </div>
@@ -197,7 +278,7 @@ template&lt;typename _Scalar&gt; </div>
 
 <p>Point-count threshold, that decides if a patch is big or small. </p>
 
-<p>Definition at line <a class="el" href="parameters_8h_source.html#l00024">24</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
+<p>Definition at line <a class="el" href="parameters_8h_source.html#l00153">153</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
 
 </div>
 </div>
@@ -215,7 +296,7 @@ template&lt;typename _Scalar&gt; </div>
 
 <p>Scale parameter of input. </p>
 
-<p>Definition at line <a class="el" href="parameters_8h_source.html#l00014">14</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
+<p>Definition at line <a class="el" href="parameters_8h_source.html#l00143">143</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
 
 </div>
 </div>
@@ -233,7 +314,7 @@ template&lt;typename _Scalar&gt; </div>
 
 <p>Optimization weights. [ 0: unary, 1: pairwise, 2: complexity ]. </p>
 
-<p>Definition at line <a class="el" href="parameters_8h_source.html#l00018">18</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
+<p>Definition at line <a class="el" href="parameters_8h_source.html#l00147">147</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
 
 </div>
 </div>
@@ -243,7 +324,7 @@ template&lt;typename _Scalar&gt; </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Sep 2 2014 15:55:37 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Sep 4 2014 18:07:38 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

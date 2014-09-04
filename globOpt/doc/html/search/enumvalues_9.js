@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['valuesatcompiletime',['ValuesAtCompileTime',['../struct_functor.html#a741d37a863a712fcfb6cfc0e45c9e10bab4b572e354961711a6ad99dbb7ed09ed',1,'Functor']]]
+  ['spatial',['SPATIAL',['../struct_g_f2_1_1_candidate_generator_params.html#af8a5ada6c5c5477443de0914330037b6a04891cf54ec351144a7a7dd1cb8dec81',1,'GF2::CandidateGeneratorParams']]]
 ];

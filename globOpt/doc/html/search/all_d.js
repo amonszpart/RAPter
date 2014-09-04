@@ -9,6 +9,7 @@ var searchData=
   ['max_5fsize',['max_size',['../structam_1_1_point_primitive_distance_cache.html#a9a566ded73f47a5ac1bcc6e9f895c6a8',1,'am::PointPrimitiveDistanceCache']]],
   ['mergecli',['mergeCli',['../class_g_f2_1_1_merging.html#a941119206e1bb8b671b9166edf998a1d',1,'GF2::Merging']]],
   ['mergeparams',['MergeParams',['../struct_g_f2_1_1_merge_params.html',1,'GF2']]],
+  ['mergesamedirgids',['mergeSameDirGids',['../class_g_f2_1_1_merging.html#ac0725bd7e3faf945dd2cf590a4171da4',1,'GF2::Merging']]],
   ['merging',['Merging',['../class_g_f2_1_1_merging.html',1,'GF2']]],
   ['merging_2eh',['merging.h',['../merging_8h.html',1,'']]],
   ['merging_2ehpp',['merging.hpp',['../merging_8hpp.html',1,'']]],
@@ -22,8 +23,8 @@ var searchData=
   ['my3dpoint',['My3DPoint',['../classam_1_1kmeans_1_1_my3_d_point.html',1,'am::kmeans']]],
   ['my_5fply_5fread_2em',['my_ply_read.m',['../my__ply__read_8m.html',1,'']]],
   ['my_5ftypes_2eh',['my_types.h',['../my__types_8h.html',1,'']]],
-  ['mygrbcallback',['MyGRBCallback',['../class_g_f2_1_1_my_g_r_b_callback.html#a5ea14c58854df5f54c402f1d030b0270',1,'GF2::MyGRBCallback']]],
   ['mygrbcallback',['MyGRBCallback',['../class_g_f2_1_1_my_g_r_b_callback.html',1,'GF2']]],
+  ['mygrbcallback',['MyGRBCallback',['../class_g_f2_1_1_my_g_r_b_callback.html#a5ea14c58854df5f54c402f1d030b0270',1,'GF2::MyGRBCallback']]],
   ['mygrbcallback_2eh',['MyGRBCallback.h',['../_my_g_r_b_callback_8h.html',1,'']]],
   ['mypointprimitivedistancefunctor',['MyPointPrimitiveDistanceFunctor',['../struct_g_f2_1_1_my_point_primitive_distance_functor.html',1,'GF2']]],
   ['myprimitiveprimitiveanglefunctor',['MyPrimitivePrimitiveAngleFunctor',['../struct_g_f2_1_1_my_primitive_primitive_angle_functor.html',1,'GF2']]]

@@ -10,7 +10,7 @@ var searchData=
   ['clusters_5flines',['clusters_lines',['../classam_1_1_primitive_clustering.html#a12fca43b0b52dc18defd7334531b563f',1,'am::PrimitiveClustering']]],
   ['comments',['comments',['../read__ply_8m.html#a1425967ad549bbd542754a17a8f851f4',1,'comments():&#160;read_ply.m'],['../read__ply_8m.html#aa2170d21e4b4aebbc0b3d70cb06764fb',1,'COMMENTS():&#160;read_ply.m'],['../read__ply_8m.html#a64e051714f787e6fa5d77cabc7e9c410',1,'Comments():&#160;read_ply.m']]],
   ['complexity_5fweight',['complexity_weight',['../struct_g_f2_1_1_gurobi_opt_params.html#a4e4657e842fa6640465007994a34a81b',1,'GF2::GurobiOptParams']]],
-  ['constr_5fmode',['constr_mode',['../struct_g_f2_1_1_problem_setup_params.html#a663a00b70e24b4225541fc59ad331bfe',1,'GF2::ProblemSetupParams']]],
+  ['constr_5fmode',['constr_mode',['../struct_g_f2_1_1_problem_setup_params.html#a78614a5b049c8a2b62eb415c4d86c04d',1,'GF2::ProblemSetupParams']]],
   ['constraints',['Constraints',['../test0_8m.html#a837fd096eedcd576ee9e766fa1e0beeb',1,'test0.m']]],
   ['continuous',['continuous',['../struct_g_f2_1_1_gurobi_opt_params.html#afd2b65992641c7d27d949b51795c608a',1,'GF2::GurobiOptParams']]],
   ['cosang',['cosang',['../fmincon__merged_8m.html#a9cb58057ba8ed8fb72519e44e6820d8f',1,'cosang():&#160;fmincon_merged.m'],['../test__fmincon_8m.html#a9cb58057ba8ed8fb72519e44e6820d8f',1,'cosang():&#160;test_fmincon.m']]],

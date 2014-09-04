@@ -13,6 +13,12 @@
 <script type="text/javascript">
   $(document).ready(function() { searchBox.OnSelectItem(0); });
 </script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script><script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js"></script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
@@ -131,7 +137,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 : <a class="el" href="class_g_f2_1_1_g_t_creator.html#aa6983d213ef48c890941d6a36cc94894">GF2::GTCreator</a>
 </li>
 <li>sampleInput()
-: <a class="el" href="class_g_f2_1_1_solver.html#a5c35bbb14c9c9f3097e176e1299fdf06">GF2::Solver</a>
+: <a class="el" href="class_g_f2_1_1_solver.html#ae13f37de0a9b433fa63ffb98acbd7708">GF2::Solver</a>
 </li>
 <li>saveScores()
 : <a class="el" href="class_g_f2_1_1_my_g_r_b_callback.html#aeb17da9a8e1b3d06855031ad1a35b126">GF2::MyGRBCallback</a>
@@ -147,10 +153,12 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 , <a class="el" href="classam_1_1_opt_problem.html#a2bab16897f2333163ff8025608af5caf">am::OptProblem</a>
 , <a class="el" href="classam_1_1_sim_ann_opt_problem.html#af5d2035071e36b7f84bd2a8828444157">am::SimAnnOptProblem&lt; PrimitivesT &gt;</a>
 , <a class="el" href="class_g_f2_1_1_primitive.html#a1e8f81ff8e3fba12fbecf16f8ff047b1">GF2::Primitive&lt; _Dim, _Scalar &gt;</a>
+, <a class="el" href="struct_g_f2_1_1segmentation_1_1_patch.html#a11844c25503bc000c0075a8ef6d9c20b">GF2::segmentation::Patch&lt; _Scalar, _PrimitiveT &gt;</a>
 , <a class="el" href="class_g_f2_1_1_solver.html#ab6a5b204770a8a5597e80c3b64f66a57">GF2::Solver</a>
 </li>
 <li>scale
-: <a class="el" href="struct_g_f2_1_1_merge_params.html#a2e9909871f06633a1c88ade4a98ef7bd">GF2::MergeParams&lt; _Scalar &gt;</a>
+: <a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#af9538a82eda65641b2f89291f7e67963">GF2::CandidateGeneratorParams&lt; _Scalar &gt;</a>
+, <a class="el" href="struct_g_f2_1_1_merge_params.html#a2e9909871f06633a1c88ade4a98ef7bd">GF2::MergeParams&lt; _Scalar &gt;</a>
 , <a class="el" href="struct_g_f2_1_1_problem_setup_params.html#a3ee3f11fe8d9dc44b56057c65fe92ef5">GF2::ProblemSetupParams&lt; _Scalar &gt;</a>
 </li>
 <li>scoreParallelity()
@@ -163,13 +171,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 : <a class="el" href="classam_1_1_sim_ann_opt_problem.html#ae36ad91e35158fa9bf66205ac04b8365">am::SimAnnOptProblem&lt; PrimitivesT &gt;</a>
 </li>
 <li>setTag()
-: <a class="el" href="class_g_f2_1_1_taggable.html#a235b7cb2a739c7ac62bf874b7eb13dae">GF2::Taggable</a>
-</li>
-<li>show_candidates
-: <a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#abcdf4553f9549d8d5a27d6e97089f7d3">GF2::CandidateGeneratorParams</a>
-</li>
-<li>show_fit_lines
-: <a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#a9dadf49837c359afc1e1fbc57388a9fd">GF2::CandidateGeneratorParams</a>
+: <a class="el" href="class_g_f2_1_1_taggable.html#ae2b79971cf7d5dec9ae834b440a59318">GF2::Taggable</a>
 </li>
 <li>SimAnnOptProblem()
 : <a class="el" href="classam_1_1_sim_ann_opt_problem.html#a7ae6559972b7986e767935bdc5ab5502">am::SimAnnOptProblem&lt; PrimitivesT &gt;</a>
@@ -189,7 +191,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 : <a class="el" href="class_g_f2_1_1_solver.html#a4077ed3afd929ab417a8e0195c39486c">GF2::Solver</a>
 </li>
 <li>SPATIAL
-: <a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#af8a5ada6c5c5477443de0914330037b6adfc2ba3c61a33061f9a133b75acc1a99">GF2::CandidateGeneratorParams</a>
+: <a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#af8a5ada6c5c5477443de0914330037b6a04891cf54ec351144a7a7dd1cb8dec81">GF2::CandidateGeneratorParams&lt; _Scalar &gt;</a>
 </li>
 <li>split()
 : <a class="el" href="classam_1_1_glob_fit2.html#a71c84802dd5760d9add31a30995b65ed">am::GlobFit2</a>
@@ -213,7 +215,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Sep 2 2014 15:55:37 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Sep 4 2014 18:07:39 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

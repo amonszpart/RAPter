@@ -1,6 +1,13 @@
 var searchData=
 [
-  ['scalar',['Scalar',['../class_g_f2_1_1_primitive.html#a1e8f81ff8e3fba12fbecf16f8ff047b1',1,'GF2::Primitive::Scalar()'],['../classam_1_1kmeans_1_1_angle_primitive.html#a4cc10bd2e3d975db92498d185dbfafb1',1,'am::kmeans::AnglePrimitive::Scalar()'],['../classam_1_1kmeans_1_1_my3_d_point.html#aff1a2b9a5247c9c8709163aa3c7e5d00',1,'am::kmeans::My3DPoint::Scalar()'],['../classam_1_1kmeans_1_1_k_means.html#aa790efd0afb30e5013f7234ecb745fa3',1,'am::kmeans::KMeans::Scalar()'],['../classam_1_1kmeans_1_1_point_primitive.html#a2275f1420f49636f6c260c4bdf2f5e5f',1,'am::kmeans::PointPrimitive::Scalar()'],['../classam_1_1_alpha_exp_opt_problem.html#a15359d205b4c3fdd16964108f50bea13',1,'am::AlphaExpOptProblem::Scalar()'],['../classam_1_1_exhaustive_opt_problem.html#a6063b24562825699b085e38f132e7a5f',1,'am::ExhaustiveOptProblem::Scalar()'],['../classam_1_1_opt_problem.html#a2bab16897f2333163ff8025608af5caf',1,'am::OptProblem::Scalar()'],['../class_g_f2_1_1_solver.html#ab6a5b204770a8a5597e80c3b64f66a57',1,'GF2::Solver::Scalar()'],['../classam_1_1_sim_ann_opt_problem.html#af5d2035071e36b7f84bd2a8828444157',1,'am::SimAnnOptProblem::Scalar()'],['../classam_1_1_hough_line.html#a8d0de125901d829f789450bd4c4d79f8',1,'am::HoughLine::Scalar()']]],
-  ['selectiontype',['SelectionType',['../namespace_g_f2.html#ab25e35a396840f009f7e5c3ac33abdf0',1,'GF2']]],
-  ['sparsematrix',['SparseMatrix',['../class_g_f2_1_1_solver.html#a4077ed3afd929ab417a8e0195c39486c',1,'GF2::Solver']]]
+  ['pidlid',['PidLid',['../namespace_g_f2_1_1segmentation.html#ab1b3fa4a3c6e32b0912447d24457be4f',1,'GF2::segmentation']]],
+  ['pidset',['PidSet',['../namespace_g_f2.html#a5425a2968b615a577990da18e1f9eaf5',1,'GF2']]],
+  ['pidvector',['PidVector',['../namespace_g_f2.html#a36336d8d0872b43dd91b164ae477d7f2',1,'GF2']]],
+  ['pointcontainert',['PointContainerT',['../class_g_f2_1_1_gurobi_opt.html#a0efb0599f392e9aa850bdcac1a67b33b',1,'GF2::GurobiOpt::PointContainerT()'],['../class_g_f2_1_1_solver.html#a84e8a6d62d98e61d3edb2f5f10116048',1,'GF2::Solver::PointContainerT()']]],
+  ['pointprimitivedistancefunctort',['PointPrimitiveDistanceFunctorT',['../class_g_f2_1_1_gurobi_opt.html#aa8e679a58f373787c4baeeba60eb9573',1,'GF2::GurobiOpt']]],
+  ['pointprimitivet',['PointPrimitiveT',['../class_g_f2_1_1_solver.html#a469309bf22484766411f134ced98d4b5',1,'GF2::Solver']]],
+  ['pointt',['PointT',['../class_g_f2_1_1_g_t_creator.html#aebc9730c67aeb4fb6eca86cc8ad3acdd',1,'GF2::GTCreator']]],
+  ['primitivecontainert',['PrimitiveContainerT',['../class_g_f2_1_1_gurobi_opt.html#a13621afc17101695ec15fcf669420b51',1,'GF2::GurobiOpt::PrimitiveContainerT()'],['../class_g_f2_1_1_solver.html#a33395c45075ba3ccfcb4cc2a9cfe1905',1,'GF2::Solver::PrimitiveContainerT()']]],
+  ['primitiveprimitivedistancefunctort',['PrimitivePrimitiveDistanceFunctorT',['../class_g_f2_1_1_gurobi_opt.html#a12328fd073a060616f23e7c7fea2c695',1,'GF2::GurobiOpt']]],
+  ['primitivet',['PrimitiveT',['../struct_g_f2_1_1segmentation_1_1_patch.html#ac48858e7e39e5a0304b1e047a29b9526',1,'GF2::segmentation::Patch::PrimitiveT()'],['../class_g_f2_1_1_solver.html#a59d72ae46dcc288c6043505580b9c0dc',1,'GF2::Solver::PrimitiveT()'],['../classam_1_1_sim_ann_opt_problem.html#a30bc0b5e96686104a05809e86cba4c4a',1,'am::SimAnnOptProblem::PrimitiveT()']]]
 ];

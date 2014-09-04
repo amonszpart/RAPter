@@ -13,6 +13,12 @@
 <script type="text/javascript">
   $(document).ready(function() { searchBox.OnSelectItem(0); });
 </script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script><script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js"></script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
@@ -110,249 +116,319 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00019"></a><span class="lineno"><a class="line" href="namespace_g_f2_1_1io.html">   19</a></span>&#160;    <span class="keyword">namespace </span>io</div>
 <div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;    {</div>
 <div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;        <span class="keyword">template</span> &lt;<span class="keyword">class </span>PrimitiveT <span class="comment">/* = typename PrimitiveContainerT::value_type::value_type*/</span>, <span class="keyword">class </span>PrimitiveContainerT&gt; <span class="keyword">inline</span> <span class="keywordtype">int</span></div>
-<div class="line"><a name="l00025"></a><span class="lineno"><a class="line" href="namespace_g_f2_1_1io.html#a6e9a4bb9170f3c9393087f91eca421e4">   25</a></span>&#160;        <a class="code" href="namespace_g_f2_1_1io.html#a6e9a4bb9170f3c9393087f91eca421e4">savePrimitives</a>( PrimitiveContainerT <span class="keyword">const</span>&amp; <a class="code" href="globfit_8m.html#a9ff4428a460ac699d709dcab2350626b">primitives</a>, std::string out_file_name, <span class="keywordtype">bool</span> verbose = <span class="keyword">false</span> )</div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;        {</div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;            <span class="keyword">const</span> <span class="keywordtype">int</span> <a class="code" href="globfit_8m.html#a59cd6a1194eac609179091dc9dcc724b">Dim</a> = <a class="code" href="globfit_8m.html#a59cd6a1194eac609179091dc9dcc724b">PrimitiveT::Dim</a>;</div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;            <span class="keyword">typedef</span> <span class="keyword">typename</span> PrimitiveT::VectorType VectorType;</div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;</div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;            <span class="comment">// out_lines</span></div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;            std::ofstream out_file( out_file_name );</div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;            <span class="keywordflow">for</span> ( <span class="keywordtype">size_t</span> <a class="code" href="globfit_8m.html#ad71b2f1a5c693953c99f125619837e0c">lid</a> = 0; <a class="code" href="globfit_8m.html#ad71b2f1a5c693953c99f125619837e0c">lid</a> != primitives.size(); ++<a class="code" href="globfit_8m.html#ad71b2f1a5c693953c99f125619837e0c">lid</a> )</div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;            {</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;                <span class="keywordflow">for</span> ( <span class="keywordtype">size_t</span> lid1 = 0; lid1 != primitives[<a class="code" href="globfit_8m.html#ad71b2f1a5c693953c99f125619837e0c">lid</a>].size(); ++lid1 )</div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;                {</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;                    <span class="keywordflow">for</span> ( <span class="keywordtype">int</span> <a class="code" href="fmincon__merged_8m.html#a1aabac6d068eef6a7bad3fdf50a05cc8">d</a> = 0; <a class="code" href="fmincon__merged_8m.html#a1aabac6d068eef6a7bad3fdf50a05cc8">d</a> != <a class="code" href="globfit_8m.html#a59cd6a1194eac609179091dc9dcc724b">Dim</a>; ++<a class="code" href="fmincon__merged_8m.html#a1aabac6d068eef6a7bad3fdf50a05cc8">d</a> )</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;                        <span class="comment">//out_file &lt;&lt; ((VectorType)primitives[lid][lid1])(d) &lt;&lt; ((d!=Dim-1)?&quot;,&quot;:&quot;\n&quot;);</span></div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;                        out_file &lt;&lt; std::setprecision(9) &lt;&lt; ((VectorType)primitives[<a class="code" href="globfit_8m.html#ad71b2f1a5c693953c99f125619837e0c">lid</a>][lid1])(<a class="code" href="fmincon__merged_8m.html#a1aabac6d068eef6a7bad3fdf50a05cc8">d</a>) &lt;&lt; <span class="stringliteral">&quot;,&quot;</span>;</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;                    out_file &lt;&lt; primitives[<a class="code" href="globfit_8m.html#ad71b2f1a5c693953c99f125619837e0c">lid</a>][lid1].getTag( PrimitiveT::GID ) &lt;&lt; <span class="stringliteral">&quot;,&quot;</span>;</div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;                    out_file &lt;&lt; primitives[<a class="code" href="globfit_8m.html#ad71b2f1a5c693953c99f125619837e0c">lid</a>][lid1].getTag( PrimitiveT::DIR_GID ) &lt;&lt; <span class="stringliteral">&quot;\n&quot;</span>;</div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;                }</div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;            }</div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;            out_file.close();</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;            <span class="keywordflow">if</span> ( verbose ) std::cout &lt;&lt; <span class="stringliteral">&quot;[&quot;</span> &lt;&lt; __func__ &lt;&lt; <span class="stringliteral">&quot;]: &quot;</span> &lt;&lt; <span class="stringliteral">&quot;saved &quot;</span> &lt;&lt; out_file_name &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;</div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;            <span class="keywordflow">return</span> EXIT_SUCCESS;</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;        }</div>
+<div class="line"><a name="l00025"></a><span class="lineno"><a class="line" href="namespace_g_f2_1_1io.html#a6e9a4bb9170f3c9393087f91eca421e4">   25</a></span>&#160;        <a class="code" href="namespace_g_f2_1_1io.html#a6e9a4bb9170f3c9393087f91eca421e4">savePrimitives</a>( PrimitiveContainerT <span class="keyword">const</span>&amp; <a class="code" href="globfit_8m.html#a9ff4428a460ac699d709dcab2350626b">primitives</a></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;                      , std::string out_file_name</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;                      , <span class="keywordtype">bool</span> verbose = <span class="keyword">false</span></div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;                      )</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;        {</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;            <span class="keyword">const</span> <span class="keywordtype">int</span> <a class="code" href="globfit_8m.html#a59cd6a1194eac609179091dc9dcc724b">Dim</a> = <a class="code" href="globfit_8m.html#a59cd6a1194eac609179091dc9dcc724b">PrimitiveT::Dim</a>;</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;            <span class="keyword">typedef</span> <span class="keyword">typename</span> PrimitiveT::VectorType VectorType;</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;            <span class="comment">// out_lines</span></div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;            std::ofstream out_file( out_file_name );</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;            <span class="keywordflow">for</span> ( <span class="keywordtype">size_t</span> <a class="code" href="globfit_8m.html#ad71b2f1a5c693953c99f125619837e0c">lid</a> = 0; <a class="code" href="globfit_8m.html#ad71b2f1a5c693953c99f125619837e0c">lid</a> != primitives.size(); ++<a class="code" href="globfit_8m.html#ad71b2f1a5c693953c99f125619837e0c">lid</a> )</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;            {</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;                <span class="keywordflow">for</span> ( <span class="keywordtype">size_t</span> lid1 = 0; lid1 != primitives[<a class="code" href="globfit_8m.html#ad71b2f1a5c693953c99f125619837e0c">lid</a>].size(); ++lid1 )</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;                {</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;                    <span class="keywordflow">for</span> ( <span class="keywordtype">int</span> <a class="code" href="fmincon__merged_8m.html#a1aabac6d068eef6a7bad3fdf50a05cc8">d</a> = 0; <a class="code" href="fmincon__merged_8m.html#a1aabac6d068eef6a7bad3fdf50a05cc8">d</a> != <a class="code" href="globfit_8m.html#a59cd6a1194eac609179091dc9dcc724b">Dim</a>; ++<a class="code" href="fmincon__merged_8m.html#a1aabac6d068eef6a7bad3fdf50a05cc8">d</a> )</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;                        <span class="comment">//out_file &lt;&lt; ((VectorType)primitives[lid][lid1])(d) &lt;&lt; ((d!=Dim-1)?&quot;,&quot;:&quot;\n&quot;);</span></div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;                        out_file &lt;&lt; std::setprecision(9) &lt;&lt; ((VectorType)primitives[<a class="code" href="globfit_8m.html#ad71b2f1a5c693953c99f125619837e0c">lid</a>][lid1])(<a class="code" href="fmincon__merged_8m.html#a1aabac6d068eef6a7bad3fdf50a05cc8">d</a>) &lt;&lt; <span class="stringliteral">&quot;,&quot;</span>;</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;                    out_file &lt;&lt; primitives[<a class="code" href="globfit_8m.html#ad71b2f1a5c693953c99f125619837e0c">lid</a>][lid1].getTag( PrimitiveT::GID ) &lt;&lt; <span class="stringliteral">&quot;,&quot;</span>;</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;                    out_file &lt;&lt; primitives[<a class="code" href="globfit_8m.html#ad71b2f1a5c693953c99f125619837e0c">lid</a>][lid1].getTag( PrimitiveT::DIR_GID ) &lt;&lt; <span class="stringliteral">&quot;\n&quot;</span>;</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;                }</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;            }</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;            out_file.close();</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;            <span class="keywordflow">if</span> ( verbose ) std::cout &lt;&lt; <span class="stringliteral">&quot;[&quot;</span> &lt;&lt; __func__ &lt;&lt; <span class="stringliteral">&quot;]: &quot;</span> &lt;&lt; <span class="stringliteral">&quot;saved &quot;</span> &lt;&lt; out_file_name &lt;&lt; std::endl;</div>
 <div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;        <span class="keyword">template</span> &lt;</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;                   <span class="keyword">class       </span>PrimitiveT          <span class="comment">/*= typename PrimitiveContainerT::value_type::value_type*/</span></div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;                 , <span class="keyword">class       </span>PrimitiveContainerT</div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;                 &gt;</div>
-<div class="line"><a name="l00053"></a><span class="lineno"><a class="line" href="namespace_g_f2_1_1io.html#a088fc75b1e094d6ee6ead5d45d2587a1">   53</a></span>&#160;        <span class="keyword">inline</span> <span class="keywordtype">int</span> <a class="code" href="namespace_g_f2_1_1io.html#a088fc75b1e094d6ee6ead5d45d2587a1">readPrimitives</a>( PrimitiveContainerT &amp;lines, std::string <span class="keyword">const</span>&amp; <a class="code" href="function__handle_8m.html#a03d2a3685385f82943527be28e035ad9">path</a> )</div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;        {</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;            <span class="keyword">typedef</span> <span class="keyword">typename</span> PrimitiveT::Scalar Scalar;</div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;            <span class="keyword">enum</span> {                              <a class="code" href="globfit_8m.html#a59cd6a1194eac609179091dc9dcc724b">Dim</a>    = <a class="code" href="globfit_8m.html#a59cd6a1194eac609179091dc9dcc724b">PrimitiveT::Dim</a> };</div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;            <span class="keyword">typedef</span> <span class="keyword">typename</span> PrimitiveContainerT::value_type PatchT;</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;            <span class="keyword">typedef</span> std::map&lt;int, PatchT&gt;                    PatchMap; <span class="comment">// &lt;GID, vector&lt;primitives&gt; &gt;</span></div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;</div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;            <span class="comment">// open file</span></div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;            std::ifstream file( path.c_str() );</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;            <span class="keywordflow">if</span> ( !file.is_open() )</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;            {</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;                std::cerr &lt;&lt; <span class="stringliteral">&quot;[&quot;</span> &lt;&lt; __func__ &lt;&lt; <span class="stringliteral">&quot;] couldn&#39;t open file&quot;</span> &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;                <span class="keywordflow">return</span> EXIT_FAILURE;</div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;            }</div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;            std::map&lt;int, PatchT&gt; tmp_lines;</div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;            <span class="keywordtype">int</span> <a class="code" href="globfit_8m.html#ad71b2f1a5c693953c99f125619837e0c">lid</a>        = 0; <span class="comment">// deprecated, tracks linear id</span></div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;            <span class="keywordtype">int</span> <a class="code" href="get__line__count_8m.html#a5da6c0669b205fe6dad5b5e3dc1e7b18">line_count</a> = 0;</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;            std::string <a class="code" href="get__line_8m.html#a4fa05b1f00fcde100685cc887554b93b">line</a>;</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;            <span class="keywordflow">while</span> ( getline(file, line) )</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;            <span class="keywordflow">return</span> EXIT_SUCCESS;</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;        }</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;        <span class="keyword">template</span> &lt;</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;                   <span class="keyword">class       </span>PrimitiveT          <span class="comment">/*= typename PrimitiveContainerT::value_type::value_type*/</span></div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;                 , <span class="keyword">class       </span>PatchT</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;                 , <span class="keyword">class       </span>PrimitiveContainerT</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;                 &gt;</div>
+<div class="line"><a name="l00059"></a><span class="lineno"><a class="line" href="namespace_g_f2_1_1io.html#ad0b245a95d11640b1711a239f46c7de2">   59</a></span>&#160;        <span class="keyword">inline</span> <span class="keywordtype">int</span> <a class="code" href="namespace_g_f2_1_1io.html#ad0b245a95d11640b1711a239f46c7de2">readPrimitives</a>( PrimitiveContainerT &amp;lines</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;                                 , std::string <span class="keyword">const</span>&amp; <a class="code" href="function__handle_8m.html#a03d2a3685385f82943527be28e035ad9">path</a></div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;                                 <span class="comment">//, void(*add)(PrimitiveContainerT &amp; prims, PrimitiveT const&amp; prim, int gid, int dir_gid ) = NULL</span></div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;                                 , std::map&lt;int, typename PrimitiveContainerT::value_type&gt; *patches = NULL</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;                                 )</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;        {</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;            <span class="keyword">typedef</span> <span class="keyword">typename</span> PrimitiveT::Scalar Scalar;</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;            <span class="keyword">enum</span> {                              <a class="code" href="globfit_8m.html#a59cd6a1194eac609179091dc9dcc724b">Dim</a>    = <a class="code" href="globfit_8m.html#a59cd6a1194eac609179091dc9dcc724b">PrimitiveT::Dim</a> }; <span class="comment">// Important! This decides how many floats to read</span></div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;            <span class="comment">//typedef typename PrimitiveContainerT::value_type PatchT;</span></div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;            <span class="keyword">typedef</span> std::map&lt;int, PatchT&gt;                    PatchMap; <span class="comment">// &lt;GID, vector&lt;primitives&gt; &gt;</span></div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;            <span class="comment">// open file</span></div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;            std::ifstream file( path.c_str() );</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;            <span class="keywordflow">if</span> ( !file.is_open() )</div>
 <div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;            {</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;                <span class="keywordflow">if</span> ( line[0] == <span class="charliteral">&#39;#&#39;</span> )          <span class="keywordflow">continue</span>;   <span class="comment">// skip comments</span></div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;                <span class="keywordflow">if</span> ( line.empty()   ) { ++<a class="code" href="globfit_8m.html#ad71b2f1a5c693953c99f125619837e0c">lid</a>; <span class="keywordflow">continue</span>; } <span class="comment">// deprecated, groups used to be separated by empty lines</span></div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;</div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;                std::vector&lt;Scalar&gt; floats;</div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;                std::istringstream iss( line );</div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;                std::string        tmp_str;</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;                <span class="keywordflow">while</span> (  (floats.size() &lt; <a class="code" href="globfit_8m.html#a59cd6a1194eac609179091dc9dcc724b">Dim</a>)</div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;                        &amp;&amp;   (std::getline(iss, tmp_str, <span class="charliteral">&#39;,&#39;</span>) || std::getline(iss, tmp_str)) )</div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;                {</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;                    floats.push_back( atof(tmp_str.c_str()) );</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;                }</div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;                <span class="keywordflow">if</span> ( floats.size() &lt; <a class="code" href="globfit_8m.html#a59cd6a1194eac609179091dc9dcc724b">Dim</a> )</div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;                    std::cerr &lt;&lt; <span class="stringliteral">&quot;[&quot;</span> &lt;&lt; __func__ &lt;&lt; <span class="stringliteral">&quot;]: &quot;</span> &lt;&lt; <span class="stringliteral">&quot;not good, floats.size() &lt; Dim...&quot;</span> &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;</div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;                <span class="comment">// rest</span></div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;                <span class="keywordtype">int</span> gid = -1, dir_gid = -1;</div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;                <span class="keywordflow">if</span> ( !iss.eof() )</div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;                {</div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;                    <span class="keywordflow">if</span> ( std::getline(iss, tmp_str, <span class="charliteral">&#39;,&#39;</span>) )</div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;                    {</div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;                        gid = atoi( tmp_str.c_str() );</div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;                        <span class="comment">//lines[lid].back().setTag( PrimitiveT::GID, gid );</span></div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;                    }</div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;                    <span class="keywordflow">if</span> ( std::getline(iss, tmp_str, <span class="charliteral">&#39;,&#39;</span>) )</div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;                    {</div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;                        dir_gid = atoi( tmp_str.c_str() );</div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;                        <span class="comment">//lines[lid].back().setTag( PrimitiveT::DIR_GID, dir_gid );</span></div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;                    }</div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;                } <span class="comment">// if patch information</span></div>
-<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;</div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;                <span class="comment">// insert into proper patch, if gid specified</span></div>
-<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;                <span class="keywordflow">if</span> ( gid &gt; -1 )</div>
-<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;                {</div>
-<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;<span class="comment">//                    if ( gid &gt;= lines.size() )</span></div>
-<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;<span class="comment">//                        lines.resize( gid+1 );</span></div>
-<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;</div>
-<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;<span class="comment">//                    lines[ gid ].emplace_back( PrimitiveT(floats) );</span></div>
-<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;<span class="comment">//                    lines[ gid ].back().setTag( PrimitiveT::GID, gid );</span></div>
-<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;<span class="comment">//                    lines[ gid ].back().setTag( PrimitiveT::DIR_GID, dir_gid );</span></div>
-<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;                    tmp_lines[ gid ].push_back( PrimitiveT(floats) );</div>
-<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;                    tmp_lines[ gid ].back().setTag( PrimitiveT::GID    , gid     );</div>
-<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;                    tmp_lines[ gid ].back().setTag( PrimitiveT::DIR_GID, dir_gid );</div>
-<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;                }</div>
-<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;                <span class="keywordflow">else</span> <span class="comment">// just make a new patch for it</span></div>
-<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;                {</div>
-<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;                    lines.push_back( PatchT() );</div>
-<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;                    lines[<a class="code" href="globfit_8m.html#ad71b2f1a5c693953c99f125619837e0c">lid</a>].push_back( PrimitiveT(floats) );</div>
-<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;                    lines[<a class="code" href="globfit_8m.html#ad71b2f1a5c693953c99f125619837e0c">lid</a>].back().setTag( PrimitiveT::GID, line_count ); <span class="comment">// 1D indexing only</span></div>
-<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;                }</div>
-<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;</div>
-<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;                ++<a class="code" href="get__line__count_8m.html#a5da6c0669b205fe6dad5b5e3dc1e7b18">line_count</a>;</div>
-<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;            } <span class="comment">// while getline</span></div>
-<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;</div>
-<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;            <span class="comment">// copy all patches from map to vector (so that there are no empty patches in the vector)</span></div>
-<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;            lines.reserve( lines.size() + tmp_lines.size() );</div>
-<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;            <span class="keyword">typename</span> PatchMap::const_iterator end_it = tmp_lines.end();</div>
-<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;            <span class="keywordflow">for</span> ( <span class="keyword">typename</span> PatchMap::const_iterator <a class="code" href="fmincon__merged_8m.html#ad50c0647c2d1ff3a3502b134abf52661">it</a> = tmp_lines.begin(); <a class="code" href="fmincon__merged_8m.html#ad50c0647c2d1ff3a3502b134abf52661">it</a> != end_it; ++<a class="code" href="fmincon__merged_8m.html#ad50c0647c2d1ff3a3502b134abf52661">it</a> )</div>
-<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;            {</div>
-<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;                lines.push_back( PatchT() );</div>
-<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;                lines.back().insert( lines.back().end(), <a class="code" href="fmincon__merged_8m.html#ad50c0647c2d1ff3a3502b134abf52661">it</a>-&gt;second.begin(), <a class="code" href="fmincon__merged_8m.html#ad50c0647c2d1ff3a3502b134abf52661">it</a>-&gt;second.end() );</div>
-<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;            }</div>
-<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;</div>
-<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;            file.close();</div>
-<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;</div>
-<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;            <span class="keywordflow">return</span> EXIT_SUCCESS;</div>
-<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;        } <span class="comment">// ... readPrimitives()</span></div>
-<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;</div>
-<div class="line"><a name="l00146"></a><span class="lineno"><a class="line" href="namespace_g_f2_1_1io.html#a9bce496e4ce752c26c024362e8bca2d9">  146</a></span>&#160;        <span class="keyword">inline</span> <span class="keywordtype">int</span> <a class="code" href="namespace_g_f2_1_1io.html#a9bce496e4ce752c26c024362e8bca2d9">readAssociations</a>( std::vector&lt;std::pair&lt;int,int&gt; &gt;      &amp; points_primitives</div>
-<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;                                     , std::string                    <span class="keyword">const</span>&amp; <a class="code" href="function__handle_8m.html#a03d2a3685385f82943527be28e035ad9">path</a></div>
-<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;                                     , std::map&lt;int,int&gt;                   * linear_indices )</div>
-<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;        {</div>
-<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;            std::ifstream f( path.c_str() );</div>
-<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;            <span class="keywordflow">if</span> ( !f.is_open() )</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;                std::cerr &lt;&lt; <span class="stringliteral">&quot;[&quot;</span> &lt;&lt; __func__ &lt;&lt; <span class="stringliteral">&quot;] couldn&#39;t open file&quot;</span> &lt;&lt; std::endl;</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;                <span class="keywordflow">return</span> EXIT_FAILURE;</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;            }</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;            std::map&lt;int, PatchT&gt; tmp_lines;</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;            <span class="keywordtype">int</span> <a class="code" href="globfit_8m.html#ad71b2f1a5c693953c99f125619837e0c">lid</a>        = 0; <span class="comment">// deprecated, tracks linear id</span></div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;            <span class="keywordtype">int</span> <a class="code" href="get__line__count_8m.html#a5da6c0669b205fe6dad5b5e3dc1e7b18">line_count</a> = 0;</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;            std::string <a class="code" href="get__line_8m.html#a4fa05b1f00fcde100685cc887554b93b">line</a>;</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;            <span class="keywordflow">while</span> ( getline(file, line) )</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;            {</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;                <span class="keywordflow">if</span> ( line[0] == <span class="charliteral">&#39;#&#39;</span> )          <span class="keywordflow">continue</span>;   <span class="comment">// skip comments</span></div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;                <span class="keywordflow">if</span> ( line.empty()   ) { ++<a class="code" href="globfit_8m.html#ad71b2f1a5c693953c99f125619837e0c">lid</a>; <span class="keywordflow">continue</span>; } <span class="comment">// deprecated, groups used to be separated by empty lines</span></div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;                std::vector&lt;Scalar&gt; floats;</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;                std::istringstream iss( line );</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;                std::string        tmp_str;</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;                <span class="keywordflow">while</span> (  (floats.size() &lt; <a class="code" href="globfit_8m.html#a59cd6a1194eac609179091dc9dcc724b">Dim</a>)</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;                        &amp;&amp;   (std::getline(iss, tmp_str, <span class="charliteral">&#39;,&#39;</span>) || std::getline(iss, tmp_str)) )</div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;                {</div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;                    floats.push_back( atof(tmp_str.c_str()) );</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;                }</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;                <span class="comment">// error check</span></div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;                <span class="keywordflow">if</span> ( floats.size() &lt; <a class="code" href="globfit_8m.html#a59cd6a1194eac609179091dc9dcc724b">Dim</a> )</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;                    std::cerr &lt;&lt; <span class="stringliteral">&quot;[&quot;</span> &lt;&lt; __func__ &lt;&lt; <span class="stringliteral">&quot;]: &quot;</span> &lt;&lt; <span class="stringliteral">&quot;not good, floats.size() &lt; Dim...&quot;</span> &lt;&lt; std::endl;</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;                <span class="comment">// rest</span></div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;                <span class="keywordtype">int</span> gid = -1, dir_gid = -1;</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;                <span class="keywordflow">if</span> ( !iss.eof() )</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;                {</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;                    <span class="keywordflow">if</span> ( std::getline(iss, tmp_str, <span class="charliteral">&#39;,&#39;</span>) )  gid     = atoi( tmp_str.c_str() );</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;                    <span class="keywordflow">if</span> ( std::getline(iss, tmp_str, <span class="charliteral">&#39;,&#39;</span>) )  dir_gid = atoi( tmp_str.c_str() );</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;                } <span class="comment">// if patch information</span></div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;</div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;                <span class="comment">// insert into proper patch, if gid specified</span></div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;                <span class="keywordflow">if</span> ( gid &gt; -1 )</div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;                {</div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;                    tmp_lines[ gid ].push_back( PrimitiveT(floats) );</div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;                    tmp_lines[ gid ].back().setTag( PrimitiveT::GID    , gid     );</div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;                    tmp_lines[ gid ].back().setTag( PrimitiveT::DIR_GID, dir_gid );</div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;                }</div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;                <span class="keywordflow">else</span> <span class="comment">// just make a new patch for it</span></div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;                {</div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;                    <span class="keywordflow">throw</span> <span class="keyword">new</span> std::runtime_error(<span class="stringliteral">&quot;[io::readPrims] code not up to date to handle gid==-1 cases, please add proper GID to primitives&quot;</span>);</div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;<span class="comment">//                    lines.push_back( PatchT() );</span></div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;<span class="comment">//                    lines[lid].push_back( PrimitiveT(floats) );</span></div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;<span class="comment">//                    lines[lid].back().setTag( PrimitiveT::GID, line_count ); // 1D indexing only</span></div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;                }</div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;</div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;                ++<a class="code" href="get__line__count_8m.html#a5da6c0669b205fe6dad5b5e3dc1e7b18">line_count</a>;</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;            } <span class="comment">// while getline</span></div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;            <span class="comment">// copy all patches from map to vector (so that there are no empty patches in the vector)</span></div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;            <span class="comment">//lines.reserve( lines.size() + tmp_lines.size() );</span></div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;            <span class="keyword">typename</span> PatchMap::const_iterator end_it = tmp_lines.end();</div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;            <span class="keywordflow">for</span> ( <span class="keyword">typename</span> PatchMap::const_iterator <a class="code" href="fmincon__merged_8m.html#ad50c0647c2d1ff3a3502b134abf52661">it</a> = tmp_lines.begin(); <a class="code" href="fmincon__merged_8m.html#ad50c0647c2d1ff3a3502b134abf52661">it</a> != end_it; ++<a class="code" href="fmincon__merged_8m.html#ad50c0647c2d1ff3a3502b134abf52661">it</a> )</div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;            {</div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;<span class="comment">//                if ( add )</span></div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;<span class="comment">//                {</span></div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;<span class="comment">//                    typename PatchT::const_iterator end_it2 = it-&gt;second.end();</span></div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;<span class="comment">//                    for ( typename PatchT::const_iterator it2 = it-&gt;second.begin(); it2 != end_it2; ++it2 )</span></div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;<span class="comment">//                    {</span></div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;<span class="comment">//                        int tmp_gid     = it2-&gt;getTag(PrimitiveT::GID);</span></div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;<span class="comment">//                        int tmp_dir_gid = it2-&gt;getTag(PrimitiveT::DIR_GID);</span></div>
+<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;<span class="comment">//                        add( lines, *it2, tmp_gid, tmp_dir_gid );</span></div>
+<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;</div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;<span class="comment">//                        if ( tmp_gid != it-&gt;first )</span></div>
+<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;<span class="comment">//                            std::cerr &lt;&lt; &quot;[&quot; &lt;&lt; __func__ &lt;&lt; &quot;]: &quot; &lt;&lt; &quot;it-&gt;first &quot; &lt;&lt; it-&gt;first &lt;&lt; &quot; != &quot; &lt;&lt; tmp_gid &lt;&lt; &quot; it2-&gt;second.gid&quot; &lt;&lt; std::endl;</span></div>
+<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;<span class="comment">//                    }</span></div>
+<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;<span class="comment">//                }</span></div>
+<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;<span class="comment">//                else</span></div>
+<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;<span class="comment">//                {</span></div>
+<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;                    <span class="comment">// assume vector&lt;vector&lt; PrimitiveT &gt; &gt;</span></div>
+<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;                    lines.push_back( PatchT() );</div>
+<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;                    lines.back().insert( lines.back().end(), <a class="code" href="fmincon__merged_8m.html#ad50c0647c2d1ff3a3502b134abf52661">it</a>-&gt;second.begin(), <a class="code" href="fmincon__merged_8m.html#ad50c0647c2d1ff3a3502b134abf52661">it</a>-&gt;second.end() );</div>
+<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;<span class="comment">//                }</span></div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;            }</div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;            <span class="keywordflow">if</span> ( patches )</div>
 <div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;            {</div>
-<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;                std::cerr &lt;&lt; <span class="stringliteral">&quot;[&quot;</span> &lt;&lt; __func__ &lt;&lt; <span class="stringliteral">&quot;] couldn&#39;t open file&quot;</span> &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;                <span class="keywordflow">return</span> EXIT_FAILURE;</div>
-<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;            }</div>
-<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;</div>
-<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;            std::set&lt; std::pair&lt;int,int&gt; &gt; lines;</div>
-<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;            std::string <a class="code" href="get__line_8m.html#a4fa05b1f00fcde100685cc887554b93b">line</a>;</div>
-<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;            <span class="keywordflow">while</span> ( getline(f, line) )</div>
-<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;            {</div>
-<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;                <span class="keywordflow">if</span> ( line[0] == <span class="charliteral">&#39;#&#39;</span> )</div>
-<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;                    <span class="keywordflow">continue</span>;</div>
-<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;</div>
-<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;                std::vector&lt;int&gt; ints;</div>
-<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;                std::istringstream iss( line );</div>
-<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;                std::string        tmp_str;</div>
-<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;                <span class="keywordflow">while</span> (  (ints.size() &lt; 3)</div>
-<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;                        &amp;&amp;   (std::getline(iss, tmp_str, <span class="charliteral">&#39;,&#39;</span>) || std::getline(iss, tmp_str)) )</div>
-<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;                {</div>
-<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;                    ints.push_back( atoi(tmp_str.c_str()) );</div>
-<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;                }</div>
-<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;                <span class="keywordflow">if</span> ( ints.size() != 3 )</div>
-<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;                {</div>
-<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;                    std::cerr &lt;&lt; <span class="stringliteral">&quot;[&quot;</span> &lt;&lt; __func__ &lt;&lt; <span class="stringliteral">&quot;]: &quot;</span> &lt;&lt; <span class="stringliteral">&quot;skipping &quot;</span> &lt;&lt; line &lt;&lt; <span class="stringliteral">&quot;, since could not read 3 ints&quot;</span> &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;                    <span class="keywordflow">continue</span>;</div>
-<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;                }</div>
-<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;</div>
-<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;                <span class="comment">// 2d indices (lid,lid1)</span></div>
-<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;                <span class="keywordflow">if</span> ( static_cast&lt;int&gt;(points_primitives.size()) &lt;= ints[0] )</div>
-<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;                    points_primitives.resize( ints[0]+1, std::pair&lt;int,int&gt;(-1,-1) );</div>
-<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;                points_primitives[ ints[0] ] = std::pair&lt;int,int&gt;( ints[1], ints[2] );</div>
-<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;                lines.insert( std::pair&lt;int,int&gt;(ints[1], ints[2]) );</div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;                *patches = tmp_lines;</div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;            }</div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;</div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;            file.close();</div>
+<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;</div>
+<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;            <span class="keywordflow">return</span> EXIT_SUCCESS;</div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;        } <span class="comment">// ... readPrimitives()</span></div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;</div>
+<div class="line"><a name="l00166"></a><span class="lineno"><a class="line" href="namespace_g_f2_1_1io.html#a9bce496e4ce752c26c024362e8bca2d9">  166</a></span>&#160;        <span class="keyword">inline</span> <span class="keywordtype">int</span> <a class="code" href="namespace_g_f2_1_1io.html#a9bce496e4ce752c26c024362e8bca2d9">readAssociations</a>( std::vector&lt;std::pair&lt;int,int&gt; &gt;      &amp; points_primitives</div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;                                     , std::string                    <span class="keyword">const</span>&amp; <a class="code" href="function__handle_8m.html#a03d2a3685385f82943527be28e035ad9">path</a></div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;                                     , std::map&lt;int,int&gt;                   * linear_indices )</div>
+<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;        {</div>
+<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;            std::ifstream f( path.c_str() );</div>
+<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;            <span class="keywordflow">if</span> ( !f.is_open() )</div>
+<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;            {</div>
+<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;                std::cerr &lt;&lt; <span class="stringliteral">&quot;[&quot;</span> &lt;&lt; __func__ &lt;&lt; <span class="stringliteral">&quot;] couldn&#39;t open file&quot;</span> &lt;&lt; std::endl;</div>
+<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;                <span class="keywordflow">return</span> EXIT_FAILURE;</div>
+<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;            }</div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;</div>
+<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;            std::set&lt; std::pair&lt;int,int&gt; &gt; lines;</div>
+<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;            std::string <a class="code" href="get__line_8m.html#a4fa05b1f00fcde100685cc887554b93b">line</a>;</div>
+<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;            <span class="keywordflow">while</span> ( getline(f, line) )</div>
+<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;            {</div>
+<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;                <span class="keywordflow">if</span> ( line[0] == <span class="charliteral">&#39;#&#39;</span> )</div>
+<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;                    <span class="keywordflow">continue</span>;</div>
 <div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;</div>
-<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;                <span class="comment">// 1d indices (line_id)</span></div>
-<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;                <span class="keywordflow">if</span> ( linear_indices )</div>
-<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;                {</div>
-<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;                    (*linear_indices)[ ints[0] ] = lines.size() - 1; <span class="comment">// assumes sorted set</span></div>
-<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;                }</div>
-<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;</div>
-<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;            } <span class="comment">// while getline</span></div>
-<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;</div>
-<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;            <span class="keywordflow">return</span> EXIT_SUCCESS;</div>
-<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;        } <span class="comment">// ... readAssociations</span></div>
-<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;</div>
-<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;        <span class="keyword">template</span> &lt; <span class="keyword">class </span>_PointT <span class="comment">/*= typename _PointContainerT::value_type */</span></div>
-<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;                   , <span class="keyword">class </span>_PointContainerT</div>
-<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;                 &gt;</div>
-<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;        <span class="keyword">inline</span> <span class="keywordtype">int</span></div>
-<div class="line"><a name="l00203"></a><span class="lineno"><a class="line" href="namespace_g_f2_1_1io.html#a3e6a9c58eb7a7260d47fe912e26dbef1">  203</a></span>&#160;        <a class="code" href="namespace_g_f2_1_1io.html#a3e6a9c58eb7a7260d47fe912e26dbef1">readPoints</a>( _PointContainerT &amp;<a class="code" href="globfit_8m.html#ab9a89211ecb71d18bbd259853fda1c54">points</a></div>
-<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;                  , std::string        <a class="code" href="function__handle_8m.html#a03d2a3685385f82943527be28e035ad9">path</a></div>
-<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;                  , pcl::PointCloud&lt;pcl::PointXYZRGB&gt;::Ptr *cloud_arg = NULL )</div>
-<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;        {</div>
-<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;            pcl::PointCloud&lt;pcl::PointXYZRGB&gt;::Ptr <a class="code" href="lp_8m.html#a629c932e04d057de3f60912da6e565c2">cloud</a>;</div>
-<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;</div>
-<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;            <span class="comment">// sample image</span></div>
-<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;            <span class="keywordflow">if</span> ( !cloud ) cloud.reset( <span class="keyword">new</span> pcl::PointCloud&lt;pcl::PointXYZRGB&gt;() );</div>
-<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;            <span class="keywordflow">if</span> ( path.find(<span class="stringliteral">&quot;ply&quot;</span>) != std::string::npos )</div>
-<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;                pcl::io::loadPLYFile( path, *cloud );</div>
-<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;            <span class="keywordflow">else</span></div>
-<div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160;                pcl::io::loadPCDFile( path, *cloud );</div>
-<div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160;</div>
-<div class="line"><a name="l00216"></a><span class="lineno">  216</span>&#160;            <span class="comment">// convert to raw vector</span></div>
-<div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160;            std::vector&lt;typename _PointT::VectorType&gt; raw_points;</div>
-<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;            pclutil::cloudToVector&lt;typename _PointT::RawAllocator&gt;( raw_points, <a class="code" href="lp_8m.html#a629c932e04d057de3f60912da6e565c2">cloud</a> );</div>
-<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;</div>
-<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;            <span class="comment">// convert to tagged vector</span></div>
-<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;            points.reserve( raw_points.size() );</div>
-<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;            <span class="keywordflow">for</span> ( <span class="keywordtype">size_t</span> <a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a> = 0; <a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a> != raw_points.size(); ++<a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a> )</div>
-<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;            {</div>
-<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;                points.emplace_back( _PointT(raw_points[<a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a>]) );</div>
-<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;                points.back().setTag( _PointT::PID, pid );</div>
-<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160;                points.back().setTag( _PointT::GID, pid );</div>
-<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;            }</div>
-<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;            <span class="keywordflow">if</span> ( cloud_arg ) *cloud_arg = <a class="code" href="lp_8m.html#a629c932e04d057de3f60912da6e565c2">cloud</a>;</div>
-<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;</div>
-<div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160;            <span class="keywordflow">return</span> EXIT_SUCCESS;</div>
-<div class="line"><a name="l00231"></a><span class="lineno">  231</span>&#160;        } <span class="comment">// ...Solver::readPoints()</span></div>
-<div class="line"><a name="l00232"></a><span class="lineno">  232</span>&#160;</div>
-<div class="line"><a name="l00233"></a><span class="lineno">  233</span>&#160;<span class="preprocessor">#if 0 // deprecated</span></div>
-<div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;<span class="preprocessor"></span>        <span class="keyword">extern</span> <span class="keywordtype">int</span></div>
-<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;        readSolution( std::string <span class="keyword">const</span> <a class="code" href="function__handle_8m.html#a03d2a3685385f82943527be28e035ad9">path</a> );</div>
-<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;</div>
-<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;        <span class="keyword">template</span> &lt;<span class="keyword">class</span> PrimitivesT, <span class="keyword">typename</span> Scalar = <span class="keyword">typename</span> PrimitivesT::value_type::Scalar&gt; <span class="keywordtype">int</span></div>
-<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;        saveSolution( std::string <a class="code" href="function__handle_8m.html#a03d2a3685385f82943527be28e035ad9">path</a></div>
-<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;                      , <a class="code" href="namespace_g_f2.html#af9ca2fafa8af7848cb0e458ad24e9c05">MaskType</a> <span class="keyword">const</span>&amp; opt_mask</div>
-<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;                      , PrimitivesT <span class="keyword">const</span>&amp; candidates</div>
-<div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;                      , Scalar <span class="keyword">const</span> working_scale</div>
-<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;                      , std::vector&lt;Scalar&gt; <span class="keyword">const</span>&amp; gf2_desired_angles</div>
-<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;                      , <span class="keywordtype">int</span>  argc</div>
-<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;                      , <span class="keywordtype">char</span> **argv);</div>
-<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;<span class="preprocessor"></span>    } <span class="comment">// ... ns io</span></div>
-<div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160;} <span class="comment">// ... ns GF2</span></div>
+<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;                std::vector&lt;int&gt; ints;</div>
+<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;                std::istringstream iss( line );</div>
+<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;                std::string        tmp_str;</div>
+<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;                <span class="keywordflow">while</span> (  (ints.size() &lt; 3)</div>
+<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;                        &amp;&amp;   (std::getline(iss, tmp_str, <span class="charliteral">&#39;,&#39;</span>) || std::getline(iss, tmp_str)) )</div>
+<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;                {</div>
+<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;                    ints.push_back( atoi(tmp_str.c_str()) );</div>
+<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;                }</div>
+<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;                <span class="keywordflow">if</span> ( ints.size() != 3 )</div>
+<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;                {</div>
+<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;                    std::cerr &lt;&lt; <span class="stringliteral">&quot;[&quot;</span> &lt;&lt; __func__ &lt;&lt; <span class="stringliteral">&quot;]: &quot;</span> &lt;&lt; <span class="stringliteral">&quot;skipping &quot;</span> &lt;&lt; line &lt;&lt; <span class="stringliteral">&quot;, since could not read 3 ints&quot;</span> &lt;&lt; std::endl;</div>
+<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;                    <span class="keywordflow">continue</span>;</div>
+<div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;                }</div>
+<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;</div>
+<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;                <span class="comment">// 2d indices (lid,lid1)</span></div>
+<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;                <span class="keywordflow">if</span> ( static_cast&lt;int&gt;(points_primitives.size()) &lt;= ints[0] )</div>
+<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;                    points_primitives.resize( ints[0]+1, std::pair&lt;int,int&gt;(-1,-1) );</div>
+<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;                points_primitives[ ints[0] ] = std::pair&lt;int,int&gt;( ints[1], ints[2] );</div>
+<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;                lines.insert( std::pair&lt;int,int&gt;(ints[1], ints[2]) );</div>
+<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;</div>
+<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;                <span class="comment">// 1d indices (line_id)</span></div>
+<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;                <span class="keywordflow">if</span> ( linear_indices )</div>
+<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;                {</div>
+<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;                    (*linear_indices)[ ints[0] ] = lines.size() - 1; <span class="comment">// assumes sorted set</span></div>
+<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;                }</div>
+<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;</div>
+<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;            } <span class="comment">// while getline</span></div>
+<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;</div>
+<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;            <span class="keywordflow">return</span> EXIT_SUCCESS;</div>
+<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;        } <span class="comment">// ... readAssociations</span></div>
+<div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160;</div>
+<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;        <span class="keyword">template</span> &lt; <span class="keyword">class </span>_PointPrimitiveT</div>
+<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;                 , <span class="keyword">class </span>_PointContainerT</div>
+<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;                 &gt;</div>
+<div class="line"><a name="l00224"></a><span class="lineno"><a class="line" href="namespace_g_f2_1_1io.html#a3921075da843c4fb93adbeac13a5e153">  224</a></span>&#160;        <span class="keyword">inline</span> <span class="keywordtype">int</span> <a class="code" href="namespace_g_f2_1_1io.html#a3921075da843c4fb93adbeac13a5e153">writeAssociations</a>( _PointContainerT <span class="keyword">const</span>&amp; <a class="code" href="globfit_8m.html#ab9a89211ecb71d18bbd259853fda1c54">points</a></div>
+<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;                                    , std::string <span class="keyword">const</span>&amp; f_assoc_path )</div>
+<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160;        {</div>
+<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;            <span class="comment">// open</span></div>
+<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;            std::ofstream f_assoc( f_assoc_path );</div>
+<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;            <span class="keywordflow">if</span> ( !f_assoc.is_open() ) { std::cerr &lt;&lt; <span class="stringliteral">&quot;[&quot;</span> &lt;&lt; __func__ &lt;&lt; <span class="stringliteral">&quot;]: &quot;</span> &lt;&lt; <span class="stringliteral">&quot;could not open &quot;</span> &lt;&lt; f_assoc_path &lt;&lt; <span class="stringliteral">&quot; for writing...&quot;</span> &lt;&lt; std::endl; <span class="keywordflow">return</span> EXIT_FAILURE; }</div>
+<div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160;</div>
+<div class="line"><a name="l00231"></a><span class="lineno">  231</span>&#160;            <span class="comment">// preamble</span></div>
+<div class="line"><a name="l00232"></a><span class="lineno">  232</span>&#160;            f_assoc &lt;&lt; <span class="stringliteral">&quot;# point_id,primitive_gid,primitive_dir_gid&quot;</span> &lt;&lt; std::endl;</div>
+<div class="line"><a name="l00233"></a><span class="lineno">  233</span>&#160;            <span class="comment">// write points</span></div>
+<div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;            <span class="keywordflow">for</span> ( <span class="keywordtype">size_t</span> <a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a> = 0; <a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a> != points.size(); ++<a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a> )</div>
+<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;            {</div>
+<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;                f_assoc &lt;&lt; <a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a></div>
+<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;                           &lt;&lt; <span class="stringliteral">&quot;,&quot;</span> &lt;&lt; points[<a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a>].getTag( _PointPrimitiveT::GID )</div>
+<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;                           &lt;&lt; <span class="stringliteral">&quot;,&quot;</span> &lt;&lt; -1  <span class="comment">// assigned to patch, but no direction</span></div>
+<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;                           &lt;&lt; std::endl;</div>
+<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;            }</div>
+<div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;            <span class="comment">// finish</span></div>
+<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;            f_assoc.close();</div>
+<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;</div>
+<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;            std::cout &lt;&lt; <span class="stringliteral">&quot;[&quot;</span> &lt;&lt; __func__ &lt;&lt; <span class="stringliteral">&quot;]: &quot;</span> &lt;&lt; <span class="stringliteral">&quot;wrote to &quot;</span> &lt;&lt; f_assoc_path &lt;&lt; std::endl;</div>
+<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;</div>
+<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;            <span class="keywordflow">return</span> EXIT_SUCCESS;</div>
+<div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160;        } <span class="comment">//...writeAssociations</span></div>
 <div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160;</div>
-<div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160;<span class="preprocessor">#ifndef __GF2_IO_INC_HPP__</span></div>
-<div class="line"><a name="l00250"></a><span class="lineno"><a class="line" href="io_8h.html#a642fb626ce751a7c29e5a0e4cda98abc">  250</a></span>&#160;<span class="preprocessor"></span><span class="preprocessor">#   define __GF2_IO_INC_HPP__</span></div>
-<div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#   include &quot;<a class="code" href="io_8hpp.html">globfit2/io/io.hpp</a>&quot;</span></div>
-<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160;<span class="preprocessor"></span></div>
-<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;<span class="preprocessor">#endif // __GF2_IO_H__</span></div>
+<div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160;        <span class="keyword">template</span> &lt; <span class="keyword">class </span>_PointT <span class="comment">/*= typename _PointContainerT::value_type */</span></div>
+<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;                   , <span class="keyword">class </span>_PointContainerT</div>
+<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;                 &gt;</div>
+<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;        <span class="keyword">inline</span> <span class="keywordtype">int</span></div>
+<div class="line"><a name="l00257"></a><span class="lineno"><a class="line" href="namespace_g_f2_1_1io.html#a3e6a9c58eb7a7260d47fe912e26dbef1">  257</a></span>&#160;        <a class="code" href="namespace_g_f2_1_1io.html#a3e6a9c58eb7a7260d47fe912e26dbef1">readPoints</a>( _PointContainerT &amp;<a class="code" href="globfit_8m.html#ab9a89211ecb71d18bbd259853fda1c54">points</a></div>
+<div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160;                  , std::string        <a class="code" href="function__handle_8m.html#a03d2a3685385f82943527be28e035ad9">path</a></div>
+<div class="line"><a name="l00259"></a><span class="lineno">  259</span>&#160;                  , pcl::PointCloud&lt;pcl::PointXYZRGB&gt;::Ptr *cloud_arg = NULL )</div>
+<div class="line"><a name="l00260"></a><span class="lineno">  260</span>&#160;        {</div>
+<div class="line"><a name="l00261"></a><span class="lineno">  261</span>&#160;            pcl::PointCloud&lt;pcl::PointXYZRGB&gt;::Ptr <a class="code" href="lp_8m.html#a629c932e04d057de3f60912da6e565c2">cloud</a>;</div>
+<div class="line"><a name="l00262"></a><span class="lineno">  262</span>&#160;</div>
+<div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160;            <span class="comment">// sample image</span></div>
+<div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160;            <span class="keywordflow">if</span> ( !cloud ) cloud.reset( <span class="keyword">new</span> pcl::PointCloud&lt;pcl::PointXYZRGB&gt;() );</div>
+<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160;            <span class="keywordflow">if</span> ( path.find(<span class="stringliteral">&quot;ply&quot;</span>) != std::string::npos )</div>
+<div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;                pcl::io::loadPLYFile( path, *cloud );</div>
+<div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;            <span class="keywordflow">else</span></div>
+<div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;                pcl::io::loadPCDFile( path, *cloud );</div>
+<div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160;</div>
+<div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;            <span class="comment">// convert to raw vector</span></div>
+<div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;            std::vector&lt;typename _PointT::VectorType&gt; raw_points;</div>
+<div class="line"><a name="l00272"></a><span class="lineno">  272</span>&#160;            pclutil::cloudToVector&lt;typename _PointT::RawAllocator&gt;( raw_points, <a class="code" href="lp_8m.html#a629c932e04d057de3f60912da6e565c2">cloud</a> );</div>
+<div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;</div>
+<div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160;            <span class="comment">// convert to tagged vector</span></div>
+<div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;            points.reserve( raw_points.size() );</div>
+<div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160;            <span class="keywordflow">for</span> ( <span class="keywordtype">size_t</span> <a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a> = 0; <a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a> != raw_points.size(); ++<a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a> )</div>
+<div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160;            {</div>
+<div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160;                points.emplace_back( _PointT(raw_points[<a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a>]) );</div>
+<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;                points.back().setTag( _PointT::PID, pid );</div>
+<div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160;                points.back().setTag( _PointT::GID, pid );</div>
+<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;            }</div>
+<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;            <span class="keywordflow">if</span> ( cloud_arg ) *cloud_arg = <a class="code" href="lp_8m.html#a629c932e04d057de3f60912da6e565c2">cloud</a>;</div>
+<div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;</div>
+<div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160;            <span class="keywordflow">return</span> EXIT_SUCCESS;</div>
+<div class="line"><a name="l00285"></a><span class="lineno">  285</span>&#160;        } <span class="comment">// ...Solver::readPoints()</span></div>
+<div class="line"><a name="l00286"></a><span class="lineno">  286</span>&#160;</div>
+<div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160;        <span class="keyword">template</span> &lt; <span class="keyword">class </span>_PointT <span class="comment">/*= typename _PointContainerT::value_type */</span></div>
+<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;                   , <span class="keyword">class </span>_PointContainerT</div>
+<div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160;                 &gt;</div>
+<div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;        <span class="keyword">inline</span> <span class="keywordtype">int</span></div>
+<div class="line"><a name="l00295"></a><span class="lineno"><a class="line" href="namespace_g_f2_1_1io.html#abd561af48cfe2c0b3ef47e6aa085fb29">  295</a></span>&#160;        <a class="code" href="namespace_g_f2_1_1io.html#abd561af48cfe2c0b3ef47e6aa085fb29">writePoints</a>( _PointContainerT &amp;<a class="code" href="globfit_8m.html#ab9a89211ecb71d18bbd259853fda1c54">points</a></div>
+<div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;                   , std::string       <a class="code" href="function__handle_8m.html#a03d2a3685385f82943527be28e035ad9">path</a> )</div>
+<div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160;        {</div>
+<div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;            std::ofstream file( path.c_str() );</div>
+<div class="line"><a name="l00299"></a><span class="lineno">  299</span>&#160;            <span class="keywordflow">if</span> ( ! file.is_open() ) { std::cerr &lt;&lt; <span class="stringliteral">&quot;[&quot;</span> &lt;&lt; __func__ &lt;&lt; <span class="stringliteral">&quot;]: &quot;</span> &lt;&lt; <span class="stringliteral">&quot;could not open &quot;</span> &lt;&lt; path &lt;&lt; std::endl; <span class="keywordflow">return</span> EXIT_FAILURE; }</div>
+<div class="line"><a name="l00300"></a><span class="lineno">  300</span>&#160;</div>
+<div class="line"><a name="l00301"></a><span class="lineno">  301</span>&#160;            file &lt;&lt; <span class="stringliteral">&quot;ply\n&quot;</span></div>
+<div class="line"><a name="l00302"></a><span class="lineno">  302</span>&#160;                 &lt;&lt; <span class="stringliteral">&quot;format ascii 1.0\n&quot;</span></div>
+<div class="line"><a name="l00303"></a><span class="lineno">  303</span>&#160;                 &lt;&lt; <span class="stringliteral">&quot;comment Aron generated\n&quot;</span></div>
+<div class="line"><a name="l00304"></a><span class="lineno">  304</span>&#160;                 &lt;&lt; <span class="stringliteral">&quot;element vertex &quot;</span> &lt;&lt; points.size() &lt;&lt; <span class="stringliteral">&quot;\n&quot;</span></div>
+<div class="line"><a name="l00305"></a><span class="lineno">  305</span>&#160;                 &lt;&lt; <span class="stringliteral">&quot;property float x\n&quot;</span></div>
+<div class="line"><a name="l00306"></a><span class="lineno">  306</span>&#160;                 &lt;&lt; <span class="stringliteral">&quot;property float y\n&quot;</span></div>
+<div class="line"><a name="l00307"></a><span class="lineno">  307</span>&#160;                 &lt;&lt; <span class="stringliteral">&quot;property float z\n&quot;</span></div>
+<div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160;                 &lt;&lt; <span class="stringliteral">&quot;property float nx\n&quot;</span></div>
+<div class="line"><a name="l00309"></a><span class="lineno">  309</span>&#160;                 &lt;&lt; <span class="stringliteral">&quot;property float ny\n&quot;</span></div>
+<div class="line"><a name="l00310"></a><span class="lineno">  310</span>&#160;                 &lt;&lt; <span class="stringliteral">&quot;property float nz\n&quot;</span></div>
+<div class="line"><a name="l00311"></a><span class="lineno">  311</span>&#160;                 &lt;&lt; <span class="stringliteral">&quot;end_header\n&quot;</span>;</div>
+<div class="line"><a name="l00312"></a><span class="lineno">  312</span>&#160;</div>
+<div class="line"><a name="l00313"></a><span class="lineno">  313</span>&#160;            <span class="keywordflow">for</span> ( <span class="keyword">typename</span> _PointContainerT::const_iterator <a class="code" href="fmincon__merged_8m.html#ad50c0647c2d1ff3a3502b134abf52661">it</a> = points.begin(); <a class="code" href="fmincon__merged_8m.html#ad50c0647c2d1ff3a3502b134abf52661">it</a> != points.end(); ++<a class="code" href="fmincon__merged_8m.html#ad50c0647c2d1ff3a3502b134abf52661">it</a> )</div>
+<div class="line"><a name="l00314"></a><span class="lineno">  314</span>&#160;            {</div>
+<div class="line"><a name="l00315"></a><span class="lineno">  315</span>&#160;                Eigen::Matrix&lt; typename _PointT::Scalar, 3, 1 &gt; <span class="keyword">const</span>&amp; pos = <a class="code" href="fmincon__merged_8m.html#ad50c0647c2d1ff3a3502b134abf52661">it</a>-&gt;pos();</div>
+<div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160;                Eigen::Matrix&lt; typename _PointT::Scalar, 3, 1 &gt; <span class="keyword">const</span>&amp; <a class="code" href="fmincon__merged_8m.html#a4ca269cf93df1b512b52174c1a256fe5">dir</a> = <a class="code" href="fmincon__merged_8m.html#ad50c0647c2d1ff3a3502b134abf52661">it</a>-&gt;dir();</div>
+<div class="line"><a name="l00317"></a><span class="lineno">  317</span>&#160;                file &lt;&lt; pos(0) &lt;&lt; <span class="stringliteral">&quot; &quot;</span> &lt;&lt; pos(1) &lt;&lt; <span class="stringliteral">&quot; &quot;</span> &lt;&lt; pos(2) &lt;&lt; <span class="stringliteral">&quot; &quot;</span> &lt;&lt; <a class="code" href="fmincon__merged_8m.html#a4ca269cf93df1b512b52174c1a256fe5">dir</a>(0) &lt;&lt; <span class="stringliteral">&quot; &quot;</span> &lt;&lt; <a class="code" href="fmincon__merged_8m.html#a4ca269cf93df1b512b52174c1a256fe5">dir</a>(1) &lt;&lt; <span class="stringliteral">&quot; &quot;</span> &lt;&lt; <a class="code" href="fmincon__merged_8m.html#a4ca269cf93df1b512b52174c1a256fe5">dir</a>(2) &lt;&lt; std::endl;</div>
+<div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160;            }</div>
+<div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160;</div>
+<div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160;            file.close();</div>
+<div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160;</div>
+<div class="line"><a name="l00322"></a><span class="lineno">  322</span>&#160;            <span class="keywordflow">return</span> EXIT_SUCCESS;</div>
+<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;        } <span class="comment">//...writePoints()</span></div>
+<div class="line"><a name="l00324"></a><span class="lineno">  324</span>&#160;</div>
+<div class="line"><a name="l00325"></a><span class="lineno">  325</span>&#160;    } <span class="comment">// ... ns io</span></div>
+<div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160;} <span class="comment">// ... ns GF2</span></div>
+<div class="line"><a name="l00327"></a><span class="lineno">  327</span>&#160;</div>
+<div class="line"><a name="l00328"></a><span class="lineno">  328</span>&#160;<span class="preprocessor">#ifndef __GF2_IO_INC_HPP__</span></div>
+<div class="line"><a name="l00329"></a><span class="lineno"><a class="line" href="io_8h.html#a642fb626ce751a7c29e5a0e4cda98abc">  329</a></span>&#160;<span class="preprocessor"></span><span class="preprocessor">#   define __GF2_IO_INC_HPP__</span></div>
+<div class="line"><a name="l00330"></a><span class="lineno">  330</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#   include &quot;<a class="code" href="io_8hpp.html">globfit2/io/io.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00331"></a><span class="lineno">  331</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00332"></a><span class="lineno">  332</span>&#160;<span class="preprocessor"></span></div>
+<div class="line"><a name="l00333"></a><span class="lineno">  333</span>&#160;<span class="preprocessor">#endif // __GF2_IO_H__</span></div>
+<div class="line"><a name="l00334"></a><span class="lineno">  334</span>&#160;<span class="preprocessor"></span></div>
 <div class="ttc" id="my__ply__read_8m_html_ab6eb9cb199df2a09b72fbc4375c0c335"><div class="ttname"><a href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a></div><div class="ttdeci">pid</div><div class="ttdef"><b>Definition:</b> <a href="my__ply__read_8m_source.html#l00011">my_ply_read.m:11</a></div></div>
-<div class="ttc" id="namespace_g_f2_1_1io_html_a088fc75b1e094d6ee6ead5d45d2587a1"><div class="ttname"><a href="namespace_g_f2_1_1io.html#a088fc75b1e094d6ee6ead5d45d2587a1">GF2::io::readPrimitives</a></div><div class="ttdeci">int readPrimitives(PrimitiveContainerT &amp;lines, std::string const &amp;path)</div><div class="ttdef"><b>Definition:</b> <a href="io_8h_source.html#l00053">io.h:53</a></div></div>
 <div class="ttc" id="pcl__util_8hpp_html"><div class="ttname"><a href="pcl__util_8hpp.html">pcl_util.hpp</a></div></div>
 <div class="ttc" id="namespace_g_f2_1_1io_html_a6e9a4bb9170f3c9393087f91eca421e4"><div class="ttname"><a href="namespace_g_f2_1_1io.html#a6e9a4bb9170f3c9393087f91eca421e4">GF2::io::savePrimitives</a></div><div class="ttdeci">int savePrimitives(PrimitiveContainerT const &amp;primitives, std::string out_file_name, bool verbose=false)</div><div class="ttdoc">Dumps primitives with GID and DIR_GID to disk. </div><div class="ttdef"><b>Definition:</b> <a href="io_8h_source.html#l00025">io.h:25</a></div></div>
+<div class="ttc" id="namespace_g_f2_1_1io_html_ad0b245a95d11640b1711a239f46c7de2"><div class="ttname"><a href="namespace_g_f2_1_1io.html#ad0b245a95d11640b1711a239f46c7de2">GF2::io::readPrimitives</a></div><div class="ttdeci">int readPrimitives(PrimitiveContainerT &amp;lines, std::string const &amp;path, std::map&lt; int, typename PrimitiveContainerT::value_type &gt; *patches=NULL)</div><div class="ttdoc">Reads primitives with their GIDs and dir_GIDs from file. </div><div class="ttdef"><b>Definition:</b> <a href="io_8h_source.html#l00059">io.h:59</a></div></div>
 <div class="ttc" id="fmincon__merged_8m_html_a1aabac6d068eef6a7bad3fdf50a05cc8"><div class="ttname"><a href="fmincon__merged_8m.html#a1aabac6d068eef6a7bad3fdf50a05cc8">d</a></div><div class="ttdeci">d</div><div class="ttdef"><b>Definition:</b> <a href="fmincon__merged_8m_source.html#l00097">fmincon_merged.m:97</a></div></div>
 <div class="ttc" id="io_8hpp_html"><div class="ttname"><a href="io_8hpp.html">io.hpp</a></div></div>
 <div class="ttc" id="fmincon__merged_8m_html_ad50c0647c2d1ff3a3502b134abf52661"><div class="ttname"><a href="fmincon__merged_8m.html#ad50c0647c2d1ff3a3502b134abf52661">it</a></div><div class="ttdeci">end end ub lb for it</div><div class="ttdef"><b>Definition:</b> <a href="fmincon__merged_8m_source.html#l00066">fmincon_merged.m:66</a></div></div>
 <div class="ttc" id="lp_8m_html_a629c932e04d057de3f60912da6e565c2"><div class="ttname"><a href="lp_8m.html#a629c932e04d057de3f60912da6e565c2">cloud</a></div><div class="ttdeci">cloud[Px, Py, Pz,~]</div><div class="ttdef"><b>Definition:</b> <a href="lp_8m_source.html#l00014">lp.m:14</a></div></div>
-<div class="ttc" id="namespace_g_f2_1_1io_html_a9bce496e4ce752c26c024362e8bca2d9"><div class="ttname"><a href="namespace_g_f2_1_1io.html#a9bce496e4ce752c26c024362e8bca2d9">GF2::io::readAssociations</a></div><div class="ttdeci">int readAssociations(std::vector&lt; std::pair&lt; int, int &gt; &gt; &amp;points_primitives, std::string const &amp;path, std::map&lt; int, int &gt; *linear_indices)</div><div class="ttdoc">Reads point-primitive associations from file. </div><div class="ttdef"><b>Definition:</b> <a href="io_8h_source.html#l00146">io.h:146</a></div></div>
+<div class="ttc" id="namespace_g_f2_1_1io_html_a9bce496e4ce752c26c024362e8bca2d9"><div class="ttname"><a href="namespace_g_f2_1_1io.html#a9bce496e4ce752c26c024362e8bca2d9">GF2::io::readAssociations</a></div><div class="ttdeci">int readAssociations(std::vector&lt; std::pair&lt; int, int &gt; &gt; &amp;points_primitives, std::string const &amp;path, std::map&lt; int, int &gt; *linear_indices)</div><div class="ttdoc">Reads point-primitive associations from file. </div><div class="ttdef"><b>Definition:</b> <a href="io_8h_source.html#l00166">io.h:166</a></div></div>
 <div class="ttc" id="globfit_8m_html_ad71b2f1a5c693953c99f125619837e0c"><div class="ttname"><a href="globfit_8m.html#ad71b2f1a5c693953c99f125619837e0c">lid</a></div><div class="ttdeci">for lid</div><div class="ttdef"><b>Definition:</b> <a href="globfit_8m_source.html#l00029">globfit.m:29</a></div></div>
-<div class="ttc" id="namespace_g_f2_html_af9ca2fafa8af7848cb0e458ad24e9c05"><div class="ttname"><a href="namespace_g_f2.html#af9ca2fafa8af7848cb0e458ad24e9c05">GF2::MaskType</a></div><div class="ttdeci">am::MaskType MaskType</div><div class="ttdef"><b>Definition:</b> <a href="my__types_8h_source.html#l00029">my_types.h:29</a></div></div>
 <div class="ttc" id="globfit_8m_html_ab9a89211ecb71d18bbd259853fda1c54"><div class="ttname"><a href="globfit_8m.html#ab9a89211ecb71d18bbd259853fda1c54">points</a></div><div class="ttdeci">points</div><div class="ttdef"><b>Definition:</b> <a href="globfit_8m_source.html#l00007">globfit.m:7</a></div></div>
 <div class="ttc" id="get__line_8m_html_a4fa05b1f00fcde100685cc887554b93b"><div class="ttname"><a href="get__line_8m.html#a4fa05b1f00fcde100685cc887554b93b">line</a></div><div class="ttdeci">line</div><div class="ttdef"><b>Definition:</b> <a href="get__line_8m_source.html#l00003">get_line.m:3</a></div></div>
 <div class="ttc" id="globfit_8m_html_a59cd6a1194eac609179091dc9dcc724b"><div class="ttname"><a href="globfit_8m.html#a59cd6a1194eac609179091dc9dcc724b">Dim</a></div><div class="ttdeci">read primitives Dim</div><div class="ttdef"><b>Definition:</b> <a href="globfit_8m_source.html#l00011">globfit.m:11</a></div></div>
 <div class="ttc" id="globfit_8m_html_a9ff4428a460ac699d709dcab2350626b"><div class="ttname"><a href="globfit_8m.html#a9ff4428a460ac699d709dcab2350626b">primitives</a></div><div class="ttdeci">primitives</div><div class="ttdef"><b>Definition:</b> <a href="globfit_8m_source.html#l00014">globfit.m:14</a></div></div>
-<div class="ttc" id="namespace_g_f2_1_1io_html_a3e6a9c58eb7a7260d47fe912e26dbef1"><div class="ttname"><a href="namespace_g_f2_1_1io.html#a3e6a9c58eb7a7260d47fe912e26dbef1">GF2::io::readPoints</a></div><div class="ttdeci">int readPoints(_PointContainerT &amp;points, std::string path, pcl::PointCloud&lt; pcl::PointXYZRGB &gt;::Ptr *cloud_arg=NULL)</div><div class="ttdoc">Solver::readPoints Read stored points, and convert them to non-PCL format. </div><div class="ttdef"><b>Definition:</b> <a href="io_8h_source.html#l00203">io.h:203</a></div></div>
+<div class="ttc" id="fmincon__merged_8m_html_a4ca269cf93df1b512b52174c1a256fe5"><div class="ttname"><a href="fmincon__merged_8m.html#a4ca269cf93df1b512b52174c1a256fe5">dir</a></div><div class="ttdeci">dir</div><div class="ttdef"><b>Definition:</b> <a href="fmincon__merged_8m_source.html#l00141">fmincon_merged.m:141</a></div></div>
+<div class="ttc" id="namespace_g_f2_1_1io_html_a3e6a9c58eb7a7260d47fe912e26dbef1"><div class="ttname"><a href="namespace_g_f2_1_1io.html#a3e6a9c58eb7a7260d47fe912e26dbef1">GF2::io::readPoints</a></div><div class="ttdeci">int readPoints(_PointContainerT &amp;points, std::string path, pcl::PointCloud&lt; pcl::PointXYZRGB &gt;::Ptr *cloud_arg=NULL)</div><div class="ttdoc">Read stored points, and convert them to non-PCL format. </div><div class="ttdef"><b>Definition:</b> <a href="io_8h_source.html#l00257">io.h:257</a></div></div>
+<div class="ttc" id="namespace_g_f2_1_1io_html_a3921075da843c4fb93adbeac13a5e153"><div class="ttname"><a href="namespace_g_f2_1_1io.html#a3921075da843c4fb93adbeac13a5e153">GF2::io::writeAssociations</a></div><div class="ttdeci">int writeAssociations(_PointContainerT const &amp;points, std::string const &amp;f_assoc_path)</div><div class="ttdoc">Write points&#39; associations to GID and DIR_GID. </div><div class="ttdef"><b>Definition:</b> <a href="io_8h_source.html#l00224">io.h:224</a></div></div>
+<div class="ttc" id="namespace_g_f2_1_1io_html_abd561af48cfe2c0b3ef47e6aa085fb29"><div class="ttname"><a href="namespace_g_f2_1_1io.html#abd561af48cfe2c0b3ef47e6aa085fb29">GF2::io::writePoints</a></div><div class="ttdeci">int writePoints(_PointContainerT &amp;points, std::string path)</div><div class="ttdoc">Write points to almost PLY. </div><div class="ttdef"><b>Definition:</b> <a href="io_8h_source.html#l00295">io.h:295</a></div></div>
 <div class="ttc" id="get__line__count_8m_html_a5da6c0669b205fe6dad5b5e3dc1e7b18"><div class="ttname"><a href="get__line__count_8m.html#a5da6c0669b205fe6dad5b5e3dc1e7b18">line_count</a></div><div class="ttdeci">line_count</div><div class="ttdef"><b>Definition:</b> <a href="get__line__count_8m_source.html#l00007">get_line_count.m:7</a></div></div>
 <div class="ttc" id="function__handle_8m_html_a03d2a3685385f82943527be28e035ad9"><div class="ttname"><a href="function__handle_8m.html#a03d2a3685385f82943527be28e035ad9">path</a></div><div class="ttdeci">function it is only possible to succesfully evaluate the resulting handle when the function the handle refers to was on the MATLAB search at the time the handle was created To create valid handles to arbitrarty functions possibly not on the search path</div><div class="ttdef"><b>Definition:</b> <a href="function__handle_8m_source.html#l00001">function_handle.m:1</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Sep 2 2014 15:55:37 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Sep 4 2014 18:07:38 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

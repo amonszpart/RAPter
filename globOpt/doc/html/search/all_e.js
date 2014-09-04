@@ -10,7 +10,7 @@ var searchData=
   ['nf',['nf',['../read__ply_8m.html#a9d8e7ce856160426f38956bc38d7a2f3',1,'read_ply.m']]],
   ['nlcon_2em',['nlcon.m',['../nlcon_8m.html',1,'']]],
   ['nlines',['nLines',['../fmincon__merged_8m.html#a694d18fe388cc62f9a5129614167c568',1,'nLines():&#160;fmincon_merged.m'],['../perturb__rects_8m.html#a694d18fe388cc62f9a5129614167c568',1,'nLines():&#160;perturb_rects.m']]],
-  ['nn_5fk',['nn_K',['../struct_g_f2_1_1_candidate_generator_params.html#a47c0591d8294a659c519432033e54e89',1,'GF2::CandidateGeneratorParams']]],
+  ['nn_5fk',['nn_K',['../struct_g_f2_1_1_candidate_generator_params.html#a961cb3b2007b17476026e82b833978ef',1,'GF2::CandidateGeneratorParams']]],
   ['normal',['normal',['../class_g_f2_1_1_line_primitive.html#afd054b16688b33a7a0d1daf08f3365b1',1,'GF2::LinePrimitive::normal()'],['../class_g_f2_1_1_plane_primitive.html#a6832357a9e21ace2a06a3d71587247e9',1,'GF2::PlanePrimitive::normal()'],['../globfit_8m.html#a4577dc1b6b515e196385b5f8b19093c1',1,'normal():&#160;globfit.m'],['../line__normal_8m.html#a4577dc1b6b515e196385b5f8b19093c1',1,'normal():&#160;line_normal.m']]],
   ['numcomments',['NumComments',['../read__ply_8m.html#a98341e4ebaa6d5c8c922bed72feafccd',1,'read_ply.m']]],
   ['numel',['numel',['../function__handle_8m.html#a94473b4c516a0e11c4e6229a64075821',1,'function_handle.m']]],

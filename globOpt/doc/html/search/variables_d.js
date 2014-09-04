@@ -5,7 +5,7 @@ var searchData=
   ['n_5fpoints',['n_points',['../struct_g_f2_1_1_solver_params.html#a5052445dc80cc88a548e96568a8159a5',1,'GF2::SolverParams']]],
   ['nf',['nf',['../read__ply_8m.html#a9d8e7ce856160426f38956bc38d7a2f3',1,'read_ply.m']]],
   ['nlines',['nLines',['../fmincon__merged_8m.html#a694d18fe388cc62f9a5129614167c568',1,'nLines():&#160;fmincon_merged.m'],['../perturb__rects_8m.html#a694d18fe388cc62f9a5129614167c568',1,'nLines():&#160;perturb_rects.m']]],
-  ['nn_5fk',['nn_K',['../struct_g_f2_1_1_candidate_generator_params.html#a47c0591d8294a659c519432033e54e89',1,'GF2::CandidateGeneratorParams']]],
+  ['nn_5fk',['nn_K',['../struct_g_f2_1_1_candidate_generator_params.html#a961cb3b2007b17476026e82b833978ef',1,'GF2::CandidateGeneratorParams']]],
   ['normal',['normal',['../globfit_8m.html#a4577dc1b6b515e196385b5f8b19093c1',1,'normal():&#160;globfit.m'],['../line__normal_8m.html#a4577dc1b6b515e196385b5f8b19093c1',1,'normal():&#160;line_normal.m']]],
   ['numcomments',['NumComments',['../read__ply_8m.html#a98341e4ebaa6d5c8c922bed72feafccd',1,'read_ply.m']]],
   ['numelements',['NumElements',['../read__ply_8m.html#a6bf9e150b9854564aee61a85d7542e6c',1,'read_ply.m']]],

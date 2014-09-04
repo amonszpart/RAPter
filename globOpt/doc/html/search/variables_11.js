@@ -3,7 +3,7 @@ var searchData=
   ['r',['r',['../write_q_8m.html#a10d07efd5ac1cb47cf2972c3ef20c28e',1,'writeQ.m']]],
   ['range_5fmult',['range_mult',['../patch_cost_function_8m.html#ab08f3d453932c9721d2fd5981aa4a504',1,'patchCostFunction.m']]],
   ['ready',['ready',['../structam_1_1_point_primitive_distance_cache.html#a9ecb648507d5fc1cf9c484ad95a1169f',1,'am::PointPrimitiveDistanceCache']]],
-  ['refit_5fmode',['refit_mode',['../struct_g_f2_1_1_candidate_generator_params.html#aca69422c5085aa4630b50f26fdb2a706',1,'GF2::CandidateGeneratorParams']]],
+  ['refit_5fmode',['refit_mode',['../struct_g_f2_1_1_candidate_generator_params.html#aeceb3d76f0f0d3910049c17bed27d86b',1,'GF2::CandidateGeneratorParams']]],
   ['ret',['ret',['../lp_8m.html#af1ec77bdca1b30e8153fc5da88f603db',1,'lp.m']]],
   ['return',['return',['../function__handle_8m.html#a9717e7bbecb906637e86cef6da3d83c2',1,'function_handle.m']]],
   ['rev_5fjumps',['rev_jumps',['../structam_1_1_sim_ann_stats.html#adf41b9c9b78db6a661a2038fb22b3f89',1,'am::SimAnnStats']]],

@@ -13,6 +13,12 @@
 <script type="text/javascript">
   $(document).ready(function() { searchBox.OnSelectItem(0); });
 </script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script><script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js"></script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
@@ -88,7 +94,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="class_g_f2_1_1_problem_setup-members.html">List of all members</a>  </div>
   <div class="headertitle">
@@ -101,87 +106,23 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <p><code>#include &lt;<a class="el" href="problem_setup_8h_source.html">problemSetup.h</a>&gt;</code></p>
 <table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
-Public Types</h2></td></tr>
-<tr class="memitem:a1435ec920286d0a310d673dfc1b72205"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_g_f2_1_1_problem_setup.html#a1435ec920286d0a310d673dfc1b72205">DATA_COST_MODE</a> { <a class="el" href="class_g_f2_1_1_problem_setup.html#a1435ec920286d0a310d673dfc1b72205a12a8aeff7c65ddca3541ceda0ca97148">ASSOC_BASED</a> = 0, 
-<a class="el" href="class_g_f2_1_1_problem_setup.html#a1435ec920286d0a310d673dfc1b72205a14338dc9ccb2b42d9935d0af7ba32346">BAND_BASED</a> = 1, 
-<a class="el" href="class_g_f2_1_1_problem_setup.html#a1435ec920286d0a310d673dfc1b72205a4f16439ae31908d2d8582b604a8d9517">INSTANCE_BASED</a> = 2
- }</td></tr>
-<tr class="memdesc:a1435ec920286d0a310d673dfc1b72205"><td class="mdescLeft">&#160;</td><td class="mdescRight">Options to calculate data cost of primitive by.  <a href="class_g_f2_1_1_problem_setup.html#a1435ec920286d0a310d673dfc1b72205">More...</a><br/></td></tr>
-<tr class="separator:a1435ec920286d0a310d673dfc1b72205"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8399b83e842d43dd98e996176975f3ab"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_g_f2_1_1_problem_setup.html#a8399b83e842d43dd98e996176975f3ab">CONSTR_MODE</a> { <a class="el" href="class_g_f2_1_1_problem_setup.html#a8399b83e842d43dd98e996176975f3abac91de41c47bf1649e5508a8555bf9c03">PATCH_WISE</a> = 0, 
-<a class="el" href="class_g_f2_1_1_problem_setup.html#a8399b83e842d43dd98e996176975f3abaff652c7c6c9d059acad418d4bdc58490">POINT_WISE</a> = 1, 
-<a class="el" href="class_g_f2_1_1_problem_setup.html#a8399b83e842d43dd98e996176975f3aba6339793b70b6d691664ccf1007a6cd9e">HYBRID</a> = 2
- }</td></tr>
-<tr class="separator:a8399b83e842d43dd98e996176975f3ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
 <tr class="memitem:aefb4febca1521ab72e3133b77626c6de"><td class="memTemplParams" colspan="2">template&lt;class _PrimitiveContainerT , class _PointContainerT , class _PrimitiveT  = typename _PrimitiveContainerT::value_type::value_type, class _PointPrimitiveT  = typename _PointContainerT::value_type&gt; </td></tr>
 <tr class="memitem:aefb4febca1521ab72e3133b77626c6de"><td class="memTemplItemLeft" align="right" valign="top">static int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="class_g_f2_1_1_problem_setup.html#aefb4febca1521ab72e3133b77626c6de">formulateCli</a> (int argc, char **argv)</td></tr>
 <tr class="memdesc:aefb4febca1521ab72e3133b77626c6de"><td class="mdescLeft">&#160;</td><td class="mdescRight">Step 2. Reads the output from generate and sets up the optimization problem in form of sparse matrices.  <a href="#aefb4febca1521ab72e3133b77626c6de">More...</a><br/></td></tr>
 <tr class="separator:aefb4febca1521ab72e3133b77626c6de"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a24c0d41521dfc1e1bd3d6190be530cd8"><td class="memTemplParams" colspan="2">template&lt;class _PointPrimitiveDistanceFunctor , class _PrimitiveContainerT , class _PointContainerT , class _PrimitiveT  = typename _PrimitiveContainerT::value_type::value_type, class _PointPrimitiveT  = typename _PointContainerT::value_type, typename _Scalar  = typename _PointPrimitiveT::Scalar&gt; </td></tr>
-<tr class="memitem:a24c0d41521dfc1e1bd3d6190be530cd8"><td class="memTemplItemLeft" align="right" valign="top">static int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="class_g_f2_1_1_problem_setup.html#a24c0d41521dfc1e1bd3d6190be530cd8">formulate</a> (<a class="el" href="namespace_g_f2_1_1problem_setup.html#a22d94ef9bbac504c10480be5922bc805">problemSetup::OptProblemT</a> &amp;<a class="el" href="test0_8m.html#a60ccbcd450c9447c51f60d68cafad936">problem</a>, _PrimitiveContainerT const &amp;<a class="el" href="lp_8m.html#ae8954d9790c81e762964bce1b5bcda08">prims</a>, _PointContainerT const &amp;<a class="el" href="my__ply__read_8m.html#a89e43a853a4a07e7e9741ad321fd2819">points</a>, <a class="el" href="class_g_f2_1_1_problem_setup.html#a8399b83e842d43dd98e996176975f3ab">CONSTR_MODE</a> const constr_mode, <a class="el" href="class_g_f2_1_1_problem_setup.html#a1435ec920286d0a310d673dfc1b72205">DATA_COST_MODE</a> const data_cost_mode, _Scalar const <a class="el" href="patch_cost_function_8m.html#acec6d8ad52a28972fa74e071c1a63b6a">scale</a>, Eigen::Matrix&lt; _Scalar,-1, 1 &gt; const &amp;weights, <a class="el" href="struct_g_f2_1_1_abstract_primitive_primitive_energy_functor.html">GF2::AbstractPrimitivePrimitiveEnergyFunctor</a>&lt; _Scalar, _PrimitiveT &gt; *const &amp;primPrimDistFunctor, int const patch_pop_limit, int const verbose=0)</td></tr>
-<tr class="memdesc:a24c0d41521dfc1e1bd3d6190be530cd8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Step 2. Reads the output from generate and sets up the optimization problem in form of sparse matrices.  <a href="#a24c0d41521dfc1e1bd3d6190be530cd8">More...</a><br/></td></tr>
-<tr class="separator:a24c0d41521dfc1e1bd3d6190be530cd8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac0b593cf6470b65e3e6a0d680ad79ff9"><td class="memTemplParams" colspan="2">template&lt;class _PointPrimitiveDistanceFunctor , class _PrimitiveContainerT , class _PointContainerT , class _PrimitiveT  = typename _PrimitiveContainerT::value_type::value_type, class _PointPrimitiveT  = typename _PointContainerT::value_type, typename _Scalar  = typename _PointPrimitiveT::Scalar&gt; </td></tr>
+<tr class="memitem:ac0b593cf6470b65e3e6a0d680ad79ff9"><td class="memTemplItemLeft" align="right" valign="top">static int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="class_g_f2_1_1_problem_setup.html#ac0b593cf6470b65e3e6a0d680ad79ff9">formulate</a> (<a class="el" href="namespace_g_f2_1_1problem_setup.html#a22d94ef9bbac504c10480be5922bc805">problemSetup::OptProblemT</a> &amp;<a class="el" href="test0_8m.html#a60ccbcd450c9447c51f60d68cafad936">problem</a>, _PrimitiveContainerT const &amp;<a class="el" href="lp_8m.html#ae8954d9790c81e762964bce1b5bcda08">prims</a>, _PointContainerT const &amp;<a class="el" href="my__ply__read_8m.html#a89e43a853a4a07e7e9741ad321fd2819">points</a>, typename <a class="el" href="struct_g_f2_1_1_problem_setup_params.html">ProblemSetupParams</a>&lt; _Scalar &gt;::CONSTR_MODE const constr_mode, typename <a class="el" href="struct_g_f2_1_1_problem_setup_params.html">ProblemSetupParams</a>&lt; _Scalar &gt;::DATA_COST_MODE const data_cost_mode, _Scalar const <a class="el" href="patch_cost_function_8m.html#acec6d8ad52a28972fa74e071c1a63b6a">scale</a>, Eigen::Matrix&lt; _Scalar,-1, 1 &gt; const &amp;weights, <a class="el" href="struct_g_f2_1_1_abstract_primitive_primitive_energy_functor.html">GF2::AbstractPrimitivePrimitiveEnergyFunctor</a>&lt; _Scalar, _PrimitiveT &gt; *const &amp;primPrimDistFunctor, int const patch_pop_limit, int const verbose=0)</td></tr>
+<tr class="memdesc:ac0b593cf6470b65e3e6a0d680ad79ff9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Step 2. Reads the output from generate and sets up the optimization problem in form of sparse matrices.  <a href="#ac0b593cf6470b65e3e6a0d680ad79ff9">More...</a><br/></td></tr>
+<tr class="separator:ac0b593cf6470b65e3e6a0d680ad79ff9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Class to formulate problem into an quadratic optimization problem. </p>
 
-<p>Definition at line <a class="el" href="problem_setup_8h_source.html#l00148">148</a> of file <a class="el" href="problem_setup_8h_source.html">problemSetup.h</a>.</p>
-</div><h2 class="groupheader">Member Enumeration Documentation</h2>
-<a class="anchor" id="a8399b83e842d43dd98e996176975f3ab"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">enum <a class="el" href="class_g_f2_1_1_problem_setup.html#a8399b83e842d43dd98e996176975f3ab">GF2::ProblemSetup::CONSTR_MODE</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><em><a class="anchor" id="a8399b83e842d43dd98e996176975f3abac91de41c47bf1649e5508a8555bf9c03"></a>PATCH_WISE</em>&#160;</td><td class="fielddoc">
-</td></tr>
-<tr><td class="fieldname"><em><a class="anchor" id="a8399b83e842d43dd98e996176975f3abaff652c7c6c9d059acad418d4bdc58490"></a>POINT_WISE</em>&#160;</td><td class="fielddoc">
-</td></tr>
-<tr><td class="fieldname"><em><a class="anchor" id="a8399b83e842d43dd98e996176975f3aba6339793b70b6d691664ccf1007a6cd9e"></a>HYBRID</em>&#160;</td><td class="fielddoc">
-</td></tr>
-</table>
-
-<p>Definition at line <a class="el" href="problem_setup_8h_source.html#l00156">156</a> of file <a class="el" href="problem_setup_8h_source.html">problemSetup.h</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="a1435ec920286d0a310d673dfc1b72205"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">enum <a class="el" href="class_g_f2_1_1_problem_setup.html#a1435ec920286d0a310d673dfc1b72205">GF2::ProblemSetup::DATA_COST_MODE</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Options to calculate data cost of primitive by. </p>
-<table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><em><a class="anchor" id="a1435ec920286d0a310d673dfc1b72205a12a8aeff7c65ddca3541ceda0ca97148"></a>ASSOC_BASED</em>&#160;</td><td class="fielddoc">
-<dl class="section see"><dt>See Also</dt><dd><a class="el" href="namespace_g_f2_1_1problem_setup.html#a1b0396be5186f8f141d421ca748bee59">problemSetup::associationBasedDataCost</a> </dd></dl>
-</td></tr>
-<tr><td class="fieldname"><em><a class="anchor" id="a1435ec920286d0a310d673dfc1b72205a14338dc9ccb2b42d9935d0af7ba32346"></a>BAND_BASED</em>&#160;</td><td class="fielddoc">
-<dl class="section see"><dt>See Also</dt><dd><a class="el" href="namespace_g_f2_1_1problem_setup.html#ac3adb4595ac34c9610acaa4836e36ddb">problemSetup::bandBasedDataCost</a> </dd></dl>
-</td></tr>
-<tr><td class="fieldname"><em><a class="anchor" id="a1435ec920286d0a310d673dfc1b72205a4f16439ae31908d2d8582b604a8d9517"></a>INSTANCE_BASED</em>&#160;</td><td class="fielddoc">
-<dl class="section see"><dt>See Also</dt><dd><a class="el" href="namespace_g_f2_1_1problem_setup.html#a3e0aa0a6e8bb6bc9e2c0d0a676bf1141">problemSetup::instanceBasedDataCost</a> </dd></dl>
-</td></tr>
-</table>
-
-<p>Definition at line <a class="el" href="problem_setup_8h_source.html#l00152">152</a> of file <a class="el" href="problem_setup_8h_source.html">problemSetup.h</a>.</p>
-
-</div>
-</div>
-<h2 class="groupheader">Member Function Documentation</h2>
-<a class="anchor" id="a24c0d41521dfc1e1bd3d6190be530cd8"></a>
+<p>Definition at line <a class="el" href="problem_setup_8h_source.html#l00147">147</a> of file <a class="el" href="problem_setup_8h_source.html">problemSetup.h</a>.</p>
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="ac0b593cf6470b65e3e6a0d680ad79ff9"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
@@ -211,13 +152,13 @@ template&lt;class _PointPrimitiveDistanceFunctor , class _PrimitiveContainerT , 
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="class_g_f2_1_1_problem_setup.html#a8399b83e842d43dd98e996176975f3ab">CONSTR_MODE</a> const&#160;</td>
+          <td class="paramtype">typename <a class="el" href="struct_g_f2_1_1_problem_setup_params.html">ProblemSetupParams</a>&lt; _Scalar &gt;::CONSTR_MODE const&#160;</td>
           <td class="paramname"><em>constr_mode</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="class_g_f2_1_1_problem_setup.html#a1435ec920286d0a310d673dfc1b72205">DATA_COST_MODE</a> const&#160;</td>
+          <td class="paramtype">typename <a class="el" href="struct_g_f2_1_1_problem_setup_params.html">ProblemSetupParams</a>&lt; _Scalar &gt;::DATA_COST_MODE const&#160;</td>
           <td class="paramname"><em>data_cost_mode</em>, </td>
         </tr>
         <tr>
@@ -283,7 +224,7 @@ template&lt;class _PointPrimitiveDistanceFunctor , class _PrimitiveContainerT , 
 <dl class="section note"><dt>Note</dt><dd><code>points</code> are assumed to be tagged at _PointPrimitiveT::GID with the _PrimitiveT::GID of the <code>prims</code>. </dd></dl>
 <dl class="section see"><dt>See Also</dt><dd><a class="el" href="namespace_g_f2_1_1problem_setup.html#a1b8fa7d0f5ce7e0627ba0c0aeac33c74">problemSetup::largePatchesNeedDirectionConstraint</a> </dd></dl>
 
-<p>Definition at line <a class="el" href="problem_setup_8hpp_source.html#l00181">181</a> of file <a class="el" href="problem_setup_8hpp_source.html">problemSetup.hpp</a>.</p>
+<p>Definition at line <a class="el" href="problem_setup_8hpp_source.html#l00188">188</a> of file <a class="el" href="problem_setup_8hpp_source.html">problemSetup.hpp</a>.</p>
 
 </div>
 </div>
@@ -339,7 +280,7 @@ template&lt;class _PrimitiveContainerT , class _PointContainerT , class _Primiti
 <dl class="section return"><dt>Returns</dt><dd>Outputs EXIT_SUCCESS or the error the OptProblem implementation returns. </dd></dl>
 <dl class="section see"><dt>See Also</dt><dd><a class="el" href="namespace_g_f2_1_1problem_setup.html#a1b8fa7d0f5ce7e0627ba0c0aeac33c74">problemSetup::largePatchesNeedDirectionConstraint</a> </dd></dl>
 
-<p>Definition at line <a class="el" href="problem_setup_8hpp_source.html#l00020">20</a> of file <a class="el" href="problem_setup_8hpp_source.html">problemSetup.hpp</a>.</p>
+<p>Definition at line <a class="el" href="problem_setup_8hpp_source.html#l00027">27</a> of file <a class="el" href="problem_setup_8hpp_source.html">problemSetup.hpp</a>.</p>
 
 </div>
 </div>
@@ -350,7 +291,7 @@ template&lt;class _PrimitiveContainerT , class _PointContainerT , class _Primiti
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Sep 2 2014 15:55:37 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Sep 4 2014 18:07:38 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

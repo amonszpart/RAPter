@@ -13,6 +13,12 @@
 <script type="text/javascript">
   $(document).ready(function() { searchBox.OnSelectItem(0); });
 </script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script><script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js"></script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
@@ -87,7 +93,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="header">
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
-<a href="#namespaces">Namespaces</a>  </div>
+<a href="#namespaces">Namespaces</a> &#124;
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">candidateGenerator.h File Reference</div>  </div>
 </div><!--header-->
@@ -95,18 +102,16 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="textblock"><code>#include &lt;opencv2/core/core.hpp&gt;</code><br/>
 <code>#include &lt;opencv2/highgui/highgui.hpp&gt;</code><br/>
 <code>#include &lt;opencv2/imgproc/imgproc.hpp&gt;</code><br/>
-<code>#include &quot;pcl/common/intersections.h&quot;</code><br/>
-<code>#include &quot;pcl/kdtree/kdtree.h&quot;</code><br/>
-<code>#include &quot;pcltools/util.hpp&quot;</code><br/>
 <code>#include &quot;<a class="el" href="patch_distance_functors_8h_source.html">globfit2/optimization/patchDistanceFunctors.h</a>&quot;</code><br/>
+<code>#include &quot;<a class="el" href="parameters_8h_source.html">globfit2/parameters.h</a>&quot;</code><br/>
 <code>#include &quot;<a class="el" href="my__types_8h_source.html">globfit2/my_types.h</a>&quot;</code><br/>
+<code>#include &quot;<a class="el" href="processing_2util_8hpp_source.html">globfit2/processing/util.hpp</a>&quot;</code><br/>
+<code>#include &quot;<a class="el" href="segmentation_8h_source.html">globfit2/optimization/segmentation.h</a>&quot;</code><br/>
 </div>
 <p><a href="candidate_generator_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_candidate_generator_params.html">GF2::CandidateGeneratorParams</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_g_f2_1_1_candidate_generator.html">GF2::CandidateGenerator</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">(1) patchify / (1.1) propose  <a href="class_g_f2_1_1_candidate_generator.html#details">More...</a><br/></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -116,11 +121,16 @@ Namespaces</h2></td></tr>
 <tr class="memitem:namespace_g_f2"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_g_f2.html">GF2</a></td></tr>
 <tr class="memdesc:namespace_g_f2"><td class="mdescLeft">&#160;</td><td class="mdescRight">GUROBIOPT. <br/></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:ab64a59155ebbb09699d8569124f59ff9"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_g_f2.html#ab64a59155ebbb09699d8569124f59ff9">GF2::equal2D</a> (int l0, int l1, int l2, int l3)</td></tr>
+<tr class="separator:ab64a59155ebbb09699d8569124f59ff9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Sep 2 2014 15:55:37 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Sep 4 2014 18:07:38 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

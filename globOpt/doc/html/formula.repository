@@ -1,0 +1,4 @@
+\form#0:$patch_spatial_weight spat_dist^2 + ang_diff^2 < 1 $
+\form#1:$patch\_spatial\_weight spat\_dist^2 + ang\_diff^2 < 1 $
+\form#2:$ patch\_spatial\_weight \cdot spat\_dist^2 + ang\_diff^2 < 1 $
+\form#3:$ patch\_spatial\_weight \cdot \frac{spat\_dist^2}{spat\_thresh} + \frac{ang\_diff^2}{ang\_thresh} < 1 $

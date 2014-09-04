@@ -13,6 +13,12 @@
 <script type="text/javascript">
   $(document).ready(function() { searchBox.OnSelectItem(0); });
 </script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script><script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js"></script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
@@ -119,62 +125,64 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;</div>
 <div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;        <span class="keywordflow">return</span> EXIT_SUCCESS;</div>
 <div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;    }</div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;    <span class="keywordflow">else</span> <span class="keywordflow">if</span> ( pcl::console::find_switch(argc,argv,<span class="stringliteral">&quot;--sample-input&quot;</span>) )</div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;    {</div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="class_g_f2_1_1_solver.html#a5c35bbb14c9c9f3097e176e1299fdf06">GF2::Solver::sampleInput</a>( argc, argv );</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;    }</div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;    <span class="keywordflow">else</span> <span class="keywordflow">if</span> ( pcl::console::find_switch(argc,argv,<span class="stringliteral">&quot;--generate&quot;</span>) )</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;    {</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="class_g_f2_1_1_solver.html#aa7aabf4c537a9a068cc48280ddbd41dd">GF2::Solver::generate</a>( argc, argv );</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    }</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;    <span class="keywordflow">else</span> <span class="keywordflow">if</span> ( pcl::console::find_switch(argc,argv,<span class="stringliteral">&quot;--formulate&quot;</span>) )</div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    {</div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;        <span class="keywordflow">return</span> GF2::ProblemSetup::formulateCli&lt;GF2::Solver::PrimitiveContainerT, GF2::Solver::PointContainerT&gt;( argc, argv );</div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    }</div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    <span class="keywordflow">else</span> <span class="keywordflow">if</span> ( pcl::console::find_switch(argc,argv,<span class="stringliteral">&quot;--solver&quot;</span>) )</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    {</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="class_g_f2_1_1_solver.html#a5e7cc6867880ad093d96bbcc610890ce">GF2::Solver::solve</a>( argc, argv );</div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    }</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    <span class="keywordflow">else</span> <span class="keywordflow">if</span> ( pcl::console::find_switch(argc,argv,<span class="stringliteral">&quot;--gfit&quot;</span>) )</div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    {</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="class_g_f2_1_1_solver.html#abb12460e745a38fc70baf4603e32a95a">GF2::Solver::datafit</a>( argc, argv );</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    }</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    <span class="keywordflow">else</span> <span class="keywordflow">if</span> ( pcl::console::find_switch(argc,argv,<span class="stringliteral">&quot;--merge&quot;</span>) )</div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    {</div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;        <span class="keywordflow">return</span> GF2::Merging::mergeCli&lt;GF2::Solver::PrimitiveContainerT, GF2::Solver::PointContainerT, GF2::Solver::Scalar&gt;( argc, argv );</div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;    }</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    <span class="keywordflow">else</span> <span class="keywordflow">if</span> ( pcl::console::find_switch(argc,argv,<span class="stringliteral">&quot;--show&quot;</span>) )</div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    {</div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;        std::cerr &lt;&lt; <span class="stringliteral">&quot;[&quot;</span> &lt;&lt; __func__ &lt;&lt; <span class="stringliteral">&quot;]: &quot;</span> &lt;&lt; <span class="stringliteral">&quot;the show option has been moved to a separate executable, please use thatt one&quot;</span> &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;        <span class="keywordflow">return</span> 1;</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;        <span class="comment">//return GF2::Solver::show( argc, argv );</span></div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;    }</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    <span class="keywordflow">return</span> 1;</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="preprocessor">#if GF2_WITH_SAMPLE_INPUT</span></div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="preprocessor"></span>    <span class="keywordflow">else</span> <span class="keywordflow">if</span> ( pcl::console::find_switch(argc,argv,<span class="stringliteral">&quot;--sample-input&quot;</span>) )</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;    {</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="class_g_f2_1_1_solver.html#ae13f37de0a9b433fa63ffb98acbd7708">GF2::Solver::sampleInput</a>( argc, argv );</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;    }</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="preprocessor"></span>    <span class="keywordflow">else</span> <span class="keywordflow">if</span> ( pcl::console::find_switch(argc,argv,<span class="stringliteral">&quot;--generate&quot;</span>) )</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    {</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="class_g_f2_1_1_solver.html#ab245f9234167ca4d1e00fb99a1eebf8c">GF2::Solver::generateCli</a>( argc, argv );</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    }</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    <span class="keywordflow">else</span> <span class="keywordflow">if</span> ( pcl::console::find_switch(argc,argv,<span class="stringliteral">&quot;--formulate&quot;</span>) )</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    {</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;        <span class="keywordflow">return</span> GF2::ProblemSetup::formulateCli&lt;GF2::Solver::PrimitiveContainerT, GF2::Solver::PointContainerT&gt;( argc, argv );</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    }</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    <span class="keywordflow">else</span> <span class="keywordflow">if</span> ( pcl::console::find_switch(argc,argv,<span class="stringliteral">&quot;--solver&quot;</span>) )</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    {</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="class_g_f2_1_1_solver.html#a5e7cc6867880ad093d96bbcc610890ce">GF2::Solver::solve</a>( argc, argv );</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    }</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    <span class="keywordflow">else</span> <span class="keywordflow">if</span> ( pcl::console::find_switch(argc,argv,<span class="stringliteral">&quot;--gfit&quot;</span>) )</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    {</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="class_g_f2_1_1_solver.html#abb12460e745a38fc70baf4603e32a95a">GF2::Solver::datafit</a>( argc, argv );</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    }</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    <span class="keywordflow">else</span> <span class="keywordflow">if</span> ( pcl::console::find_switch(argc,argv,<span class="stringliteral">&quot;--merge&quot;</span>) )</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;    {</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;        <span class="keywordflow">return</span> GF2::Merging::mergeCli&lt;GF2::Solver::PrimitiveContainerT, GF2::Solver::PointContainerT, GF2::Solver::Scalar&gt;( argc, argv );</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    }</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    <span class="keywordflow">else</span> <span class="keywordflow">if</span> ( pcl::console::find_switch(argc,argv,<span class="stringliteral">&quot;--show&quot;</span>) )</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;    {</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;        std::cerr &lt;&lt; <span class="stringliteral">&quot;[&quot;</span> &lt;&lt; __func__ &lt;&lt; <span class="stringliteral">&quot;]: &quot;</span> &lt;&lt; <span class="stringliteral">&quot;the show option has been moved to a separate executable, please use thatt one&quot;</span> &lt;&lt; std::endl;</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;        <span class="keywordflow">return</span> 1;</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;        <span class="comment">//return GF2::Solver::show( argc, argv );</span></div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    }</div>
 <div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    <span class="comment">// --show --dir . --cloud cloud.ply --scale 0.05f --assoc points_primitives.txt --use-tags --no-clusters --prims primitives.bonmin.txt</span></div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    <span class="keywordflow">return</span> 1;</div>
 <div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;</div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;<span class="comment">//    std::string img_path( &quot;input2.png&quot; );</span></div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<span class="comment">//    pcl::console::parse_argument( argc, argv, &quot;--img&quot;, img_path );</span></div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;<span class="comment">//    float scale = 0.1f;</span></div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;<span class="comment">//    pcl::console::parse_argument( argc, argv, &quot;--scale&quot;, scale );</span></div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;<span class="comment">//    return GF2::Solver::run( img_path, scale, {0, M_PI_2, M_PI}, argc, argv );</span></div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;}</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;</div>
-<div class="ttc" id="class_g_f2_1_1_solver_html_a5c35bbb14c9c9f3097e176e1299fdf06"><div class="ttname"><a href="class_g_f2_1_1_solver.html#a5c35bbb14c9c9f3097e176e1299fdf06">GF2::Solver::sampleInput</a></div><div class="ttdeci">static int sampleInput(int argc, char **argv)</div><div class="ttdoc">Step 0. Takes an image, and samples it to a pointcloud. Saves points to img_path.parent_path/cloud.ply. </div><div class="ttdef"><b>Definition:</b> <a href="solver_8h_source.html#l00209">solver.h:209</a></div></div>
-<div class="ttc" id="class_g_f2_1_1_solver_html_a5e7cc6867880ad093d96bbcc610890ce"><div class="ttname"><a href="class_g_f2_1_1_solver.html#a5e7cc6867880ad093d96bbcc610890ce">GF2::Solver::solve</a></div><div class="ttdeci">static int solve(int argc, char **argv)</div><div class="ttdoc">Step 3. Reads a formulated problem from path and runs qcqpcpp::OptProblem::optimize() on it...</div><div class="ttdef"><b>Definition:</b> <a href="solver_8h_source.html#l00443">solver.h:443</a></div></div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    <span class="comment">// --show --dir . --cloud cloud.ply --scale 0.05f --assoc points_primitives.txt --use-tags --no-clusters --prims primitives.bonmin.txt</span></div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;<span class="comment">//    std::string img_path( &quot;input2.png&quot; );</span></div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;<span class="comment">//    pcl::console::parse_argument( argc, argv, &quot;--img&quot;, img_path );</span></div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;<span class="comment">//    float scale = 0.1f;</span></div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;<span class="comment">//    pcl::console::parse_argument( argc, argv, &quot;--scale&quot;, scale );</span></div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="comment">//    return GF2::Solver::run( img_path, scale, {0, M_PI_2, M_PI}, argc, argv );</span></div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;}</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;</div>
+<div class="ttc" id="class_g_f2_1_1_solver_html_a5e7cc6867880ad093d96bbcc610890ce"><div class="ttname"><a href="class_g_f2_1_1_solver.html#a5e7cc6867880ad093d96bbcc610890ce">GF2::Solver::solve</a></div><div class="ttdeci">static int solve(int argc, char **argv)</div><div class="ttdoc">Step 3. Reads a formulated problem from path and runs qcqpcpp::OptProblem::optimize() on it...</div><div class="ttdef"><b>Definition:</b> <a href="solver_8h_source.html#l00420">solver.h:420</a></div></div>
 <div class="ttc" id="io_8h_html"><div class="ttname"><a href="io_8h.html">io.h</a></div></div>
-<div class="ttc" id="class_g_f2_1_1_solver_html_aa7aabf4c537a9a068cc48280ddbd41dd"><div class="ttname"><a href="class_g_f2_1_1_solver.html#aa7aabf4c537a9a068cc48280ddbd41dd">GF2::Solver::generate</a></div><div class="ttdeci">static int generate(int argc, char **argv)</div><div class="ttdoc">Step 1. Generates primitives from a cloud. Reads &quot;cloud.ply&quot; and saves &quot;candidates.txt&quot;. </div><div class="ttdef"><b>Definition:</b> <a href="solver_8h_source.html#l00268">solver.h:268</a></div></div>
+<div class="ttc" id="class_g_f2_1_1_solver_html_ab245f9234167ca4d1e00fb99a1eebf8c"><div class="ttname"><a href="class_g_f2_1_1_solver.html#ab245f9234167ca4d1e00fb99a1eebf8c">GF2::Solver::generateCli</a></div><div class="ttdeci">static int generateCli(int argc, char **argv)</div><div class="ttdoc">Step 1. Generates primitives from a cloud. Reads &quot;cloud.ply&quot; and saves &quot;candidates.txt&quot;. </div><div class="ttdef"><b>Definition:</b> <a href="solver_8h_source.html#l00150">solver.h:150</a></div></div>
+<div class="ttc" id="class_g_f2_1_1_solver_html_ae13f37de0a9b433fa63ffb98acbd7708"><div class="ttname"><a href="class_g_f2_1_1_solver.html#ae13f37de0a9b433fa63ffb98acbd7708">GF2::Solver::sampleInput</a></div><div class="ttdeci">static int sampleInput(int argc, char **argv)</div></div>
 <div class="ttc" id="solver_8h_html"><div class="ttname"><a href="solver_8h.html">solver.h</a></div></div>
 <div class="ttc" id="qp__main_8cpp_html_a0ddf1224851353fc92bfbff6f499fa97"><div class="ttname"><a href="qp__main_8cpp.html#a0ddf1224851353fc92bfbff6f499fa97">main</a></div><div class="ttdeci">int main(int argc, char *argv[])</div><div class="ttdef"><b>Definition:</b> <a href="qp__main_8cpp_source.html#l00011">qp_main.cpp:11</a></div></div>
 <div class="ttc" id="problem_setup_8h_html"><div class="ttname"><a href="problem_setup_8h.html">problemSetup.h</a></div></div>
-<div class="ttc" id="class_g_f2_1_1_solver_html_abb12460e745a38fc70baf4603e32a95a"><div class="ttname"><a href="class_g_f2_1_1_solver.html#abb12460e745a38fc70baf4603e32a95a">GF2::Solver::datafit</a></div><div class="ttdeci">static int datafit(int argc, char **argv)</div><div class="ttdoc">Unfinished function. Supposed to do GlobFit. </div><div class="ttdef"><b>Definition:</b> <a href="solver_8h_source.html#l00684">solver.h:684</a></div></div>
+<div class="ttc" id="class_g_f2_1_1_solver_html_abb12460e745a38fc70baf4603e32a95a"><div class="ttname"><a href="class_g_f2_1_1_solver.html#abb12460e745a38fc70baf4603e32a95a">GF2::Solver::datafit</a></div><div class="ttdeci">static int datafit(int argc, char **argv)</div><div class="ttdoc">Unfinished function. Supposed to do GlobFit. </div><div class="ttdef"><b>Definition:</b> <a href="solver_8h_source.html#l00661">solver.h:661</a></div></div>
 <div class="ttc" id="merging_8h_html"><div class="ttname"><a href="merging_8h.html">merging.h</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Sep 2 2014 15:55:37 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Sep 4 2014 18:07:38 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

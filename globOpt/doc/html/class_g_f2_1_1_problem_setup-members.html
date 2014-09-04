@@ -13,6 +13,12 @@
 <script type="text/javascript">
   $(document).ready(function() { searchBox.OnSelectItem(0); });
 </script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script><script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js"></script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
@@ -94,20 +100,12 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <p>This is the complete list of members for <a class="el" href="class_g_f2_1_1_problem_setup.html">GF2::ProblemSetup</a>, including all inherited members.</p>
 <table class="directory">
-  <tr class="even"><td class="entry"><a class="el" href="class_g_f2_1_1_problem_setup.html#a1435ec920286d0a310d673dfc1b72205a12a8aeff7c65ddca3541ceda0ca97148">ASSOC_BASED</a> enum value</td><td class="entry"><a class="el" href="class_g_f2_1_1_problem_setup.html">GF2::ProblemSetup</a></td><td class="entry"></td></tr>
-  <tr><td class="entry"><a class="el" href="class_g_f2_1_1_problem_setup.html#a1435ec920286d0a310d673dfc1b72205a14338dc9ccb2b42d9935d0af7ba32346">BAND_BASED</a> enum value</td><td class="entry"><a class="el" href="class_g_f2_1_1_problem_setup.html">GF2::ProblemSetup</a></td><td class="entry"></td></tr>
-  <tr class="even"><td class="entry"><a class="el" href="class_g_f2_1_1_problem_setup.html#a8399b83e842d43dd98e996176975f3ab">CONSTR_MODE</a> enum name</td><td class="entry"><a class="el" href="class_g_f2_1_1_problem_setup.html">GF2::ProblemSetup</a></td><td class="entry"></td></tr>
-  <tr><td class="entry"><a class="el" href="class_g_f2_1_1_problem_setup.html#a1435ec920286d0a310d673dfc1b72205">DATA_COST_MODE</a> enum name</td><td class="entry"><a class="el" href="class_g_f2_1_1_problem_setup.html">GF2::ProblemSetup</a></td><td class="entry"></td></tr>
-  <tr class="even"><td class="entry"><a class="el" href="class_g_f2_1_1_problem_setup.html#a24c0d41521dfc1e1bd3d6190be530cd8">formulate</a>(problemSetup::OptProblemT &amp;problem, _PrimitiveContainerT const &amp;prims, _PointContainerT const &amp;points, CONSTR_MODE const constr_mode, DATA_COST_MODE const data_cost_mode, _Scalar const scale, Eigen::Matrix&lt; _Scalar,-1, 1 &gt; const &amp;weights, GF2::AbstractPrimitivePrimitiveEnergyFunctor&lt; _Scalar, _PrimitiveT &gt; *const &amp;primPrimDistFunctor, int const patch_pop_limit, int const verbose=0)</td><td class="entry"><a class="el" href="class_g_f2_1_1_problem_setup.html">GF2::ProblemSetup</a></td><td class="entry"><span class="mlabel">inline</span><span class="mlabel">static</span></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="class_g_f2_1_1_problem_setup.html#ac0b593cf6470b65e3e6a0d680ad79ff9">formulate</a>(problemSetup::OptProblemT &amp;problem, _PrimitiveContainerT const &amp;prims, _PointContainerT const &amp;points, typename ProblemSetupParams&lt; _Scalar &gt;::CONSTR_MODE const constr_mode, typename ProblemSetupParams&lt; _Scalar &gt;::DATA_COST_MODE const data_cost_mode, _Scalar const scale, Eigen::Matrix&lt; _Scalar,-1, 1 &gt; const &amp;weights, GF2::AbstractPrimitivePrimitiveEnergyFunctor&lt; _Scalar, _PrimitiveT &gt; *const &amp;primPrimDistFunctor, int const patch_pop_limit, int const verbose=0)</td><td class="entry"><a class="el" href="class_g_f2_1_1_problem_setup.html">GF2::ProblemSetup</a></td><td class="entry"><span class="mlabel">inline</span><span class="mlabel">static</span></td></tr>
   <tr><td class="entry"><a class="el" href="class_g_f2_1_1_problem_setup.html#aefb4febca1521ab72e3133b77626c6de">formulateCli</a>(int argc, char **argv)</td><td class="entry"><a class="el" href="class_g_f2_1_1_problem_setup.html">GF2::ProblemSetup</a></td><td class="entry"><span class="mlabel">inline</span><span class="mlabel">static</span></td></tr>
-  <tr class="even"><td class="entry"><a class="el" href="class_g_f2_1_1_problem_setup.html#a8399b83e842d43dd98e996176975f3aba6339793b70b6d691664ccf1007a6cd9e">HYBRID</a> enum value</td><td class="entry"><a class="el" href="class_g_f2_1_1_problem_setup.html">GF2::ProblemSetup</a></td><td class="entry"></td></tr>
-  <tr><td class="entry"><a class="el" href="class_g_f2_1_1_problem_setup.html#a1435ec920286d0a310d673dfc1b72205a4f16439ae31908d2d8582b604a8d9517">INSTANCE_BASED</a> enum value</td><td class="entry"><a class="el" href="class_g_f2_1_1_problem_setup.html">GF2::ProblemSetup</a></td><td class="entry"></td></tr>
-  <tr class="even"><td class="entry"><a class="el" href="class_g_f2_1_1_problem_setup.html#a8399b83e842d43dd98e996176975f3abac91de41c47bf1649e5508a8555bf9c03">PATCH_WISE</a> enum value</td><td class="entry"><a class="el" href="class_g_f2_1_1_problem_setup.html">GF2::ProblemSetup</a></td><td class="entry"></td></tr>
-  <tr><td class="entry"><a class="el" href="class_g_f2_1_1_problem_setup.html#a8399b83e842d43dd98e996176975f3abaff652c7c6c9d059acad418d4bdc58490">POINT_WISE</a> enum value</td><td class="entry"><a class="el" href="class_g_f2_1_1_problem_setup.html">GF2::ProblemSetup</a></td><td class="entry"></td></tr>
 </table></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Sep 2 2014 15:55:37 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Sep 4 2014 18:07:38 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

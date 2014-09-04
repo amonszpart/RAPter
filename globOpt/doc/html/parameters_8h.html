@@ -13,6 +13,12 @@
 <script type="text/javascript">
   $(document).ready(function() { searchBox.OnSelectItem(0); });
 </script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+});
+</script><script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js"></script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
@@ -92,15 +98,18 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">parameters.h File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &quot;Eigen/Dense&quot;</code><br/>
-<code>#include &quot;<a class="el" href="problem_setup_8h_source.html">globfit2/optimization/problemSetup.h</a>&quot;</code><br/>
+<div class="textblock"><code>#include &lt;vector&gt;</code><br/>
+<code>#include &quot;Eigen/Dense&quot;</code><br/>
 </div>
 <p><a href="parameters_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_candidate_generator_params.html">GF2::CandidateGeneratorParams&lt; _Scalar &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Collection of parameters for <a class="el" href="class_g_f2_1_1_candidate_generator.html#abc056da8bccd683fc95fa64446e1e9d8">CandidateGenerator::generate</a>.  <a href="struct_g_f2_1_1_candidate_generator_params.html#details">More...</a><br/></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_problem_setup_params.html">GF2::ProblemSetupParams&lt; _Scalar &gt;</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Collection of parameters the <a class="el" href="class_g_f2_1_1_problem_setup.html#a24c0d41521dfc1e1bd3d6190be530cd8">ProblemSetup::formulate</a> needs.  <a href="struct_g_f2_1_1_problem_setup_params.html#details">More...</a><br/></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Collection of parameters the <a class="el" href="class_g_f2_1_1_problem_setup.html#ac0b593cf6470b65e3e6a0d680ad79ff9">ProblemSetup::formulate</a> needs.  <a href="struct_g_f2_1_1_problem_setup_params.html#details">More...</a><br/></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_merge_params.html">GF2::MergeParams&lt; _Scalar &gt;</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -114,7 +123,7 @@ Namespaces</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Sep 2 2014 15:55:37 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Sep 4 2014 18:07:38 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>
