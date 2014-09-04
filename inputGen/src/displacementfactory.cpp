@@ -13,6 +13,7 @@ DisplacementFactory::DisplacementFactory(QWidget *parent) :
     _project(NULL)
 {
     ui->setupUi(this);
+    currentLayerChanged();
 }
 
 DisplacementFactory::~DisplacementFactory()
@@ -166,6 +167,53 @@ DisplacementFactory::configureFromUI(InputGen::Application::Project::Displacemen
 
         // set parameters
 
+        break;
+    }
+    }
+}
+
+// Hide show the correct parameter groups
+void
+DisplacementFactory::currentLayerChanged(){
+    typedef InputGen::Application::Scalar S;
+    typedef InputGen::Application::Project::SampleContainer    SC;
+    typedef InputGen::Application::Project::PrimitiveContainer PC;
+
+    std::cout << "currentLayerChanged()" << std::endl;
+
+    int layerId = getSelectedLayerFromUI();
+
+    // hide all param groups
+    if (layerId == -1){
+        ui->_displacementParamBiasGroup->hide();
+    }
+
+    if (_project == NULL) return;
+
+    InputGen::Application::Project::DisplacementKernel *kernel = _project->displacementKernel(layerId);
+    if(kernel == NULL) return;
+
+
+    switch(kernel->type){
+    case::InputGen::DISPLACEMENT_KERNEL_TYPE::DISPLACEMENT_BIAS:
+    {
+
+        InputGen::BiasDisplacementKernel<S,SC,PC>* lkernel =
+                dynamic_cast<InputGen::BiasDisplacementKernel<S,SC,PC>*> (kernel);
+        if(lkernel == NULL) {
+            std::cerr << "This should nerver happen... "
+                      << __FILE__ << " "
+                      << __LINE__ << std::endl;
+            return;
+        }
+
+        ui->_displacementParamBiasValue->setValue(lkernel->bias);
+        ui->_displacementParamBiasGroup->show();
+        break;
+    }
+    case::InputGen::DISPLACEMENT_KERNEL_TYPE::DISPLACEMENT_RANDOM:
+    {
+        ui->_displacementParamBiasGroup->hide();
         break;
     }
     }

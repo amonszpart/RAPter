@@ -32,6 +32,9 @@ private slots:
     //! \brief Refresh displacement values wrt to UI
     void refreshFromView();
 
+    //! \brief Triggered by UI
+    void currentLayerChanged();
+
 private:
     int getSelectedLayerFromUI();
     void configureFromUI(InputGen::Application::Project::DisplacementKernel* kernel);
