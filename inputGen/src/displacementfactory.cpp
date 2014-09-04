@@ -90,6 +90,8 @@ DisplacementFactory::addLayerTriggerred(){
         // add layer and compute it
         _project->addDisplacementLayer(kernel);
 
+        configureFromUI(kernel);
+
         kernel->generateDisplacement( _project->displacementLayerPtr(layerId),
                                       _project->samples,
                                       _project->primitives);
@@ -116,9 +118,72 @@ DisplacementFactory::addLayerTriggerred(){
 
 }
 
+int
+DisplacementFactory::getSelectedLayerFromUI(){
+
+    QList<QTableWidgetItem*> selectedItems = ui->_displacementLayerTable->selectedItems();
+    if (selectedItems.size() == 0)
+        return -1;
+
+    return ui->_displacementLayerTable->row(selectedItems.front());
+}
+
+void
+DisplacementFactory::configureFromUI(InputGen::Application::Project::DisplacementKernel *kernel){
+    typedef InputGen::Application::Scalar S;
+    typedef InputGen::Application::Project::SampleContainer    SC;
+    typedef InputGen::Application::Project::PrimitiveContainer PC;
+
+
+    switch(kernel->type){
+    case::InputGen::DISPLACEMENT_KERNEL_TYPE::DISPLACEMENT_BIAS:
+    {
+
+        InputGen::BiasDisplacementKernel<S,SC,PC>* lkernel =
+                dynamic_cast<InputGen::BiasDisplacementKernel<S,SC,PC>*> (kernel);
+        if(lkernel == NULL) {
+            std::cerr << "This should nerver happen... "
+                      << __FILE__ << " "
+                      << __LINE__ << std::endl;
+            return;
+        }
+
+        // set parameters
+        lkernel->bias = ui->_displacementParamBiasValue->value();
+
+        break;
+    }
+    case::InputGen::DISPLACEMENT_KERNEL_TYPE::DISPLACEMENT_RANDOM:
+    {
+        InputGen::RandomDisplacementKernel<S,SC,PC>* lkernel =
+                dynamic_cast<InputGen::RandomDisplacementKernel<S,SC,PC>*> (kernel);
+        if(lkernel == NULL) {
+            std::cerr << "This should nerver happen... "
+                      << __FILE__ << " "
+                      << __LINE__ << std::endl;
+            return;
+        }
+
+        // set parameters
+
+        break;
+    }
+    }
+}
+
 void
 DisplacementFactory::refreshFromView(){
+    std::cout << "refreshFromView()" << std::endl;
 
+    int layerId = getSelectedLayerFromUI();
+
+    if (_project == NULL || layerId < 0) return;
+
+    InputGen::Application::Project::DisplacementKernel *kernel = _project->displacementKernel(layerId);
+    if(kernel == NULL) return;
+
+    configureFromUI(kernel);
+    recomputeDisplacementLayer(layerId, false);
 
     emit projectUpdated();
 }

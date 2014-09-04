@@ -33,6 +33,10 @@ private slots:
     void refreshFromView();
 
 private:
+    int getSelectedLayerFromUI();
+    void configureFromUI(InputGen::Application::Project::DisplacementKernel* kernel);
+
+private:
     Ui::DisplacementFactory *ui;
 
     InputGen::Application::Project* _project;
