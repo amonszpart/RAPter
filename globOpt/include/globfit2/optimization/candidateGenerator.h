@@ -106,14 +106,21 @@ namespace GF2
         const _Scalar angle_limit( params.angle_limit / params.angle_limit_div );
         int           nlines = 0;
 
-        int l0,l1,l2,l3; l0 = l1 = l2 = l3 = 0; // linear indices cached
-        for ( outer_const_iterator outer_it0 = in_lines.begin(); outer_it0 != in_lines.end(); ++outer_it0, ++l0 )
+        int l0,l1,l2,l3;
+        l0 = l1 = l2 = l3 = 0; // linear indices cached
+        // OUTER0
+        for ( outer_const_iterator outer_it0  = in_lines.begin();
+                                   outer_it0 != in_lines.end();
+                                 ++outer_it0, ++l0 )
         {
             int gid0 = -1;
+            l1 = 0; // reset linear counter
+            // INNER1
             for ( inner_const_iterator inner_it0  = containers::valueOf<_PrimitiveT>(outer_it0).begin();
                                        inner_it0 != containers::valueOf<_PrimitiveT>(outer_it0).end();
                                      ++inner_it0, ++l1 )
             {
+
                 _PrimitiveT const& prim0 = containers::valueOf<_PrimitiveT>( inner_it0 );
 
                 // sanity checks
@@ -122,13 +129,62 @@ namespace GF2
                 else if ( prim0.getTag(_PrimitiveT::GID) != gid0 )
                     std::cerr << "[" << __func__ << "]: " << "Not good, prims under one gid don't have same GID..." << std::endl;
 
-                for ( outer_const_iterator outer_it1 = in_lines.begin(); outer_it1 != in_lines.end(); ++outer_it1, ++l2 )
+                l2 = l0; // reset linear counter
+                // OUTER1
+                int outer_offs = std::distance( in_lines.begin(), outer_it0 );
+                std::cout << "outer_offs: " << outer_offs << std::endl; fflush(stdout);
+                for ( outer_const_iterator outer_it1  = in_lines.begin() + outer_offs;
+                                           outer_it1 != in_lines.end();
+                                         ++outer_it1, ++l2 )
                 {
+                    if ( l2 >= in_lines.size() )
+                    {
+                        std::cerr << "l2 " << l2 << " >= " << in_lines.size() << " in_lines.size()" << std::endl;
+                    }
+                    // traverse forward only
+                    //std::advance( outer_it1, l0 ); l2 = l0;
+
+                    // test
+                    if ( l0 == l2 )
+                    {
+                        if ( outer_it0 == outer_it1 )
+                            std::cout << "yeeey, outer_its equal" << std::endl;
+                        else
+                            std::cout << "nooo, outer_its NOT equal, exptected" << std::endl;
+                    }
+
                     int gid1 = -1;
-                    for ( inner_const_iterator inner_it1  = containers::valueOf<_PrimitiveT>(outer_it1).begin();
+                    l3 = l1; // reset linear counter
+                    int inner_offs = std::distance( containers::valueOf<_PrimitiveT>(outer_it0).begin(), inner_it0 );
+                    std::cout << "inner_offs: " << inner_offs << std::endl; fflush(stdout);
+                    // INNER1
+                    for ( inner_const_iterator inner_it1  = containers::valueOf<_PrimitiveT>(outer_it1).begin() + inner_offs;
                                                inner_it1 != containers::valueOf<_PrimitiveT>(outer_it1).end();
                                              ++inner_it1, ++l3 )
                     {
+                        if ( l3 >= outer_it1->size() )
+                        {
+                            std::cerr << "l3 " << l3 << " >= " << outer_it1->size() << " outer_it1->size()" << std::endl;
+                        }
+                        // traverse forward only
+                        //std::advance( inner_it1, l1 ); l3 = l1;
+
+                        // test
+                        if ( l1 == l3 )
+                        {
+                            if ( inner_it0 == inner_it1 )
+                                std::cout << "yeeey, inner_its equal" << std::endl;
+                            else
+                                std::cout << "nooo, inner_its NOT equal, exptected" << std::endl;
+                        }
+                        std::cout << "working on "
+                                     << std::distance( in_lines.begin(), outer_it0 ) << "(" << l0 << "), "
+                                     << std::distance( containers::valueOf<_PrimitiveT>(outer_it0).begin(), inner_it0 ) << "(" << l1 << "), "
+                                     << std::distance( in_lines.begin(), outer_it1 ) << "(" << l2 << "), "
+                                     << std::distance( containers::valueOf<_PrimitiveT>(outer_it1).begin(), inner_it1) << "(" << l3 << ")\n";
+                        fflush(stdout);
+
+
                         _PrimitiveT const& prim1 = containers::valueOf<_PrimitiveT>( inner_it1 );
                         if ( !l3 )
                             gid1 = prim1.getTag( _PrimitiveT::GID );
@@ -177,7 +233,7 @@ namespace GF2
 
                         Eigen::Matrix<_Scalar,3,1> dir0 = prim1.dir(),
                                                    dir1 = prim0.dir();
-                        if ( (closest_angle > 0.f) && (closest_angle < M_PI) )
+                        if ( (closest_angle >= _Scalar(0)) && (closest_angle < M_PI) )
                         {
                             dir0 = Eigen::AngleAxisf(-closest_angle, Eigen::Matrix<_Scalar,3,1>::UnitZ() ) * dir0;
                             dir1 = Eigen::AngleAxisf( closest_angle, Eigen::Matrix<_Scalar,3,1>::UnitZ() ) * dir1;
