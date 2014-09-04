@@ -29,7 +29,7 @@ public slots:
     void updateSampler();
 
 signals:
-    void projectUpdated();
+    void samplerUpdated();
 
 private:
     enum SAMPLER_TYPE{
