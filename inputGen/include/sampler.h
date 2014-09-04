@@ -83,7 +83,7 @@ PrimitiveSampler<_Scalar, T>::generateSamples(
         else{
 
             if (nbSampleX != 0 && nbSampleY == 0){
-                scontainer.push_back(midPoint);
+                scontainer.push_back(Sample(midPoint, primitiveUID));
                 for (unsigned int i = 1; i< nbSampleX/2+1; i++){
                     vec offset = Scalar(i)*spacing*tangentVec;
                     scontainer.push_back(Sample(midPoint + offset, primitiveUID));
