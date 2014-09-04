@@ -51,5 +51,5 @@ SamplerFactory::updateSampler()
         };
 
     }
-    emit projectUpdated();
+    emit samplerUpdated();
 }
