@@ -8,24 +8,38 @@
 namespace InputGen{
 namespace Application{
 
+/*!
+ * \brief The Project class
+ *
+ * This code is a bit messy....
+ */
+
 class Project{
 private:
     Sampler* _sampler;
 public:
-    std::vector< InputGen::Application::Primitive > primitives;
-    InputGen::Application::SampleSet samples;
+    typedef std::vector< InputGen::Application::Primitive > PrimitiveContainer;
+    typedef SampleSet SampleContainer;
+
+    PrimitiveContainer primitives;
+    SampleContainer    samples;
     typedef std::vector<Primitive::vec,
                         Eigen::aligned_allocator<Primitive::vec> > DisplacementLayer;
+
+    typedef InputGen::AbstractDisplacementKernel<Scalar,
+                                 SampleContainer,
+                                 PrimitiveContainer> DisplacementKernel;
 
 
 private:
     //! \brief Structure storing a set of displacement vectors
     struct InternalDisplacementLayer: public DisplacementLayer{
+
         bool enabled;
-        InputGen::DisplacementKernel<Scalar>* kernel;
+        DisplacementKernel * kernel;
 
         InternalDisplacementLayer( int size,
-                                   InputGen::DisplacementKernel<Scalar>* k,
+                                   DisplacementKernel* k,
                                    bool isEnabled = true)
             : enabled(isEnabled), kernel(k)
         { DisplacementLayer::resize(size, Primitive::vec::Zero()); }
@@ -56,12 +70,23 @@ public:
     }
 
     //! Store a copy of tmpSampler
-    inline void copySampler(Sampler* tmpSampler) { _sampler = tmpSampler->copy(); }
+    // Update displacement layer size according to the size of samples
+    inline void copySampler(Sampler* tmpSampler)
+    {
+        delete(_sampler);
+        _sampler = tmpSampler->copy();
+
+        for(std::vector<InternalDisplacementLayer>::iterator it = _displ.begin();
+            it != _displ.end();
+            it++)
+            (*it).resize(samples.size());
+
+    }
     inline Sampler* sampler() { return _sampler; }
 
 
     //! Noise Layers
-    inline void addDisplacementLayer(InputGen::DisplacementKernel<Scalar>* kernel, bool isEnabled = true)
+    inline void addDisplacementLayer(DisplacementKernel* kernel, bool isEnabled = true)
     { _displ.push_back(InternalDisplacementLayer(samples.size(), kernel, isEnabled)); }
 
     inline bool isDisplacementLayerEnabled(int layerId) {
@@ -81,7 +106,7 @@ public:
     }
 
     // Ugly, but for now required by DisplacementKernels
-    inline InputGen::DisplacementKernel<Scalar>* displacementKernel (int layerId){
+    inline DisplacementKernel* displacementKernel (int layerId){
         if (layerId >= _displ.size()) return NULL;
         return _displ[layerId].kernel;
     }
