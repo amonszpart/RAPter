@@ -29,16 +29,6 @@
       </item>
      </widget>
     </item>
-    <item row="0" column="0" colspan="2">
-     <widget class="QLabel" name="label">
-      <property name="text">
-       <string>Existing Layers:</string>
-      </property>
-      <property name="buddy">
-       <cstring>_displacementLayerTable</cstring>
-      </property>
-     </widget>
-    </item>
     <item row="2" column="2">
      <widget class="QPushButton" name="_displacementLayerAddButton">
       <property name="sizePolicy">
@@ -49,6 +39,16 @@
       </property>
       <property name="text">
        <string>Add</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="0" colspan="2">
+     <widget class="QLabel" name="label">
+      <property name="text">
+       <string>Existing Layers:</string>
+      </property>
+      <property name="buddy">
+       <cstring>_displacementLayerTable</cstring>
       </property>
      </widget>
     </item>
@@ -86,6 +86,41 @@
       <property name="text">
        <string>New layer:</string>
       </property>
+      <property name="buddy">
+       <cstring>_displacementLayerAddCombo</cstring>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="0" colspan="3">
+     <widget class="QGroupBox" name="_displacementParamBiasGroup">
+      <property name="title">
+       <string>Parameters</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="0" column="0">
+        <widget class="QLabel" name="_displacementParamBiasValueLabel">
+         <property name="text">
+          <string>Bias</string>
+         </property>
+         <property name="buddy">
+          <cstring>_displacementParamBiasValue</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QDoubleSpinBox" name="_displacementParamBiasValue">
+         <property name="decimals">
+          <number>5</number>
+         </property>
+         <property name="minimum">
+          <double>-9999999.000000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>9999999.000000000000000</double>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </widget>
     </item>
    </layout>
@@ -118,6 +153,22 @@
     <hint type="sourcelabel">
      <x>199</x>
      <y>157</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>_displacementParamBiasValue</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>DisplacementFactory</receiver>
+   <slot>refreshFromView()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>294</x>
+     <y>264</y>
     </hint>
     <hint type="destinationlabel">
      <x>199</x>
