@@ -7,7 +7,9 @@
    information to the screen and to a log file. If it is a MIP and 10%
    gap is reached, then it aborts */
 
+#ifdef GF2_USE_GUROBI
 #include "gurobi_c++.h"
+#endif
 #include <cmath>
 
 namespace GF2

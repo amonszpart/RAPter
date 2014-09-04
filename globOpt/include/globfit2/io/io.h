@@ -12,6 +12,7 @@
 #endif // GF2_USE_PCL
 
 #include "globfit2/util/pcl_util.hpp"
+#include "globfit2/util/containers.hpp"
 
 
 namespace GF2
@@ -21,26 +22,37 @@ namespace GF2
         //! \brief Dumps primitives with GID and DIR_GID to disk.
         //! \tparam PrimitiveT Concept: PrimitiveContainerT::value_type::value_type aka GF2::LinePrimitive2.
         //! \tparam PrimitiveContainerT Concept: vector< vector< GF2::LinePrimitive2 > >.
-        template <class PrimitiveT /* = typename PrimitiveContainerT::value_type::value_type*/, class PrimitiveContainerT> inline int
+        template <class PrimitiveT, class _inner_const_iterator, class PrimitiveContainerT> inline int
         savePrimitives( PrimitiveContainerT const& primitives
                       , std::string out_file_name
                       , bool verbose = false
                       )
         {
+            typedef typename PrimitiveContainerT::const_iterator outer_const_iterator;
+
             const int Dim = PrimitiveT::Dim;
             typedef typename PrimitiveT::VectorType VectorType;
 
             // out_lines
             std::ofstream out_file( out_file_name );
-            for ( size_t lid = 0; lid != primitives.size(); ++lid )
+            int lid = 0;
+            outer_const_iterator gid_end_it = primitives.end();
+            for ( outer_const_iterator gid_it = primitives.begin(); gid_it != gid_end_it; ++gid_it, ++lid )
+            //for ( size_t lid = 0; lid != primitives.size(); ++lid )
             {
-                for ( size_t lid1 = 0; lid1 != primitives[lid].size(); ++lid1 )
+                int lid1 = 0;
+                _inner_const_iterator lid_end_it = containers::valueOf<PrimitiveT>(gid_it).end();
+                for ( _inner_const_iterator lid_it = containers::valueOf<PrimitiveT>(gid_it).begin(); lid_it != lid_end_it; ++lid_it, ++lid1 )
+                //for ( size_t lid1 = 0; lid1 != primitives[lid].size(); ++lid1 )
                 {
                     for ( int d = 0; d != Dim; ++d )
-                        //out_file << ((VectorType)primitives[lid][lid1])(d) << ((d!=Dim-1)?",":"\n");
-                        out_file << std::setprecision(9) << ((VectorType)primitives[lid][lid1])(d) << ",";
-                    out_file << primitives[lid][lid1].getTag( PrimitiveT::GID ) << ",";
-                    out_file << primitives[lid][lid1].getTag( PrimitiveT::DIR_GID ) << "\n";
+                        out_file << std::setprecision(9) << ((VectorType)*lid_it)(d) << ",";
+                        //out_file << std::setprecision(9) << ((VectorType)primitives.at(lid).at(lid1))(d) << ",";
+
+                    out_file << lid_it->getTag( PrimitiveT::GID ) << ",";
+                    //out_file << primitives[lid][lid1].getTag( PrimitiveT::GID ) << ",";
+                    out_file << lid_it->getTag( PrimitiveT::DIR_GID ) << "\n";
+                    //out_file << primitives[lid][lid1].getTag( PrimitiveT::DIR_GID ) << "\n";
                 }
             }
             out_file.close();

@@ -7,6 +7,7 @@
 #include "globfit2/visualization/visualization.h"
 #include "globfit2/io/io.h"
 #include "globfit2/processing/util.hpp"          //getPopulations()
+#include "globfit2/optimization/patchDistanceFunctors.h" // RepresentativeSqrPatchPatchDistanceFunctorT
 
 #define CHECK(err,text) { if ( err != EXIT_SUCCESS )  std::cerr << "[" << __func__ << "]: " << text << " returned an error! Code: " << err << std::endl; }
 
@@ -38,12 +39,14 @@ Merging::mergeCli( int argc, char** argv )
         valid_input &= boost::filesystem::exists( cloud_path );
 
         pcl::console::parse_argument( argc, argv, "--angle-gen", angle_gen );
+        params.do_adopt = pcl::console::find_switch( argc, argv, "--adopt" ) ? 2 : 0;
 
         std::cerr << "[" << __func__ << "]: " << "Usage:\t gurobi_opt --formulate\n"
                   << "\t--scale " << params.scale << "\n"
                   << "\t--prims " << prims_path << "\n"
                   << "\t--cloud " << cloud_path << "\n"
                   << "\t[--angle-gen " << angle_gen << "]\n"
+                  << "\t[--adopt " << params.do_adopt << "]\n"
                   << std::endl;
 
         if ( !valid_input || pcl::console::find_switch(argc,argv,"--help") || pcl::console::find_switch(argc,argv,"-h") )
@@ -104,10 +107,34 @@ Merging::mergeCli( int argc, char** argv )
 
     //____________________________WORK____________________________
 
-    adoptPoints<GF2::MyPointPrimitiveDistanceFunctor, _PointPrimitiveT, _PrimitiveT, typename PrimitiveMapT::mapped_type::const_iterator>
-               ( points, prims_map, params.scale );
+    if ( params.do_adopt )
+        adoptPoints<GF2::MyPointPrimitiveDistanceFunctor, _PointPrimitiveT, _PrimitiveT, typename PrimitiveMapT::mapped_type::const_iterator>
+                    ( points, prims_map, params.scale );
 
-    mergeSameDirGids<_PrimitiveT, _PointPrimitiveT, typename PrimitiveMapT::mapped_type::const_iterator>( prims_map, points, params.scale );
+    std::cout << "starting mergeSameDirGids" << std::endl; fflush(stdout);
+    RepresentativeSqrPatchPatchDistanceFunctorT<_Scalar, SpatialPatchPatchSingleDistanceFunctorT<_Scalar> >
+            patchPatchDistFunct( params.scale * params.patch_dist_limit_mult
+                               , params.angle_limit
+                               , params.scale
+                               , params.patch_spatial_weight );
+
+    PrimitiveMapT out_prims;
+    mergeSameDirGids<_PrimitiveT, _PointPrimitiveT, typename PrimitiveMapT::mapped_type::const_iterator>
+            ( out_prims, points, prims_map, params.scale, params.parallel_limit, patchPatchDistFunct );
+
+    if ( params.do_adopt )
+    {
+        io::savePrimitives   <_PrimitiveT, typename PrimitiveMapT::mapped_type::const_iterator>( out_prims, "primitives.bonmin_it1_adopt.csv" );
+        io::writeAssociations<_PointPrimitiveT>( points   , "points_primitives_it1_adopt.csv" );
+    }
+    else
+    {
+        io::savePrimitives   <_PrimitiveT, typename PrimitiveMapT::mapped_type::const_iterator>( out_prims, "primitives.bonmin_it1.csv" );
+        io::writeAssociations<_PointPrimitiveT>( points   , "points_primitives_it1.csv" );
+    }
+
+
+    std::cout << "stopped mergeSameDirGids" << std::endl; fflush(stdout);
     return EXIT_SUCCESS;
 }//...Merging::mergeCli()
 
@@ -273,25 +300,31 @@ int Merging::adoptPoints( _PointContainerT          & points
         ++iteration;
     } while ( change ); // stop, if no new points were reassigned
 
-                                    return err;
+    return err;
 } //...adoptPoints()
 
-/*! \brief Merges adjacent patches that have the same direction ID
-*/
+/*!
+ * \brief Merges adjacent patches that have the same direction ID
+ */
 template < class    _PrimitiveT
          , class    _PointPrimitiveT
          , class    _inner_const_iterator
          , class    _PrimitiveContainerT
          , class    _PointContainerT
-         , typename _Scalar>
-int Merging::mergeSameDirGids( _PrimitiveContainerT      & primitives
-                             , _PointContainerT     const& points
-                             , _Scalar              const  scale   )
+         , typename _Scalar
+         , class    _PatchPatchDistanceFunctorT>
+int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
+                             , _PointContainerT                 & points
+                             , _PrimitiveContainerT        const& primitives
+                             , _Scalar                     const  scale
+                             , _Scalar                     const  parallel_limit
+                             , _PatchPatchDistanceFunctorT const& patchPatchDistFunct )
 {
-    typedef typename _PrimitiveContainerT::const_iterator outer_const_iterator;
+    typedef typename _PrimitiveContainerT::const_iterator      outer_const_iterator;
     typedef           std::vector<Eigen::Matrix<_Scalar,3,1> > ExtremaT;
-    typedef           std::map< int, std::map<int, ExtremaT> > GidExtrema;
-    typedef           std::pair<int,int> GidLid;
+    typedef           std::map   < int, ExtremaT>              LidExtremaT;
+    typedef           std::map   < int, LidExtremaT >          GidLidExtremaT;
+    typedef           std::pair  < int, int> GidLid;
 
     int err = EXIT_SUCCESS;
 
@@ -304,7 +337,7 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT      & primitives
     }
 
     // Extrema
-    GidExtrema extrema; // <gid,lid> -> vector<x0, x1, ...>
+    GidLidExtremaT extrema; // <gid,lid> -> vector<x0, x1, ...>
     if ( EXIT_SUCCESS == err )
     {
         // for all patches
@@ -313,11 +346,11 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT      & primitives
                                  ++outer_it )
         {
             int gid  = -2; // (-1 is "unset")
-            int lid1 = 0; // linear index of primitive in container (to keep track)
+            int lid = 0; // linear index of primitive in container (to keep track)
             // for all directions
             for ( _inner_const_iterator inner_it  = containers::valueOf<_PrimitiveT>(outer_it).begin();
                                        (inner_it != containers::valueOf<_PrimitiveT>(outer_it).end()) && (EXIT_SUCCESS == err);
-                                      ++inner_it, ++lid1 )
+                                      ++inner_it, ++lid )
             {
                 // save patch gid
                 if ( gid == -2 )
@@ -331,7 +364,7 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT      & primitives
                 }
 
                 err = inner_it->template getExtent<_PointPrimitiveT>
-                                                           ( extrema[gid][lid1]
+                                                           ( extrema[gid][lid]
                                                            , &points
                                                            , scale
                                                            , populations[gid].size() ? &(populations[gid]) : NULL );
@@ -341,19 +374,146 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT      & primitives
         CHECK( err, "calcExtrema" )
     } //...getExtrema
 
-
-
-    // debug
-    std::ofstream dbg( "lines.plot" );
-    for ( auto it = extrema.begin(); it != extrema.end(); ++it )
+    typedef std::map< GidLid, GidLid > AliasesT;
+    AliasesT aliases;
+    // outer traversal
+    typename GidLidExtremaT::const_iterator gid_end_it = extrema.end();
+    for ( typename GidLidExtremaT::const_iterator gid_it = extrema.begin(); gid_it != gid_end_it; ++gid_it )
     {
-        for ( int i = 0; i != it->second.size(); ++i )
+        typename LidExtremaT::const_iterator prim_end_it = gid_it->second.end();
+        for ( typename LidExtremaT::const_iterator prim_it = gid_it->second.begin(); prim_it != prim_end_it; ++prim_it )
         {
-            dbg << extrema[it->first][i][0].transpose() << "\n"
-                << extrema[it->first][i][1].transpose() << "\n\n";
+            // inner traversal
+            typename GidLidExtremaT::const_iterator gid_end_it1 = extrema.end();
+            for ( typename GidLidExtremaT::const_iterator gid_it1 = extrema.begin(); gid_it1 != gid_end_it1; ++gid_it1 )
+            {
+                // offset to start from same as outer (don't want to go beyond, so not +1, but "continue" later)
+                if ( gid_it1 == extrema.begin() )
+                    std::advance( gid_it1, std::distance<typename GidLidExtremaT::const_iterator>(extrema.begin(),gid_it) );
+
+                typename LidExtremaT::const_iterator prim_end_it1 = gid_it1->second.end();
+                for ( typename LidExtremaT::const_iterator prim_it1 = gid_it1->second.begin(); prim_it1 != prim_end_it1; ++prim_it1 )
+                {
+                    // offset to start from same as outer (don't want to go beyond, so not +1, but "continue" if exactly the same)
+                    if ( prim_it1 == gid_it1->second.begin() )
+                        std::advance( prim_it1, std::distance<typename LidExtremaT::const_iterator>(gid_it->second.begin(),prim_it) );
+
+                    // skip, if itself
+                    if ( (gid_it == gid_it1) && (prim_it == prim_it1) )
+                        continue;
+
+                    // log
+                    if ( 0 )
+                        std::cout << "comparing "
+                                  << "(" << std::distance<typename GidLidExtremaT::const_iterator>( extrema.begin(), gid_it )
+                                  << "," << std::distance<typename LidExtremaT::const_iterator>( gid_it->second.begin(), prim_it ) << ")"
+                                  << " with "
+                                  << "(" << std::distance<typename GidLidExtremaT::const_iterator>( extrema.begin(), gid_it1 )
+                                  << "," << std::distance<typename LidExtremaT::const_iterator>( gid_it1->second.begin(), prim_it1 ) << ")"
+                                  << std::endl;
+
+                    // get minimum endpoint distance
+                    ExtremaT const& extrema0 = prim_it->second,
+                                    extrema1 = prim_it1->second;
+                    _Scalar min_dist = std::numeric_limits<_Scalar>::max();
+                    for ( int i = 0; i != extrema0.size(); ++i )
+                        for ( int j = 0; j != extrema1.size(); ++j )
+                        {
+                            _Scalar dist = (extrema0[i] - extrema1[j]).norm();
+                            if ( dist < min_dist )
+                            {
+                                min_dist = dist;
+                            }
+                        }
+
+                    int gid0 = gid_it->first ,
+                        gid1 = gid_it1->first;
+                    int lid0 = std::distance<typename LidExtremaT::const_iterator>( gid_it->second.begin(), prim_it ),
+                        lid1 = std::distance<typename LidExtremaT::const_iterator>( gid_it1->second.begin(), prim_it1 );
+
+                    int dir0 = primitives.at( gid0 ).at( lid0 ).getTag( _PrimitiveT::DIR_GID );
+                    int dir1 = primitives.at( gid1 ).at( lid1 ).getTag( _PrimitiveT::DIR_GID );
+                    _Scalar ang = angleInRad( primitives.at( gid0 ).at( lid0 ).template dir(),
+                                              primitives.at( gid1 ).at( lid1 ).template dir() );
+
+                    if ( (min_dist < 3. * scale) && (dir0 == dir1) && (ang < parallel_limit) )
+                    {
+                        std::cout << "would merge "
+                                  << "(" << gid0 << "," << lid0 << "," << dir0 << ")"
+                                  << " with "
+                                  << "(" << gid1 << "," << lid1 << "," << dir1 << ")"
+                                  << std::endl;
+                        fflush(stdout);
+
+                        GidLid key0( gid0, lid0 ),
+                               key1( gid1, lid1 );
+
+                        AliasesT::const_iterator alias1 = aliases.find( key1 ), alias0;
+                        if ( alias1 != aliases.end() )
+                            aliases[ key0 ] = alias1->second; // if key1 is already merged with *key1, then key0 should be merged with *key1 as well.
+                        else if ( (alias0 = aliases.find(key0)) != aliases.end() )
+                            aliases[ key1 ] = alias0->second;  // if key0 is already merged with *key0, then key1 should be merged with *key0 as well.
+                        else
+                            aliases[ key1 ] = key0;
+                    }
+                }
+            }
         }
     }
-    dbg.close();
+
+    for ( auto it = aliases.begin(); it != aliases.end(); ++it )
+    {
+        std::cout << "(" << it->first.first << "," << it->first.second << ") - (" << it->second.first << "," << it->second.second << ")" << std::endl;
+    }
+
+
+    for ( outer_const_iterator outer_it  = primitives.begin();
+                              (outer_it != primitives.end())  && (EXIT_SUCCESS == err);
+                             ++outer_it )
+    {
+        int gid = -2; // (-1 is "unset")
+        int lid =  0; // linear index of primitive in container (to keep track)
+        // for all directions
+        for ( _inner_const_iterator inner_it  = containers::valueOf<_PrimitiveT>(outer_it).begin();
+                                   (inner_it != containers::valueOf<_PrimitiveT>(outer_it).end()) && (EXIT_SUCCESS == err);
+                                  ++inner_it, ++lid )
+        {
+            if ( gid == -2 )
+                gid = inner_it->getTag( _PrimitiveT::GID );
+            GidLid key( gid, lid );
+            if ( aliases.find(key) == aliases.end() )
+            {
+                containers::add<_PrimitiveT>( out_primitives, gid, *inner_it );
+            }
+        }
+    }
+
+    for ( int pid = 0; pid != points.size(); ++pid )
+    {
+        const int gid = points[pid].getTag( _PointPrimitiveT::GID );
+
+        // find an entry with an alias for this gid
+        AliasesT::const_iterator alias_it = std::find_if( aliases.begin(), aliases.end(), [&gid]( AliasesT::value_type const& pair ) { return pair.first.first == gid; } );
+        if ( alias_it != aliases.end() )
+        {
+            std::cout << "setting gid " << gid << " to " << alias_it->second.first << std::endl;
+            points[pid].setTag( _PointPrimitiveT::GID, alias_it->second.first );
+        }
+    }
+
+    //patchPatchDistanceFunctor.template eval<_PointPrimitiveT>(p1_proxy, p2_proxy, points, NULL)
+
+    // debug
+//    std::ofstream dbg( "lines.plot" );
+//    for ( auto it = extrema.begin(); it != extrema.end(); ++it )
+//    {
+//        for ( int i = 0; i != it->second.size(); ++i )
+//        {
+//            dbg << extrema[it->first][i][0].transpose() << "\n"
+//                << extrema[it->first][i][1].transpose() << "\n\n";
+//        }
+//    }
+//    dbg.close();
     return err;
 } //...Merging::mergeSameDirGids()
 

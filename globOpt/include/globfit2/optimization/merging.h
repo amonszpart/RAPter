@@ -39,15 +39,23 @@ class Merging
                  , typename _Scalar >
         static inline int adoptPoints( _PointContainerT &points, _PrimitiveContainerT const& prims, _Scalar const scale );
 
+        /*! \brief Merges adjacent patches
+         * \tparam _PatchPatchDistanceFunctorT  Concept: \ref GF2::RepresentativeSqrPatchPatchDistanceFunctorT.
+         * \param[in] patchPatchDistFunct       Distance functor between two patches, to define adjacency.
+         */
         template < class    _PrimitiveT
                  , class    _PointPrimitiveT
                  , class    _inner_const_iterator
                  , class    _PrimitiveContainerT
                  , class    _PointContainerT
-                 , typename _Scalar>
-        static inline int mergeSameDirGids( _PrimitiveContainerT      & primitives
-                                          , _PointContainerT     const& points
-                                          , _Scalar              const  scale     );
+                 , typename _Scalar
+                 , class    _PatchPatchDistanceFunctorT >
+        static inline int mergeSameDirGids( _PrimitiveContainerT      & out_primitives
+                                          , _PointContainerT          & points
+                                          , _PrimitiveContainerT const& primitives
+                                          , _Scalar              const  scale
+                                          , _Scalar              const  parallel_limit
+                                          , _PatchPatchDistanceFunctorT const& patchPatchDistFunct );
 
 
 }; //...class Merging

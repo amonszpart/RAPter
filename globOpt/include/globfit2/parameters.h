@@ -26,6 +26,7 @@ namespace GF2 {
             _Scalar   scale                       = 0.05;     //!< \brief Scale parameter of input.
             std::vector<_Scalar> angles           = {0, M_PI_2, M_PI }; //!< \brief Desired angles.
             _Scalar   angle_limit                 = 0.08f;    //!< \brief angle threshold for similar lines
+            _Scalar   parallel_limit              = _Scalar(1e-6); //!< \brief Two lines are parallel, if their angle is smaller than this. Used in \ref Merging.
             _Scalar   angle_limit_div             = 10.f;     //!< \brief Determines, how much the angle_limit is divided by, to get the patch-similarity threshold
             _Scalar   patch_dist_limit_mult       = 1.f;      //!< \brief Patchify takes "patch_dist_limit * scale" as maximum spatial distance
             _Scalar   patch_spatial_weight        = _Scalar(0.5); //!< \brief Weight of spatial term in \f$ patch\_spatial\_weight^2 \cdot \frac{spat\_dist^2}{spat\_thresh} + \frac{ang\_diff^2}{ang\_thresh} < 1 \f$ regionGrowing distance functor. \sa \ref GF2::RepresentativeSqrPatchPatchDistanceFunctorT.
@@ -154,12 +155,13 @@ namespace GF2 {
     };
 
     template <typename _Scalar>
-    struct MergeParams
+    struct MergeParams : public CandidateGeneratorParams<_Scalar>
     {
-        //! \brief Scale parameter of input.
-        _Scalar                      scale           = 0.05;
-        //! \brief Desired angles.
-        std::vector<_Scalar>         angles          = {0, M_PI_2, M_PI };
+        char do_adopt = 2; //!< \brief Adopt orphaned points greedily, 1: unambiguous only, 2: all.
+//        //! \brief Scale parameter of input.
+//        _Scalar                      scale           = 0.05;
+//        //! \brief Desired angles.
+//        std::vector<_Scalar>         angles          = {0, M_PI_2, M_PI };
     };
 
 }

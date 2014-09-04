@@ -5,8 +5,11 @@
 /// Solver
 //////////////
 
-#include "optimization/qp/gurobiOpt.h"
+#ifdef GF2_USE_GUROBI
+#   include "optimization/qp/gurobiOpt.h"
+#endif
 #include "globfit2/primitives/pointPrimitive.h"
+#include "globfit2/primitives/linePrimitive2.h" // remove, if typedef is moved
 #include "qcqpcpp/io/io.h"                      // read/writeSparseMatrix
 
 namespace GF2 {
@@ -24,7 +27,7 @@ class Solver
         typedef LinePrimitive2                              PrimitiveT;
         typedef PointPrimitive                              PointPrimitiveT;
         typedef std::vector<std::vector<PrimitiveT> >       PrimitiveContainerT;
-        typedef std::vector<PointPrimitiveT>                         PointContainerT;
+        typedef std::vector<PointPrimitiveT>                PointContainerT;
         typedef Eigen::SparseMatrix<Scalar,Eigen::RowMajor> SparseMatrix;
 
         //static inline int show       ( int argc, char** argv );
@@ -402,7 +405,7 @@ Solver::generateCli( int    argc
         std::string candidates_path = boost::filesystem::path( cloud_path ).parent_path().string() + "/" + "candidates.txt";
 
         util::saveBackup( candidates_path );
-        err = io::savePrimitives<PrimitiveT>( /* what: */ primitives, /* where_to: */ candidates_path );
+        err = io::savePrimitives<PrimitiveT,typename PrimitiveContainerT::value_type::const_iterator>( /* what: */ primitives, /* where_to: */ candidates_path );
 
         if ( err != EXIT_SUCCESS )  std::cerr << "[" << __func__ << "]: " << "saveBackup or savePrimitive exited with error! Code: " << err << std::endl;
         else                        std::cout << "[" << __func__ << "]: " << "wrote to " << candidates_path << std::endl;
@@ -642,7 +645,7 @@ Solver::solve( int    argc
 
                 std::string out_prim_path = parent_path + rel_out_path + "/primitives." + solver_str + ".txt";
                 util::saveBackup    ( out_prim_path );
-                io::savePrimitives<PrimitiveT>  ( out_prims, out_prim_path, /* verbose: */ true );
+                io::savePrimitives<PrimitiveT, PrimitiveContainerT::value_type::const_iterator>( out_prims, out_prim_path, /* verbose: */ true );
             } // if --candidates
             else
             {

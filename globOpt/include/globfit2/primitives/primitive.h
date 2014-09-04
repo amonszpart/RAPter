@@ -5,6 +5,7 @@
 #include "Eigen/Dense"
 
 #include <iostream> // cout, endl
+#include <fstream>
 
 namespace GF2
 {
