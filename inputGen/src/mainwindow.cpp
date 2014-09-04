@@ -252,6 +252,68 @@ void MainWindow::on_actionSave_points_triggered()
     }
 }
 
+void MainWindow::on_actionSave_primitives_triggered()
+{
+    if (_project == NULL)
+        return;
+
+    QSettings settings;
+    QString defaultPath = settings.value("Path/priSave").toString();
+
+    QString path =
+    QFileDialog::getSaveFileName(this,
+                                 tr("Save primitives as CSV file"),
+                                 defaultPath,
+                                 "CSV (*.csv)");
+
+
+    if (! path.isNull()){
+        writePrimitives(path);
+    }
+}
+
+void MainWindow::on_actionSave_assignement_triggered()
+{
+    if (_project == NULL)
+        return;
+
+    QSettings settings;
+    QString defaultPath = settings.value("Path/assPath").toString();
+
+    QString path =
+    QFileDialog::getSaveFileName(this,
+                                 tr("Save assignements as CSV file"),
+                                 defaultPath,
+                                 "CSV (*.csv)");
+
+
+    if (! path.isNull()){
+        writeAssignement(path);
+    }
+}
+
+void MainWindow::on_actionSave_all_triggered()
+{
+    if (_project == NULL)
+        return;
+
+    QSettings settings;
+    QString defaultPath = settings.value("Path/allPath").toString();
+
+    QString path =
+            QFileDialog::getExistingDirectory(
+                this,
+                tr("Select output folder"),
+                defaultPath);
+
+
+    if (! path.isNull()){
+        writePrimitives (path+QString("/points_primitives.csv"));
+        writeAssignement(path+QString("/primitives.csv"));
+        writeSamples    (path+QString("/cloud.ply"));
+    }
+}
+
 void MainWindow::writePrimitives(QString path){
     if (_project == NULL)
         return;

@@ -17,6 +17,9 @@ public:
 private slots:
     void on_actionLoad_SVG_triggered();
     void on_actionSave_points_triggered();
+    void on_actionSave_primitives_triggered();
+    void on_actionSave_assignement_triggered();
+    void on_actionSave_all_triggered();
 
 private:
     void writeSamples(QString path);
