@@ -40,7 +40,7 @@ namespace GF2
                       , Scalar                           const   scale
                       , std::vector<Scalar>              const&  angles
                       , CandidateGeneratorParams<Scalar> const&  params );
-
+#if GF2_WITH_SAMPLE_INPUT
             //! \brief image_2_2DCloud
             template <  class       PointAllocatorFunctorT
                       , class       PointContainerT>
@@ -60,6 +60,7 @@ namespace GF2
                            , int   const             N_samples
                            , float const             Z
                            , float const             scale );
+#endif // GF2_WITH_SAMPLE_INPUT
     }; //...class CandidateGenerator
 } // ...ns::GF2
 
@@ -91,9 +92,6 @@ namespace GF2
 
         if ( out_lines.size() ) std::cerr << "[" << __func__ << "]: " << "warning, out_lines not empty!" << std::endl;
         if ( params.patch_population_limit <= 0 ) { std::cerr << "[" << __func__ << "]: " << "error, popfilter is necessary!!!" << std::endl; return EXIT_FAILURE; }
-
-        // (1) Create patches
-//        std::vector<_PrimitiveT> patch_lines;
 
         // (2) Mix and Filter
         // count patch populations
@@ -132,31 +130,13 @@ namespace GF2
                 l2 = l0; // reset linear counter
                 // OUTER1
                 int outer_offs = std::distance( in_lines.begin(), outer_it0 );
-                std::cout << "outer_offs: " << outer_offs << std::endl; fflush(stdout);
                 for ( outer_const_iterator outer_it1  = in_lines.begin() + outer_offs;
                                            outer_it1 != in_lines.end();
                                          ++outer_it1, ++l2 )
                 {
-                    if ( l2 >= in_lines.size() )
-                    {
-                        std::cerr << "l2 " << l2 << " >= " << in_lines.size() << " in_lines.size()" << std::endl;
-                    }
-                    // traverse forward only
-                    //std::advance( outer_it1, l0 ); l2 = l0;
-
-                    // test
-                    if ( l0 == l2 )
-                    {
-                        if ( outer_it0 == outer_it1 )
-                            std::cout << "yeeey, outer_its equal" << std::endl;
-                        else
-                            std::cout << "nooo, outer_its NOT equal, exptected" << std::endl;
-                    }
-
                     int gid1 = -1;
                     l3 = l1; // reset linear counter
                     int inner_offs = std::distance( containers::valueOf<_PrimitiveT>(outer_it0).begin(), inner_it0 );
-                    std::cout << "inner_offs: " << inner_offs << std::endl; fflush(stdout);
                     // INNER1
                     for ( inner_const_iterator inner_it1  = containers::valueOf<_PrimitiveT>(outer_it1).begin() + inner_offs;
                                                inner_it1 != containers::valueOf<_PrimitiveT>(outer_it1).end();
@@ -166,23 +146,21 @@ namespace GF2
                         {
                             std::cerr << "l3 " << l3 << " >= " << outer_it1->size() << " outer_it1->size()" << std::endl;
                         }
-                        // traverse forward only
-                        //std::advance( inner_it1, l1 ); l3 = l1;
 
                         // test
-                        if ( l1 == l3 )
+                        if ( (std::distance( in_lines.begin(), outer_it0 ) != l0)
+                             || (std::distance( containers::valueOf<_PrimitiveT>(outer_it0).begin(), inner_it0 ) != l1)
+                             || (std::distance( in_lines.begin(), outer_it1 ) != l2)
+                             || (std::distance( containers::valueOf<_PrimitiveT>(outer_it1).begin(), inner_it1) != l3)
+                             )
                         {
-                            if ( inner_it0 == inner_it1 )
-                                std::cout << "yeeey, inner_its equal" << std::endl;
-                            else
-                                std::cout << "nooo, inner_its NOT equal, exptected" << std::endl;
+                            std::cerr << "working on "
+                                      << std::distance( in_lines.begin(), outer_it0 ) << "(" << l0 << "), "
+                                      << std::distance( containers::valueOf<_PrimitiveT>(outer_it0).begin(), inner_it0 ) << "(" << l1 << "), "
+                                      << std::distance( in_lines.begin(), outer_it1 ) << "(" << l2 << "), "
+                                      << std::distance( containers::valueOf<_PrimitiveT>(outer_it1).begin(), inner_it1) << "(" << l3 << ")\n";
+                            fflush(stderr);
                         }
-                        std::cout << "working on "
-                                     << std::distance( in_lines.begin(), outer_it0 ) << "(" << l0 << "), "
-                                     << std::distance( containers::valueOf<_PrimitiveT>(outer_it0).begin(), inner_it0 ) << "(" << l1 << "), "
-                                     << std::distance( in_lines.begin(), outer_it1 ) << "(" << l2 << "), "
-                                     << std::distance( containers::valueOf<_PrimitiveT>(outer_it1).begin(), inner_it1) << "(" << l3 << ")\n";
-                        fflush(stdout);
 
 
                         _PrimitiveT const& prim1 = containers::valueOf<_PrimitiveT>( inner_it1 );
@@ -190,6 +168,10 @@ namespace GF2
                             gid1 = prim1.getTag( _PrimitiveT::GID );
 
                         const bool same_line = equal2D(l0,l1,l2,l3);
+                        if ( same_line != ((outer_it0 == outer_it1) && (inner_it0 == inner_it1)) )
+                        {
+                            std::cerr << "iterator based same_line will NOT work..." << std::endl;
+                        }
 
                         bool add0 = same_line, // add0: new primitive at location of prim0, with direction from prim1. We need to keep a copy, so true if same_line.
                              add1 = false;     // add1: new primitive at location of prim1, with direction from prim0
@@ -278,6 +260,7 @@ namespace GF2
         return EXIT_SUCCESS;
     } // ...CandidateGenerator::generate()
 
+#if GF2_WITH_SAMPLE_INPUT
     /**
      * @brief GlobFit2::image_2_2DCloud Randomly samples a 2D gray image with 3D points at black pixels to create a 3D cloud.
      * @param cloud
@@ -369,6 +352,7 @@ namespace GF2
 
         return EXIT_SUCCESS;
     } // ...CandidateGenerator::image_2_2DCloud()
+#endif // GF2_WITH_SAMPLE_INPUT
 } // ... ns GF2
 
 

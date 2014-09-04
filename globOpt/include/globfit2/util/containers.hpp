@@ -3,11 +3,14 @@
 
 #include <map>
 #include <vector>
+#include <set>
 
 namespace GF2 {
 namespace containers {
-    template <class _PrimitiveT> static inline
-    _PrimitiveT& add( std::vector<std::vector<_PrimitiveT> > &prims, int gid, _PrimitiveT const& primitive )
+
+    // vector< vector >
+    template <class _InnerT> static inline
+    _InnerT& add( std::vector<std::vector<_InnerT> > &prims, int gid, _InnerT const& primitive )
     {
         if ( prims.size() <= gid )
             prims.resize( gid + 1 );
@@ -16,11 +19,20 @@ namespace containers {
         return prims[gid].back();
     }
 
-    template <class _PrimitiveT> static inline
-    _PrimitiveT& add( std::map<int,std::vector<_PrimitiveT> > &prims, int gid, _PrimitiveT const& primitive )
+    // map< vector >
+    template <class _InnerT> static inline
+    _InnerT& add( std::map<int,std::vector<_InnerT> > &prims, int gid, _InnerT const& primitive )
     {
         prims[gid].push_back( primitive );
         return prims[gid].back();
+    }
+
+    // map< set >
+    template <class _InnerT> static inline
+    _InnerT add( std::map<int,std::set<_InnerT> > &prims, int gid, _InnerT const& primitive )
+    {
+        prims[gid].insert( primitive );
+        return ( *prims[gid].find(primitive) );
     }
 
     template <class _PrimitiveT> static inline

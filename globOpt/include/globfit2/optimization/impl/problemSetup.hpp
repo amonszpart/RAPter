@@ -439,7 +439,7 @@ namespace problemSetup {
     //! \tparam _PrimitiveT         Concept: _PrimitiveContainerT::value_type::value_type
     //! \tparam _PointPrimitiveT    Concept: _PointContainerT::value_type
     //! \tparam _AssocT             Associates a primitive identified by <lid,lid1> with a variable id in the problem. Default: std::map< std::pair<int,int>, int >
-    //! \param[in/out] problem      The optimization problem to add to.
+    //! \param[in,out] problem      The optimization problem to add to.
     template < class _PointPrimitiveDistanceFunctor
              , class _PrimitiveT
              , class _PointPrimitiveT

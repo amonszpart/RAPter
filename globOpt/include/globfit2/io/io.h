@@ -312,8 +312,8 @@ namespace GF2
 
             for ( typename _PointContainerT::const_iterator it = points.begin(); it != points.end(); ++it )
             {
-                Eigen::Matrix< typename _PointT::Scalar, 3, 1 > pos = it->pos();
-                Eigen::Matrix< typename _PointT::Scalar, 3, 1 > dir = it->dir();
+                Eigen::Matrix< typename _PointT::Scalar, 3, 1 > const& pos = it->pos();
+                Eigen::Matrix< typename _PointT::Scalar, 3, 1 > const& dir = it->dir();
                 file << pos(0) << " " << pos(1) << " " << pos(2) << " " << dir(0) << " " << dir(1) << " " << dir(2) << std::endl;
             }
 

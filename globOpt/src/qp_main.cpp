@@ -28,10 +28,12 @@ int main( int argc, char *argv[] )
 
         return EXIT_SUCCESS;
     }
+#if GF2_WITH_SAMPLE_INPUT
     else if ( pcl::console::find_switch(argc,argv,"--sample-input") )
     {
         return GF2::Solver::sampleInput( argc, argv );
     }
+#endif
     else if ( pcl::console::find_switch(argc,argv,"--generate") )
     {
         return GF2::Solver::generateCli( argc, argv );

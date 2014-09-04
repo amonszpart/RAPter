@@ -6,7 +6,9 @@
 #include "globfit2/parameters.h"
 #include "globfit2/visualization/visualization.h"
 #include "globfit2/io/io.h"
-//_______________________HPP_____________________________
+#include "globfit2/processing/util.hpp"          //getPopulations()
+
+#define CHECK(err,text) { if ( err != EXIT_SUCCESS )  std::cerr << "[" << __func__ << "]: " << text << " returned an error! Code: " << err << std::endl; }
 
 namespace GF2 {
 
@@ -104,21 +106,24 @@ Merging::mergeCli( int argc, char** argv )
 
     adoptPoints<GF2::MyPointPrimitiveDistanceFunctor, _PointPrimitiveT, _PrimitiveT, typename PrimitiveMapT::mapped_type::const_iterator>
                ( points, prims_map, params.scale );
-    mergeSameDirGids( params.scale );
+
+    mergeSameDirGids<_PrimitiveT, _PointPrimitiveT, typename PrimitiveMapT::mapped_type::const_iterator>( prims_map, points, params.scale );
     return EXIT_SUCCESS;
 }//...Merging::mergeCli()
 
-//! \brief Greedily assigns points with GID-s that are not in prims to prims that explain them.
-//!        Unambiguous assignments go through first, than based on proximity, capped by scale.
-//!
-//! \tparam _PointPrimitiveDistanceFunctor Has an eval function for a point and all primitives, to calculate the distance from point to primitive. Concept: \ref MyPointPrimitiveDistanceFunctor.
-//! \tparam _PointPrimitiveT     Wraps a point, exposing pos() and dir() functions. Concept: \ref GF2::PointPrimitive.
-//! \tparam _PrimitiveT          Wraps a primitive, exposing pos() and dir() functions. Concept: \ref GF2::LinePrimitive2.
-//! \tparam _PointContainerT     Holds the points. Concept: std::vector< \ref GF2::PointPrimitive >.
-//! \tparam _PrimitiveContainerT Holds the primitives grouped by GID in a two level structure. Concept: std::map< int, std::vector< \ref GF2::LinePrimitive2 > >.
-//! \tparam _Scalar              Floating point precision of primitives, points, etc. Concept: \ref GF2::PointPrimitive::Scalar.
-//! \param points                Contains the points, some assigned, some to be assigned to the primitives in prims.
-//! \param prims                 Contains some primitives tagged with GID and DIR_GID. GID defines the assignment between points and primitives.
+/*! \brief Greedily assigns points with GID-s that are not in prims to prims that explain them.
+*        Unambiguous assignments go through first, than based on proximity, capped by scale.
+*
+* \tparam _PointPrimitiveDistanceFunctor Has an eval function for a point and all primitives, to calculate the distance from point to primitive. Concept: \ref MyPointPrimitiveDistanceFunctor.
+* \tparam _PointPrimitiveT     Wraps a point, exposing pos() and dir() functions. Concept: \ref GF2::PointPrimitive.
+* \tparam _PrimitiveT          Wraps a primitive, exposing pos() and dir() functions. Concept: \ref GF2::LinePrimitive2.
+* \tparam _PointContainerT     Holds the points. Concept: std::vector< \ref GF2::PointPrimitive >.
+* \tparam _PrimitiveContainerT Holds the primitives grouped by GID in a two level structure. Concept: std::map< int, std::vector< \ref GF2::LinePrimitive2 > >.
+* \tparam _Scalar              Floating point precision of primitives, points, etc. Concept: \ref GF2::PointPrimitive::Scalar.
+* \param points[in,out]        Contains the points, some assigned, some to be assigned to the primitives in prims.
+* \param prims[in]             Contains some primitives tagged with GID and DIR_GID. GID defines the assignment between points and primitives.
+* \param scale[in]             Distance threshold parameter.
+*/
 template < class _PointPrimitiveDistanceFunctor
          , class _PointPrimitiveT
          , class _PrimitiveT
@@ -271,17 +276,89 @@ int Merging::adoptPoints( _PointContainerT          & points
                                     return err;
 } //...adoptPoints()
 
-template <typename _Scalar>
-int Merging::mergeSameDirGids( _Scalar const scale )
+/*! \brief Merges adjacent patches that have the same direction ID
+*/
+template < class    _PrimitiveT
+         , class    _PointPrimitiveT
+         , class    _inner_const_iterator
+         , class    _PrimitiveContainerT
+         , class    _PointContainerT
+         , typename _Scalar>
+int Merging::mergeSameDirGids( _PrimitiveContainerT      & primitives
+                             , _PointContainerT     const& points
+                             , _Scalar              const  scale   )
 {
+    typedef typename _PrimitiveContainerT::const_iterator outer_const_iterator;
+    typedef           std::vector<Eigen::Matrix<_Scalar,3,1> > ExtremaT;
+    typedef           std::map< int, std::map<int, ExtremaT> > GidExtrema;
+    typedef           std::pair<int,int> GidLid;
+
     int err = EXIT_SUCCESS;
 
+    // Populations
+    GidPidVectorMap populations; // populations[gid] == std::vector<int> {pid0,pid1,...}
     if ( EXIT_SUCCESS == err )
     {
+        err = processing::getPopulations( populations, points );
+        CHECK( err, "getPopulations" );
     }
+
+    // Extrema
+    GidExtrema extrema; // <gid,lid> -> vector<x0, x1, ...>
+    if ( EXIT_SUCCESS == err )
+    {
+        // for all patches
+        for ( outer_const_iterator outer_it  = primitives.begin();
+                                  (outer_it != primitives.end())  && (EXIT_SUCCESS == err);
+                                 ++outer_it )
+        {
+            int gid  = -2; // (-1 is "unset")
+            int lid1 = 0; // linear index of primitive in container (to keep track)
+            // for all directions
+            for ( _inner_const_iterator inner_it  = containers::valueOf<_PrimitiveT>(outer_it).begin();
+                                       (inner_it != containers::valueOf<_PrimitiveT>(outer_it).end()) && (EXIT_SUCCESS == err);
+                                      ++inner_it, ++lid1 )
+            {
+                // save patch gid
+                if ( gid == -2 )
+                {
+                    gid = inner_it->getTag( _PrimitiveT::GID );
+                    // sanity check
+                    if ( extrema.find(gid) != extrema.end() )
+                    {
+                        std::cerr << "[" << __func__ << "]: " << "GID not unique for patch...:-S" << std::endl;
+                    }
+                }
+
+                err = inner_it->template getExtent<_PointPrimitiveT>
+                                                           ( extrema[gid][lid1]
+                                                           , &points
+                                                           , scale
+                                                           , populations[gid].size() ? &(populations[gid]) : NULL );
+            } //...for primitives
+        } //...for patches
+
+        CHECK( err, "calcExtrema" )
+    } //...getExtrema
+
+
+
+    // debug
+    std::ofstream dbg( "lines.plot" );
+    for ( auto it = extrema.begin(); it != extrema.end(); ++it )
+    {
+        for ( int i = 0; i != it->second.size(); ++i )
+        {
+            dbg << extrema[it->first][i][0].transpose() << "\n"
+                << extrema[it->first][i][1].transpose() << "\n\n";
+        }
+    }
+    dbg.close();
     return err;
-}
+} //...Merging::mergeSameDirGids()
 
 } //...namespace GF2
+
+#undef CHECK
 
 #endif // GF2_MERGING_HPP

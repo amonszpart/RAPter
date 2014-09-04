@@ -22,16 +22,26 @@ SET( PATH_VIS_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../visualization/"
 
 SET( WITH_MOSEK ON CACHE BINARY "Allow Mosek to be used for optimization.")
 IF(WITH_MOSEK)
-    add_definitions(-DGF2_WITH_MOSEK)
+    ADD_DEFINITIONS(-DGF2_WITH_MOSEK)
 ENDIF()
 SET( WITH_BONMIN ON CACHE BINARY "Allow Bonmin to be used for optimization.")
 IF(WITH_BONMIN)
-    add_definitions(-DGF2_WITH_BONMIN)
+    ADD_DEFINITIONS(-DGF2_WITH_BONMIN)
 ENDIF()
 SET( WITH_GUROBI ON CACHE BINARY "Allow Gruboi to be used for optimization.")
 IF(WITH_GUROBI)
-    add_definitions(-DGF2_WITH_GUROBI)
+    ADD_DEFINITIONS(-DGF2_WITH_GUROBI)
 ENDIF()
+
+SET( WITH_SAMPLE_INPUT OFF CACHE BINARY "Compile --sample-input option")
+IF(WITH_SAMPLE_INPUT)
+    ADD_DEFINITIONS(-DGF2_WITH_SAMPLE_INPUT)
+ENDIF(WITH_SAMPLE_INPUT)
+
+SET( WITH_FULL_LINKAGE OFF CACHE BINARY "Compile other patchpatch distance functors than representativeSqr")
+IF(WITH_FULL_LINKAGE)
+    ADD_DEFINITIONS(-DGF2_WITH_FULL_LINKAGE)
+ENDIF(WITH_FULL_LINKAGE)
 
 #SET( FH_DIR /home/bontius/workspace/3rdparty/segmentFH )
 
@@ -176,7 +186,6 @@ SET( GLOBOPT_H_LIST
     #include/params.h
     include/globfit2/parameters.h
     include/globfit2/my_types.h
-    include/globfit2/ground_truth/gtCreator.h
     include/globfit2/primitives/linePrimitive.h
     include/globfit2/primitives/linePrimitive2.h
     include/globfit2/primitives/pointPrimitive.h
@@ -191,12 +200,19 @@ SET( GLOBOPT_H_LIST
 )
 
 SET( GLOBOPT_SRC_LIST
-    src/ground_truth/ground_truth.cpp
-    src/ground_truth/gtCreator.cpp
     src/qp_main.cpp
-    src/optimization/candidateGenerator.cpp # cached compilation
-    #src/optimization/qp/visualizer.cpp         # cached compilation
+    #src/optimization/candidateGenerator.cpp # cached compilation
+    #src/optimization/qp/visualizer.cpp     # cached compilation
 )
+IF(WITH_SAMPLE_INPUT)
+    SET( GLOBOPT_H_LIST ${GLOBOPT_H_LIST}
+        include/globfit2/ground_truth/gtCreator.h
+    )
+    SET( GLOBOPT_SRC_LIST ${GLOBOPT_SRC_LIST}
+        src/ground_truth/ground_truth.cpp
+        src/ground_truth/gtCreator.cpp
+    )
+ENDIF(WITH_SAMPLE_INPUT)
 
 ADD_EXECUTABLE( ${GLOBOPT_TARGET_NAME} ${GLOBOPT_SRC_LIST} ${GLOBOPT_HPP_LIST} ${GLOBOPT_H_LIST})
 TARGET_LINK_LIBRARIES( ${GLOBOPT_TARGET_NAME}
@@ -216,8 +232,8 @@ TARGET_LINK_LIBRARIES( ${GLOBOPT_TARGET_NAME}
 message( "${PATH_VIS_ROOT}/build/Release/lib/libglobOptVis.a" )
 
 ## _______________________________________________________________________________________________
-SET( TEST_TARGET test_bst)
-add_executable( ${TEST_TARGET} src/test/test_main.cpp )
-TARGET_LINK_LIBRARIES( ${TEST_TARGET}
-    ${PCL_LIBRARIES}
-)
+#SET( TEST_TARGET test_bst)
+#add_executable( ${TEST_TARGET} src/test/test_main.cpp )
+#TARGET_LINK_LIBRARIES( ${TEST_TARGET}
+#    ${PCL_LIBRARIES}
+#)

@@ -3,12 +3,16 @@
 
 #include <map>
 #include <set>
+#include <vector>
+#include "globfit2/util/containers.hpp" // add()
 
 namespace GF2 {         //!< \brief globOpt namespace
 
     typedef std::map< int, int >    GidIntMap;
     typedef std::set< int >         PidSet;
+    typedef std::vector< int >      PidVector;
     typedef std::map< int, PidSet > GidPidSetMap;
+    typedef std::map< int, PidVector > GidPidVectorMap;
 
     namespace processing {  //!< \brief Various 3D processing snippets that don't fit elsewhere.
 
@@ -45,11 +49,11 @@ namespace GF2 {         //!< \brief globOpt namespace
         for ( size_t pid = 0; pid != points.size(); ++pid )
         {
             const int gid = points[pid].getTag( _PointPrimitiveT::GID );
-            populations[ gid ].insert( pid );
+            containers::add( populations, gid, static_cast<int>(pid) );
         }
 
         return EXIT_SUCCESS;
-    } //...calcPopulation
+    } //...getPopulations
 
 } //...ns processing
 } //...ns GF2

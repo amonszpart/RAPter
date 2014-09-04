@@ -311,7 +311,8 @@ namespace GF2
         }
 
         char poly_name[255];
-        sprintf( poly_name, "poly%d", prim_tag );
+        static int sphere_id = 0;
+        sprintf( poly_name, "poly%d_%d", prim_tag, sphere_id++ );
 
         if ( indices.size() > 1 )
         {

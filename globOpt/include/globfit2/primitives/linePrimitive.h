@@ -37,7 +37,6 @@ namespace GF2
             //! \brief Constructor that takes raw data in std::vector format as input.
             LinePrimitive( std::vector<Scalar> const& coeffs ) : ParentT( coeffs ) {}
 #endif
-
             //! \brief          Creates LinePrimitive from point on line and direction.
             //! \warning        NOT endpoints, use #fromEndPoints for that!
             //! \param[in] p0   Point on line.

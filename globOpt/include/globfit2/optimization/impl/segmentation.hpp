@@ -124,15 +124,18 @@ Segmentation:: fitLocal( _PrimitiveContainerT        & lines
     return EXIT_SUCCESS;
 } // ...Segment::propose()
 
-//! \brief patchify Groups unoriented points into oriented patches represented by a single primitive
-//!                 (2) group to patches
-//!                 (3) refit lines to patches
-//! \tparam _PrimitiveContainerT Concept: std::map< int, std::vector<_PrimitiveT> >. Groups primitives by their GID.
-//! \param[out] patches                   Ready to process patches, each of them with one direction only. ( { 0: [Primitive00] }, { 1: [Primitive11] }, ... )
-//! \param[in/out] points                 Input points that get assigned to the patches by their GID tag set.
-//! \param[in]  scale                     Spatial scale to use for fits.
-//! \param[in]  angles                    Desired angles to use for groupings.
-//! \param[in]  patchPatchDistanceFunctor #regionGrow() uses the thresholds encoded to group points. The evalSpatial() function is used to assign orphan points.
+/*!
+ * \brief Groups unoriented points into oriented patches represented by a single primitive
+ *                   (1) group to patches
+ *                   (2) refit lines to patches
+ * \tparam _PrimitiveContainerT Concept: std::map< int, std::vector<_PrimitiveT> >. Groups primitives by their GID.
+ * \param[out] patches                   Ready to process patches, each of them with one direction only. ( { 0: [Primitive00] }, { 1: [Primitive11] }, ... )
+ * \param[in/out] points                 Input points that get assigned to the patches by their GID tag set.
+ * \param[in]  scale                     Spatial scale to use for fits.
+ * \param[in]  angles                    Desired angles to use for groupings.
+ * \param[in]  patchPatchDistanceFunctor #regionGrow() uses the thresholds encoded to group points. The evalSpatial() function is used to assign orphan points.
+ * \param[in]  nn_K                      Number of nearest neighbour points looked for in #regionGrow().
+ */
 template < class       _PrimitiveT
          , typename    _Scalar
          , class       _PrimitiveContainerT
@@ -144,6 +147,7 @@ Segmentation::patchify( _PrimitiveContainerT                   & patches
                       , _Scalar                           const  scale
                       , std::vector<_Scalar>              const& angles
                       , _PatchPatchDistanceFunctorT       const& patchPatchDistanceFunctor
+                      , int                               const  nn_K
                       )
 {
     typedef segmentation::Patch<_Scalar,_PrimitiveT> PatchT;
@@ -163,6 +167,7 @@ Segmentation::patchify( _PrimitiveContainerT                   & patches
                   , /* [in]            desired_angles: */ angles
                   , /* [in] patchPatchDistanceFunctor: */ patchPatchDistanceFunctor
                   , /* [in]              gid_tag_name: */ PointPrimitiveT::GID
+                  , /* [in]                      nn_K: */ nn_K
                   , /* [out]          groups_pointids: */ &groups );
     } // ... (1) group
 
@@ -179,21 +184,26 @@ Segmentation::patchify( _PrimitiveContainerT                   & patches
 
 //! \brief Greedy region growing
 //! \param[out] groups_arg Pointer to vector<segmentation::Patch>
+//! \param[in] gid_tag_name                 The key value of GID in _PointT. Suggested to be: _PointT::GID.
+//! \param[in] nn_K                         Number of nearest neighbour points looked for.
 template < class       _PrimitiveContainerT
          , class       _PointContainerT
          , class       _PatchPatchDistanceFunctorT
          , class       _PatchesT
          , class       _PrimitiveT
          , typename    _Scalar
-         , class       _PointT> int
+         , class       _PointPrimitiveT> int
 Segmentation::regionGrow( _PointContainerT                       & points
                         , _Scalar                           const  /*scale*/
                         , std::vector<_Scalar>              const& /*angles*/
                         , _PatchPatchDistanceFunctorT       const& patchPatchDistanceFunctor
                         , int                               const  gid_tag_name
+                        , int                               const  nn_K
                         , _PatchesT                              * groups_arg               )
 {
-    std::cout << "[" << __func__ << "]: " << "running at " << patchPatchDistanceFunctor.getSpatialThreshold() << " radius threshold" << std::endl;
+    std::cout << "[" << __func__ << "]: " << "running with " << patchPatchDistanceFunctor.toString() << std::endl;
+    std::cout << "[" << __func__ << "]: " << "running at " << patchPatchDistanceFunctor.getSpatialThreshold() << " spatial threshold" << std::endl;
+    std::cout << "[" << __func__ << "]: " << "running at " << patchPatchDistanceFunctor.getAngularThreshold() << " radius threshold" << std::endl;
 
     typedef typename _PatchesT::value_type   PatchT;
     typedef          std::vector<PatchT>     Patches;
@@ -230,9 +240,9 @@ Segmentation::regionGrow( _PointContainerT                       & points
     std::vector<bool> assigned( points.size(), false );
     std::vector<bool> visited( points.size(), false );
 
-    const int K = 20;
-    std::vector<float>  sqr_dists( K );
-    std::vector< int >  neighs( K );
+    //const int K = 20;
+    std::vector<float>  sqr_dists( nn_K );
+    std::vector< int >  neighs( nn_K );
     int                 found_points_count  = 0;
     pcl::PointXYZ       searchPoint;
     const _Scalar       spatial_thresh      = patchPatchDistanceFunctor.getSpatialThreshold();
@@ -257,7 +267,8 @@ Segmentation::regionGrow( _PointContainerT                       & points
         // add to new cluster
         if ( !assigned[pid] )
         {
-            patches.push_back( (PatchT){ segmentation::PidLid(pid,-1) } );
+            PatchT tmp_patch; tmp_patch.push_back( segmentation::PidLid(pid,-1) );
+            patches.push_back( tmp_patch );
             patches.back().update( points );
             assigned[ pid ] = true;
         }
@@ -277,8 +288,30 @@ Segmentation::regionGrow( _PointContainerT                       & points
             if ( !assigned[pid2] )
             {
                 _Scalar diff = GF2::angleInRad( patches.back().template dir(), points[pid2].template dir() );
+
+                // location from point, but direction is the representative's
+                _PointPrimitiveT p1_proxy(points[pid].template pos(), patches.back().template dir());
+                PatchT p2_proxy; p2_proxy.push_back( segmentation::PidLid(pid2,-1) ); p2_proxy.update( points );
+
+                if ( std::abs((dist_weight * sqr_dists[pid_id] / sqr_spatial_thresh + diff * diff / sqr_ang_thresh )
+                              - patchPatchDistanceFunctor.template eval<_PointPrimitiveT>( p1_proxy, p2_proxy, points, NULL )) > 1.e-6)
+                {
+                    std::cout << "sqr_dist_weight: " << dist_weight << std::endl;
+                    std::cout << "spatial_distance: " << sqrt(sqr_dists[pid_id]) << std::endl;
+                    std::cout << "spatial_distance^2: " << sqr_dists[pid_id] << std::endl;
+                    std::cout << "sqr_spatial_thresh: " << sqr_spatial_thresh << std::endl;
+                    std::cout << "ang_diff: " << diff << std::endl;
+                    std::cout << "sqr_ang_thresh: " << sqr_ang_thresh << std::endl; fflush(stdout);
+
+                    std::cerr << "gt: " << (dist_weight * sqr_dists[pid_id] / sqr_spatial_thresh + diff * diff / sqr_ang_thresh )
+                              << " vs " << patchPatchDistanceFunctor.template eval<_PointPrimitiveT>( p1_proxy, p2_proxy, points, NULL ) << std::endl;
+                }
+                else
+                    std::cout << "[" << __func__ << "]: " << "diff ok" << std::endl;
+
                 //if ( (sqrt(sqr_dists[pid_id]) < spatial_thresh) && (diff < ang_thresh) )                                      // original condition
-                if ( (dist_weight * sqr_dists[pid_id] / sqr_spatial_thresh + diff * diff / sqr_ang_thresh ) <= _Scalar(1) )     // ellipse longer along line
+                //if ( (dist_weight * sqr_dists[pid_id] / sqr_spatial_thresh + diff * diff / sqr_ang_thresh ) <= _Scalar(1) )     // ellipse longer along line
+                if ( patchPatchDistanceFunctor.template eval<_PointPrimitiveT>(p1_proxy, p2_proxy, points, NULL) < patchPatchDistanceFunctor.getThreshold() )
                 {
                     patches.back().push_back( segmentation::PidLid(pid2,-1) );
                     patches.back().updateWithPoint( points[pid2] );
@@ -297,13 +330,14 @@ Segmentation::regionGrow( _PointContainerT                       & points
     _PatchesT *groups = groups_arg ? groups_arg : &tmp_groups;  // relay, if output needed
     (*groups).insert( (*groups).end(), patches.begin(), patches.end() );
 
-    _tagPointsFromGroups<_Scalar>( points
-                                 , *groups, patchPatchDistanceFunctor, gid_tag_name );
+    _tagPointsFromGroups<_PointPrimitiveT,_Scalar>
+                        ( points, *groups, patchPatchDistanceFunctor, gid_tag_name );
 
     return EXIT_SUCCESS;
 } // ...Segmentation::regionGrow()
 
-template < typename _Scalar
+template < class    _PointPrimitiveT
+         , typename _Scalar
          , class    _PointPatchDistanceFunctorT
          , class    _PatchT
          , class    _PointContainerT
@@ -334,7 +368,7 @@ Segmentation::_tagPointsFromGroups( _PointContainerT                 & points
         int         min_gid  = 0;
         for ( int gid = 1; gid != groups.size(); ++gid )
         {
-            if ( (dist = pointPatchDistanceFunctor.evalSpatial(pid, groups[gid], points)) < min_dist )
+            if ( (dist = pointPatchDistanceFunctor.template evalSpatial<_PointPrimitiveT>(pid, groups[gid], points)) < min_dist )
             {
                 min_dist = dist;
                 min_gid  = gid;
