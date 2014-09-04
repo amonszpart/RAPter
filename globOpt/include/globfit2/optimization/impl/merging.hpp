@@ -102,7 +102,39 @@ Merging::mergeCli( int argc, char** argv )
 
     //____________________________WORK____________________________
 
-    typedef GF2::MyPointPrimitiveDistanceFunctor _PointPrimitiveDistanceFunctor;
+    adoptPoints<GF2::MyPointPrimitiveDistanceFunctor, _PointPrimitiveT, _PrimitiveT, typename PrimitiveMapT::mapped_type::const_iterator>
+               ( points, prims_map, params.scale );
+    mergeSameDirGids( params.scale );
+    return EXIT_SUCCESS;
+}//...Merging::mergeCli()
+
+//! \brief Greedily assigns points with GID-s that are not in prims to prims that explain them.
+//!        Unambiguous assignments go through first, than based on proximity, capped by scale.
+//!
+//! \tparam _PointPrimitiveDistanceFunctor Has an eval function for a point and all primitives, to calculate the distance from point to primitive. Concept: \ref MyPointPrimitiveDistanceFunctor.
+//! \tparam _PointPrimitiveT     Wraps a point, exposing pos() and dir() functions. Concept: \ref GF2::PointPrimitive.
+//! \tparam _PrimitiveT          Wraps a primitive, exposing pos() and dir() functions. Concept: \ref GF2::LinePrimitive2.
+//! \tparam _PointContainerT     Holds the points. Concept: std::vector< \ref GF2::PointPrimitive >.
+//! \tparam _PrimitiveContainerT Holds the primitives grouped by GID in a two level structure. Concept: std::map< int, std::vector< \ref GF2::LinePrimitive2 > >.
+//! \tparam _Scalar              Floating point precision of primitives, points, etc. Concept: \ref GF2::PointPrimitive::Scalar.
+//! \param points                Contains the points, some assigned, some to be assigned to the primitives in prims.
+//! \param prims                 Contains some primitives tagged with GID and DIR_GID. GID defines the assignment between points and primitives.
+template < class _PointPrimitiveDistanceFunctor
+         , class _PointPrimitiveT
+         , class _PrimitiveT
+         , class _inner_const_iterator
+         , class _PointContainerT
+         , class _PrimitiveContainerT
+         , typename _Scalar >
+int Merging::adoptPoints( _PointContainerT          & points
+                        , _PrimitiveContainerT const& prims
+                        , _Scalar              const  scale )
+{
+    //typedef GF2::MyPointPrimitiveDistanceFunctor _PointPrimitiveDistanceFunctor;
+    typedef typename _PrimitiveContainerT::const_iterator             outer_const_iterator;
+    //typedef typename outer_const_iterator::value_type::const_iterator inner_const_iterator;
+
+    int err = EXIT_SUCCESS;
 
     // select unassigned points
     std::deque<int> orphan_pids;
@@ -110,7 +142,9 @@ Merging::mergeCli( int argc, char** argv )
         for ( size_t pid = 0; pid != points.size(); ++pid )
         {
             int gid = points[pid].getTag( _PointPrimitiveT::GID );
-            if ( !prims_map[gid].size() ) // no primitives with this GID
+            if (    (prims.find(gid) == prims.end())
+                 || (!containers::valueOf<_PrimitiveT>(prims.find(gid)).size()) )
+            //if ( !prims.at(gid).size() ) // no primitives with this GID
             {
                 points[pid].setTag   ( _PointPrimitiveT::GID, -2 );
                 orphan_pids.push_back( pid );
@@ -136,19 +170,20 @@ Merging::mergeCli( int argc, char** argv )
                 const int pid = *points_it;
 
                 // for patches
-                typename PrimitiveMapT::const_iterator end_it = prims_map.end();
-                for ( typename PrimitiveMapT::const_iterator it = prims_map.begin(); it != end_it; ++it )
+                //typename PrimitiveMapT::const_iterator end_it = prims.end();
+                outer_const_iterator end_it = prims.end();
+                for ( outer_const_iterator it = prims.begin(); it != end_it; ++it )
                 {
                     // record primitive id in patch
                     int lid1 = 0;
                     // for primitives in patch
-                    typename PatchT::const_iterator end_it2 = it->second.end();
-                    for ( typename PatchT::const_iterator it2 = it->second.begin(); it2 != end_it2; ++it2, ++lid1 )
+                    _inner_const_iterator end_it2 = it->second.end();
+                    for ( _inner_const_iterator it2 = it->second.begin(); it2 != end_it2; ++it2, ++lid1 )
                     {
                         // distance from point to primitive
                         _Scalar dist = _PointPrimitiveDistanceFunctor::template eval<_Scalar>( points[pid], *it2 );
                         // store if inside scale
-                        if ( dist < params.scale )
+                        if ( dist < scale )
                         {
                             adopter_gids[pid].push_back( std::pair<int,int>(it->first,lid1) );
                         } //...if dist
@@ -208,9 +243,9 @@ Merging::mergeCli( int argc, char** argv )
 
                         _Scalar dist = (points[pid].template pos() - points[pid2].template pos()).norm();
                         // store if closer, than earlier orphan, and if inside scale to given primitive (can be explained)
-                        if ( (dist < closest_distance) && _PointPrimitiveDistanceFunctor::template eval<_Scalar>(points[pid], prims_map.at(gid2).at(0)) )
+                        if ( (dist < closest_distance) && _PointPrimitiveDistanceFunctor::template eval<_Scalar>(points[pid], prims.at(gid2).at(0)) )
                         {
-                            if ( prims_map.at(gid2).size() > 1 ) std::cerr << "[" << __func__ << "]: " << "two lines in one patch, not prepared here, fix this" << std::endl;
+                            if ( prims.at(gid2).size() > 1 ) std::cerr << "[" << __func__ << "]: " << "two lines in one patch, not prepared here, fix this" << std::endl;
 
                             closest_distance = dist;
                             closest_gid      = points[pid2].getTag( _PointPrimitiveT::GID );
@@ -233,10 +268,19 @@ Merging::mergeCli( int argc, char** argv )
         ++iteration;
     } while ( change ); // stop, if no new points were reassigned
 
-    io::writeAssociations<_PointPrimitiveT>( points, "test_assoc.csv" );
+                                    return err;
+} //...adoptPoints()
 
-    return EXIT_SUCCESS;
-}//...Merging::mergeCli()
+template <typename _Scalar>
+int Merging::mergeSameDirGids( _Scalar const scale )
+{
+    int err = EXIT_SUCCESS;
+
+    if ( EXIT_SUCCESS == err )
+    {
+    }
+    return err;
+}
 
 } //...namespace GF2
 
