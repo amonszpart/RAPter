@@ -12,39 +12,54 @@ namespace InputGen{
         INVALID_KERNEL      = 2
     };
 
-    template <typename _Scalar>
-    struct DisplacementKernel{
+    template <typename _Scalar, class _SampleContainer, class _PrimitiveContainer>
+    struct AbstractDisplacementKernel{
+        typedef _SampleContainer    SampleContainer;
+        typedef _PrimitiveContainer PrimitiveContainer;
+
         const std::string name;
         const DISPLACEMENT_KERNEL_TYPE type;
 
+        virtual void generateDisplacement(
+                typename PrimitiveContainer::value_type::vec* darray,
+                const SampleContainer& scontainer,
+                const PrimitiveContainer& pcontainer) = 0;
+
         protected:
         inline
-        DisplacementKernel(const std::string& n,
+        AbstractDisplacementKernel(const std::string& n,
                            DISPLACEMENT_KERNEL_TYPE t)
             :name(n), type(t) {}
     };
 
 
-    template <typename _Scalar>
-    struct RandomDisplacementKernel: public DisplacementKernel<_Scalar>{
+    template <typename _Scalar, class _SampleContainer, class _PrimitiveContainer>
+    struct RandomDisplacementKernel:
+            public AbstractDisplacementKernel<_Scalar, _SampleContainer, _PrimitiveContainer>{
         typedef _Scalar Scalar;
+        typedef _SampleContainer    SampleContainer;
+        typedef _PrimitiveContainer PrimitiveContainer;
 
         inline RandomDisplacementKernel() :
-            DisplacementKernel<_Scalar>("Random",
-                                        DISPLACEMENT_KERNEL_TYPE::DISPLACEMENT_RANDOM)
+            AbstractDisplacementKernel<_Scalar, _SampleContainer, _PrimitiveContainer>(
+                "Random",
+                DISPLACEMENT_KERNEL_TYPE::DISPLACEMENT_RANDOM)
         {}
 
         //! Right now, do nothing
-        template <class SampleContainer, class PrimitiveContainer>
-        inline void generateDisplacement( typename PrimitiveContainer::value_type::vec* darray,
-                                          const SampleContainer& scontainer,
-                                          const PrimitiveContainer& pcontainer) {}
+        virtual void generateDisplacement(
+                typename PrimitiveContainer::value_type::vec* /*darray*/,
+                const SampleContainer& /*scontainer*/,
+                const PrimitiveContainer& /*pcontainer*/) {}
     };
 
 
-    template <typename _Scalar>
-    struct BiasDisplacementKernel: public DisplacementKernel<_Scalar>{
+    template <typename _Scalar, class _SampleContainer, class _PrimitiveContainer>
+    struct BiasDisplacementKernel:
+            public AbstractDisplacementKernel<_Scalar, _SampleContainer, _PrimitiveContainer>{
         typedef _Scalar Scalar;
+        typedef _SampleContainer    SampleContainer;
+        typedef _PrimitiveContainer PrimitiveContainer;
 
         enum BIAS_DIRECTION {
             PRIMITIVE_NORMAL_VECTOR = 0,
@@ -55,8 +70,9 @@ namespace InputGen{
         BIAS_DIRECTION biasDirection;
 
         inline BiasDisplacementKernel() :
-            DisplacementKernel<_Scalar>("Bias",
-                                        DISPLACEMENT_KERNEL_TYPE::DISPLACEMENT_BIAS),
+            AbstractDisplacementKernel<_Scalar, _SampleContainer, _PrimitiveContainer>(
+                "Bias",
+                DISPLACEMENT_KERNEL_TYPE::DISPLACEMENT_BIAS),
             bias(0),
             biasDirection(PRIMITIVE_NORMAL_VECTOR)
         {}
@@ -68,37 +84,36 @@ namespace InputGen{
          *
          * Here, darray is ensured to have the same number of elements that scontainer
          */
-        template <class SampleContainer, class PrimitiveContainer>
-        inline void generateDisplacement( typename PrimitiveContainer::value_type::vec* darray,
-                                          const SampleContainer& scontainer,
-                                          const PrimitiveContainer& pcontainer);
+        virtual void generateDisplacement(
+                typename PrimitiveContainer::value_type::vec* darray,
+                const SampleContainer& scontainer,
+                const PrimitiveContainer& pcontainer);
     };
 
-template <typename _Scalar>
-template <class SampleContainer, class PrimitiveContainer>
-void BiasDisplacementKernel<_Scalar>::generateDisplacement(
-        typename PrimitiveContainer::value_type::vec* darray,
-        const SampleContainer& scontainer,
-        const PrimitiveContainer& pcontainer){
-    typedef typename PrimitiveContainer::value_type::vec vec;
+
+    template <typename _Scalar, class _SampleContainer, class _PrimitiveContainer>
+    void BiasDisplacementKernel<_Scalar,_SampleContainer,_PrimitiveContainer>::generateDisplacement(
+        typename _PrimitiveContainer::value_type::vec* darray,
+        const _SampleContainer& scontainer,
+        const _PrimitiveContainer& pcontainer){
+    typedef typename _PrimitiveContainer::value_type::vec vec;
 
     if (this->biasDirection >= BIAS_DIRECTION::INVALID)
         return;
 
     // direction of the bias. This is updated by sample according to its assignment
-    // This is a very slow and unefficient manner, feel free to change it if you have nothing
-    // better to do !
     vec dir (0., 0., 0.);
 
 
-    for (typename SampleContainer::const_iterator it = scontainer.cbegin();
-         it != scontainer.cend(); it++, darray++){
-        // update direction
-        switch(biasDirection){
-        case BIAS_DIRECTION::PRIMITIVE_NORMAL_VECTOR:
-        {
-            // here we need to iterate over all the primitives to find the right one...
-            // unefficient you said ??
+    switch(biasDirection){
+    case BIAS_DIRECTION::PRIMITIVE_NORMAL_VECTOR:
+    {
+        for (typename SampleContainer::const_iterator it = scontainer.cbegin();
+             it != scontainer.cend(); it++, darray++){
+            // update direction
+            // here we need to iterate over all the primitives to find the one assigned to the point...
+            // it is a very slow and unefficient implementation, feel free to change it if you have nothing
+            // better to do !
             for (typename PrimitiveContainer::const_iterator itp = pcontainer.cbegin();
                  itp != pcontainer.cend(); itp++){
                 if ((*itp).uid() == (*it).primitiveId){
@@ -106,12 +121,14 @@ void BiasDisplacementKernel<_Scalar>::generateDisplacement(
                     break;
                 }
             }
-            break;
-        }
+            // add bias
+            *darray = dir*bias;
         }
 
-        // add bias
-        *darray = dir*bias;
+        break;
+    }
+    default:
+        ;
     }
 
 }
