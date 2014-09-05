@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['tags',['TAGS',['../class_g_f2_1_1_line_primitive2.html#a66f2b9e27bc70ff50837a2bb0be70f26',1,'GF2::LinePrimitive2::TAGS()'],['../class_g_f2_1_1_point_primitive.html#adac543bf5f7b4b639dda512ddb5c95b0',1,'GF2::PointPrimitive::TAGS()']]]
+  ['smallpatchesmode',['SmallPatchesMode',['../struct_g_f2_1_1_candidate_generator_params.html#a36f15dcec7f6f8c16de9faad9c147715',1,'GF2::CandidateGeneratorParams']]]
 ];

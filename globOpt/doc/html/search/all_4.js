@@ -2,7 +2,7 @@ var searchData=
 [
   ['d',['d',['../fmincon__merged_8m.html#a1aabac6d068eef6a7bad3fdf50a05cc8',1,'d():&#160;fmincon_merged.m'],['../perturb__rects_8m.html#a48665fb4f42738b9fb0af96e08692283',1,'d():&#160;perturb_rects.m'],['../test__fmincon_8m.html#a1aabac6d068eef6a7bad3fdf50a05cc8',1,'d():&#160;test_fmincon.m'],['../lp_8m.html#a79aaf9eb97ed1c7472790b6695b6ac1c',1,'D():&#160;lp.m']]],
   ['d2',['d2',['../mix__coeffs_8m.html#a479b78c01efbe4664b402a300da492f7',1,'mix_coeffs.m']]],
-  ['data_5fcost_5fmode',['data_cost_mode',['../struct_g_f2_1_1_problem_setup_params.html#a56cfb8c77632a2bfd5c2a67049ec1ee3',1,'GF2::ProblemSetupParams::data_cost_mode()'],['../struct_g_f2_1_1_problem_setup_params.html#a29f561b77c951dc2e6dc14bbadd81c2b',1,'GF2::ProblemSetupParams::DATA_COST_MODE()']]],
+  ['data_5fcost_5fmode',['DATA_COST_MODE',['../struct_g_f2_1_1_problem_setup_params.html#a29f561b77c951dc2e6dc14bbadd81c2b',1,'GF2::ProblemSetupParams::DATA_COST_MODE()'],['../struct_g_f2_1_1_problem_setup_params.html#a56cfb8c77632a2bfd5c2a67049ec1ee3',1,'GF2::ProblemSetupParams::data_cost_mode()']]],
   ['datafit',['datafit',['../class_g_f2_1_1_solver.html#abb12460e745a38fc70baf4603e32a95a',1,'GF2::Solver']]],
   ['dec',['DEC',['../_c_make_c_compiler_id_8c.html#ad1280362da42492bbc11aa78cbf776ad',1,'DEC():&#160;CMakeCCompilerId.c'],['../_c_make_c_x_x_compiler_id_8cpp.html#ad1280362da42492bbc11aa78cbf776ad',1,'DEC():&#160;CMakeCXXCompilerId.cpp']]],
   ['deprecated_20list',['Deprecated List',['../deprecated.html',1,'']]],

@@ -11,7 +11,7 @@ var searchData=
   ['addhamminghit',['addHammingHit',['../structam_1_1_sim_ann_stats.html#a191f3ca0857d023bc80b145ac87c0b23',1,'am::SimAnnStats']]],
   ['addmodelconstraintsfunctort',['AddModelConstraintsFunctorT',['../class_g_f2_1_1_gurobi_opt.html#af834aa5b0b707a86ecf1bb5ed6e0e3e0',1,'GF2::GurobiOpt']]],
   ['addreversejump',['addReverseJump',['../structam_1_1_sim_ann_stats.html#ac3ec04053cfe5bf7f69c36b3cb1d1834',1,'am::SimAnnStats']]],
-  ['adoptpoints',['adoptPoints',['../class_g_f2_1_1_merging.html#ab36200a4ac4e02529640fdc55ac623c5',1,'GF2::Merging']]],
+  ['adoptpoints',['adoptPoints',['../class_g_f2_1_1_merging.html#a79ec13ac109ea800e0e3e2a267e05395',1,'GF2::Merging']]],
   ['advancedmodelconstraintsfunctor',['AdvancedModelConstraintsFunctor',['../struct_g_f2_1_1_advanced_model_constraints_functor.html',1,'GF2']]],
   ['aeq',['Aeq',['../test__fmincon_8m.html#a227ad4446ff9c0242e6d073fbe4df102',1,'Aeq():&#160;test_fmincon.m'],['../test__fmincon_8m.html#a51c2861b93c203dfda9cf8dee3b0db8d',1,'Aeq(i, i)+1:&#160;test_fmincon.m'],['../test__fmincon_8m.html#a3a0cc46a803d125f1402ee41c5457e74',1,'Aeq(end, j):&#160;test_fmincon.m'],['../test__fmincon_8m.html#a836e11d3a6b7a352343f48d223325032',1,'Aeq(end, j+1):&#160;test_fmincon.m']]],
   ['again',['again',['../read__ply_8m.html#a062fc39c9b0aaad4aec9448a73d316bb',1,'read_ply.m']]],

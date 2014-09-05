@@ -29,6 +29,7 @@ class Merging
         * \param[in,out] points        Contains the points, some assigned, some to be assigned to the primitives in prims.
         * \param[in] prims             Contains some primitives tagged with GID and DIR_GID. GID defines the assignment between points and primitives.
         * \param[in] scale             Distance threshold parameter.
+        * \param[in] mode              1: re-assign un-ambiguous points (1 adopter); 2: first re-assign unambiguous, then closest, if inside explaining primitive's scale.
         */
         template < class _PointPrimitiveDistanceFunctor
                  , class _PointPrimitiveT
@@ -37,7 +38,7 @@ class Merging
                  , class _PointContainerT
                  , class _PrimitiveContainerT
                  , typename _Scalar >
-        static inline int adoptPoints( _PointContainerT &points, _PrimitiveContainerT const& prims, _Scalar const scale );
+        static inline int adoptPoints( _PointContainerT &points, _PrimitiveContainerT const& prims, _Scalar const scale, char const mode );
 
         /*! \brief Merges adjacent patches
          * \tparam _PatchPatchDistanceFunctorT  Concept: \ref GF2::RepresentativeSqrPatchPatchDistanceFunctorT.

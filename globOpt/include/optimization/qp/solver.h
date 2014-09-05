@@ -204,6 +204,12 @@ Solver::generateCli( int    argc
         //generatorParams.parseRefitMode( patch_refit_mode_string );
         pcl::console::parse_argument( argc, argv, "--angle-gen", angle_gen );
         pcl::console::parse_argument( argc, argv, "--patch-pop-limit", generatorParams.patch_population_limit );
+        // small_mode
+        {
+            int small_mode = 0;
+            pcl::console::parse_argument( argc, argv, "--small-mode", small_mode );
+            generatorParams.small_mode = static_cast<CandidateGeneratorParams<Scalar>::SmallPatchesMode>( small_mode );
+        }
 
         // print usage
         {
@@ -228,6 +234,7 @@ Solver::generateCli( int    argc
             std::cerr << "\t [--patch-dist-limit " << generatorParams.patch_dist_limit_mult << "]\n";
             std::cerr << "\t [--angle-gen " << angle_gen << "]\n";
             std::cerr << "\t [--patch-pop-limit " << generatorParams.patch_population_limit << "]\n";
+            std::cerr << "\t [--small-mode " << generatorParams.small_mode << " 0: IGNORE, 1: RECEIVE_SIMILAR, 2: RECEIVE_ALL]\n";
             std::cerr << std::endl;
 
             if ( !valid_input || pcl::console::find_switch(argc,argv,"--help") || pcl::console::find_switch(argc,argv,"-h") )

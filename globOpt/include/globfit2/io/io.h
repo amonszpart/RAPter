@@ -34,7 +34,14 @@ namespace GF2
             typedef typename PrimitiveT::VectorType VectorType;
 
             // out_lines
+            std::string parent_path = boost::filesystem::path(out_file_name).parent_path().string();
+            if ( !parent_path.empty() )
+                if ( !boost::filesystem::exists(parent_path) )
+                    boost::filesystem::create_directory( boost::filesystem::path(parent_path) );
+
             std::ofstream out_file( out_file_name );
+            if ( !out_file.is_open() ) { std::cerr << "could not open file..." << out_file_name << std::endl; return EXIT_FAILURE; }
+
             int lid = 0;
             outer_const_iterator gid_end_it = primitives.end();
             for ( outer_const_iterator gid_it = primitives.begin(); gid_it != gid_end_it; ++gid_it, ++lid )

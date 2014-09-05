@@ -240,15 +240,10 @@ Segmentation::regionGrow( _PointContainerT                       & points
     std::vector<bool> assigned( points.size(), false );
     std::vector<bool> visited( points.size(), false );
 
-    //const int K = 20;
     std::vector<float>  sqr_dists( nn_K );
     std::vector< int >  neighs( nn_K );
     int                 found_points_count  = 0;
     pcl::PointXYZ       searchPoint;
-    const _Scalar       spatial_thresh      = patchPatchDistanceFunctor.getSpatialThreshold();
-    const _Scalar       dist_weight         = 0.5*0.5;
-    const _Scalar       sqr_spatial_thresh  = spatial_thresh * spatial_thresh;
-    const _Scalar       sqr_ang_thresh      = patchPatchDistanceFunctor.getAngularThreshold() * patchPatchDistanceFunctor.getAngularThreshold();
     const _Scalar       max_dist            = patchPatchDistanceFunctor.getSpatialThreshold() * _Scalar(3.5); // longest axis of ellipse)
 
     // look for neighbours, merge most similar
@@ -287,30 +282,13 @@ Segmentation::regionGrow( _PointContainerT                       & points
             const int pid2 = neighs[ pid_id ];
             if ( !assigned[pid2] )
             {
-                _Scalar diff = GF2::angleInRad( patches.back().template dir(), points[pid2].template dir() );
+                //_Scalar diff = GF2::angleInRad( patches.back().template dir(), points[pid2].template dir() );
 
                 // location from point, but direction is the representative's
                 _PointPrimitiveT p1_proxy(points[pid].template pos(), patches.back().template dir());
                 PatchT p2_proxy; p2_proxy.push_back( segmentation::PidLid(pid2,-1) ); p2_proxy.update( points );
 
-                if ( std::abs((dist_weight * sqr_dists[pid_id] / sqr_spatial_thresh + diff * diff / sqr_ang_thresh )
-                              - patchPatchDistanceFunctor.template eval<_PointPrimitiveT>( p1_proxy, p2_proxy, points, NULL )) > 1.e-6)
-                {
-                    std::cout << "sqr_dist_weight: " << dist_weight << std::endl;
-                    std::cout << "spatial_distance: " << sqrt(sqr_dists[pid_id]) << std::endl;
-                    std::cout << "spatial_distance^2: " << sqr_dists[pid_id] << std::endl;
-                    std::cout << "sqr_spatial_thresh: " << sqr_spatial_thresh << std::endl;
-                    std::cout << "ang_diff: " << diff << std::endl;
-                    std::cout << "sqr_ang_thresh: " << sqr_ang_thresh << std::endl; fflush(stdout);
-
-                    std::cerr << "gt: " << (dist_weight * sqr_dists[pid_id] / sqr_spatial_thresh + diff * diff / sqr_ang_thresh )
-                              << " vs " << patchPatchDistanceFunctor.template eval<_PointPrimitiveT>( p1_proxy, p2_proxy, points, NULL ) << std::endl;
-                }
-                else
-                    std::cout << "[" << __func__ << "]: " << "diff ok" << std::endl;
-
                 //if ( (sqrt(sqr_dists[pid_id]) < spatial_thresh) && (diff < ang_thresh) )                                      // original condition
-                //if ( (dist_weight * sqr_dists[pid_id] / sqr_spatial_thresh + diff * diff / sqr_ang_thresh ) <= _Scalar(1) )     // ellipse longer along line
                 if ( patchPatchDistanceFunctor.template eval<_PointPrimitiveT>(p1_proxy, p2_proxy, points, NULL) < patchPatchDistanceFunctor.getThreshold() )
                 {
                     patches.back().push_back( segmentation::PidLid(pid2,-1) );
