@@ -133,7 +133,6 @@ Merging::mergeCli( int argc, char** argv )
         io::writeAssociations<_PointPrimitiveT>( points   , "points_primitives_it1.csv" );
     }
 
-
     std::cout << "stopped mergeSameDirGids" << std::endl; fflush(stdout);
     return EXIT_SUCCESS;
 }//...Merging::mergeCli()
@@ -268,7 +267,7 @@ int Merging::adoptPoints( _PointContainerT          & points
                     for ( int pid2 = 0; pid2 != points.size(); ++pid2 )
                     {
                         // rule out itself
-                        if ( pid2 == pid )                                     continue;
+                        if ( pid2 == pid ) continue;
                         // rule out other orphans
                         const int gid2 = points[pid2].getTag(_PointPrimitiveT::GID);
                         if ( gid2 < 0 )  continue;
