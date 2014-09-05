@@ -315,12 +315,13 @@ Segmentation::regionGrow( _PointContainerT                       & points
     }
 
     // copy patches to groups
-    _PatchesT tmp_groups;                                       // local var, if output not needed
-    _PatchesT *groups = groups_arg ? groups_arg : &tmp_groups;  // relay, if output needed
-    (*groups).insert( (*groups).end(), patches.begin(), patches.end() );
+//    _PatchesT tmp_groups;                                       // local var, if output not needed
+//    _PatchesT *groups = groups_arg ? groups_arg : &tmp_groups;  // relay, if output needed
+    //(*groups).insert( (*groups).end(), patches.begin(), patches.end() );
+    groups_arg.insert( groups_arg.end(), patches.begin(), patches.end() );
 
     _tagPointsFromGroups<_PointPrimitiveT,_Scalar>
-                        ( points, *groups, patchPatchDistanceFunctor, gid_tag_name );
+                        ( points, groups_arg, patchPatchDistanceFunctor, gid_tag_name );
 
     return EXIT_SUCCESS;
 } // ...Segmentation::regionGrow()

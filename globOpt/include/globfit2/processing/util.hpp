@@ -71,38 +71,21 @@ namespace GF2 {
         appendAnglesFromGenerator( _AnglesContainerT &angles, _Scalar &angle_gen, char verbose = true )
         {
             std::set<_Scalar> angles_set;
-            //angles_set.insert( )
-            if ( std::find(angles.begin(), angles.end(), _Scalar(0)) != angles.end() )
-            {
-                // log
-                if ( verbose )
-                {
-                    std::cout << "[" << __func__ << "]: " << "adding 0 to ";
-                    for(size_t vi=0;vi!=angles.size();++vi)
-                        std::cout << angles[vi] << ((vi==angles.size()-1) ? "" : ", ");
-                    std::cout << "\n";
-                }
+            // copy
+            angles_set.insert( angles.begin(), angles.end() );
 
-                angles.push_back( _Scalar(0) );
-            }
+            // insert 0 element
+            angles_set.insert( _Scalar(0) );
 
             // generate
             for ( _Scalar angle = angle_gen; angle < M_PI; angle+= angle_gen )
-                angles.push_back( angle );
+                angles_set.insert( angle );
 
-            if ( std::find(angles.begin(), angles.end(), _Scalar(M_PI)) != angles.end() )
-            {
-                // log
-                if ( verbose )
-                {
-                    std::cout << "[" << __func__ << "]: " << "adding " << M_PI << " to ";
-                    for ( size_t vi=0;vi!=angles.size();++vi)
-                        std::cout << angles[vi] << ((vi==angles.size()-1) ? "" : ", ");
-                    std::cout << "\n";
-                }
+            // insert 0 element
+            angles_set.insert( _Scalar(M_PI) );
 
-                angles.push_back( _Scalar(M_PI) );
-            }
+            angles.resize( angles_set.size() );
+            std::copy( angles_set.begin(), angles_set.end(), angles.begin() );
 
             // print
             if ( verbose )
