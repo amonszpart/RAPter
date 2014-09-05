@@ -34,7 +34,7 @@ signals:
 private:
     enum SAMPLER_TYPE{
         GEN_FROM_PRIMITIVE = 0,
-        GEN_FROM_PONCTUAL  = 1
+        GEN_FROM_PUNCTUAL  = 1
     };
 
     Ui::SamplerFactory *ui;

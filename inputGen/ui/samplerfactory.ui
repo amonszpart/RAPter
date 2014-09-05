@@ -18,7 +18,7 @@
     <item row="0" column="0">
      <widget class="QToolBox" name="toolBox">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="_samplerPrimitives">
        <property name="geometry">
@@ -26,7 +26,7 @@
          <x>0</x>
          <y>0</y>
          <width>271</width>
-         <height>95</height>
+         <height>55</height>
         </rect>
        </property>
        <attribute name="label">
@@ -83,7 +83,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="_samplerPonctual">
+      <widget class="QWidget" name="_samplerPunctual">
        <property name="geometry">
         <rect>
          <x>0</x>
@@ -93,10 +93,10 @@
         </rect>
        </property>
        <attribute name="label">
-        <string>Ponctual Source</string>
+        <string>Punctual Source</string>
        </attribute>
        <attribute name="toolTip">
-        <string>Ponctual sampling source, like kinect</string>
+        <string>Punctual sampling source, like kinect</string>
        </attribute>
       </widget>
      </widget>
