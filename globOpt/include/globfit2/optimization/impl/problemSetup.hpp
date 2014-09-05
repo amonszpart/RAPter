@@ -84,7 +84,7 @@ ProblemSetup::formulateCli( int    argc
 
         // pop_limit
         {
-            pcl::console::parse_argument( argc, argv, "--patch-pop-limit", params.patch_pop_limit );
+            pcl::console::parse_argument( argc, argv, "--patch-pop-limit", params.patch_population_limit );
         }
 
         std::cerr << "[" << __func__ << "]: " << "Usage:\t gurobi_opt --formulate\n"
@@ -99,7 +99,7 @@ ProblemSetup::formulateCli( int    argc
                   << " [--constr-mode *" << (int)params.constr_mode << "* (patch | point | hybrid ) ]\n"
                   << " [--srand " << srand_val << "]\n"
                   << " [--rod " << problem_rel_path << "]\t\tRelative output path of the output matrix files\n"
-                  << " [--patch-pop-limit " << params.patch_pop_limit << "]\n"
+                  << " [--patch-pop-limit " << params.patch_population_limit << "]\n"
                   << std::endl;
 
         if ( !valid_input || pcl::console::find_switch(argc,argv,"--help") || pcl::console::find_switch(argc,argv,"-h") ) {
@@ -159,7 +159,7 @@ ProblemSetup::formulateCli( int    argc
                                                        , params.scale
                                                        , params.weights
                                                        , primPrimDistFunctor
-                                                       , params.patch_pop_limit
+                                                       , params.patch_population_limit
                                                        , verbose );
 
     // dump. default output: ./problem/*.csv; change by --rod

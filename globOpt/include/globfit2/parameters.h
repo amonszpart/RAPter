@@ -6,13 +6,28 @@
 
 namespace GF2 {
 
+    //! \brief Collection of parameters that are used in almost every solution step.
+    template <typename _Scalar>
+    struct CommonParams
+    {
+            //! \brief Scale parameter of input.
+            _Scalar scale                       = 0.05;
+
+            //! \brief Desired angles.
+            std::vector<_Scalar> angles           = { 0, M_PI_2, M_PI };
+
+            //!< \brief Point-count threshold, that decides if a patch is big or small.
+            //!         Used in \ref CandidateGenerator::generate(), \ref ProblemSetup::formulate(), \ref problemSetup::largePatchesNeedDirectionConstraint().
+            //!         In \ref CandidateGenerator::generate() decides, when a patch can distribute its directions.
+            //!         In \ref ProblemSetup::formulate() decides, which constraint is to be used in \ref problemSetup::largePatchesNeedDirectionConstraint().
+            int patch_population_limit      = 5;
+
+    }; //...CommonParams
+
     //! \brief Collection of parameters for \ref CandidateGenerator::generate.
     template <typename _Scalar>
-    struct CandidateGeneratorParams
+    struct CandidateGeneratorParams : public CommonParams<_Scalar>
     {
-            enum RefitMode { SPATIAL    //!< \deprecated Spatial refit to the member points does not make sense for oriented points.
-                           , AVG_DIR    //!< \brief Patch representative direction will be the average position and average direction of member oriented points.
-                           };
             enum PatchPatchDistMode {
 #if GF2_WITH_FULL_LINKAGE
                                       FULL_MIN      //!< \brief \ref FullLinkagePatchPatchDistanceFunctorT, \ref SpatialPatchPatchMinDistanceFunctorT
@@ -20,58 +35,42 @@ namespace GF2 {
                                     , SQR_MIN       //!< \brief \ref SquaredPatchPatchDistanceFunctorT
                                     , REPR_MIN,      //!< \brief \ref RepresentativePatchPatchDistanceFunctorT
 #endif // GF2_WITH_FULL_LINKAGE
-                                      REPR_SQR      //!< \brief \ref RepresentativeSqrPatchPatchDistanceFunctorT
+                                      REPR_SQR      //!< \brief \ref RepresentativeSqrPatchPatchDistanceFunctorT, \ref SpatialPatchPatchSingleDistanceFunctorT
                                     };
 
-            _Scalar   scale                       = 0.05;     //!< \brief Scale parameter of input.
-            std::vector<_Scalar> angles           = {0, M_PI_2, M_PI }; //!< \brief Desired angles.
-            _Scalar   angle_limit                 = 0.08f;    //!< \brief angle threshold for similar lines
-            _Scalar   parallel_limit              = _Scalar(1e-6); //!< \brief Two lines are parallel, if their angle is smaller than this. Used in \ref Merging.
-            _Scalar   angle_limit_div             = 10.f;     //!< \brief Determines, how much the angle_limit is divided by, to get the patch-similarity threshold
-            _Scalar   patch_dist_limit_mult       = 1.f;      //!< \brief Patchify takes "patch_dist_limit * scale" as maximum spatial distance
-            _Scalar   patch_spatial_weight        = _Scalar(0.5); //!< \brief Weight of spatial term in \f$ patch\_spatial\_weight^2 \cdot \frac{spat\_dist^2}{spat\_thresh} + \frac{ang\_diff^2}{ang\_thresh} < 1 \f$ regionGrowing distance functor. \sa \ref GF2::RepresentativeSqrPatchPatchDistanceFunctorT.
-            int       nn_K                        = 15;       //!< \brief Number of points used for primitive fitting
-            int       patch_population_limit      = 10;       //!< \brief Threshold, on when a patch can distribute its directions
-            RefitMode refit_mode                  = AVG_DIR;  //!< \brief Determines, how a patch gets it's final direction. A NL-LSQ to the points, or the average of local orientations.
+            //! \brief Angle threshold for similar lines.
+            //!        Used in \ref Segmentation::patchify() and \ref Merging::mergeSameDirGids().
+            _Scalar   angle_limit                 = 0.08f;
 
-            //! \brief Regiongrow uses these options to determine which functor to use for a patch-patch distance.
-            //! \sa \ref FullLinkagePatchPatchDistanceFunctorT, \ref SquaredPatchPatchDistanceFunctorT, \ref RepresentativePatchPatchDistanceFunctorT,
-            //! \sa \ref RepresentativeSqrPatchPatchDistanceFunctorT, \ref SpatialPatchPatchMinDistanceFunctorT, \ref SpatialPatchPatchMaxDistanceFunctorT
+            //! \brief Regiongrow uses this option to determine which functor to use for a patch-patch distance.
+            //!        Used in \ref Segmentation::patchify().
             PatchPatchDistMode patch_dist_mode    = REPR_SQR;
 
-            //___Parsers___
+            //! \brief Patchify takes "patch_dist_limit * scale" as maximum spatial distance.
+            //!        Used in \ref Segmentation::patchify() and \ref Merging::mergeSameDirGids().
+            //! \warning Are you sure this needs to be != 1.f? The patch_spatial_weight takes care of this for us.
+            _Scalar   patch_dist_limit_mult       = 1.f;
 
-            inline std::string printRefitMode() const
-            {
-                switch ( refit_mode )
-                {
-                    case AVG_DIR: return "avg_dir"; break;
-                    case SPATIAL: return "spatial"; break;
-                    default:      return "UNKNOWN"; break;
-                }
-            } // ...printRefitMode()
+            //! \brief Number of points used for primitive fitting.
+            //!        Used in \ref Segmentation::orientPoints(), \ref Segmentation::regionGrow() relayed from \ref Segmentation::patchify().
+            int       nn_K                        = 15;
 
-            inline int parseRefitMode( std::string const& refit_mode_string )
-            {
-                int err = EXIT_SUCCESS;
+            //! \brief Weight of spatial term in \f$ patch\_spatial\_weight^2 \cdot \frac{spat\_dist^2}{spat\_thresh} + \frac{ang\_diff^2}{ang\_thresh} < 1 \f$ regionGrowing distance functor.
+            //!        Used in \ref Segmentation::patchify() and \ref Merging::mergeSameDirGids().
+            //! \sa \ref GF2::RepresentativeSqrPatchPatchDistanceFunctorT.
+            _Scalar   patch_spatial_weight        = _Scalar(0.5);
 
-                if ( !refit_mode_string.compare("avg_dir") )
-                {
-                    this->refit_mode = AVG_DIR;
-                }
-                else if ( !refit_mode_string.compare("spatial") )
-                {
-                    this->refit_mode = SPATIAL;
-                }
-                else
-                {
-                    err = EXIT_FAILURE;
-                    this->refit_mode = SPATIAL;
-                    std::cerr << "[" << __func__ << "]: " << "Could NOT parse " << refit_mode_string << ", assuming SPATIAL" << std::endl;
-                }
+            //! \brief Determines, how much the angle_limit is divided by, to get the patch-similarity threshold.
+            //!        Used in \ref CandidateGenerator::generate().
+            _Scalar   angle_limit_div             = 10.f;
 
-                return err;
-            } // ...parseRefitMode()
+            //! \brief Two lines are parallel, if their angle is smaller than this.
+            //!        Used in \ref Merging::mergeSameDirGids() and visualization.
+            _Scalar   parallel_limit              = _Scalar(1e-6);
+
+            //_____________________________________________
+            //____________________Parsers__________________
+            //_____________________________________________
 
             inline int parsePatchDistMode( std::string const& patch_dist_mode_string )
             {
@@ -123,11 +122,51 @@ namespace GF2 {
                 }
             } // ...printPatchDistMode()
 
+#if GF2_WITH_REFIT_MODE
+            enum RefitMode { SPATIAL    //!< \deprecated Spatial refit to the member points does not make sense for oriented points.
+                           , AVG_DIR    //!< \brief Patch representative direction will be the average position and average direction of member oriented points.
+                           };
+            //! \brief Determines, how a patch gets it's final direction. A NL-LSQ to the points, or the average of local orientations.
+            //RefitMode refit_mode                  = AVG_DIR;
+
+            inline std::string printRefitMode() const
+            {
+                switch ( refit_mode )
+                {
+                    case AVG_DIR: return "avg_dir"; break;
+                    case SPATIAL: return "spatial"; break;
+                    default:      return "UNKNOWN"; break;
+                }
+            } // ...printRefitMode()
+
+            inline int parseRefitMode( std::string const& refit_mode_string )
+            {
+                int err = EXIT_SUCCESS;
+
+                if ( !refit_mode_string.compare("avg_dir") )
+                {
+                    this->refit_mode = AVG_DIR;
+                }
+                else if ( !refit_mode_string.compare("spatial") )
+                {
+                    this->refit_mode = SPATIAL;
+                }
+                else
+                {
+                    err = EXIT_FAILURE;
+                    this->refit_mode = SPATIAL;
+                    std::cerr << "[" << __func__ << "]: " << "Could NOT parse " << refit_mode_string << ", assuming SPATIAL" << std::endl;
+                }
+
+                return err;
+            } // ...parseRefitMode()
+#endif // GF2_WITH_REFIT_MODE
+
     }; // ...struct CandidateGeneratorParams
 
     //! \brief Collection of parameters the \ref ProblemSetup::formulate needs.
     template <typename _Scalar>
-    struct ProblemSetupParams
+    struct ProblemSetupParams : public CommonParams<_Scalar>
     {
         //! \brief Options to calculate data cost of primitive by.
         enum DATA_COST_MODE { ASSOC_BASED    = 0 //!< \brief \sa \ref problemSetup::associationBasedDataCost
@@ -140,28 +179,32 @@ namespace GF2 {
                             , HYBRID         = 2 //!< \brief \sa \ref problemSetup::largePatchesNeedDirectionConstraint
                             };
 
-        //! \brief Scale parameter of input.
-        _Scalar                      scale           = 0.05;
-        //! \brief Desired angles.
-        std::vector<_Scalar>         angles          = {0, M_PI_2, M_PI };
+        using CommonParams<_Scalar>::scale;
+        using CommonParams<_Scalar>::angles;
+
+        //! Decides, which constraint mode to use in \ref problemSetup::largePatchesNeedDirectionConstraint.
+        using CommonParams<_Scalar>::patch_population_limit;
+
         //! \brief Optimization weights. [ 0: unary, 1: pairwise, 2: complexity ]
         Eigen::Matrix<_Scalar,-1,1>  weights         = (Eigen::Matrix<_Scalar,-1,1>(3,1) << 10000, 10, 1).finished();
         //! \brief \copydoc CONSTR_MODE
-        CONSTR_MODE    constr_mode     = PATCH_WISE;
+        CONSTR_MODE                  constr_mode     = PATCH_WISE;
         //! \brief \copydoc DATA_COST_MODE
-        DATA_COST_MODE data_cost_mode  = ASSOC_BASED;
-        //! \brief Point-count threshold, that decides if a patch is big or small.
-        int                          patch_pop_limit = 5;
+        DATA_COST_MODE               data_cost_mode  = ASSOC_BASED;
     };
 
     template <typename _Scalar>
     struct MergeParams : public CandidateGeneratorParams<_Scalar>
     {
-        char do_adopt = 2; //!< \brief Adopt orphaned points greedily, 1: unambiguous only, 2: all.
-//        //! \brief Scale parameter of input.
-//        _Scalar                      scale           = 0.05;
-//        //! \brief Desired angles.
-//        std::vector<_Scalar>         angles          = {0, M_PI_2, M_PI };
+        using CommonParams<_Scalar>::scale;
+        using CommonParams<_Scalar>::angles;
+        using CandidateGeneratorParams<_Scalar>::patch_dist_limit_mult;
+        using CandidateGeneratorParams<_Scalar>::angle_limit;
+        using CandidateGeneratorParams<_Scalar>::patch_spatial_weight;
+        using CandidateGeneratorParams<_Scalar>::parallel_limit;
+
+        //< \brief Adopt orphaned points greedily, 1: unambiguous only, 2: all.
+        char do_adopt = 2;
     };
 
 }

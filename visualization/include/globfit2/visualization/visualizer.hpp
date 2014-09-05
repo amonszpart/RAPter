@@ -141,9 +141,17 @@ namespace GF2
             for ( size_t lid1 = 0; lid1 != primitives[lid].size(); ++lid1 )
             {
                 char line_name[64];
-                sprintf( line_name, "line_%d_%d", static_cast<int>(lid), static_cast<int>(lid1) );
+                sprintf( line_name, "line_%04lu_%04lu", lid, lid1 );
                 const int gid     = primitives[lid][lid1].getTag( PrimitiveT::GID     );
                 const int dir_gid = primitives[lid][lid1].getTag( PrimitiveT::DIR_GID );
+
+//                if ( lid != gid )
+//                { std::cout << "!!\tstarting " << line_name << ": " << lid << ", " << lid1 << ", " << gid << ", " << dir_gid << std::endl; fflush(stdout); }
+//                else
+//                { std::cout << "starting " << line_name << ": " << lid << ", " << lid1 << ", " << gid << ", " << dir_gid << std::endl; fflush(stdout); }
+
+//                if ( strcmp(line_name,"line_2_11") == 0 )
+//                { std::cout << "!!!\t\tequal " << line_name << ": " << lid << ", " << lid1 << ", " << gid << ", " << dir_gid << std::endl; fflush(stdout); }
 
                 Eigen::Matrix<_Scalar,3,1> prim_colour;
                 prim_colour << ((gid >= 0) ? (colours[gid](0) / 255.f) : colour(0)),
@@ -161,7 +169,6 @@ namespace GF2
                         drawEllipse( vptr, cloud, indices, scale, gid, prim_colour );
 
                 } //...if use_tags
-
                 PrimitiveT::template draw<PointT>( primitives[lid][lid1]
                                                    , &points //cloud
                                                    , /*   threshold: */ scale * _Scalar(10)
@@ -175,6 +182,7 @@ namespace GF2
                 vptr->setShapeRenderingProperties( pcl::visualization::PCL_VISUALIZER_LINE_WIDTH, 2.0, line_name, 0 );
 
                 // add line size
+                if ( !lid1 ) // only once per cluster
                 {
                     char popstr[255];
                     sprintf( popstr, "%d", populations[gid] );
