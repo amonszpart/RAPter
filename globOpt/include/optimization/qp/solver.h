@@ -256,17 +256,19 @@ Solver::generateCli( int    argc
     // Read desired angles
     if ( EXIT_SUCCESS == err )
     {
-        generatorParams.angles = { Scalar(0) };
-        // generate
-        for ( Scalar angle = angle_gen; angle < M_PI; angle+= angle_gen )
-            generatorParams.angles.push_back( angle );
-        generatorParams.angles.push_back( M_PI );
+        processing::appendAnglesFromGenerator( generatorParams.angles, angle_gen, true );
+        processing::appendAnglesFromGenerator( generatorParams.angles, angle_gen, true );
+//        generatorParams.angles = { Scalar(0) };
+//        // generate
+//        for ( Scalar angle = angle_gen; angle < M_PI; angle+= angle_gen )
+//            generatorParams.angles.push_back( angle );
+//        generatorParams.angles.push_back( M_PI );
 
-        // print
-        std::cout << "Desired angles: {";
-        for ( size_t vi=0;vi!=generatorParams.angles.size();++vi)
-            std::cout << generatorParams.angles[vi] << ((vi==generatorParams.angles.size()-1) ? "" : ", ");
-        std::cout << "}\n";
+//        // print
+//        std::cout << "Desired angles: {";
+//        for ( size_t vi=0;vi!=generatorParams.angles.size();++vi)
+//            std::cout << generatorParams.angles[vi] << ((vi==generatorParams.angles.size()-1) ? "" : ", ");
+//        std::cout << "}\n";
     } //...read angles
 
     // Read points

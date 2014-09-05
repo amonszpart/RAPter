@@ -40,9 +40,10 @@ class Merging
                  , typename _Scalar >
         static inline int adoptPoints( _PointContainerT &points, _PrimitiveContainerT const& prims, _Scalar const scale, char const mode );
 
-        /*! \brief Merges adjacent patches
-         * \tparam _PatchPatchDistanceFunctorT  Concept: \ref GF2::RepresentativeSqrPatchPatchDistanceFunctorT.
-         * \param[in] patchPatchDistFunct       Distance functor between two patches, to define adjacency.
+        /*! \brief Merges adjacent patches that have the same direction ID or are almost parallel.
+         *  \tparam _PatchPatchDistanceFunctorT  Concept: \ref GF2::RepresentativeSqrPatchPatchDistanceFunctorT.
+         *  \param[in] patchPatchDistFunct       Distance functor between two patches, to define adjacency.
+         *  \param[in] spatial_threshold         Two extrema should be at least this close to be merged. Concept: \ref MergeParams::spatial_threshold_mult == 3 * scale.
          */
         template < class    _PrimitiveT
                  , class    _PointPrimitiveT
@@ -55,6 +56,7 @@ class Merging
                                           , _PointContainerT          & points
                                           , _PrimitiveContainerT const& primitives
                                           , _Scalar              const  scale
+                                          , _Scalar              const  spatial_threshold
                                           , _Scalar              const  parallel_limit
                                           , _PatchPatchDistanceFunctorT const& patchPatchDistFunct );
 

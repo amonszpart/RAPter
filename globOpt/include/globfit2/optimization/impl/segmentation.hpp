@@ -14,7 +14,7 @@
 
 namespace GF2 {
 
-//! \param[in/out] points
+//! \param[in,out] points
 template < class    _PointPrimitiveT
          , class    _PrimitiveT
          , typename _Scalar
@@ -124,7 +124,7 @@ Segmentation:: fitLocal( _PrimitiveContainerT        & lines
     return EXIT_SUCCESS;
 } // ...Segment::propose()
 
-/*!
+/*
  * \brief Groups unoriented points into oriented patches represented by a single primitive
  *                   (1) group to patches
  *                   (2) refit lines to patches
@@ -162,13 +162,12 @@ Segmentation::patchify( _PrimitiveContainerT                   & patches
     PatchesT groups;
     {
         regionGrow<_PrimitiveContainerT>
-                  ( /* [in/out]  points/pointsWGIDTag: */ points
+                  ( /* [in,out]  points/pointsWGIDTag: */ points
+                  , /* [out]          groups_pointids: */ groups
                   , /* [in]                     scale: */ scale
-                  , /* [in]            desired_angles: */ angles
                   , /* [in] patchPatchDistanceFunctor: */ patchPatchDistanceFunctor
                   , /* [in]              gid_tag_name: */ PointPrimitiveT::GID
-                  , /* [in]                      nn_K: */ nn_K
-                  , /* [out]          groups_pointids: */ &groups );
+                  , /* [in]                      nn_K: */ nn_K );
     } // ... (1) group
 
     // (2) Create PrimitiveContainer
@@ -182,10 +181,23 @@ Segmentation::patchify( _PrimitiveContainerT                   & patches
     return EXIT_SUCCESS;
 } // ...Segmentation::patchify()
 
-//! \brief Greedy region growing
-//! \param[out] groups_arg Pointer to vector<segmentation::Patch>
-//! \param[in] gid_tag_name                 The key value of GID in _PointT. Suggested to be: _PointT::GID.
-//! \param[in] nn_K                         Number of nearest neighbour points looked for.
+/*  \brief                               Greedy region growing
+ *  \tparam _PrimitiveContainerT         Concept: std::vector<\ref GF2::LinePrimitive2>
+ *  \tparam _PointContainerT             Concept: std::vector<\ref GF2::PointPrimitive>
+ *  \tparam _PointPatchDistanceFunctorT  Concept: \ref RepresentativeSqrPatchPatchDistanceFunctorT.
+ *  \tparam _PatchesT                    Concept: vector< \ref segmentation::Patch <_Scalar,_PrimitiveT> >
+ *  \tparam _PrimitiveT                  Concept: \ref GF2::LinePrimitive2
+ *  \tparam _Scalar                      Concept: float
+ *  \tparam _PointT                      Concept: \ref GF2::PointPrimitive
+ *  \param[in,out] points                Input points to create patches from. The \p gid_tag_name field of the points will be set according to their patch assignment.
+ *  \param[out] groups_arg               Holds the point-id-groups, that can then be refit to to get a patch location and direction. Concept: vector<\ref segmentation::Patch>.
+ *  \param[in] scale                     Spatial extent of the input. In practice unused, since the \p patchPatchDistanceFunctor was constructed with it.
+ *  \param[in] patchPatchDistanceFunctor Takes two patches, and decides, whether they are similar enough to be merged.
+ *                                       In practice, takes a patch that is currently grown, and a temporary patch
+ *                                       that only contains a neighbouring point, and decides. See in \ref RepresentativeSqrPatchPatchDistanceFunctorT.
+ *  \param[in] gid_tag_name              The key value of GID in _PointT. Suggested to be: _PointT::GID.
+ *  \param[in] nn_K                      Number of nearest neighbour points looked for.
+ */
 template < class       _PrimitiveContainerT
          , class       _PointContainerT
          , class       _PatchPatchDistanceFunctorT
@@ -194,12 +206,11 @@ template < class       _PrimitiveContainerT
          , typename    _Scalar
          , class       _PointPrimitiveT> int
 Segmentation::regionGrow( _PointContainerT                       & points
+                        , _PatchesT                              & groups_arg
                         , _Scalar                           const  /*scale*/
-                        , std::vector<_Scalar>              const& /*angles*/
                         , _PatchPatchDistanceFunctorT       const& patchPatchDistanceFunctor
                         , int                               const  gid_tag_name
-                        , int                               const  nn_K
-                        , _PatchesT                              * groups_arg               )
+                        , int                               const  nn_K )
 {
     std::cout << "[" << __func__ << "]: " << "running with " << patchPatchDistanceFunctor.toString() << std::endl;
     std::cout << "[" << __func__ << "]: " << "running at " << patchPatchDistanceFunctor.getSpatialThreshold() << " spatial threshold" << std::endl;

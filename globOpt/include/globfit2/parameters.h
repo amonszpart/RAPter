@@ -221,8 +221,12 @@ namespace GF2 {
         using CandidateGeneratorParams<_Scalar>::angle_limit;
         using CandidateGeneratorParams<_Scalar>::patch_spatial_weight;
 
-        //< \brief Adopt orphaned points greedily, 1: unambiguous only, 2: all.
-        char do_adopt = 2;
+        //! \brief Adopt orphaned points greedily, 1: unambiguous only, 2: all.
+        int do_adopt = 2;
+
+        /*! \brief Multiplied by scale decides, whether two patches are adjacent (have two extrema closer than spatial_threshold_mult * scale).
+         *         Used in \ref Merging::mergeSameDirGids(). */
+        _Scalar spatial_threshold_mult = _Scalar( 2.5 );
     };
 
 }
