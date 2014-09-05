@@ -31,7 +31,9 @@ class Solver
         typedef Eigen::SparseMatrix<Scalar,Eigen::RowMajor> SparseMatrix;
 
         //static inline int show       ( int argc, char** argv );
+#if WITH_SAMPLE_INPUT
         static inline int sampleInput( int argc, char** argv );
+#endif // WITH_SAMPLE_INPUT
         static inline int generateCli   ( int argc, char** argv );
         //static inline int formulate  ( int argc, char** argv );
         static inline int solve      ( int argc, char** argv );
