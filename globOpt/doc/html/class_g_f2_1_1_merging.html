@@ -112,10 +112,10 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a79ec13ac109ea800e0e3e2a267e05395"><td class="memTemplItemLeft" align="right" valign="top">static int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="class_g_f2_1_1_merging.html#a79ec13ac109ea800e0e3e2a267e05395">adoptPoints</a> (_PointContainerT &amp;<a class="el" href="my__ply__read_8m.html#a89e43a853a4a07e7e9741ad321fd2819">points</a>, _PrimitiveContainerT const &amp;<a class="el" href="lp_8m.html#ae8954d9790c81e762964bce1b5bcda08">prims</a>, _Scalar const <a class="el" href="patch_cost_function_8m.html#acec6d8ad52a28972fa74e071c1a63b6a">scale</a>, char const mode)</td></tr>
 <tr class="memdesc:a79ec13ac109ea800e0e3e2a267e05395"><td class="mdescLeft">&#160;</td><td class="mdescRight">Greedily assigns points with GID-s that are not in prims to prims that explain them. Unambiguous assignments go through first, than based on proximity, capped by scale.  <a href="#a79ec13ac109ea800e0e3e2a267e05395">More...</a><br/></td></tr>
 <tr class="separator:a79ec13ac109ea800e0e3e2a267e05395"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a03ef3a6663912a0edfdc27b42000e247"><td class="memTemplParams" colspan="2">template&lt;class _PrimitiveT , class _PointPrimitiveT , class _inner_const_iterator , class _PrimitiveContainerT , class _PointContainerT , typename _Scalar , class _PatchPatchDistanceFunctorT &gt; </td></tr>
-<tr class="memitem:a03ef3a6663912a0edfdc27b42000e247"><td class="memTemplItemLeft" align="right" valign="top">static int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="class_g_f2_1_1_merging.html#a03ef3a6663912a0edfdc27b42000e247">mergeSameDirGids</a> (_PrimitiveContainerT &amp;out_primitives, _PointContainerT &amp;<a class="el" href="my__ply__read_8m.html#a89e43a853a4a07e7e9741ad321fd2819">points</a>, _PrimitiveContainerT const &amp;<a class="el" href="globfit_8m.html#aaa2020b443560284c949661ae094df40">primitives</a>, _Scalar const <a class="el" href="patch_cost_function_8m.html#acec6d8ad52a28972fa74e071c1a63b6a">scale</a>, _Scalar const parallel_limit, _PatchPatchDistanceFunctorT const &amp;patchPatchDistFunct)</td></tr>
-<tr class="memdesc:a03ef3a6663912a0edfdc27b42000e247"><td class="mdescLeft">&#160;</td><td class="mdescRight">Merges adjacent patches.  <a href="#a03ef3a6663912a0edfdc27b42000e247">More...</a><br/></td></tr>
-<tr class="separator:a03ef3a6663912a0edfdc27b42000e247"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5e3f8e461538f9842412f7597de9c699"><td class="memTemplParams" colspan="2">template&lt;class _PrimitiveT , class _PointPrimitiveT , class _inner_const_iterator , class _PrimitiveContainerT , class _PointContainerT , typename _Scalar , class _PatchPatchDistanceFunctorT &gt; </td></tr>
+<tr class="memitem:a5e3f8e461538f9842412f7597de9c699"><td class="memTemplItemLeft" align="right" valign="top">static int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="class_g_f2_1_1_merging.html#a5e3f8e461538f9842412f7597de9c699">mergeSameDirGids</a> (_PrimitiveContainerT &amp;out_primitives, _PointContainerT &amp;<a class="el" href="my__ply__read_8m.html#a89e43a853a4a07e7e9741ad321fd2819">points</a>, _PrimitiveContainerT const &amp;<a class="el" href="globfit_8m.html#aaa2020b443560284c949661ae094df40">primitives</a>, _Scalar const <a class="el" href="patch_cost_function_8m.html#acec6d8ad52a28972fa74e071c1a63b6a">scale</a>, _Scalar const spatial_threshold, _Scalar const parallel_limit, _PatchPatchDistanceFunctorT const &amp;patchPatchDistFunct)</td></tr>
+<tr class="memdesc:a5e3f8e461538f9842412f7597de9c699"><td class="mdescLeft">&#160;</td><td class="mdescRight">Merges adjacent patches that have the same direction ID or are almost parallel.  <a href="#a5e3f8e461538f9842412f7597de9c699">More...</a><br/></td></tr>
+<tr class="separator:a5e3f8e461538f9842412f7597de9c699"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock">
@@ -189,7 +189,7 @@ template&lt;class _PointPrimitiveDistanceFunctor , class _PointPrimitiveT , clas
   </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="merging_8hpp_source.html#l00163">163</a> of file <a class="el" href="merging_8hpp_source.html">merging.hpp</a>.</p>
+<p>Definition at line <a class="el" href="merging_8hpp_source.html#l00168">168</a> of file <a class="el" href="merging_8hpp_source.html">merging.hpp</a>.</p>
 
 </div>
 </div>
@@ -231,7 +231,7 @@ template&lt;class _PrimitiveContainerT , class _PointContainerT , typename _Scal
 
 </div>
 </div>
-<a class="anchor" id="a03ef3a6663912a0edfdc27b42000e247"></a>
+<a class="anchor" id="a5e3f8e461538f9842412f7597de9c699"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
@@ -268,6 +268,12 @@ template&lt;class _PrimitiveT , class _PointPrimitiveT , class _inner_const_iter
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">_Scalar const&#160;</td>
+          <td class="paramname"><em>spatial_threshold</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">_Scalar const&#160;</td>
           <td class="paramname"><em>parallel_limit</em>, </td>
         </tr>
         <tr>
@@ -289,8 +295,7 @@ template&lt;class _PrimitiveT , class _PointPrimitiveT , class _inner_const_iter
 </table>
 </div><div class="memdoc">
 
-<p>Merges adjacent patches. </p>
-<p>Merges adjacent patches that have the same direction ID.</p>
+<p>Merges adjacent patches that have the same direction ID or are almost parallel. </p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">_PatchPatchDistanceFunctorT</td><td>Concept: <a class="el" href="struct_g_f2_1_1_representative_sqr_patch_patch_distance_functor_t.html">GF2::RepresentativeSqrPatchPatchDistanceFunctorT</a>. </td></tr>
@@ -300,11 +305,26 @@ template&lt;class _PrimitiveT , class _PointPrimitiveT , class _inner_const_iter
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">patchPatchDistFunct</td><td>Distance functor between two patches, to define adjacency. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">spatial_threshold</td><td>Two extrema should be at least this close to be merged. Concept: <a class="el" href="struct_g_f2_1_1_merge_params.html#ad0d324098a87d18a77737184d5e27d60">MergeParams::spatial_threshold_mult</a> == 3 * scale.</td></tr>
   </table>
   </dd>
 </dl>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">_PatchPatchDistanceFunctorT</td><td>Concept: <a class="el" href="struct_g_f2_1_1_representative_sqr_patch_patch_distance_functor_t.html">GF2::RepresentativeSqrPatchPatchDistanceFunctorT</a>. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">patchPatchDistFunct</td><td>Distance functor between two patches, to define adjacency. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">spatial_threshold</td><td>Two extrema should be at least this close to be merged. Concept: <a class="el" href="struct_g_f2_1_1_merge_params.html#ad0d324098a87d18a77737184d5e27d60">MergeParams::spatial_threshold_mult</a> == 3 * scale. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section see"><dt>See Also</dt><dd><a class="el" href="namespace_g_f2.html#adac5eb9e014f10b3a0f64d5bde6a9fab" title="Decides, if two patches are adjacent and have the same direction. Used in erging::mergeSameDirGids()...">decide_merge()</a> </dd></dl>
 
-<p>Definition at line <a class="el" href="merging_8hpp_source.html#l00322">322</a> of file <a class="el" href="merging_8hpp_source.html">merging.hpp</a>.</p>
+<p>Definition at line <a class="el" href="merging_8hpp_source.html#l00339">339</a> of file <a class="el" href="merging_8hpp_source.html">merging.hpp</a>.</p>
 
 </div>
 </div>
@@ -315,7 +335,7 @@ template&lt;class _PrimitiveT , class _PointPrimitiveT , class _inner_const_iter
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Sep 5 2014 14:16:31 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Sep 5 2014 16:31:26 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

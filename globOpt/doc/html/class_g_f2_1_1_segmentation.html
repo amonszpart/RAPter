@@ -113,10 +113,10 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a5060de9c9444d728400f8ea8e0f575df"><td class="memTemplItemLeft" align="right" valign="top">static int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="class_g_f2_1_1_segmentation.html#a5060de9c9444d728400f8ea8e0f575df">patchify</a> (_PrimitiveContainerT &amp;patches, _PointContainerT &amp;<a class="el" href="my__ply__read_8m.html#a89e43a853a4a07e7e9741ad321fd2819">points</a>, _Scalar const <a class="el" href="patch_cost_function_8m.html#acec6d8ad52a28972fa74e071c1a63b6a">scale</a>, std::vector&lt; _Scalar &gt; const &amp;angles, _PatchPatchDistanceFunctorT const &amp;patchPatchDistanceFunctor, int const nn_K)</td></tr>
 <tr class="memdesc:a5060de9c9444d728400f8ea8e0f575df"><td class="mdescLeft">&#160;</td><td class="mdescRight">patchify Groups unoriented points into oriented patches represented by a single primitive (2) group to patches (3) refit lines to patches  <a href="#a5060de9c9444d728400f8ea8e0f575df">More...</a><br/></td></tr>
 <tr class="separator:a5060de9c9444d728400f8ea8e0f575df"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0920269b484d69420187c2074bddf11c"><td class="memTemplParams" colspan="2">template&lt;class _PrimitiveContainerT , class _PointContainerT , class _PatchPatchDistanceFunctorT , class _PatchesT , class _PrimitiveT  = typename _PrimitiveContainerT::value_type, typename _Scalar  = typename _PrimitiveT::Scalar, class _PointT  = typename _PointContainerT::value_type&gt; </td></tr>
-<tr class="memitem:a0920269b484d69420187c2074bddf11c"><td class="memTemplItemLeft" align="right" valign="top">static int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="class_g_f2_1_1_segmentation.html#a0920269b484d69420187c2074bddf11c">regionGrow</a> (_PointContainerT &amp;<a class="el" href="my__ply__read_8m.html#a89e43a853a4a07e7e9741ad321fd2819">points</a>, _Scalar const <a class="el" href="patch_cost_function_8m.html#acec6d8ad52a28972fa74e071c1a63b6a">scale</a>, std::vector&lt; _Scalar &gt; const &amp;, _PatchPatchDistanceFunctorT const &amp;patchPatchDistanceFunctor, int const gid_tag_name, int const nn_K, _PatchesT *groups_arg=NULL)</td></tr>
-<tr class="memdesc:a0920269b484d69420187c2074bddf11c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Greedy region growing.  <a href="#a0920269b484d69420187c2074bddf11c">More...</a><br/></td></tr>
-<tr class="separator:a0920269b484d69420187c2074bddf11c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a412e46ffae6efb8e08c71a19e6ce8694"><td class="memTemplParams" colspan="2">template&lt;class _PrimitiveContainerT , class _PointContainerT , class _PatchPatchDistanceFunctorT , class _PatchesT , class _PrimitiveT  = typename _PrimitiveContainerT::value_type, typename _Scalar  = typename _PrimitiveT::Scalar, class _PointT  = typename _PointContainerT::value_type&gt; </td></tr>
+<tr class="memitem:a412e46ffae6efb8e08c71a19e6ce8694"><td class="memTemplItemLeft" align="right" valign="top">static int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="class_g_f2_1_1_segmentation.html#a412e46ffae6efb8e08c71a19e6ce8694">regionGrow</a> (_PointContainerT &amp;<a class="el" href="my__ply__read_8m.html#a89e43a853a4a07e7e9741ad321fd2819">points</a>, _PatchesT &amp;groups_arg, _Scalar const , _PatchPatchDistanceFunctorT const &amp;patchPatchDistanceFunctor, int const gid_tag_name, int const nn_K)</td></tr>
+<tr class="memdesc:a412e46ffae6efb8e08c71a19e6ce8694"><td class="mdescLeft">&#160;</td><td class="mdescRight">Greedy region growing.  <a href="#a412e46ffae6efb8e08c71a19e6ce8694">More...</a><br/></td></tr>
+<tr class="separator:a412e46ffae6efb8e08c71a19e6ce8694"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5455cad2a3e2f91b7dc498d7139bb961"><td class="memTemplParams" colspan="2">template&lt;class _PrimitiveContainerT , class _PointContainerPtrT &gt; </td></tr>
 <tr class="memitem:a5455cad2a3e2f91b7dc498d7139bb961"><td class="memTemplItemLeft" align="right" valign="top">static int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="class_g_f2_1_1_segmentation.html#a5455cad2a3e2f91b7dc498d7139bb961">fitLocal</a> (_PrimitiveContainerT &amp;lines, _PointContainerPtrT const <a class="el" href="lp_8m.html#a629c932e04d057de3f60912da6e565c2">cloud</a>, std::vector&lt; int &gt; const *indices, int const K, float const radius, bool const soft_radius, std::vector&lt; int &gt; *mapping)</td></tr>
 <tr class="memdesc:a5455cad2a3e2f91b7dc498d7139bb961"><td class="mdescLeft">&#160;</td><td class="mdescRight">propose Create local fits to local neighbourhoods, these will be the point orientations.  <a href="#a5455cad2a3e2f91b7dc498d7139bb961">More...</a><br/></td></tr>
@@ -178,7 +178,7 @@ template&lt;class _PointPrimitiveT , typename _Scalar , class _PointPatchDistanc
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="segmentation_8hpp_source.html#l00323">323</a> of file <a class="el" href="segmentation_8hpp_source.html">segmentation.hpp</a>.</p>
+<p>Definition at line <a class="el" href="segmentation_8hpp_source.html#l00334">334</a> of file <a class="el" href="segmentation_8hpp_source.html">segmentation.hpp</a>.</p>
 
 </div>
 </div>
@@ -296,7 +296,7 @@ template&lt;class _PointPrimitiveT , class _PrimitiveT , typename _Scalar , clas
     <tr><td class="paramdir"></td><td class="paramname">in/out]</td><td>points </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">scale</td><td>Fit radius </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">nn_K</td><td>Nearest neighbour count to fit primitive to.</td></tr>
-    <tr><td class="paramdir"></td><td class="paramname">in/out]</td><td>points </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">points</td><td></td></tr>
   </table>
   </dd>
 </dl>
@@ -364,7 +364,6 @@ template&lt;class _PrimitiveT , typename _Scalar , class _PrimitiveContainerT , 
 </div><div class="memdoc">
 
 <p>patchify Groups unoriented points into oriented patches represented by a single primitive (2) group to patches (3) refit lines to patches </p>
-<p>Groups unoriented points into oriented patches represented by a single primitive (1) group to patches (2) refit lines to patches.</p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">_PrimitiveContainerT</td><td>Concept: std::map&lt; int, std::vector&lt;_PrimitiveT&gt; &gt;. Groups primitives by their GID. </td></tr>
@@ -378,25 +377,8 @@ template&lt;class _PrimitiveT , typename _Scalar , class _PrimitiveContainerT , 
     <tr><td class="paramdir">[in,out]</td><td class="paramname">points</td><td>Input points that get assigned to the patches by their GID tag set. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">scale</td><td>Spatial scale to use for fits. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">angles</td><td>Desired angles to use for groupings. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">patchPatchDistanceFunctor</td><td><a class="el" href="class_g_f2_1_1_segmentation.html#a0920269b484d69420187c2074bddf11c" title="Greedy region growing. ">regionGrow()</a> uses the thresholds encoded to group points. The evalSpatial() function is used to assign orphan points. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">nn_K</td><td>Number of nearest neighbour points looked for in <a class="el" href="class_g_f2_1_1_segmentation.html#a0920269b484d69420187c2074bddf11c" title="Greedy region growing. ">regionGrow()</a>.</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="tparams"><dt>Template Parameters</dt><dd>
-  <table class="tparams">
-    <tr><td class="paramname">_PrimitiveContainerT</td><td>Concept: std::map&lt; int, std::vector&lt;_PrimitiveT&gt; &gt;. Groups primitives by their GID. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[out]</td><td class="paramname">patches</td><td>Ready to process patches, each of them with one direction only. ( { 0: [Primitive00] }, { 1: [Primitive11] }, ... ) </td></tr>
-    <tr><td class="paramdir"></td><td class="paramname">in/out]</td><td>points Input points that get assigned to the patches by their GID tag set. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">scale</td><td>Spatial scale to use for fits. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">angles</td><td>Desired angles to use for groupings. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">patchPatchDistanceFunctor</td><td><a class="el" href="class_g_f2_1_1_segmentation.html#a0920269b484d69420187c2074bddf11c" title="Greedy region growing. ">regionGrow()</a> uses the thresholds encoded to group points. The evalSpatial() function is used to assign orphan points. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">nn_K</td><td>Number of nearest neighbour points looked for in <a class="el" href="class_g_f2_1_1_segmentation.html#a0920269b484d69420187c2074bddf11c" title="Greedy region growing. ">regionGrow()</a>. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">patchPatchDistanceFunctor</td><td><a class="el" href="class_g_f2_1_1_segmentation.html#a412e46ffae6efb8e08c71a19e6ce8694" title="Greedy region growing. ">regionGrow()</a> uses the thresholds encoded to group points. The evalSpatial() function is used to assign orphan points. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nn_K</td><td>Number of nearest neighbour points looked for in <a class="el" href="class_g_f2_1_1_segmentation.html#a412e46ffae6efb8e08c71a19e6ce8694" title="Greedy region growing. ">regionGrow()</a>. </td></tr>
   </table>
   </dd>
 </dl>
@@ -405,7 +387,7 @@ template&lt;class _PrimitiveT , typename _Scalar , class _PrimitiveContainerT , 
 
 </div>
 </div>
-<a class="anchor" id="a0920269b484d69420187c2074bddf11c"></a>
+<a class="anchor" id="a412e46ffae6efb8e08c71a19e6ce8694"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
@@ -423,13 +405,13 @@ template&lt;class _PrimitiveContainerT , class _PointContainerT , class _PatchPa
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">_Scalar const&#160;</td>
-          <td class="paramname"><em>scale</em>, </td>
+          <td class="paramtype">_PatchesT &amp;&#160;</td>
+          <td class="paramname"><em>groups_arg</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">std::vector&lt; _Scalar &gt; const &amp;&#160;</td>
+          <td class="paramtype">_Scalar const&#160;</td>
           <td class="paramname">, </td>
         </tr>
         <tr>
@@ -448,13 +430,7 @@ template&lt;class _PrimitiveContainerT , class _PointContainerT , class _PatchPa
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int const&#160;</td>
-          <td class="paramname"><em>nn_K</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">_PatchesT *&#160;</td>
-          <td class="paramname"><em>groups_arg</em> = <code>NULL</code>&#160;</td>
+          <td class="paramname"><em>nn_K</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -474,8 +450,8 @@ template&lt;class _PrimitiveContainerT , class _PointContainerT , class _PatchPa
   <table class="tparams">
     <tr><td class="paramname">_PrimitiveContainerT</td><td>Concept: std::vector&lt;<a class="el" href="class_g_f2_1_1_line_primitive2.html">GF2::LinePrimitive2</a>&gt; </td></tr>
     <tr><td class="paramname">_PointContainerT</td><td>Concept: std::vector&lt;<a class="el" href="class_g_f2_1_1_point_primitive.html">GF2::PointPrimitive</a>&gt; </td></tr>
-    <tr><td class="paramname">_PointPatchDistanceFunctorT</td><td>Concept: FullLinkagePointPatchDistanceFunctor </td></tr>
-    <tr><td class="paramname">_PatchesT</td><td></td></tr>
+    <tr><td class="paramname">_PointPatchDistanceFunctorT</td><td>Concept: <a class="el" href="struct_g_f2_1_1_representative_sqr_patch_patch_distance_functor_t.html">RepresentativeSqrPatchPatchDistanceFunctorT</a>. </td></tr>
+    <tr><td class="paramname">_PatchesT</td><td>Concept: vector&lt; <a class="el" href="struct_g_f2_1_1segmentation_1_1_patch.html">segmentation::Patch</a> &lt;_Scalar,_PrimitiveT&gt; &gt; </td></tr>
     <tr><td class="paramname">_PrimitiveT</td><td>Concept: <a class="el" href="class_g_f2_1_1_line_primitive2.html">GF2::LinePrimitive2</a> </td></tr>
     <tr><td class="paramname">_Scalar</td><td>Concept: float </td></tr>
     <tr><td class="paramname">_PointT</td><td>Concept: <a class="el" href="class_g_f2_1_1_point_primitive.html">GF2::PointPrimitive</a> </td></tr>
@@ -484,16 +460,17 @@ template&lt;class _PrimitiveContainerT , class _PointContainerT , class _PatchPa
 </dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">gid_tag_name</td><td>The key value of GID in _PointT. Suggested to be: _PointT::GID. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">nn_K</td><td>Number of nearest neighbour points looked for.</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">groups_arg</td><td>Pointer to vector&lt;segmentation::Patch&gt; </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">points</td><td>Input points to create patches from. The <code>gid_tag_name</code> field of the points will be set according to their patch assignment. </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">groups_arg</td><td>Holds the point-id-groups, that can then be refit to to get a patch location and direction. Concept: vector&lt;<a class="el" href="struct_g_f2_1_1segmentation_1_1_patch.html">segmentation::Patch</a>&gt;. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">scale</td><td>Spatial extent of the input. In practice unused, since the <code>patchPatchDistanceFunctor</code> was constructed with it. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">patchPatchDistanceFunctor</td><td>Takes two patches, and decides, whether they are similar enough to be merged. In practice, takes a patch that is currently grown, and a temporary patch that only contains a neighbouring point, and decides. See in <a class="el" href="struct_g_f2_1_1_representative_sqr_patch_patch_distance_functor_t.html">RepresentativeSqrPatchPatchDistanceFunctorT</a>. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">gid_tag_name</td><td>The key value of GID in _PointT. Suggested to be: _PointT::GID. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">nn_K</td><td>Number of nearest neighbour points looked for. </td></tr>
   </table>
   </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="segmentation_8hpp_source.html#l00196">196</a> of file <a class="el" href="segmentation_8hpp_source.html">segmentation.hpp</a>.</p>
+<p>Definition at line <a class="el" href="segmentation_8hpp_source.html#l00208">208</a> of file <a class="el" href="segmentation_8hpp_source.html">segmentation.hpp</a>.</p>
 
 </div>
 </div>
@@ -504,7 +481,7 @@ template&lt;class _PrimitiveContainerT , class _PointContainerT , class _PatchPa
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Sep 5 2014 14:16:31 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Sep 5 2014 16:31:26 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>
