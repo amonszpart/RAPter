@@ -134,12 +134,13 @@ DisplacementFactory::getSelectedLayerFromUI(){
     return ui->_displacementLayerTable->row(selectedItems.front());
 }
 
-void
+bool
 DisplacementFactory::configureFromUI(InputGen::Application::Project::DisplacementKernel *kernel){
     typedef InputGen::Application::Scalar S;
     typedef InputGen::Application::Project::SampleContainer    SC;
     typedef InputGen::Application::Project::PrimitiveContainer PC;
 
+    bool needUpdate = false;
 
     switch(kernel->type){
     case::InputGen::DISPLACEMENT_KERNEL_TYPE::DISPLACEMENT_BIAS:
@@ -151,11 +152,14 @@ DisplacementFactory::configureFromUI(InputGen::Application::Project::Displacemen
             std::cerr << "This should nerver happen... "
                       << __FILE__ << " "
                       << __LINE__ << std::endl;
-            return;
+            break;
         }
 
         // set parameters
-        lkernel->bias = ui->_displacementParamBiasValue->value();
+        if (lkernel->bias != ui->_displacementParamBiasValue->value()){
+            needUpdate = true;
+            lkernel->bias = ui->_displacementParamBiasValue->value();
+        }
 
         break;
     }
@@ -167,12 +171,16 @@ DisplacementFactory::configureFromUI(InputGen::Application::Project::Displacemen
             std::cerr << "This should nerver happen... "
                       << __FILE__ << " "
                       << __LINE__ << std::endl;
-            return;
+            break;
         }
 
         // set parameters
-        lkernel->setDistributionRange(ui->_displacementParamRandomUniformMinValue->value(),
-                                      ui->_displacementParamRandomUniformMaxValue->value());
+        if (lkernel->distributionMin() != ui->_displacementParamRandomUniformMinValue->value() ||
+            lkernel->distributionMax() != ui->_displacementParamRandomUniformMaxValue->value()){
+            needUpdate = true;
+            lkernel->setDistributionRange(ui->_displacementParamRandomUniformMinValue->value(),
+                                          ui->_displacementParamRandomUniformMaxValue->value());
+        }
 
         break;
     }
@@ -184,16 +192,22 @@ DisplacementFactory::configureFromUI(InputGen::Application::Project::Displacemen
             std::cerr << "This should nerver happen... "
                       << __FILE__ << " "
                       << __LINE__ << std::endl;
-            return;
+            break;
         }
 
         // set parameters
-        lkernel->setDistributionProperties(ui->_displacementParamRandomNormalMeanValue->value(),
-                                           ui->_displacementParamRandomNormalStddevValue->value());
+        if (lkernel->distributionMean()   != ui->_displacementParamRandomNormalMeanValue->value() ||
+            lkernel->distributionStdDev() != ui->_displacementParamRandomNormalStddevValue->value()){
+            needUpdate = true;
+            lkernel->setDistributionProperties(ui->_displacementParamRandomNormalMeanValue->value(),
+                                               ui->_displacementParamRandomNormalStddevValue->value());
+        }
 
         break;
     }
     }
+
+    return needUpdate;
 }
 
 // Hide show the correct parameter groups
@@ -291,8 +305,9 @@ DisplacementFactory::refreshFromView(){
     InputGen::Application::Project::DisplacementKernel *kernel = _project->displacementKernel(layerId);
     if(kernel == NULL) return;
 
-    configureFromUI(kernel);
-    recomputeDisplacementLayer(layerId, false);
+    // recompute only when required
+    if (configureFromUI(kernel))
+        recomputeDisplacementLayer(layerId, false);
 
     emit projectUpdated();
 }
