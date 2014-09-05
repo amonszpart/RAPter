@@ -40,7 +40,8 @@ private slots:
 
 private:
     int getSelectedLayerFromUI();
-    void configureFromUI(InputGen::Application::Project::DisplacementKernel* kernel);
+    //! Return if the kernel need to be re-evaluated or not
+    bool configureFromUI(InputGen::Application::Project::DisplacementKernel* kernel);
 
 private:
     Ui::DisplacementFactory *ui;
