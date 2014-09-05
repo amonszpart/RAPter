@@ -102,56 +102,85 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="contents">
 
 <p><code>#include &lt;<a class="el" href="parameters_8h_source.html">parameters.h</a>&gt;</code></p>
+<div class="dynheader">
+Inheritance diagram for GF2::MergeParams&lt; _Scalar &gt;:</div>
+<div class="dyncontent">
+ <div class="center">
+  <img src="struct_g_f2_1_1_merge_params.png" usemap="#GF2::MergeParams&lt; _Scalar &gt;_map" alt=""/>
+  <map id="GF2::MergeParams&lt; _Scalar &gt;_map" name="GF2::MergeParams&lt; _Scalar &gt;_map">
+<area href="struct_g_f2_1_1_candidate_generator_params.html" title="Collection of parameters for CandidateGenerator::generate. " alt="GF2::CandidateGeneratorParams&lt; _Scalar &gt;" shape="rect" coords="0,56,266,80"/>
+<area href="struct_g_f2_1_1_common_params.html" title="Collection of parameters that are used in almost every solution step. " alt="GF2::CommonParams&lt; _Scalar &gt;" shape="rect" coords="0,0,266,24"/>
+</map>
+ </div></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a2e9909871f06633a1c88ade4a98ef7bd"><td class="memItemLeft" align="right" valign="top">_Scalar&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_merge_params.html#a2e9909871f06633a1c88ade4a98ef7bd">scale</a> = 0.05</td></tr>
-<tr class="memdesc:a2e9909871f06633a1c88ade4a98ef7bd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Scale parameter of input.  <a href="#a2e9909871f06633a1c88ade4a98ef7bd">More...</a><br/></td></tr>
-<tr class="separator:a2e9909871f06633a1c88ade4a98ef7bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aebd7a72755d7d552642bc6de0373b98f"><td class="memItemLeft" align="right" valign="top">std::vector&lt; _Scalar &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_merge_params.html#aebd7a72755d7d552642bc6de0373b98f">angles</a> = {0, M_PI_2, M_PI }</td></tr>
-<tr class="memdesc:aebd7a72755d7d552642bc6de0373b98f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Desired angles.  <a href="#aebd7a72755d7d552642bc6de0373b98f">More...</a><br/></td></tr>
-<tr class="separator:aebd7a72755d7d552642bc6de0373b98f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4c42ffb484c8bc6bcc2b30c724ca0bc5"><td class="memItemLeft" align="right" valign="top">char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_merge_params.html#a4c42ffb484c8bc6bcc2b30c724ca0bc5">do_adopt</a> = 2</td></tr>
+<tr class="separator:a4c42ffb484c8bc6bcc2b30c724ca0bc5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_attribs_struct_g_f2_1_1_candidate_generator_params"><td colspan="2" onclick="javascript:toggleInherit('pub_attribs_struct_g_f2_1_1_candidate_generator_params')"><img src="closed.png" alt="-"/>&#160;Public Attributes inherited from <a class="el" href="struct_g_f2_1_1_candidate_generator_params.html">GF2::CandidateGeneratorParams&lt; _Scalar &gt;</a></td></tr>
+<tr class="memitem:a7a1887ccfea503e1f7cc8882e774231f inherit pub_attribs_struct_g_f2_1_1_candidate_generator_params"><td class="memItemLeft" align="right" valign="top">_Scalar&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#a7a1887ccfea503e1f7cc8882e774231f">angle_limit</a> = 0.08f</td></tr>
+<tr class="memdesc:a7a1887ccfea503e1f7cc8882e774231f inherit pub_attribs_struct_g_f2_1_1_candidate_generator_params"><td class="mdescLeft">&#160;</td><td class="mdescRight">Angle threshold for similar lines. Used in <a class="el" href="class_g_f2_1_1_segmentation.html#a5060de9c9444d728400f8ea8e0f575df">Segmentation::patchify()</a> and <a class="el" href="class_g_f2_1_1_merging.html#a03ef3a6663912a0edfdc27b42000e247">Merging::mergeSameDirGids()</a>.  <a href="#a7a1887ccfea503e1f7cc8882e774231f">More...</a><br/></td></tr>
+<tr class="separator:a7a1887ccfea503e1f7cc8882e774231f inherit pub_attribs_struct_g_f2_1_1_candidate_generator_params"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa5da1cdf35c2e2b2ff15fb267c45324d inherit pub_attribs_struct_g_f2_1_1_candidate_generator_params"><td class="memItemLeft" align="right" valign="top"><a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#ad77f8dcaded6acd49862ecaf81be83f8">PatchPatchDistMode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#aa5da1cdf35c2e2b2ff15fb267c45324d">patch_dist_mode</a> = <a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#ad77f8dcaded6acd49862ecaf81be83f8adc031901eac4a91172d2234cf2234215">REPR_SQR</a></td></tr>
+<tr class="memdesc:aa5da1cdf35c2e2b2ff15fb267c45324d inherit pub_attribs_struct_g_f2_1_1_candidate_generator_params"><td class="mdescLeft">&#160;</td><td class="mdescRight">Regiongrow uses this option to determine which functor to use for a patch-patch distance. Used in <a class="el" href="class_g_f2_1_1_segmentation.html#a5060de9c9444d728400f8ea8e0f575df">Segmentation::patchify()</a>.  <a href="#aa5da1cdf35c2e2b2ff15fb267c45324d">More...</a><br/></td></tr>
+<tr class="separator:aa5da1cdf35c2e2b2ff15fb267c45324d inherit pub_attribs_struct_g_f2_1_1_candidate_generator_params"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac2ede42aac59593b6d19eb03639955e9 inherit pub_attribs_struct_g_f2_1_1_candidate_generator_params"><td class="memItemLeft" align="right" valign="top">_Scalar&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#ac2ede42aac59593b6d19eb03639955e9">patch_dist_limit_mult</a> = 1.f</td></tr>
+<tr class="memdesc:ac2ede42aac59593b6d19eb03639955e9 inherit pub_attribs_struct_g_f2_1_1_candidate_generator_params"><td class="mdescLeft">&#160;</td><td class="mdescRight">Patchify takes "patch_dist_limit * scale" as maximum spatial distance. Used in <a class="el" href="class_g_f2_1_1_segmentation.html#a5060de9c9444d728400f8ea8e0f575df">Segmentation::patchify()</a> and <a class="el" href="class_g_f2_1_1_merging.html#a03ef3a6663912a0edfdc27b42000e247">Merging::mergeSameDirGids()</a>.  <a href="#ac2ede42aac59593b6d19eb03639955e9">More...</a><br/></td></tr>
+<tr class="separator:ac2ede42aac59593b6d19eb03639955e9 inherit pub_attribs_struct_g_f2_1_1_candidate_generator_params"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a961cb3b2007b17476026e82b833978ef inherit pub_attribs_struct_g_f2_1_1_candidate_generator_params"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#a961cb3b2007b17476026e82b833978ef">nn_K</a> = 15</td></tr>
+<tr class="memdesc:a961cb3b2007b17476026e82b833978ef inherit pub_attribs_struct_g_f2_1_1_candidate_generator_params"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of points used for primitive fitting. Used in <a class="el" href="class_g_f2_1_1_segmentation.html#ab540cb80acb78ea18b5306b7ffbbd389">Segmentation::orientPoints()</a>, <a class="el" href="class_g_f2_1_1_segmentation.html#a0920269b484d69420187c2074bddf11c">Segmentation::regionGrow()</a> relayed from <a class="el" href="class_g_f2_1_1_segmentation.html#a5060de9c9444d728400f8ea8e0f575df">Segmentation::patchify()</a>.  <a href="#a961cb3b2007b17476026e82b833978ef">More...</a><br/></td></tr>
+<tr class="separator:a961cb3b2007b17476026e82b833978ef inherit pub_attribs_struct_g_f2_1_1_candidate_generator_params"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aca171dc5b21762fff8cde4c504ccdf42 inherit pub_attribs_struct_g_f2_1_1_candidate_generator_params"><td class="memItemLeft" align="right" valign="top">_Scalar&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#aca171dc5b21762fff8cde4c504ccdf42">patch_spatial_weight</a> = _Scalar(0.5)</td></tr>
+<tr class="memdesc:aca171dc5b21762fff8cde4c504ccdf42 inherit pub_attribs_struct_g_f2_1_1_candidate_generator_params"><td class="mdescLeft">&#160;</td><td class="mdescRight">Weight of spatial term in \( patch\_spatial\_weight^2 \cdot \frac{spat\_dist^2}{spat\_thresh} + \frac{ang\_diff^2}{ang\_thresh} &lt; 1 \) regionGrowing distance functor. Used in <a class="el" href="class_g_f2_1_1_segmentation.html#a5060de9c9444d728400f8ea8e0f575df">Segmentation::patchify()</a> and <a class="el" href="class_g_f2_1_1_merging.html#a03ef3a6663912a0edfdc27b42000e247">Merging::mergeSameDirGids()</a>.  <a href="#aca171dc5b21762fff8cde4c504ccdf42">More...</a><br/></td></tr>
+<tr class="separator:aca171dc5b21762fff8cde4c504ccdf42 inherit pub_attribs_struct_g_f2_1_1_candidate_generator_params"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acb0f416c125b74be47221a0eb117bbb6 inherit pub_attribs_struct_g_f2_1_1_candidate_generator_params"><td class="memItemLeft" align="right" valign="top">_Scalar&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#acb0f416c125b74be47221a0eb117bbb6">angle_limit_div</a> = 10.f</td></tr>
+<tr class="memdesc:acb0f416c125b74be47221a0eb117bbb6 inherit pub_attribs_struct_g_f2_1_1_candidate_generator_params"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determines, how much the angle_limit is divided by, to get the patch-similarity threshold. Used in <a class="el" href="class_g_f2_1_1_candidate_generator.html#abc056da8bccd683fc95fa64446e1e9d8">CandidateGenerator::generate()</a>.  <a href="#acb0f416c125b74be47221a0eb117bbb6">More...</a><br/></td></tr>
+<tr class="separator:acb0f416c125b74be47221a0eb117bbb6 inherit pub_attribs_struct_g_f2_1_1_candidate_generator_params"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aba590db03a8b731e25c5198620752f65 inherit pub_attribs_struct_g_f2_1_1_candidate_generator_params"><td class="memItemLeft" align="right" valign="top">_Scalar&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#aba590db03a8b731e25c5198620752f65">parallel_limit</a> = _Scalar(1e-6)</td></tr>
+<tr class="memdesc:aba590db03a8b731e25c5198620752f65 inherit pub_attribs_struct_g_f2_1_1_candidate_generator_params"><td class="mdescLeft">&#160;</td><td class="mdescRight">Two lines are parallel, if their angle is smaller than this. Used in <a class="el" href="class_g_f2_1_1_merging.html#a03ef3a6663912a0edfdc27b42000e247">Merging::mergeSameDirGids()</a> and visualization.  <a href="#aba590db03a8b731e25c5198620752f65">More...</a><br/></td></tr>
+<tr class="separator:aba590db03a8b731e25c5198620752f65 inherit pub_attribs_struct_g_f2_1_1_candidate_generator_params"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_attribs_struct_g_f2_1_1_common_params"><td colspan="2" onclick="javascript:toggleInherit('pub_attribs_struct_g_f2_1_1_common_params')"><img src="closed.png" alt="-"/>&#160;Public Attributes inherited from <a class="el" href="struct_g_f2_1_1_common_params.html">GF2::CommonParams&lt; _Scalar &gt;</a></td></tr>
+<tr class="memitem:a414729020b67204b42ca6ab1ad32aa5d inherit pub_attribs_struct_g_f2_1_1_common_params"><td class="memItemLeft" align="right" valign="top">_Scalar&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_common_params.html#a414729020b67204b42ca6ab1ad32aa5d">scale</a> = 0.05</td></tr>
+<tr class="memdesc:a414729020b67204b42ca6ab1ad32aa5d inherit pub_attribs_struct_g_f2_1_1_common_params"><td class="mdescLeft">&#160;</td><td class="mdescRight">Scale parameter of input.  <a href="#a414729020b67204b42ca6ab1ad32aa5d">More...</a><br/></td></tr>
+<tr class="separator:a414729020b67204b42ca6ab1ad32aa5d inherit pub_attribs_struct_g_f2_1_1_common_params"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aab94199958a72779c5067ef29b406ee9 inherit pub_attribs_struct_g_f2_1_1_common_params"><td class="memItemLeft" align="right" valign="top">std::vector&lt; _Scalar &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_common_params.html#aab94199958a72779c5067ef29b406ee9">angles</a> = { 0, M_PI_2, M_PI }</td></tr>
+<tr class="memdesc:aab94199958a72779c5067ef29b406ee9 inherit pub_attribs_struct_g_f2_1_1_common_params"><td class="mdescLeft">&#160;</td><td class="mdescRight">Desired angles.  <a href="#aab94199958a72779c5067ef29b406ee9">More...</a><br/></td></tr>
+<tr class="separator:aab94199958a72779c5067ef29b406ee9 inherit pub_attribs_struct_g_f2_1_1_common_params"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa92313337cd21986a6086eb08c06cbd2 inherit pub_attribs_struct_g_f2_1_1_common_params"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_common_params.html#aa92313337cd21986a6086eb08c06cbd2">patch_population_limit</a> = 5</td></tr>
+<tr class="separator:aa92313337cd21986a6086eb08c06cbd2 inherit pub_attribs_struct_g_f2_1_1_common_params"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
+Additional Inherited Members</h2></td></tr>
+<tr class="inherit_header pub_types_struct_g_f2_1_1_candidate_generator_params"><td colspan="2" onclick="javascript:toggleInherit('pub_types_struct_g_f2_1_1_candidate_generator_params')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="struct_g_f2_1_1_candidate_generator_params.html">GF2::CandidateGeneratorParams&lt; _Scalar &gt;</a></td></tr>
+<tr class="memitem:ad77f8dcaded6acd49862ecaf81be83f8 inherit pub_types_struct_g_f2_1_1_candidate_generator_params"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#ad77f8dcaded6acd49862ecaf81be83f8">PatchPatchDistMode</a> { <a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#ad77f8dcaded6acd49862ecaf81be83f8adc031901eac4a91172d2234cf2234215">REPR_SQR</a>
+ }</td></tr>
+<tr class="separator:ad77f8dcaded6acd49862ecaf81be83f8 inherit pub_types_struct_g_f2_1_1_candidate_generator_params"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_struct_g_f2_1_1_candidate_generator_params"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_struct_g_f2_1_1_candidate_generator_params')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="struct_g_f2_1_1_candidate_generator_params.html">GF2::CandidateGeneratorParams&lt; _Scalar &gt;</a></td></tr>
+<tr class="memitem:a6d923c38a3c5b62f6ad57e365c016d09 inherit pub_methods_struct_g_f2_1_1_candidate_generator_params"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#a6d923c38a3c5b62f6ad57e365c016d09">parsePatchDistMode</a> (std::string const &amp;patch_dist_mode_string)</td></tr>
+<tr class="separator:a6d923c38a3c5b62f6ad57e365c016d09 inherit pub_methods_struct_g_f2_1_1_candidate_generator_params"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a250e7a620373964d77ff805f6c7efb09 inherit pub_methods_struct_g_f2_1_1_candidate_generator_params"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#a250e7a620373964d77ff805f6c7efb09">printPatchDistMode</a> () const </td></tr>
+<tr class="separator:a250e7a620373964d77ff805f6c7efb09 inherit pub_methods_struct_g_f2_1_1_candidate_generator_params"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><h3>template&lt;typename _Scalar&gt;<br/>
 struct GF2::MergeParams&lt; _Scalar &gt;</h3>
 
 
-<p>Definition at line <a class="el" href="parameters_8h_source.html#l00157">157</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
+<p>Definition at line <a class="el" href="parameters_8h_source.html#l00197">197</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
 </div><h2 class="groupheader">Member Data Documentation</h2>
-<a class="anchor" id="aebd7a72755d7d552642bc6de0373b98f"></a>
+<a class="anchor" id="a4c42ffb484c8bc6bcc2b30c724ca0bc5"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
 template&lt;typename _Scalar&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">std::vector&lt;_Scalar&gt; <a class="el" href="struct_g_f2_1_1_merge_params.html">GF2::MergeParams</a>&lt; _Scalar &gt;::angles = {0, M_PI_2, M_PI }</td>
+          <td class="memname">char <a class="el" href="struct_g_f2_1_1_merge_params.html">GF2::MergeParams</a>&lt; _Scalar &gt;::do_adopt = 2</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Desired angles. </p>
-
-<p>Definition at line <a class="el" href="parameters_8h_source.html#l00162">162</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="a2e9909871f06633a1c88ade4a98ef7bd"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename _Scalar&gt; </div>
-      <table class="memname">
-        <tr>
-          <td class="memname">_Scalar <a class="el" href="struct_g_f2_1_1_merge_params.html">GF2::MergeParams</a>&lt; _Scalar &gt;::scale = 0.05</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Scale parameter of input. </p>
-
-<p>Definition at line <a class="el" href="parameters_8h_source.html#l00160">160</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
+<p>Definition at line <a class="el" href="parameters_8h_source.html#l00207">207</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
 
 </div>
 </div>
@@ -161,7 +190,7 @@ template&lt;typename _Scalar&gt; </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Sep 4 2014 18:07:38 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Sep 5 2014 11:33:03 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

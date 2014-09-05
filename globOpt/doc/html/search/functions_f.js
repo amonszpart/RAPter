@@ -1,9 +1,8 @@
 var searchData=
 [
   ['parsepatchdistmode',['parsePatchDistMode',['../struct_g_f2_1_1_candidate_generator_params.html#a6d923c38a3c5b62f6ad57e365c016d09',1,'GF2::CandidateGeneratorParams']]],
-  ['parserefitmode',['parseRefitMode',['../struct_g_f2_1_1_candidate_generator_params.html#a6feeb0d0769ccd795327fba59d3305a8',1,'GF2::CandidateGeneratorParams']]],
   ['patch',['Patch',['../struct_g_f2_1_1segmentation_1_1_patch.html#ae14c9d86e10bcdfd07d2a04145c3d903',1,'GF2::segmentation::Patch::Patch()'],['../struct_g_f2_1_1segmentation_1_1_patch.html#a9c021e56b9bec5252a365f16a4403041',1,'GF2::segmentation::Patch::Patch(PidLid const &amp;elem)']]],
-  ['patchify',['patchify',['../class_g_f2_1_1_segmentation.html#abd13dfc4608ef673b2de670f4ed4b4b0',1,'GF2::Segmentation::patchify(_PrimitiveContainerT &amp;patches, _PointContainerT &amp;points, _Scalar const scale, std::vector&lt; _Scalar &gt; const &amp;angles, _PatchPatchDistanceFunctorT const &amp;patchPatchDistanceFunctor)'],['../class_g_f2_1_1_segmentation.html#a5060de9c9444d728400f8ea8e0f575df',1,'GF2::Segmentation::patchify(_PrimitiveContainerT &amp;patches, _PointContainerT &amp;points, _Scalar const scale, std::vector&lt; _Scalar &gt; const &amp;angles, _PatchPatchDistanceFunctorT const &amp;patchPatchDistanceFunctor, int const nn_K)']]],
+  ['patchify',['patchify',['../class_g_f2_1_1_segmentation.html#a5060de9c9444d728400f8ea8e0f575df',1,'GF2::Segmentation']]],
   ['planeprimitive',['PlanePrimitive',['../class_g_f2_1_1_plane_primitive.html#ad52c9eaa2328d4facbc70326b76e7ce4',1,'GF2::PlanePrimitive']]],
   ['planes',['planes',['../classam_1_1_primitive_clustering.html#a69c8b8a269885d90d8d19f79ac5f33cb',1,'am::PrimitiveClustering::planes()'],['../classam_1_1_primitive_clustering.html#a29736315bc987eb82145d44481bd5a98',1,'am::PrimitiveClustering::planes() const ']]],
   ['plot',['plot',['../classam_1_1_local_analysis.html#a299471f9de00f6e2628c73525a4c5310',1,'am::LocalAnalysis::plot()'],['../show__stats_8m.html#ab771e0fb48aa7f32e76a40b2dfb93819',1,'plot(dots,&apos;.&apos;):&#160;show_stats.m'],['../lp_8m.html#a6322b08b756996c43cd7a90659d1298e',1,'plot(acos(X)*180.0/pi, ret):&#160;lp.m']]],
@@ -22,7 +21,6 @@ var searchData=
   ['printedge',['printEdge',['../namespaceam_1_1kmeans.html#a75b647c6025efcfa330755cdab8705a0',1,'am::kmeans']]],
   ['printnode',['printNode',['../namespaceam_1_1kmeans.html#a405c153be1cc74ecbbe2d6cd4e9d16fa',1,'am::kmeans']]],
   ['printpatchdistmode',['printPatchDistMode',['../struct_g_f2_1_1_candidate_generator_params.html#a250e7a620373964d77ff805f6c7efb09',1,'GF2::CandidateGeneratorParams']]],
-  ['printrefitmode',['printRefitMode',['../struct_g_f2_1_1_candidate_generator_params.html#a47d35599d434464c6fcfe087b420f1e9',1,'GF2::CandidateGeneratorParams']]],
   ['projectpoint',['projectPoint',['../class_g_f2_1_1_line_primitive.html#a88dbef1a58f227d96ae8131e9f85cd89',1,'GF2::LinePrimitive']]],
   ['propose',['propose',['../classam_1_1_local_analysis.html#a1ab9f5b18002f6d25822208828793ffb',1,'am::LocalAnalysis::propose(LinesT &amp;lines, PointsT cloud, std::vector&lt; int &gt; const *indices, int K, float radius)'],['../classam_1_1_local_analysis.html#a73d9758f41040e5630b2e1c389ea5c07',1,'am::LocalAnalysis::propose(TLines &amp;lines, PointsPtrT cloud, std::vector&lt; int &gt; const *indices, int K, float radius)']]],
   ['push',['push',['../structam_1_1_point_primitive_distance_cache.html#a736a91e3945da9b8d68934c95d7e2720',1,'am::PointPrimitiveDistanceCache']]],

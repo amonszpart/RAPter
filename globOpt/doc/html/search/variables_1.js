@@ -9,6 +9,6 @@ var searchData=
   ['ang_5fthresh',['ang_thresh',['../patch_cost_function_8m.html#a6340d10cd015437e8f5f2fb724a4e322',1,'patchCostFunction.m']]],
   ['angle_5flimit',['angle_limit',['../struct_g_f2_1_1_candidate_generator_params.html#a7a1887ccfea503e1f7cc8882e774231f',1,'GF2::CandidateGeneratorParams']]],
   ['angle_5flimit_5fdiv',['angle_limit_div',['../struct_g_f2_1_1_candidate_generator_params.html#acb0f416c125b74be47221a0eb117bbb6',1,'GF2::CandidateGeneratorParams']]],
-  ['angles',['angles',['../struct_g_f2_1_1_candidate_generator_params.html#a879cd89d447cf0eadb971b7ae3c206d6',1,'GF2::CandidateGeneratorParams::angles()'],['../struct_g_f2_1_1_problem_setup_params.html#aea20a9c94d97aedba5d88717f6ed9c55',1,'GF2::ProblemSetupParams::angles()'],['../struct_g_f2_1_1_merge_params.html#aebd7a72755d7d552642bc6de0373b98f',1,'GF2::MergeParams::angles()']]],
+  ['angles',['angles',['../struct_g_f2_1_1_common_params.html#aab94199958a72779c5067ef29b406ee9',1,'GF2::CommonParams']]],
   ['ascii',['ASCII',['../read__ply_8m.html#af14a59117298c2b0986241386f9895c4',1,'read_ply.m']]]
 ];

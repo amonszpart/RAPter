@@ -2,7 +2,7 @@ var searchData=
 [
   ['d',['d',['../fmincon__merged_8m.html#a1aabac6d068eef6a7bad3fdf50a05cc8',1,'d():&#160;fmincon_merged.m'],['../perturb__rects_8m.html#a48665fb4f42738b9fb0af96e08692283',1,'d():&#160;perturb_rects.m'],['../test__fmincon_8m.html#a1aabac6d068eef6a7bad3fdf50a05cc8',1,'d():&#160;test_fmincon.m'],['../lp_8m.html#a79aaf9eb97ed1c7472790b6695b6ac1c',1,'D():&#160;lp.m']]],
   ['d2',['d2',['../mix__coeffs_8m.html#a479b78c01efbe4664b402a300da492f7',1,'mix_coeffs.m']]],
-  ['data_5fcost_5fmode',['DATA_COST_MODE',['../struct_g_f2_1_1_problem_setup_params.html#a29f561b77c951dc2e6dc14bbadd81c2b',1,'GF2::ProblemSetupParams::DATA_COST_MODE()'],['../struct_g_f2_1_1_problem_setup_params.html#a56cfb8c77632a2bfd5c2a67049ec1ee3',1,'GF2::ProblemSetupParams::data_cost_mode()']]],
+  ['data_5fcost_5fmode',['data_cost_mode',['../struct_g_f2_1_1_problem_setup_params.html#a56cfb8c77632a2bfd5c2a67049ec1ee3',1,'GF2::ProblemSetupParams::data_cost_mode()'],['../struct_g_f2_1_1_problem_setup_params.html#a29f561b77c951dc2e6dc14bbadd81c2b',1,'GF2::ProblemSetupParams::DATA_COST_MODE()']]],
   ['datafit',['datafit',['../class_g_f2_1_1_solver.html#abb12460e745a38fc70baf4603e32a95a',1,'GF2::Solver']]],
   ['dec',['DEC',['../_c_make_c_compiler_id_8c.html#ad1280362da42492bbc11aa78cbf776ad',1,'DEC():&#160;CMakeCCompilerId.c'],['../_c_make_c_x_x_compiler_id_8cpp.html#ad1280362da42492bbc11aa78cbf776ad',1,'DEC():&#160;CMakeCXXCompilerId.cpp']]],
   ['deprecated_20list',['Deprecated List',['../deprecated.html',1,'']]],
@@ -17,6 +17,7 @@ var searchData=
   ['display',['display',['../classam_1_1_local_analysis.html#a652a07520adf20a3f3af9c9be81ae301',1,'am::LocalAnalysis::display()'],['../test0_8m.html#a5d402d6989f84833aaf30ee093d25eb6',1,'display():&#160;test0.m']]],
   ['dist',['dist',['../point__plane_8m.html#a93606e6aea9563f73484a536c9c5636d',1,'point_plane.m']]],
   ['distances',['distances',['../structam_1_1_point_primitive_distance_cache.html#abc9a16e5d07567838c899d1cb7185905',1,'am::PointPrimitiveDistanceCache']]],
+  ['do_5fadopt',['do_adopt',['../struct_g_f2_1_1_merge_params.html#a4c42ffb484c8bc6bcc2b30c724ca0bc5',1,'GF2::MergeParams']]],
   ['donation',['donation',['../function__handle_8m.html#ab73fcd4b0110879f8271b1eb57929245',1,'function_handle.m']]],
   ['dots',['dots',['../show__stats_8m.html#a2b975d7a547b9aec26f1ab6c1615e45a',1,'dots():&#160;show_stats.m'],['../show__stats_8m.html#a6d81cb13f69db7c1149907d1aa5c3879',1,'dots(end+1):&#160;show_stats.m']]],
   ['dump',['dump',['../class_g_f2_1_1_primitive.html#a0566dd2e30f6f3ea687d01951f96b631',1,'GF2::Primitive']]]

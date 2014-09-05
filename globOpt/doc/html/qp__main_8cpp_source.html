@@ -128,7 +128,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="preprocessor">#if GF2_WITH_SAMPLE_INPUT</span></div>
 <div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="preprocessor"></span>    <span class="keywordflow">else</span> <span class="keywordflow">if</span> ( pcl::console::find_switch(argc,argv,<span class="stringliteral">&quot;--sample-input&quot;</span>) )</div>
 <div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;    {</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="class_g_f2_1_1_solver.html#ae13f37de0a9b433fa63ffb98acbd7708">GF2::Solver::sampleInput</a>( argc, argv );</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;        <span class="keywordflow">return</span> GF2::Solver::sampleInput( argc, argv );</div>
 <div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;    }</div>
 <div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="preprocessor"></span>    <span class="keywordflow">else</span> <span class="keywordflow">if</span> ( pcl::console::find_switch(argc,argv,<span class="stringliteral">&quot;--generate&quot;</span>) )</div>
@@ -170,19 +170,18 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="comment">//    return GF2::Solver::run( img_path, scale, {0, M_PI_2, M_PI}, argc, argv );</span></div>
 <div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;}</div>
 <div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;</div>
-<div class="ttc" id="class_g_f2_1_1_solver_html_a5e7cc6867880ad093d96bbcc610890ce"><div class="ttname"><a href="class_g_f2_1_1_solver.html#a5e7cc6867880ad093d96bbcc610890ce">GF2::Solver::solve</a></div><div class="ttdeci">static int solve(int argc, char **argv)</div><div class="ttdoc">Step 3. Reads a formulated problem from path and runs qcqpcpp::OptProblem::optimize() on it...</div><div class="ttdef"><b>Definition:</b> <a href="solver_8h_source.html#l00420">solver.h:420</a></div></div>
+<div class="ttc" id="class_g_f2_1_1_solver_html_a5e7cc6867880ad093d96bbcc610890ce"><div class="ttname"><a href="class_g_f2_1_1_solver.html#a5e7cc6867880ad093d96bbcc610890ce">GF2::Solver::solve</a></div><div class="ttdeci">static int solve(int argc, char **argv)</div><div class="ttdoc">Step 3. Reads a formulated problem from path and runs qcqpcpp::OptProblem::optimize() on it...</div><div class="ttdef"><b>Definition:</b> <a href="solver_8h_source.html#l00426">solver.h:426</a></div></div>
 <div class="ttc" id="io_8h_html"><div class="ttname"><a href="io_8h.html">io.h</a></div></div>
-<div class="ttc" id="class_g_f2_1_1_solver_html_ab245f9234167ca4d1e00fb99a1eebf8c"><div class="ttname"><a href="class_g_f2_1_1_solver.html#ab245f9234167ca4d1e00fb99a1eebf8c">GF2::Solver::generateCli</a></div><div class="ttdeci">static int generateCli(int argc, char **argv)</div><div class="ttdoc">Step 1. Generates primitives from a cloud. Reads &quot;cloud.ply&quot; and saves &quot;candidates.txt&quot;. </div><div class="ttdef"><b>Definition:</b> <a href="solver_8h_source.html#l00150">solver.h:150</a></div></div>
-<div class="ttc" id="class_g_f2_1_1_solver_html_ae13f37de0a9b433fa63ffb98acbd7708"><div class="ttname"><a href="class_g_f2_1_1_solver.html#ae13f37de0a9b433fa63ffb98acbd7708">GF2::Solver::sampleInput</a></div><div class="ttdeci">static int sampleInput(int argc, char **argv)</div></div>
+<div class="ttc" id="class_g_f2_1_1_solver_html_ab245f9234167ca4d1e00fb99a1eebf8c"><div class="ttname"><a href="class_g_f2_1_1_solver.html#ab245f9234167ca4d1e00fb99a1eebf8c">GF2::Solver::generateCli</a></div><div class="ttdeci">static int generateCli(int argc, char **argv)</div><div class="ttdoc">Step 1. Generates primitives from a cloud. Reads &quot;cloud.ply&quot; and saves &quot;candidates.txt&quot;. </div><div class="ttdef"><b>Definition:</b> <a href="solver_8h_source.html#l00155">solver.h:155</a></div></div>
 <div class="ttc" id="solver_8h_html"><div class="ttname"><a href="solver_8h.html">solver.h</a></div></div>
 <div class="ttc" id="qp__main_8cpp_html_a0ddf1224851353fc92bfbff6f499fa97"><div class="ttname"><a href="qp__main_8cpp.html#a0ddf1224851353fc92bfbff6f499fa97">main</a></div><div class="ttdeci">int main(int argc, char *argv[])</div><div class="ttdef"><b>Definition:</b> <a href="qp__main_8cpp_source.html#l00011">qp_main.cpp:11</a></div></div>
 <div class="ttc" id="problem_setup_8h_html"><div class="ttname"><a href="problem_setup_8h.html">problemSetup.h</a></div></div>
-<div class="ttc" id="class_g_f2_1_1_solver_html_abb12460e745a38fc70baf4603e32a95a"><div class="ttname"><a href="class_g_f2_1_1_solver.html#abb12460e745a38fc70baf4603e32a95a">GF2::Solver::datafit</a></div><div class="ttdeci">static int datafit(int argc, char **argv)</div><div class="ttdoc">Unfinished function. Supposed to do GlobFit. </div><div class="ttdef"><b>Definition:</b> <a href="solver_8h_source.html#l00661">solver.h:661</a></div></div>
+<div class="ttc" id="class_g_f2_1_1_solver_html_abb12460e745a38fc70baf4603e32a95a"><div class="ttname"><a href="class_g_f2_1_1_solver.html#abb12460e745a38fc70baf4603e32a95a">GF2::Solver::datafit</a></div><div class="ttdeci">static int datafit(int argc, char **argv)</div><div class="ttdoc">Unfinished function. Supposed to do GlobFit. </div><div class="ttdef"><b>Definition:</b> <a href="solver_8h_source.html#l00667">solver.h:667</a></div></div>
 <div class="ttc" id="merging_8h_html"><div class="ttname"><a href="merging_8h.html">merging.h</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Sep 4 2014 18:07:38 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Sep 5 2014 11:33:03 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

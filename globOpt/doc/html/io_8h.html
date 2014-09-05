@@ -104,6 +104,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <code>#include &lt;fstream&gt;</code><br/>
 <code>#include &quot;Eigen/Sparse&quot;</code><br/>
 <code>#include &quot;<a class="el" href="pcl__util_8hpp_source.html">globfit2/util/pcl_util.hpp</a>&quot;</code><br/>
+<code>#include &quot;<a class="el" href="containers_8hpp_source.html">globfit2/util/containers.hpp</a>&quot;</code><br/>
 <code>#include &quot;<a class="el" href="io_8hpp_source.html">globfit2/io/io.hpp</a>&quot;</code><br/>
 </div>
 <p><a href="io_8h_source.html">Go to the source code of this file.</a></p>
@@ -123,10 +124,10 @@ Macros</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a6e9a4bb9170f3c9393087f91eca421e4"><td class="memTemplParams" colspan="2">template&lt;class PrimitiveT , class PrimitiveContainerT &gt; </td></tr>
-<tr class="memitem:a6e9a4bb9170f3c9393087f91eca421e4"><td class="memTemplItemLeft" align="right" valign="top">int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespace_g_f2_1_1io.html#a6e9a4bb9170f3c9393087f91eca421e4">GF2::io::savePrimitives</a> (PrimitiveContainerT const &amp;<a class="el" href="globfit_8m.html#aaa2020b443560284c949661ae094df40">primitives</a>, std::string out_file_name, bool verbose=false)</td></tr>
-<tr class="memdesc:a6e9a4bb9170f3c9393087f91eca421e4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Dumps primitives with GID and DIR_GID to disk.  <a href="#a6e9a4bb9170f3c9393087f91eca421e4">More...</a><br/></td></tr>
-<tr class="separator:a6e9a4bb9170f3c9393087f91eca421e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae27a150f3575cf01356ae5e68a39ca10"><td class="memTemplParams" colspan="2">template&lt;class PrimitiveT , class _inner_const_iterator , class PrimitiveContainerT &gt; </td></tr>
+<tr class="memitem:ae27a150f3575cf01356ae5e68a39ca10"><td class="memTemplItemLeft" align="right" valign="top">int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespace_g_f2_1_1io.html#ae27a150f3575cf01356ae5e68a39ca10">GF2::io::savePrimitives</a> (PrimitiveContainerT const &amp;<a class="el" href="globfit_8m.html#aaa2020b443560284c949661ae094df40">primitives</a>, std::string out_file_name, bool verbose=false)</td></tr>
+<tr class="memdesc:ae27a150f3575cf01356ae5e68a39ca10"><td class="mdescLeft">&#160;</td><td class="mdescRight">Dumps primitives with GID and DIR_GID to disk.  <a href="#ae27a150f3575cf01356ae5e68a39ca10">More...</a><br/></td></tr>
+<tr class="separator:ae27a150f3575cf01356ae5e68a39ca10"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad0b245a95d11640b1711a239f46c7de2"><td class="memTemplParams" colspan="2">template&lt;class PrimitiveT , class PatchT , class PrimitiveContainerT &gt; </td></tr>
 <tr class="memitem:ad0b245a95d11640b1711a239f46c7de2"><td class="memTemplItemLeft" align="right" valign="top">int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespace_g_f2_1_1io.html#ad0b245a95d11640b1711a239f46c7de2">GF2::io::readPrimitives</a> (PrimitiveContainerT &amp;lines, std::string const &amp;<a class="el" href="gurobi_to_sparse_txt_8m.html#a46173fab2c6d6ba8a310c1be844ca796">path</a>, std::map&lt; int, typename PrimitiveContainerT::value_type &gt; *patches=NULL)</td></tr>
 <tr class="memdesc:ad0b245a95d11640b1711a239f46c7de2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads primitives with their GIDs and dir_GIDs from file.  <a href="#ad0b245a95d11640b1711a239f46c7de2">More...</a><br/></td></tr>
@@ -158,14 +159,14 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="io_8h_source.html#l00329">329</a> of file <a class="el" href="io_8h_source.html">io.h</a>.</p>
+<p>Definition at line <a class="el" href="io_8h_source.html#l00341">341</a> of file <a class="el" href="io_8h_source.html">io.h</a>.</p>
 
 </div>
 </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Sep 4 2014 18:07:38 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Sep 5 2014 11:33:03 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>
