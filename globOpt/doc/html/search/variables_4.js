@@ -9,6 +9,7 @@ var searchData=
   ['directions_5fin_5fcluster',['directions_in_cluster',['../classam_1_1_primitive_clustering.html#ac64d15516b3b0ac8d0f0d688fcdb758d',1,'am::PrimitiveClustering']]],
   ['dist',['dist',['../point__plane_8m.html#a93606e6aea9563f73484a536c9c5636d',1,'point_plane.m']]],
   ['distances',['distances',['../structam_1_1_point_primitive_distance_cache.html#abc9a16e5d07567838c899d1cb7185905',1,'am::PointPrimitiveDistanceCache']]],
+  ['do_5fadopt',['do_adopt',['../struct_g_f2_1_1_merge_params.html#a4c42ffb484c8bc6bcc2b30c724ca0bc5',1,'GF2::MergeParams']]],
   ['donation',['donation',['../function__handle_8m.html#ab73fcd4b0110879f8271b1eb57929245',1,'function_handle.m']]],
   ['dots',['dots',['../show__stats_8m.html#a2b975d7a547b9aec26f1ab6c1615e45a',1,'show_stats.m']]]
 ];

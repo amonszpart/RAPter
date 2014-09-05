@@ -2,10 +2,9 @@ var searchData=
 [
   ['samplecluster',['sampleCluster',['../namespaceam.html#a31447dd109bf74d41ff0a561712a1be2',1,'am']]],
   ['sampleimage',['sampleImage',['../class_g_f2_1_1_g_t_creator.html#aa6983d213ef48c890941d6a36cc94894',1,'GF2::GTCreator']]],
-  ['sampleinput',['sampleInput',['../class_g_f2_1_1_solver.html#ae13f37de0a9b433fa63ffb98acbd7708',1,'GF2::Solver']]],
   ['save',['save',['../fmincon__merged_8m.html#aef3025034af75193812b0de4c0bc3192',1,'save([p filesep &apos;x_solved.mat&apos;], &apos;x&apos;):&#160;fmincon_merged.m'],['../fmincon__merged_8m.html#a3d68a6f682a30b19c33d569230359754',1,'save([p filesep &apos;Q.mat&apos;], &apos;Q&apos;):&#160;fmincon_merged.m']]],
   ['savebackup',['saveBackup',['../namespace_g_f2_1_1util.html#a76af03f83085374160be9ba6570d1955',1,'GF2::util']]],
-  ['saveprimitives',['savePrimitives',['../namespace_g_f2_1_1io.html#a6e9a4bb9170f3c9393087f91eca421e4',1,'GF2::io']]],
+  ['saveprimitives',['savePrimitives',['../namespace_g_f2_1_1io.html#ae27a150f3575cf01356ae5e68a39ca10',1,'GF2::io']]],
   ['savescores',['saveScores',['../class_g_f2_1_1_my_g_r_b_callback.html#aeb17da9a8e1b3d06855031ad1a35b126',1,'GF2::MyGRBCallback']]],
   ['scoreparallelity',['scoreParallelity',['../classam_1_1_glob_fit2.html#a114dff4839216352f4c37124e731938b',1,'am::GlobFit2']]],
   ['selectclustertoaddfrom',['selectClusterToAddFrom',['../namespaceam.html#abeac01b1e305684f63a57c03646bb26a',1,'am']]],

@@ -107,23 +107,25 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
  <a href="struct_g_f2_1_1_candidate_generator_params.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="parameters_8h_source.html">parameters.h</a>&gt;</code></p>
+<div class="dynheader">
+Inheritance diagram for GF2::CandidateGeneratorParams&lt; _Scalar &gt;:</div>
+<div class="dyncontent">
+ <div class="center">
+  <img src="struct_g_f2_1_1_candidate_generator_params.png" usemap="#GF2::CandidateGeneratorParams&lt; _Scalar &gt;_map" alt=""/>
+  <map id="GF2::CandidateGeneratorParams&lt; _Scalar &gt;_map" name="GF2::CandidateGeneratorParams&lt; _Scalar &gt;_map">
+<area href="struct_g_f2_1_1_common_params.html" title="Collection of parameters that are used in almost every solution step. " alt="GF2::CommonParams&lt; _Scalar &gt;" shape="rect" coords="0,0,266,24"/>
+<area href="struct_g_f2_1_1_merge_params.html" alt="GF2::MergeParams&lt; _Scalar &gt;" shape="rect" coords="0,112,266,136"/>
+</map>
+ </div></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
 Public Types</h2></td></tr>
-<tr class="memitem:af8a5ada6c5c5477443de0914330037b6"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#af8a5ada6c5c5477443de0914330037b6">RefitMode</a> { <a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#af8a5ada6c5c5477443de0914330037b6a04891cf54ec351144a7a7dd1cb8dec81">SPATIAL</a>, 
-<a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#af8a5ada6c5c5477443de0914330037b6af291304456ec81d79bc1cbe7f4b93f11">AVG_DIR</a>
- }</td></tr>
-<tr class="separator:af8a5ada6c5c5477443de0914330037b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad77f8dcaded6acd49862ecaf81be83f8"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#ad77f8dcaded6acd49862ecaf81be83f8">PatchPatchDistMode</a> { <a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#ad77f8dcaded6acd49862ecaf81be83f8adc031901eac4a91172d2234cf2234215">REPR_SQR</a>
  }</td></tr>
 <tr class="separator:ad77f8dcaded6acd49862ecaf81be83f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a47d35599d434464c6fcfe087b420f1e9"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#a47d35599d434464c6fcfe087b420f1e9">printRefitMode</a> () const </td></tr>
-<tr class="separator:a47d35599d434464c6fcfe087b420f1e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6feeb0d0769ccd795327fba59d3305a8"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#a6feeb0d0769ccd795327fba59d3305a8">parseRefitMode</a> (std::string const &amp;refit_mode_string)</td></tr>
-<tr class="separator:a6feeb0d0769ccd795327fba59d3305a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6d923c38a3c5b62f6ad57e365c016d09"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#a6d923c38a3c5b62f6ad57e365c016d09">parsePatchDistMode</a> (std::string const &amp;patch_dist_mode_string)</td></tr>
 <tr class="separator:a6d923c38a3c5b62f6ad57e365c016d09"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a250e7a620373964d77ff805f6c7efb09"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#a250e7a620373964d77ff805f6c7efb09">printPatchDistMode</a> () const </td></tr>
@@ -131,36 +133,36 @@ Public Member Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:af9538a82eda65641b2f89291f7e67963"><td class="memItemLeft" align="right" valign="top">_Scalar&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#af9538a82eda65641b2f89291f7e67963">scale</a> = 0.05</td></tr>
-<tr class="memdesc:af9538a82eda65641b2f89291f7e67963"><td class="mdescLeft">&#160;</td><td class="mdescRight">Scale parameter of input.  <a href="#af9538a82eda65641b2f89291f7e67963">More...</a><br/></td></tr>
-<tr class="separator:af9538a82eda65641b2f89291f7e67963"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a879cd89d447cf0eadb971b7ae3c206d6"><td class="memItemLeft" align="right" valign="top">std::vector&lt; _Scalar &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#a879cd89d447cf0eadb971b7ae3c206d6">angles</a> = {0, M_PI_2, M_PI }</td></tr>
-<tr class="memdesc:a879cd89d447cf0eadb971b7ae3c206d6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Desired angles.  <a href="#a879cd89d447cf0eadb971b7ae3c206d6">More...</a><br/></td></tr>
-<tr class="separator:a879cd89d447cf0eadb971b7ae3c206d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7a1887ccfea503e1f7cc8882e774231f"><td class="memItemLeft" align="right" valign="top">_Scalar&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#a7a1887ccfea503e1f7cc8882e774231f">angle_limit</a> = 0.08f</td></tr>
-<tr class="memdesc:a7a1887ccfea503e1f7cc8882e774231f"><td class="mdescLeft">&#160;</td><td class="mdescRight">angle threshold for similar lines  <a href="#a7a1887ccfea503e1f7cc8882e774231f">More...</a><br/></td></tr>
+<tr class="memdesc:a7a1887ccfea503e1f7cc8882e774231f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Angle threshold for similar lines. Used in <a class="el" href="class_g_f2_1_1_segmentation.html#a5060de9c9444d728400f8ea8e0f575df">Segmentation::patchify()</a> and <a class="el" href="class_g_f2_1_1_merging.html#a03ef3a6663912a0edfdc27b42000e247">Merging::mergeSameDirGids()</a>.  <a href="#a7a1887ccfea503e1f7cc8882e774231f">More...</a><br/></td></tr>
 <tr class="separator:a7a1887ccfea503e1f7cc8882e774231f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acb0f416c125b74be47221a0eb117bbb6"><td class="memItemLeft" align="right" valign="top">_Scalar&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#acb0f416c125b74be47221a0eb117bbb6">angle_limit_div</a> = 10.f</td></tr>
-<tr class="memdesc:acb0f416c125b74be47221a0eb117bbb6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determines, how much the angle_limit is divided by, to get the patch-similarity threshold.  <a href="#acb0f416c125b74be47221a0eb117bbb6">More...</a><br/></td></tr>
-<tr class="separator:acb0f416c125b74be47221a0eb117bbb6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac2ede42aac59593b6d19eb03639955e9"><td class="memItemLeft" align="right" valign="top">_Scalar&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#ac2ede42aac59593b6d19eb03639955e9">patch_dist_limit_mult</a> = 1.f</td></tr>
-<tr class="memdesc:ac2ede42aac59593b6d19eb03639955e9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Patchify takes "patch_dist_limit * scale" as maximum spatial distance.  <a href="#ac2ede42aac59593b6d19eb03639955e9">More...</a><br/></td></tr>
-<tr class="separator:ac2ede42aac59593b6d19eb03639955e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aca171dc5b21762fff8cde4c504ccdf42"><td class="memItemLeft" align="right" valign="top">_Scalar&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#aca171dc5b21762fff8cde4c504ccdf42">patch_spatial_weight</a> = _Scalar(0.5)</td></tr>
-<tr class="memdesc:aca171dc5b21762fff8cde4c504ccdf42"><td class="mdescLeft">&#160;</td><td class="mdescRight">Weight of spatial term in \( patch\_spatial\_weight^2 \cdot \frac{spat\_dist^2}{spat\_thresh} + \frac{ang\_diff^2}{ang\_thresh} &lt; 1 \) regionGrowing distance functor.  <a href="#aca171dc5b21762fff8cde4c504ccdf42">More...</a><br/></td></tr>
-<tr class="separator:aca171dc5b21762fff8cde4c504ccdf42"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a961cb3b2007b17476026e82b833978ef"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#a961cb3b2007b17476026e82b833978ef">nn_K</a> = 15</td></tr>
-<tr class="memdesc:a961cb3b2007b17476026e82b833978ef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of points used for primitive fitting.  <a href="#a961cb3b2007b17476026e82b833978ef">More...</a><br/></td></tr>
-<tr class="separator:a961cb3b2007b17476026e82b833978ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac5174e243500d899dec50d9df88016e2"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#ac5174e243500d899dec50d9df88016e2">patch_population_limit</a> = 10</td></tr>
-<tr class="memdesc:ac5174e243500d899dec50d9df88016e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Threshold, on when a patch can distribute its directions.  <a href="#ac5174e243500d899dec50d9df88016e2">More...</a><br/></td></tr>
-<tr class="separator:ac5174e243500d899dec50d9df88016e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aeceb3d76f0f0d3910049c17bed27d86b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#af8a5ada6c5c5477443de0914330037b6">RefitMode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#aeceb3d76f0f0d3910049c17bed27d86b">refit_mode</a> = <a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#af8a5ada6c5c5477443de0914330037b6af291304456ec81d79bc1cbe7f4b93f11">AVG_DIR</a></td></tr>
-<tr class="memdesc:aeceb3d76f0f0d3910049c17bed27d86b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determines, how a patch gets it's final direction. A NL-LSQ to the points, or the average of local orientations.  <a href="#aeceb3d76f0f0d3910049c17bed27d86b">More...</a><br/></td></tr>
-<tr class="separator:aeceb3d76f0f0d3910049c17bed27d86b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa5da1cdf35c2e2b2ff15fb267c45324d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#ad77f8dcaded6acd49862ecaf81be83f8">PatchPatchDistMode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#aa5da1cdf35c2e2b2ff15fb267c45324d">patch_dist_mode</a> = <a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#ad77f8dcaded6acd49862ecaf81be83f8adc031901eac4a91172d2234cf2234215">REPR_SQR</a></td></tr>
-<tr class="memdesc:aa5da1cdf35c2e2b2ff15fb267c45324d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Regiongrow uses these options to determine which functor to use for a patch-patch distance.  <a href="#aa5da1cdf35c2e2b2ff15fb267c45324d">More...</a><br/></td></tr>
+<tr class="memdesc:aa5da1cdf35c2e2b2ff15fb267c45324d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Regiongrow uses this option to determine which functor to use for a patch-patch distance. Used in <a class="el" href="class_g_f2_1_1_segmentation.html#a5060de9c9444d728400f8ea8e0f575df">Segmentation::patchify()</a>.  <a href="#aa5da1cdf35c2e2b2ff15fb267c45324d">More...</a><br/></td></tr>
 <tr class="separator:aa5da1cdf35c2e2b2ff15fb267c45324d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac2ede42aac59593b6d19eb03639955e9"><td class="memItemLeft" align="right" valign="top">_Scalar&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#ac2ede42aac59593b6d19eb03639955e9">patch_dist_limit_mult</a> = 1.f</td></tr>
+<tr class="memdesc:ac2ede42aac59593b6d19eb03639955e9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Patchify takes "patch_dist_limit * scale" as maximum spatial distance. Used in <a class="el" href="class_g_f2_1_1_segmentation.html#a5060de9c9444d728400f8ea8e0f575df">Segmentation::patchify()</a> and <a class="el" href="class_g_f2_1_1_merging.html#a03ef3a6663912a0edfdc27b42000e247">Merging::mergeSameDirGids()</a>.  <a href="#ac2ede42aac59593b6d19eb03639955e9">More...</a><br/></td></tr>
+<tr class="separator:ac2ede42aac59593b6d19eb03639955e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a961cb3b2007b17476026e82b833978ef"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#a961cb3b2007b17476026e82b833978ef">nn_K</a> = 15</td></tr>
+<tr class="memdesc:a961cb3b2007b17476026e82b833978ef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of points used for primitive fitting. Used in <a class="el" href="class_g_f2_1_1_segmentation.html#ab540cb80acb78ea18b5306b7ffbbd389">Segmentation::orientPoints()</a>, <a class="el" href="class_g_f2_1_1_segmentation.html#a0920269b484d69420187c2074bddf11c">Segmentation::regionGrow()</a> relayed from <a class="el" href="class_g_f2_1_1_segmentation.html#a5060de9c9444d728400f8ea8e0f575df">Segmentation::patchify()</a>.  <a href="#a961cb3b2007b17476026e82b833978ef">More...</a><br/></td></tr>
+<tr class="separator:a961cb3b2007b17476026e82b833978ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aca171dc5b21762fff8cde4c504ccdf42"><td class="memItemLeft" align="right" valign="top">_Scalar&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#aca171dc5b21762fff8cde4c504ccdf42">patch_spatial_weight</a> = _Scalar(0.5)</td></tr>
+<tr class="memdesc:aca171dc5b21762fff8cde4c504ccdf42"><td class="mdescLeft">&#160;</td><td class="mdescRight">Weight of spatial term in \( patch\_spatial\_weight^2 \cdot \frac{spat\_dist^2}{spat\_thresh} + \frac{ang\_diff^2}{ang\_thresh} &lt; 1 \) regionGrowing distance functor. Used in <a class="el" href="class_g_f2_1_1_segmentation.html#a5060de9c9444d728400f8ea8e0f575df">Segmentation::patchify()</a> and <a class="el" href="class_g_f2_1_1_merging.html#a03ef3a6663912a0edfdc27b42000e247">Merging::mergeSameDirGids()</a>.  <a href="#aca171dc5b21762fff8cde4c504ccdf42">More...</a><br/></td></tr>
+<tr class="separator:aca171dc5b21762fff8cde4c504ccdf42"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acb0f416c125b74be47221a0eb117bbb6"><td class="memItemLeft" align="right" valign="top">_Scalar&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#acb0f416c125b74be47221a0eb117bbb6">angle_limit_div</a> = 10.f</td></tr>
+<tr class="memdesc:acb0f416c125b74be47221a0eb117bbb6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determines, how much the angle_limit is divided by, to get the patch-similarity threshold. Used in <a class="el" href="class_g_f2_1_1_candidate_generator.html#abc056da8bccd683fc95fa64446e1e9d8">CandidateGenerator::generate()</a>.  <a href="#acb0f416c125b74be47221a0eb117bbb6">More...</a><br/></td></tr>
+<tr class="separator:acb0f416c125b74be47221a0eb117bbb6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aba590db03a8b731e25c5198620752f65"><td class="memItemLeft" align="right" valign="top">_Scalar&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#aba590db03a8b731e25c5198620752f65">parallel_limit</a> = _Scalar(1e-6)</td></tr>
+<tr class="memdesc:aba590db03a8b731e25c5198620752f65"><td class="mdescLeft">&#160;</td><td class="mdescRight">Two lines are parallel, if their angle is smaller than this. Used in <a class="el" href="class_g_f2_1_1_merging.html#a03ef3a6663912a0edfdc27b42000e247">Merging::mergeSameDirGids()</a> and visualization.  <a href="#aba590db03a8b731e25c5198620752f65">More...</a><br/></td></tr>
+<tr class="separator:aba590db03a8b731e25c5198620752f65"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_attribs_struct_g_f2_1_1_common_params"><td colspan="2" onclick="javascript:toggleInherit('pub_attribs_struct_g_f2_1_1_common_params')"><img src="closed.png" alt="-"/>&#160;Public Attributes inherited from <a class="el" href="struct_g_f2_1_1_common_params.html">GF2::CommonParams&lt; _Scalar &gt;</a></td></tr>
+<tr class="memitem:a414729020b67204b42ca6ab1ad32aa5d inherit pub_attribs_struct_g_f2_1_1_common_params"><td class="memItemLeft" align="right" valign="top">_Scalar&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_common_params.html#a414729020b67204b42ca6ab1ad32aa5d">scale</a> = 0.05</td></tr>
+<tr class="memdesc:a414729020b67204b42ca6ab1ad32aa5d inherit pub_attribs_struct_g_f2_1_1_common_params"><td class="mdescLeft">&#160;</td><td class="mdescRight">Scale parameter of input.  <a href="#a414729020b67204b42ca6ab1ad32aa5d">More...</a><br/></td></tr>
+<tr class="separator:a414729020b67204b42ca6ab1ad32aa5d inherit pub_attribs_struct_g_f2_1_1_common_params"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aab94199958a72779c5067ef29b406ee9 inherit pub_attribs_struct_g_f2_1_1_common_params"><td class="memItemLeft" align="right" valign="top">std::vector&lt; _Scalar &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_common_params.html#aab94199958a72779c5067ef29b406ee9">angles</a> = { 0, M_PI_2, M_PI }</td></tr>
+<tr class="memdesc:aab94199958a72779c5067ef29b406ee9 inherit pub_attribs_struct_g_f2_1_1_common_params"><td class="mdescLeft">&#160;</td><td class="mdescRight">Desired angles.  <a href="#aab94199958a72779c5067ef29b406ee9">More...</a><br/></td></tr>
+<tr class="separator:aab94199958a72779c5067ef29b406ee9 inherit pub_attribs_struct_g_f2_1_1_common_params"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa92313337cd21986a6086eb08c06cbd2 inherit pub_attribs_struct_g_f2_1_1_common_params"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_common_params.html#aa92313337cd21986a6086eb08c06cbd2">patch_population_limit</a> = 5</td></tr>
+<tr class="separator:aa92313337cd21986a6086eb08c06cbd2 inherit pub_attribs_struct_g_f2_1_1_common_params"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><h3>template&lt;typename _Scalar&gt;<br/>
@@ -168,7 +170,7 @@ struct GF2::CandidateGeneratorParams&lt; _Scalar &gt;</h3>
 
 <p>Collection of parameters for <a class="el" href="class_g_f2_1_1_candidate_generator.html#abc056da8bccd683fc95fa64446e1e9d8">CandidateGenerator::generate</a>. </p>
 
-<p>Definition at line <a class="el" href="parameters_8h_source.html#l00011">11</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
+<p>Definition at line <a class="el" href="parameters_8h_source.html#l00029">29</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
 </div><h2 class="groupheader">Member Enumeration Documentation</h2>
 <a class="anchor" id="ad77f8dcaded6acd49862ecaf81be83f8"></a>
 <div class="memitem">
@@ -183,35 +185,11 @@ template&lt;typename _Scalar&gt; </div>
 </div><div class="memdoc">
 <table class="fieldtable">
 <tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><em><a class="anchor" id="ad77f8dcaded6acd49862ecaf81be83f8adc031901eac4a91172d2234cf2234215"></a>REPR_SQR</em>&#160;</td><td class="fielddoc">
-<p><a class="el" href="struct_g_f2_1_1_representative_sqr_patch_patch_distance_functor_t.html">RepresentativeSqrPatchPatchDistanceFunctorT</a> </p>
+<p><a class="el" href="struct_g_f2_1_1_representative_sqr_patch_patch_distance_functor_t.html">RepresentativeSqrPatchPatchDistanceFunctorT</a>, <a class="el" href="struct_g_f2_1_1_spatial_patch_patch_single_distance_functor_t.html">SpatialPatchPatchSingleDistanceFunctorT</a> </p>
 </td></tr>
 </table>
 
-<p>Definition at line <a class="el" href="parameters_8h_source.html#l00016">16</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="af8a5ada6c5c5477443de0914330037b6"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename _Scalar&gt; </div>
-      <table class="memname">
-        <tr>
-          <td class="memname">enum <a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#af8a5ada6c5c5477443de0914330037b6">GF2::CandidateGeneratorParams::RefitMode</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><em><a class="anchor" id="af8a5ada6c5c5477443de0914330037b6a04891cf54ec351144a7a7dd1cb8dec81"></a>SPATIAL</em>&#160;</td><td class="fielddoc">
-<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000001">Deprecated:</a></b></dt><dd>Spatial refit to the member points does not make sense for oriented points. </dd></dl>
-</td></tr>
-<tr><td class="fieldname"><em><a class="anchor" id="af8a5ada6c5c5477443de0914330037b6af291304456ec81d79bc1cbe7f4b93f11"></a>AVG_DIR</em>&#160;</td><td class="fielddoc">
-<p>Patch representative direction will be the average position and average direction of member oriented points. </p>
-</td></tr>
-</table>
-
-<p>Definition at line <a class="el" href="parameters_8h_source.html#l00013">13</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
+<p>Definition at line <a class="el" href="parameters_8h_source.html#l00031">31</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
 
 </div>
 </div>
@@ -244,34 +222,6 @@ template&lt;typename _Scalar&gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a6feeb0d0769ccd795327fba59d3305a8"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename _Scalar&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">int <a class="el" href="struct_g_f2_1_1_candidate_generator_params.html">GF2::CandidateGeneratorParams</a>&lt; _Scalar &gt;::parseRefitMode </td>
-          <td>(</td>
-          <td class="paramtype">std::string const &amp;&#160;</td>
-          <td class="paramname"><em>refit_mode_string</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="parameters_8h_source.html#l00053">53</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
-
-</div>
-</div>
 <a class="anchor" id="a250e7a620373964d77ff805f6c7efb09"></a>
 <div class="memitem">
 <div class="memproto">
@@ -299,33 +249,6 @@ template&lt;typename _Scalar&gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a47d35599d434464c6fcfe087b420f1e9"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename _Scalar&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">std::string <a class="el" href="struct_g_f2_1_1_candidate_generator_params.html">GF2::CandidateGeneratorParams</a>&lt; _Scalar &gt;::printRefitMode </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="parameters_8h_source.html#l00043">43</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
-
-</div>
-</div>
 <h2 class="groupheader">Member Data Documentation</h2>
 <a class="anchor" id="a7a1887ccfea503e1f7cc8882e774231f"></a>
 <div class="memitem">
@@ -339,9 +262,9 @@ template&lt;typename _Scalar&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p>angle threshold for similar lines </p>
+<p>Angle threshold for similar lines. Used in <a class="el" href="class_g_f2_1_1_segmentation.html#a5060de9c9444d728400f8ea8e0f575df">Segmentation::patchify()</a> and <a class="el" href="class_g_f2_1_1_merging.html#a03ef3a6663912a0edfdc27b42000e247">Merging::mergeSameDirGids()</a>. </p>
 
-<p>Definition at line <a class="el" href="parameters_8h_source.html#l00028">28</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
+<p>Definition at line <a class="el" href="parameters_8h_source.html#l00043">43</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
 
 </div>
 </div>
@@ -357,27 +280,9 @@ template&lt;typename _Scalar&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p>Determines, how much the angle_limit is divided by, to get the patch-similarity threshold. </p>
+<p>Determines, how much the angle_limit is divided by, to get the patch-similarity threshold. Used in <a class="el" href="class_g_f2_1_1_candidate_generator.html#abc056da8bccd683fc95fa64446e1e9d8">CandidateGenerator::generate()</a>. </p>
 
-<p>Definition at line <a class="el" href="parameters_8h_source.html#l00029">29</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="a879cd89d447cf0eadb971b7ae3c206d6"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename _Scalar&gt; </div>
-      <table class="memname">
-        <tr>
-          <td class="memname">std::vector&lt;_Scalar&gt; <a class="el" href="struct_g_f2_1_1_candidate_generator_params.html">GF2::CandidateGeneratorParams</a>&lt; _Scalar &gt;::angles = {0, M_PI_2, M_PI }</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Desired angles. </p>
-
-<p>Definition at line <a class="el" href="parameters_8h_source.html#l00027">27</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
+<p>Definition at line <a class="el" href="parameters_8h_source.html#l00065">65</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
 
 </div>
 </div>
@@ -393,9 +298,27 @@ template&lt;typename _Scalar&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p>Number of points used for primitive fitting. </p>
+<p>Number of points used for primitive fitting. Used in <a class="el" href="class_g_f2_1_1_segmentation.html#ab540cb80acb78ea18b5306b7ffbbd389">Segmentation::orientPoints()</a>, <a class="el" href="class_g_f2_1_1_segmentation.html#a0920269b484d69420187c2074bddf11c">Segmentation::regionGrow()</a> relayed from <a class="el" href="class_g_f2_1_1_segmentation.html#a5060de9c9444d728400f8ea8e0f575df">Segmentation::patchify()</a>. </p>
 
-<p>Definition at line <a class="el" href="parameters_8h_source.html#l00032">32</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
+<p>Definition at line <a class="el" href="parameters_8h_source.html#l00056">56</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="aba590db03a8b731e25c5198620752f65"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename _Scalar&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">_Scalar <a class="el" href="struct_g_f2_1_1_candidate_generator_params.html">GF2::CandidateGeneratorParams</a>&lt; _Scalar &gt;::parallel_limit = _Scalar(1e-6)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Two lines are parallel, if their angle is smaller than this. Used in <a class="el" href="class_g_f2_1_1_merging.html#a03ef3a6663912a0edfdc27b42000e247">Merging::mergeSameDirGids()</a> and visualization. </p>
+
+<p>Definition at line <a class="el" href="parameters_8h_source.html#l00069">69</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
 
 </div>
 </div>
@@ -411,9 +334,10 @@ template&lt;typename _Scalar&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p>Patchify takes "patch_dist_limit * scale" as maximum spatial distance. </p>
+<p>Patchify takes "patch_dist_limit * scale" as maximum spatial distance. Used in <a class="el" href="class_g_f2_1_1_segmentation.html#a5060de9c9444d728400f8ea8e0f575df">Segmentation::patchify()</a> and <a class="el" href="class_g_f2_1_1_merging.html#a03ef3a6663912a0edfdc27b42000e247">Merging::mergeSameDirGids()</a>. </p>
+<dl class="section warning"><dt>Warning</dt><dd>Are you sure this needs to be != 1.f? The patch_spatial_weight takes care of this for us. </dd></dl>
 
-<p>Definition at line <a class="el" href="parameters_8h_source.html#l00030">30</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
+<p>Definition at line <a class="el" href="parameters_8h_source.html#l00052">52</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
 
 </div>
 </div>
@@ -429,30 +353,9 @@ template&lt;typename _Scalar&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p>Regiongrow uses these options to determine which functor to use for a patch-patch distance. </p>
-<dl class="section see"><dt>See Also</dt><dd>FullLinkagePatchPatchDistanceFunctorT, SquaredPatchPatchDistanceFunctorT, RepresentativePatchPatchDistanceFunctorT, </dd>
-<dd>
-<a class="el" href="struct_g_f2_1_1_representative_sqr_patch_patch_distance_functor_t.html">RepresentativeSqrPatchPatchDistanceFunctorT</a>, SpatialPatchPatchMinDistanceFunctorT, SpatialPatchPatchMaxDistanceFunctorT </dd></dl>
+<p>Regiongrow uses this option to determine which functor to use for a patch-patch distance. Used in <a class="el" href="class_g_f2_1_1_segmentation.html#a5060de9c9444d728400f8ea8e0f575df">Segmentation::patchify()</a>. </p>
 
-<p>Definition at line <a class="el" href="parameters_8h_source.html#l00039">39</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="ac5174e243500d899dec50d9df88016e2"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename _Scalar&gt; </div>
-      <table class="memname">
-        <tr>
-          <td class="memname">int <a class="el" href="struct_g_f2_1_1_candidate_generator_params.html">GF2::CandidateGeneratorParams</a>&lt; _Scalar &gt;::patch_population_limit = 10</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Threshold, on when a patch can distribute its directions. </p>
-
-<p>Definition at line <a class="el" href="parameters_8h_source.html#l00033">33</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
+<p>Definition at line <a class="el" href="parameters_8h_source.html#l00047">47</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
 
 </div>
 </div>
@@ -468,46 +371,10 @@ template&lt;typename _Scalar&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p>Weight of spatial term in \( patch\_spatial\_weight^2 \cdot \frac{spat\_dist^2}{spat\_thresh} + \frac{ang\_diff^2}{ang\_thresh} &lt; 1 \) regionGrowing distance functor. </p>
+<p>Weight of spatial term in \( patch\_spatial\_weight^2 \cdot \frac{spat\_dist^2}{spat\_thresh} + \frac{ang\_diff^2}{ang\_thresh} &lt; 1 \) regionGrowing distance functor. Used in <a class="el" href="class_g_f2_1_1_segmentation.html#a5060de9c9444d728400f8ea8e0f575df">Segmentation::patchify()</a> and <a class="el" href="class_g_f2_1_1_merging.html#a03ef3a6663912a0edfdc27b42000e247">Merging::mergeSameDirGids()</a>. </p>
 <dl class="section see"><dt>See Also</dt><dd><a class="el" href="struct_g_f2_1_1_representative_sqr_patch_patch_distance_functor_t.html">GF2::RepresentativeSqrPatchPatchDistanceFunctorT</a>. </dd></dl>
 
-<p>Definition at line <a class="el" href="parameters_8h_source.html#l00031">31</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="aeceb3d76f0f0d3910049c17bed27d86b"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename _Scalar&gt; </div>
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#af8a5ada6c5c5477443de0914330037b6">RefitMode</a> <a class="el" href="struct_g_f2_1_1_candidate_generator_params.html">GF2::CandidateGeneratorParams</a>&lt; _Scalar &gt;::refit_mode = <a class="el" href="struct_g_f2_1_1_candidate_generator_params.html#af8a5ada6c5c5477443de0914330037b6af291304456ec81d79bc1cbe7f4b93f11">AVG_DIR</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Determines, how a patch gets it's final direction. A NL-LSQ to the points, or the average of local orientations. </p>
-
-<p>Definition at line <a class="el" href="parameters_8h_source.html#l00034">34</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="af9538a82eda65641b2f89291f7e67963"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename _Scalar&gt; </div>
-      <table class="memname">
-        <tr>
-          <td class="memname">_Scalar <a class="el" href="struct_g_f2_1_1_candidate_generator_params.html">GF2::CandidateGeneratorParams</a>&lt; _Scalar &gt;::scale = 0.05</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Scale parameter of input. </p>
-
-<p>Definition at line <a class="el" href="parameters_8h_source.html#l00026">26</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
+<p>Definition at line <a class="el" href="parameters_8h_source.html#l00061">61</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
 
 </div>
 </div>
@@ -517,7 +384,7 @@ template&lt;typename _Scalar&gt; </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Sep 4 2014 18:07:38 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Sep 5 2014 11:33:03 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

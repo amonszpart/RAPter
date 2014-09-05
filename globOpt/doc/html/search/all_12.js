@@ -12,8 +12,6 @@ var searchData=
   ['readsparsematrix_2em',['readSparseMatrix.m',['../read_sparse_matrix_8m.html',1,'']]],
   ['ready',['ready',['../structam_1_1_point_primitive_distance_cache.html#a9ecb648507d5fc1cf9c484ad95a1169f',1,'am::PointPrimitiveDistanceCache']]],
   ['recalculate',['recalculate',['../classam_1_1kmeans_1_1_point_primitive.html#a07c37c5e00b1ace2a03067dabdf30987',1,'am::kmeans::PointPrimitive::recalculate()'],['../classam_1_1kmeans_1_1_primitive.html#a5a7dffe725dae187bfcef8c301415e4f',1,'am::kmeans::Primitive::recalculate()']]],
-  ['refit_5fmode',['refit_mode',['../struct_g_f2_1_1_candidate_generator_params.html#aeceb3d76f0f0d3910049c17bed27d86b',1,'GF2::CandidateGeneratorParams']]],
-  ['refitmode',['RefitMode',['../struct_g_f2_1_1_candidate_generator_params.html#af8a5ada6c5c5477443de0914330037b6',1,'GF2::CandidateGeneratorParams']]],
   ['regiongrow',['regionGrow',['../class_g_f2_1_1_segmentation.html#a0920269b484d69420187c2074bddf11c',1,'GF2::Segmentation']]],
   ['report',['report',['../classam_1_1_sim_ann_opt_problem.html#a51c188af55db7cb8cc13fd7dad4d3424',1,'am::SimAnnOptProblem']]],
   ['repr_5fsqr',['REPR_SQR',['../struct_g_f2_1_1_candidate_generator_params.html#ad77f8dcaded6acd49862ecaf81be83f8adc031901eac4a91172d2234cf2234215',1,'GF2::CandidateGeneratorParams']]],
