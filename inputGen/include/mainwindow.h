@@ -21,6 +21,8 @@ private slots:
     void on_actionSave_assignement_triggered();
     void on_actionSave_all_triggered();
 
+    void on_actionMerge_primitives_triggered();
+
 private:
     void writeSamples(QString path);
     void writePrimitives(QString path);

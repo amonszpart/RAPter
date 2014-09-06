@@ -1,12 +1,15 @@
 #include "mainwindow.h"
 
 #include <iostream>
+#include <math.h>       /* fmod */
 
 #include <QFile>
 #include <QFileDialog>
 #include <QSettings>
 #include <QXmlStreamReader>
 #include <QTextStream>
+
+#include "mergedialog.h"
 
 #include "primitive.h"
 #include "types.h"
@@ -231,6 +234,49 @@ void MainWindow::on_actionLoad_SVG_triggered()
     emit currentProjectUpdated();
 
 }
+void MainWindow::on_actionMerge_primitives_triggered()
+{
+    if (_project == NULL)
+        return;
+
+    using InputGen::Application::Scalar;
+
+    MergeDialog* dialog = new MergeDialog;
+    if (dialog->exec() == QDialog::Accepted){
+        InputGen::MergeParam<Scalar> p;
+        dialog->getParams(p);
+
+        const Scalar angleTh = 10.e-3; //in rad
+
+        // merge primitive according to dialog properties
+        // do it here now, should be moved to dedicated class
+        for(Project::PrimitiveContainer::iterator it1 = _project->primitives.begin();
+            it1 != _project->primitives.end(); it1++){
+
+            // we process only for the primitives that have not been merged previously
+            if ((*it1).did() == (*it1).uid()){
+
+                const Primitive::vec& normal = (*it1).normal();
+                for(Project::PrimitiveContainer::iterator it2 = it1+1;
+                    it2 != _project->primitives.end(); it2++){
+
+                    if (p.useAngular){
+                        Scalar angle = std::acos(normal.dot((*it2).normal()));
+                        Scalar fm = std::fmod(angle, p.angleRef);
+                        if (p.usePeriodicAngles){
+                            if (std::abs(std::fmod(angle, p.angleRef)) <= angleTh)
+                                (*it2).did() = (*it1).did();
+                        }else if (std::abs(angle-p.angleRef) <= angleTh) // merge
+                            (*it2).did() = (*it1).did();
+                    }
+                }
+            }
+        }
+    }
+
+    // clean
+    delete dialog;
+}
 
 void MainWindow::on_actionSave_points_triggered()
 {
@@ -308,9 +354,12 @@ void MainWindow::on_actionSave_all_triggered()
 
 
     if (! path.isNull()){
-        writePrimitives (path+QString("/points_primitives.csv"));
-        writeAssignement(path+QString("/primitives.csv"));
+        writePrimitives (path+QString("/primitives.csv"));
+        writeAssignement(path+QString("/points_primitives.csv"));
         writeSamples    (path+QString("/cloud.ply"));
+
+
+        settings.setValue("Path/allPath", path);
     }
 }
 
@@ -411,3 +460,4 @@ void MainWindow::writeSamples(QString path){
         outfile.close();
     }
 }
+

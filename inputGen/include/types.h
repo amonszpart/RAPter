@@ -30,6 +30,13 @@ struct Sample: public Primitive::vec{
 typedef std::vector<Sample,
                     Eigen::aligned_allocator<Sample> > SampleSet;
 }
+
+template <typename Scalar>
+struct MergeParam{
+    bool useAngular;
+    Scalar angleRef; // stored in radian
+    bool usePeriodicAngles;
+};
 }
 
 

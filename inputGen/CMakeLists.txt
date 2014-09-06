@@ -10,12 +10,14 @@ FIND_PACKAGE(Eigen3 REQUIRED)
 SET(inputGen_SOURCES
   src/main.cpp
   src/mainwindow.cpp
+  src/mergedialog.cpp
   src/samplerfactory.cpp
   src/displacementfactory.cpp
   src/myview.cpp
   src/myscene.cpp)
 SET(inputGen_HEADERS
   include/mainwindow.h
+  include/mergedialog.h
   include/sampler.h
   include/samplerfactory.h
   include/displacement.h
@@ -30,6 +32,7 @@ SET(inputGen_HEADERS
   include/impl/biasdisplacement.hpp)
 SET(inputGen_FORMS
   ui/mainwindow.ui
+  ui/mergedialog.ui
   ui/samplerfactory.ui
   ui/displacementfactory.ui)
 # SET(inputGen_RESOURCES images.qrc)

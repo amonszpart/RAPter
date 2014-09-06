@@ -46,7 +46,14 @@
     <addaction name="actionLoad_SVG"/>
     <addaction name="menuSave"/>
    </widget>
+   <widget class="QMenu" name="menuAnalyze">
+    <property name="title">
+     <string>Analyze</string>
+    </property>
+    <addaction name="actionMerge_primitives"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuAnalyze"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -96,6 +103,17 @@
   <action name="actionSave_all">
    <property name="text">
     <string>Save all</string>
+   </property>
+  </action>
+  <action name="actionMerge_primitives">
+   <property name="text">
+    <string>Merge primitives</string>
+   </property>
+   <property name="iconText">
+    <string>Merge primitives according global constraints</string>
+   </property>
+   <property name="toolTip">
+    <string>Merge primitives according global constraints</string>
    </property>
   </action>
  </widget>
