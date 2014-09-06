@@ -88,9 +88,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="textblock"><dl class="reflist">
 <dt><a class="anchor" id="_todo000001"></a>Class <a class="el" href="struct_g_f2_1_1_my_point_primitive_distance_functor.html">GF2::MyPointPrimitiveDistanceFunctor</a>  </dt>
 <dd>Move this to the primitive class, since this is dependent on the primitive (i.e. a cylinder won't generalize to this concept)  </dd>
-<dt><a class="anchor" id="_todo000002"></a>Member <a class="el" href="class_g_f2_1_1_plane_primitive.html#a0bda71cd5dedded2fb7445cdd3121d78">GF2::PlanePrimitive::getExtent</a>  (std::vector&lt; _PointT &gt; &amp;minMax, _PointContainerPtrT cloud, const double threshold=0.01, std::vector&lt; int &gt; const *indices=NULL) const </dt>
+<dt><a class="anchor" id="_todo000003"></a>Member <a class="el" href="class_g_f2_1_1_plane_primitive.html#a0bda71cd5dedded2fb7445cdd3121d78">GF2::PlanePrimitive::getExtent</a>  (std::vector&lt; _PointT &gt; &amp;minMax, _PointContainerPtrT cloud, const double threshold=0.01, std::vector&lt; int &gt; const *indices=NULL) const </dt>
 <dd>Detach from PCL.  </dd>
-<dt><a class="anchor" id="_todo000003"></a>Class <a class="el" href="class_g_f2_1_1_point_primitive.html">GF2::PointPrimitive</a>  </dt>
+<dt><a class="anchor" id="_todo000004"></a>Class <a class="el" href="class_g_f2_1_1_point_primitive.html">GF2::PointPrimitive</a>  </dt>
 <dd>Add Scalar template parameter. <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">_Scalar</td><td>Internal data type. Concept: float.  </td></tr>
@@ -98,19 +98,21 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   </dd>
 </dl>
 </dd>
-<dt><a class="anchor" id="_todo000004"></a>Member <a class="el" href="class_g_f2_1_1_point_primitive.html#a23ead009ac95afdb7c607225eac12958">GF2::PointPrimitive::using::GF2::Primitive</a>  ()</dt>
+<dt><a class="anchor" id="_todo000005"></a>Member <a class="el" href="class_g_f2_1_1_point_primitive.html#a23ead009ac95afdb7c607225eac12958">GF2::PointPrimitive::using::GF2::Primitive</a>  ()</dt>
 <dd>Use explicit operator VectorType() instead.  </dd>
-<dt><a class="anchor" id="_todo000005"></a>Member <a class="el" href="class_g_f2_1_1_primitive.html#a0566dd2e30f6f3ea687d01951f96b631">GF2::Primitive&lt; _Dim, _Scalar &gt;::dump</a>  (std::string const &amp;path, std::vector&lt; PrimitiveT &gt; const &amp;lines, std::vector&lt; int &gt; const *lines_clusters, std::vector&lt; int &gt; const *mask)</dt>
+<dt><a class="anchor" id="_todo000006"></a>Member <a class="el" href="class_g_f2_1_1_primitive.html#a0566dd2e30f6f3ea687d01951f96b631">GF2::Primitive&lt; _Dim, _Scalar &gt;::dump</a>  (std::string const &amp;path, std::vector&lt; PrimitiveT &gt; const &amp;lines, std::vector&lt; int &gt; const *lines_clusters, std::vector&lt; int &gt; const *mask)</dt>
 <dd>The functionality from io::writePrimitives could be moved here, if taggable would have a dump function as well.  </dd>
-<dt><a class="anchor" id="_todo000006"></a>Member <a class="el" href="class_g_f2_1_1_primitive.html#a2f6ff2a04d65126d5bf46c1675489d9e">GF2::Primitive&lt; _Dim, _Scalar &gt;::read</a>  (std::string const &amp;path, std::vector&lt; int &gt; *lines_clusters=NULL)</dt>
+<dt><a class="anchor" id="_todo000007"></a>Member <a class="el" href="class_g_f2_1_1_primitive.html#a2f6ff2a04d65126d5bf46c1675489d9e">GF2::Primitive&lt; _Dim, _Scalar &gt;::read</a>  (std::string const &amp;path, std::vector&lt; int &gt; *lines_clusters=NULL)</dt>
 <dd>The functionality from io::readPrimitives could be moved here, if taggable would have a dump function as well.  </dd>
-<dt><a class="anchor" id="_todo000007"></a>Member <a class="el" href="class_g_f2_1_1_solver.html#aad3caec6fed374272acac334c00f2149">GF2::Solver::checkSolution</a>  (std::vector&lt; Scalar &gt; const &amp;x, SparseMatrix const &amp;qo, SparseMatrix const &amp;Qo, SparseMatrix const &amp;A, Eigen::Matrix&lt; Scalar, 3, 1 &gt; const &amp;weights)</dt>
+<dt><a class="anchor" id="_todo000002"></a>Class <a class="el" href="struct_g_f2_1_1_representative_sqr_patch_patch_distance_functor_t.html">GF2::RepresentativeSqrPatchPatchDistanceFunctorT&lt; _Scalar, _SpatialPatchPatchDistanceFunctorT &gt;</a>  </dt>
+<dd>Change to actually use the direction to threshold ( ellipsoid in real space ).  </dd>
+<dt><a class="anchor" id="_todo000008"></a>Member <a class="el" href="class_g_f2_1_1_solver.html#aad3caec6fed374272acac334c00f2149">GF2::Solver::checkSolution</a>  (std::vector&lt; Scalar &gt; const &amp;x, SparseMatrix const &amp;qo, SparseMatrix const &amp;Qo, SparseMatrix const &amp;A, Eigen::Matrix&lt; Scalar, 3, 1 &gt; const &amp;weights)</dt>
 <dd>Dump to disk together with solution. </dd>
 </dl>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Sep 5 2014 11:33:03 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Sep 5 2014 16:31:26 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

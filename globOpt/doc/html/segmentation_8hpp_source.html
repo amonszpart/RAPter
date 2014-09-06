@@ -220,6 +220,18 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;    <span class="keywordflow">return</span> EXIT_SUCCESS;</div>
 <div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;} <span class="comment">// ...Segment::propose()</span></div>
 <div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;</div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;<span class="comment">/*</span></div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;<span class="comment"> * \brief Groups unoriented points into oriented patches represented by a single primitive</span></div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;<span class="comment"> *                   (1) group to patches</span></div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;<span class="comment"> *                   (2) refit lines to patches</span></div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;<span class="comment"> * \tparam _PrimitiveContainerT Concept: std::map&lt; int, std::vector&lt;_PrimitiveT&gt; &gt;. Groups primitives by their GID.</span></div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;<span class="comment"> * \param[out] patches                   Ready to process patches, each of them with one direction only. ( { 0: [Primitive00] }, { 1: [Primitive11] }, ... )</span></div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;<span class="comment"> * \param[in/out] points                 Input points that get assigned to the patches by their GID tag set.</span></div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;<span class="comment"> * \param[in]  scale                     Spatial scale to use for fits.</span></div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;<span class="comment"> * \param[in]  angles                    Desired angles to use for groupings.</span></div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;<span class="comment"> * \param[in]  patchPatchDistanceFunctor #regionGrow() uses the thresholds encoded to group points. The evalSpatial() function is used to assign orphan points.</span></div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;<span class="comment"> * \param[in]  nn_K                      Number of nearest neighbour points looked for in #regionGrow().</span></div>
+<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;<span class="comment"> */</span></div>
 <div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;<span class="keyword">template</span> &lt; <span class="keyword">class       </span>_PrimitiveT</div>
 <div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;         , <span class="keyword">typename</span>    _Scalar</div>
 <div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;         , <span class="keyword">class       </span>_PrimitiveContainerT</div>
@@ -246,229 +258,223 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;    PatchesT groups;</div>
 <div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;    {</div>
 <div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;        regionGrow&lt;_PrimitiveContainerT&gt;</div>
-<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;                  ( <span class="comment">/* [in/out]  points/pointsWGIDTag: */</span> <a class="code" href="globfit_8m.html#ab9a89211ecb71d18bbd259853fda1c54">points</a></div>
-<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;                  , <span class="comment">/* [in]                     scale: */</span> <a class="code" href="globfit_8m.html#a3d6cbfbc95fcc0bac7015e7f5743e466">scale</a></div>
-<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;                  , <span class="comment">/* [in]            desired_angles: */</span> angles</div>
+<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;                  ( <span class="comment">/* [in,out]  points/pointsWGIDTag: */</span> <a class="code" href="globfit_8m.html#ab9a89211ecb71d18bbd259853fda1c54">points</a></div>
+<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;                  , <span class="comment">/* [out]          groups_pointids: */</span> groups</div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;                  , <span class="comment">/* [in]                     scale: */</span> <a class="code" href="globfit_8m.html#a3d6cbfbc95fcc0bac7015e7f5743e466">scale</a></div>
 <div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;                  , <span class="comment">/* [in] patchPatchDistanceFunctor: */</span> patchPatchDistanceFunctor</div>
 <div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;                  , <span class="comment">/* [in]              gid_tag_name: */</span> PointPrimitiveT::GID</div>
-<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;                  , <span class="comment">/* [in]                      nn_K: */</span> nn_K</div>
-<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;                  , <span class="comment">/* [out]          groups_pointids: */</span> &amp;groups );</div>
-<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;    } <span class="comment">// ... (1) group</span></div>
-<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;</div>
-<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;    <span class="comment">// (2) Create PrimitiveContainer</span></div>
-<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;    <span class="comment">// Copy the representative direction of each patch in groups to an output patch with GID as it&#39;s linear index in groups.</span></div>
-<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;    <span class="keywordflow">for</span> ( <span class="keywordtype">size_t</span> gid = 0; gid != groups.size(); ++gid )</div>
-<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;    {</div>
-<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;        <a class="code" href="namespace_g_f2_1_1containers.html#a3c5bd8be9debd9a6eafe6bb99af7e26e">containers::add</a>( patches, gid, groups[gid].getRepresentative() )</div>
-<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;                .setTag( _PrimitiveT::GID, gid );</div>
-<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;    }</div>
-<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;</div>
-<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;    <span class="keywordflow">return</span> EXIT_SUCCESS;</div>
-<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;} <span class="comment">// ...Segmentation::patchify()</span></div>
-<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;</div>
-<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;<span class="keyword">template</span> &lt; <span class="keyword">class       </span>_PrimitiveContainerT</div>
-<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;         , <span class="keyword">class       </span>_PointContainerT</div>
-<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;         , <span class="keyword">class       </span>_PatchPatchDistanceFunctorT</div>
-<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;         , <span class="keyword">class       </span>_PatchesT</div>
-<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;         , <span class="keyword">class       </span>_PrimitiveT</div>
-<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;         , <span class="keyword">typename</span>    _Scalar</div>
-<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;         , <span class="keyword">class       </span>_PointPrimitiveT&gt; <span class="keywordtype">int</span></div>
-<div class="line"><a name="l00196"></a><span class="lineno"><a class="line" href="class_g_f2_1_1_segmentation.html#a0920269b484d69420187c2074bddf11c">  196</a></span>&#160;<a class="code" href="class_g_f2_1_1_segmentation.html#a0920269b484d69420187c2074bddf11c">Segmentation::regionGrow</a>( _PointContainerT                       &amp; <a class="code" href="globfit_8m.html#ab9a89211ecb71d18bbd259853fda1c54">points</a></div>
-<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;                        , _Scalar                           <span class="keyword">const</span>  <span class="comment">/*scale*/</span></div>
-<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;                        , std::vector&lt;_Scalar&gt;              <span class="keyword">const</span>&amp; <span class="comment">/*angles*/</span></div>
-<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;                        , _PatchPatchDistanceFunctorT       <span class="keyword">const</span>&amp; patchPatchDistanceFunctor</div>
-<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;                        , <span class="keywordtype">int</span>                               <span class="keyword">const</span>  gid_tag_name</div>
-<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;                        , <span class="keywordtype">int</span>                               <span class="keyword">const</span>  nn_K</div>
-<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;                        , _PatchesT                              * groups_arg               )</div>
-<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;{</div>
-<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;    std::cout &lt;&lt; <span class="stringliteral">&quot;[&quot;</span> &lt;&lt; __func__ &lt;&lt; <span class="stringliteral">&quot;]: &quot;</span> &lt;&lt; <span class="stringliteral">&quot;running with &quot;</span> &lt;&lt; patchPatchDistanceFunctor.toString() &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;    std::cout &lt;&lt; <span class="stringliteral">&quot;[&quot;</span> &lt;&lt; __func__ &lt;&lt; <span class="stringliteral">&quot;]: &quot;</span> &lt;&lt; <span class="stringliteral">&quot;running at &quot;</span> &lt;&lt; patchPatchDistanceFunctor.getSpatialThreshold() &lt;&lt; <span class="stringliteral">&quot; spatial threshold&quot;</span> &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;    std::cout &lt;&lt; <span class="stringliteral">&quot;[&quot;</span> &lt;&lt; __func__ &lt;&lt; <span class="stringliteral">&quot;]: &quot;</span> &lt;&lt; <span class="stringliteral">&quot;running at &quot;</span> &lt;&lt; patchPatchDistanceFunctor.getAngularThreshold() &lt;&lt; <span class="stringliteral">&quot; radius threshold&quot;</span> &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;</div>
-<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;    <span class="keyword">typedef</span> <span class="keyword">typename</span> _PatchesT::value_type   PatchT;</div>
-<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;    <span class="keyword">typedef</span>          std::vector&lt;PatchT&gt;     Patches;</div>
-<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;</div>
-<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;    <span class="comment">// create patches with a single point in them</span></div>
-<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;    std::deque&lt;int&gt; starting_cands( points.size() );</div>
-<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;    <span class="keywordflow">for</span> ( <span class="keywordtype">int</span> <a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a> = 0; <a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a> != points.size(); ++<a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a> )</div>
-<div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160;    {</div>
-<div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160;        <span class="comment">//const int pid = point_ids_arg ? (*point_ids_arg)[ pid_id ] : pid_id;</span></div>
-<div class="line"><a name="l00216"></a><span class="lineno">  216</span>&#160;        <span class="keywordflow">if</span> ( points[<a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a>].<span class="keyword">template</span> <a class="code" href="fmincon__merged_8m.html#a4ca269cf93df1b512b52174c1a256fe5">dir</a>().norm() != _Scalar(1) )</div>
-<div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160;            std::cerr &lt;&lt; <span class="stringliteral">&quot;unoriented point at pid &quot;</span> &lt;&lt; <a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a> &lt;&lt; <span class="stringliteral">&quot;? &quot;</span> &lt;&lt; points[<a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a>].<span class="keyword">template</span> <a class="code" href="fmincon__merged_8m.html#a4ca269cf93df1b512b52174c1a256fe5">dir</a>().transpose() &lt;&lt; <span class="stringliteral">&quot;, norm: &quot;</span> &lt;&lt; points[<a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a>].template <a class="code" href="fmincon__merged_8m.html#a4ca269cf93df1b512b52174c1a256fe5">dir</a>().norm() &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;        starting_cands.push_back( <a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a> );</div>
-<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;    }</div>
-<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;</div>
-<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;    <span class="comment">// prebulid ann cloud</span></div>
-<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;    pcl::PointCloud&lt;pcl::PointXYZ&gt;::Ptr ann_cloud( <span class="keyword">new</span> pcl::PointCloud&lt;pcl::PointXYZ&gt;() );</div>
-<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;    {</div>
-<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;        ann_cloud-&gt;reserve( points.size() );</div>
-<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;        <span class="keywordflow">for</span> ( <span class="keywordtype">size_t</span> <a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a> = 0; <a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a> != points.size(); ++<a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a> )</div>
-<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160;        {</div>
-<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;            pcl::PointXYZ pnt;</div>
-<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;            pnt.x = points[<a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a>].template pos()(0); <span class="comment">// convert PointPrimitive to Eigen::Matrix, and get (0)</span></div>
-<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;            pnt.y = points[<a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a>].template pos()(1);</div>
-<div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160;            pnt.z = points[<a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a>].template pos()(2);</div>
-<div class="line"><a name="l00231"></a><span class="lineno">  231</span>&#160;            ann_cloud-&gt;push_back( pnt );</div>
-<div class="line"><a name="l00232"></a><span class="lineno">  232</span>&#160;        }</div>
-<div class="line"><a name="l00233"></a><span class="lineno">  233</span>&#160;    }</div>
-<div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;    <span class="keyword">typename</span> pcl::search::KdTree&lt;pcl::PointXYZ&gt;::Ptr tree( <span class="keyword">new</span> pcl::search::KdTree&lt;pcl::PointXYZ&gt; );</div>
-<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;    tree-&gt;setInputCloud( ann_cloud );</div>
-<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;</div>
-<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;    Patches patches; patches.reserve( std::max(1.5*sqrt(points.size()),10.) );</div>
-<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;</div>
-<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;    <span class="comment">// get unassigned point</span></div>
-<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;    std::vector&lt;bool&gt; assigned( points.size(), false );</div>
-<div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;    std::vector&lt;bool&gt; visited( points.size(), false );</div>
-<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;</div>
-<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;    <span class="comment">//const int K = 20;</span></div>
-<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;    std::vector&lt;float&gt;  sqr_dists( nn_K );</div>
-<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;    std::vector&lt; int &gt;  neighs( nn_K );</div>
-<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;    <span class="keywordtype">int</span>                 found_points_count  = 0;</div>
-<div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160;    pcl::PointXYZ       searchPoint;</div>
-<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160;    <span class="keyword">const</span> _Scalar       spatial_thresh      = patchPatchDistanceFunctor.getSpatialThreshold();</div>
-<div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160;    <span class="keyword">const</span> _Scalar       dist_weight         = 0.5*0.5;</div>
-<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160;    <span class="keyword">const</span> _Scalar       sqr_spatial_thresh  = spatial_thresh * spatial_thresh;</div>
-<div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160;    <span class="keyword">const</span> _Scalar       sqr_ang_thresh      = patchPatchDistanceFunctor.getAngularThreshold() * patchPatchDistanceFunctor.getAngularThreshold();</div>
-<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;    <span class="keyword">const</span> _Scalar       max_dist            = patchPatchDistanceFunctor.getSpatialThreshold() * _Scalar(3.5); <span class="comment">// longest axis of ellipse)</span></div>
+<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;                  , <span class="comment">/* [in]                      nn_K: */</span> nn_K );</div>
+<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;    } <span class="comment">// ... (1) group</span></div>
+<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;</div>
+<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;    <span class="comment">// (2) Create PrimitiveContainer</span></div>
+<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;    <span class="comment">// Copy the representative direction of each patch in groups to an output patch with GID as it&#39;s linear index in groups.</span></div>
+<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;    <span class="keywordflow">for</span> ( <span class="keywordtype">size_t</span> gid = 0; gid != groups.size(); ++gid )</div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;    {</div>
+<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;        <a class="code" href="namespace_g_f2_1_1containers.html#a3c5bd8be9debd9a6eafe6bb99af7e26e">containers::add</a>( patches, gid, groups[gid].getRepresentative() )</div>
+<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;                .setTag( _PrimitiveT::GID, gid );</div>
+<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;    }</div>
+<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;</div>
+<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;    <span class="keywordflow">return</span> EXIT_SUCCESS;</div>
+<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;} <span class="comment">// ...Segmentation::patchify()</span></div>
+<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;</div>
+<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;<span class="comment">/*  \brief                               Greedy region growing</span></div>
+<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;<span class="comment"> *  \tparam _PrimitiveContainerT         Concept: std::vector&lt;\ref GF2::LinePrimitive2&gt;</span></div>
+<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;<span class="comment"> *  \tparam _PointContainerT             Concept: std::vector&lt;\ref GF2::PointPrimitive&gt;</span></div>
+<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;<span class="comment"> *  \tparam _PointPatchDistanceFunctorT  Concept: \ref RepresentativeSqrPatchPatchDistanceFunctorT.</span></div>
+<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;<span class="comment"> *  \tparam _PatchesT                    Concept: vector&lt; \ref segmentation::Patch &lt;_Scalar,_PrimitiveT&gt; &gt;</span></div>
+<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;<span class="comment"> *  \tparam _PrimitiveT                  Concept: \ref GF2::LinePrimitive2</span></div>
+<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;<span class="comment"> *  \tparam _Scalar                      Concept: float</span></div>
+<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;<span class="comment"> *  \tparam _PointT                      Concept: \ref GF2::PointPrimitive</span></div>
+<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;<span class="comment"> *  \param[in,out] points                Input points to create patches from. The \p gid_tag_name field of the points will be set according to their patch assignment.</span></div>
+<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;<span class="comment"> *  \param[out] groups_arg               Holds the point-id-groups, that can then be refit to to get a patch location and direction. Concept: vector&lt;\ref segmentation::Patch&gt;.</span></div>
+<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;<span class="comment"> *  \param[in] scale                     Spatial extent of the input. In practice unused, since the \p patchPatchDistanceFunctor was constructed with it.</span></div>
+<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;<span class="comment"> *  \param[in] patchPatchDistanceFunctor Takes two patches, and decides, whether they are similar enough to be merged.</span></div>
+<div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;<span class="comment"> *                                       In practice, takes a patch that is currently grown, and a temporary patch</span></div>
+<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;<span class="comment"> *                                       that only contains a neighbouring point, and decides. See in \ref RepresentativeSqrPatchPatchDistanceFunctorT.</span></div>
+<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;<span class="comment"> *  \param[in] gid_tag_name              The key value of GID in _PointT. Suggested to be: _PointT::GID.</span></div>
+<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;<span class="comment"> *  \param[in] nn_K                      Number of nearest neighbour points looked for.</span></div>
+<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;<span class="keyword">template</span> &lt; <span class="keyword">class       </span>_PrimitiveContainerT</div>
+<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;         , <span class="keyword">class       </span>_PointContainerT</div>
+<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;         , <span class="keyword">class       </span>_PatchPatchDistanceFunctorT</div>
+<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;         , <span class="keyword">class       </span>_PatchesT</div>
+<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;         , <span class="keyword">class       </span>_PrimitiveT</div>
+<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;         , <span class="keyword">typename</span>    _Scalar</div>
+<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;         , <span class="keyword">class       </span>_PointPrimitiveT&gt; <span class="keywordtype">int</span></div>
+<div class="line"><a name="l00208"></a><span class="lineno"><a class="line" href="class_g_f2_1_1_segmentation.html#a412e46ffae6efb8e08c71a19e6ce8694">  208</a></span>&#160;<a class="code" href="class_g_f2_1_1_segmentation.html#a412e46ffae6efb8e08c71a19e6ce8694">Segmentation::regionGrow</a>( _PointContainerT                       &amp; <a class="code" href="globfit_8m.html#ab9a89211ecb71d18bbd259853fda1c54">points</a></div>
+<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;                        , _PatchesT                              &amp; groups_arg</div>
+<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;                        , _Scalar                           <span class="keyword">const</span>  <span class="comment">/*scale*/</span></div>
+<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;                        , _PatchPatchDistanceFunctorT       <span class="keyword">const</span>&amp; patchPatchDistanceFunctor</div>
+<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;                        , <span class="keywordtype">int</span>                               <span class="keyword">const</span>  gid_tag_name</div>
+<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;                        , <span class="keywordtype">int</span>                               <span class="keyword">const</span>  nn_K )</div>
+<div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160;{</div>
+<div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160;    std::cout &lt;&lt; <span class="stringliteral">&quot;[&quot;</span> &lt;&lt; __func__ &lt;&lt; <span class="stringliteral">&quot;]: &quot;</span> &lt;&lt; <span class="stringliteral">&quot;running with &quot;</span> &lt;&lt; patchPatchDistanceFunctor.toString() &lt;&lt; std::endl;</div>
+<div class="line"><a name="l00216"></a><span class="lineno">  216</span>&#160;    std::cout &lt;&lt; <span class="stringliteral">&quot;[&quot;</span> &lt;&lt; __func__ &lt;&lt; <span class="stringliteral">&quot;]: &quot;</span> &lt;&lt; <span class="stringliteral">&quot;running at &quot;</span> &lt;&lt; patchPatchDistanceFunctor.getSpatialThreshold() &lt;&lt; <span class="stringliteral">&quot; spatial threshold&quot;</span> &lt;&lt; std::endl;</div>
+<div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160;    std::cout &lt;&lt; <span class="stringliteral">&quot;[&quot;</span> &lt;&lt; __func__ &lt;&lt; <span class="stringliteral">&quot;]: &quot;</span> &lt;&lt; <span class="stringliteral">&quot;running at &quot;</span> &lt;&lt; patchPatchDistanceFunctor.getAngularThreshold() &lt;&lt; <span class="stringliteral">&quot; radius threshold&quot;</span> &lt;&lt; std::endl;</div>
+<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;</div>
+<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;    <span class="keyword">typedef</span> <span class="keyword">typename</span> _PatchesT::value_type   PatchT;</div>
+<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;    <span class="keyword">typedef</span>          std::vector&lt;PatchT&gt;     Patches;</div>
+<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;</div>
+<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;    <span class="comment">// create patches with a single point in them</span></div>
+<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;    std::deque&lt;int&gt; starting_cands( points.size() );</div>
+<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;    <span class="keywordflow">for</span> ( <span class="keywordtype">int</span> <a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a> = 0; <a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a> != points.size(); ++<a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a> )</div>
+<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;    {</div>
+<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160;        <span class="comment">//const int pid = point_ids_arg ? (*point_ids_arg)[ pid_id ] : pid_id;</span></div>
+<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;        <span class="keywordflow">if</span> ( points[<a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a>].<span class="keyword">template</span> <a class="code" href="fmincon__merged_8m.html#a4ca269cf93df1b512b52174c1a256fe5">dir</a>().norm() != _Scalar(1) )</div>
+<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;            std::cerr &lt;&lt; <span class="stringliteral">&quot;unoriented point at pid &quot;</span> &lt;&lt; <a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a> &lt;&lt; <span class="stringliteral">&quot;? &quot;</span> &lt;&lt; points[<a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a>].<span class="keyword">template</span> <a class="code" href="fmincon__merged_8m.html#a4ca269cf93df1b512b52174c1a256fe5">dir</a>().transpose() &lt;&lt; <span class="stringliteral">&quot;, norm: &quot;</span> &lt;&lt; points[<a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a>].template <a class="code" href="fmincon__merged_8m.html#a4ca269cf93df1b512b52174c1a256fe5">dir</a>().norm() &lt;&lt; std::endl;</div>
+<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;        starting_cands.push_back( <a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a> );</div>
+<div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160;    }</div>
+<div class="line"><a name="l00231"></a><span class="lineno">  231</span>&#160;</div>
+<div class="line"><a name="l00232"></a><span class="lineno">  232</span>&#160;    <span class="comment">// prebulid ann cloud</span></div>
+<div class="line"><a name="l00233"></a><span class="lineno">  233</span>&#160;    pcl::PointCloud&lt;pcl::PointXYZ&gt;::Ptr ann_cloud( <span class="keyword">new</span> pcl::PointCloud&lt;pcl::PointXYZ&gt;() );</div>
+<div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;    {</div>
+<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;        ann_cloud-&gt;reserve( points.size() );</div>
+<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;        <span class="keywordflow">for</span> ( <span class="keywordtype">size_t</span> <a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a> = 0; <a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a> != points.size(); ++<a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a> )</div>
+<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;        {</div>
+<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;            pcl::PointXYZ pnt;</div>
+<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;            pnt.x = points[<a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a>].template pos()(0); <span class="comment">// convert PointPrimitive to Eigen::Matrix, and get (0)</span></div>
+<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;            pnt.y = points[<a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a>].template pos()(1);</div>
+<div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;            pnt.z = points[<a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a>].template pos()(2);</div>
+<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;            ann_cloud-&gt;push_back( pnt );</div>
+<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;        }</div>
+<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;    }</div>
+<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;    <span class="keyword">typename</span> pcl::search::KdTree&lt;pcl::PointXYZ&gt;::Ptr tree( <span class="keyword">new</span> pcl::search::KdTree&lt;pcl::PointXYZ&gt; );</div>
+<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;    tree-&gt;setInputCloud( ann_cloud );</div>
+<div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160;</div>
+<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160;    Patches patches; patches.reserve( std::max(1.5*sqrt(points.size()),10.) );</div>
+<div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160;</div>
+<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160;    <span class="comment">// get unassigned point</span></div>
+<div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160;    std::vector&lt;bool&gt; assigned( points.size(), false );</div>
+<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;    std::vector&lt;bool&gt; visited( points.size(), false );</div>
 <div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160;</div>
-<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;    <span class="comment">// look for neighbours, merge most similar</span></div>
-<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;    <span class="keywordflow">while</span> ( starting_cands.size() )</div>
-<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;    {</div>
-<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160;        <span class="comment">// remove point from unassigned</span></div>
-<div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160;        <span class="keywordtype">int</span> <a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a> = starting_cands.front();</div>
-<div class="line"><a name="l00259"></a><span class="lineno">  259</span>&#160;        starting_cands.pop_front();</div>
-<div class="line"><a name="l00260"></a><span class="lineno">  260</span>&#160;</div>
-<div class="line"><a name="l00261"></a><span class="lineno">  261</span>&#160;        <span class="keywordflow">if</span> ( visited[pid] &amp;&amp; !assigned[pid] )</div>
-<div class="line"><a name="l00262"></a><span class="lineno">  262</span>&#160;            std::cerr &lt;&lt; <span class="stringliteral">&quot;[&quot;</span> &lt;&lt; __func__ &lt;&lt; <span class="stringliteral">&quot;]: &quot;</span> &lt;&lt; <span class="stringliteral">&quot; visited but not assigned...:JSDL:FJSD:LKFSDK:SFDJ&quot;</span> &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160;</div>
-<div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160;        <span class="keywordflow">if</span> ( visited[pid] )</div>
-<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160;            <span class="keywordflow">continue</span>;</div>
+<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;    std::vector&lt;float&gt;  sqr_dists( nn_K );</div>
+<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;    std::vector&lt; int &gt;  neighs( nn_K );</div>
+<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;    <span class="keywordtype">int</span>                 found_points_count  = 0;</div>
+<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160;    pcl::PointXYZ       searchPoint;</div>
+<div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160;    <span class="keyword">const</span> _Scalar       max_dist            = patchPatchDistanceFunctor.getSpatialThreshold() * _Scalar(3.5); <span class="comment">// longest axis of ellipse)</span></div>
+<div class="line"><a name="l00259"></a><span class="lineno">  259</span>&#160;</div>
+<div class="line"><a name="l00260"></a><span class="lineno">  260</span>&#160;    <span class="comment">// look for neighbours, merge most similar</span></div>
+<div class="line"><a name="l00261"></a><span class="lineno">  261</span>&#160;    <span class="keywordflow">while</span> ( starting_cands.size() )</div>
+<div class="line"><a name="l00262"></a><span class="lineno">  262</span>&#160;    {</div>
+<div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160;        <span class="comment">// remove point from unassigned</span></div>
+<div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160;        <span class="keywordtype">int</span> <a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a> = starting_cands.front();</div>
+<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160;        starting_cands.pop_front();</div>
 <div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;</div>
-<div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;        <span class="comment">// add to new cluster</span></div>
-<div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;        <span class="keywordflow">if</span> ( !assigned[pid] )</div>
-<div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160;        {</div>
-<div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;            PatchT tmp_patch; tmp_patch.push_back( <a class="code" href="namespace_g_f2_1_1segmentation.html#ab1b3fa4a3c6e32b0912447d24457be4f">segmentation::PidLid</a>(pid,-1) );</div>
-<div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;            patches.push_back( tmp_patch );</div>
-<div class="line"><a name="l00272"></a><span class="lineno">  272</span>&#160;            patches.back().update( points );</div>
-<div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;            assigned[ <a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a> ] = <span class="keyword">true</span>;</div>
-<div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160;        }</div>
-<div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;</div>
-<div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160;        <span class="comment">// look for unassigned neighbours</span></div>
-<div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160;        searchPoint.x = points[ <a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a> ].template pos()(0);</div>
-<div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160;        searchPoint.y = points[ <a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a> ].template pos()(1);</div>
-<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;        searchPoint.z = points[ <a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a> ].template pos()(2);</div>
-<div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160;        found_points_count = tree-&gt;radiusSearch( searchPoint, max_dist, neighs, sqr_dists, 0);</div>
+<div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;        <span class="keywordflow">if</span> ( visited[pid] &amp;&amp; !assigned[pid] )</div>
+<div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;            std::cerr &lt;&lt; <span class="stringliteral">&quot;[&quot;</span> &lt;&lt; __func__ &lt;&lt; <span class="stringliteral">&quot;]: &quot;</span> &lt;&lt; <span class="stringliteral">&quot; visited but not assigned...:JSDL:FJSD:LKFSDK:SFDJ&quot;</span> &lt;&lt; std::endl;</div>
+<div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160;</div>
+<div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;        <span class="keywordflow">if</span> ( visited[pid] )</div>
+<div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;            <span class="keywordflow">continue</span>;</div>
+<div class="line"><a name="l00272"></a><span class="lineno">  272</span>&#160;</div>
+<div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;        <span class="comment">// add to new cluster</span></div>
+<div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160;        <span class="keywordflow">if</span> ( !assigned[pid] )</div>
+<div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;        {</div>
+<div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160;            PatchT tmp_patch; tmp_patch.push_back( <a class="code" href="namespace_g_f2_1_1segmentation.html#ab1b3fa4a3c6e32b0912447d24457be4f">segmentation::PidLid</a>(pid,-1) );</div>
+<div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160;            patches.push_back( tmp_patch );</div>
+<div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160;            patches.back().update( points );</div>
+<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;            assigned[ <a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a> ] = <span class="keyword">true</span>;</div>
+<div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160;        }</div>
 <div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;</div>
-<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;        <span class="keywordflow">if</span> ( neighs.size() != found_points_count )</div>
-<div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;            std::cerr &lt;&lt; <span class="stringliteral">&quot;as;dlkjfa;lkdsjfl;asdjkf neighs.size() &quot;</span> &lt;&lt; neighs.size() &lt;&lt; <span class="stringliteral">&quot; != &quot;</span> &lt;&lt; found_points_count &lt;&lt; <span class="stringliteral">&quot; found_points_count&quot;</span> &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160;</div>
-<div class="line"><a name="l00285"></a><span class="lineno">  285</span>&#160;        <span class="keywordflow">for</span> ( <span class="keywordtype">size_t</span> pid_id = 0; pid_id != neighs.size(); ++pid_id )</div>
-<div class="line"><a name="l00286"></a><span class="lineno">  286</span>&#160;        {</div>
-<div class="line"><a name="l00287"></a><span class="lineno">  287</span>&#160;            <span class="keyword">const</span> <span class="keywordtype">int</span> <a class="code" href="lp_8m.html#a4ef62f8677d097c35ad5abfa948c8004">pid2</a> = neighs[ pid_id ];</div>
-<div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160;            <span class="keywordflow">if</span> ( !assigned[pid2] )</div>
-<div class="line"><a name="l00289"></a><span class="lineno">  289</span>&#160;            {</div>
-<div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160;                _Scalar diff = <a class="code" href="namespace_g_f2.html#ae2700dd8e83f9f7ee506d3c5b0d34108">GF2::angleInRad</a>( patches.back().template <a class="code" href="fmincon__merged_8m.html#a4ca269cf93df1b512b52174c1a256fe5">dir</a>(), points[<a class="code" href="lp_8m.html#a4ef62f8677d097c35ad5abfa948c8004">pid2</a>].template <a class="code" href="fmincon__merged_8m.html#a4ca269cf93df1b512b52174c1a256fe5">dir</a>() );</div>
-<div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160;</div>
-<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;                <span class="comment">// location from point, but direction is the representative&#39;s</span></div>
-<div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160;                _PointPrimitiveT p1_proxy(points[pid].<span class="keyword">template</span> pos(), patches.back().template <a class="code" href="fmincon__merged_8m.html#a4ca269cf93df1b512b52174c1a256fe5">dir</a>());</div>
-<div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;                PatchT p2_proxy; p2_proxy.push_back( <a class="code" href="namespace_g_f2_1_1segmentation.html#ab1b3fa4a3c6e32b0912447d24457be4f">segmentation::PidLid</a>(pid2,-1) ); p2_proxy.update( points );</div>
-<div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160;</div>
-<div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;                <span class="keywordflow">if</span> ( std::abs((dist_weight * sqr_dists[pid_id] / sqr_spatial_thresh + diff * diff / sqr_ang_thresh )</div>
-<div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160;                              - patchPatchDistanceFunctor.template eval&lt;_PointPrimitiveT&gt;( p1_proxy, p2_proxy, points, NULL )) &gt; 1.e-6)</div>
-<div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;                {</div>
-<div class="line"><a name="l00299"></a><span class="lineno">  299</span>&#160;                    std::cout &lt;&lt; <span class="stringliteral">&quot;sqr_dist_weight: &quot;</span> &lt;&lt; dist_weight &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00300"></a><span class="lineno">  300</span>&#160;                    std::cout &lt;&lt; <span class="stringliteral">&quot;spatial_distance: &quot;</span> &lt;&lt; sqrt(sqr_dists[pid_id]) &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00301"></a><span class="lineno">  301</span>&#160;                    std::cout &lt;&lt; <span class="stringliteral">&quot;spatial_distance^2: &quot;</span> &lt;&lt; sqr_dists[pid_id] &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00302"></a><span class="lineno">  302</span>&#160;                    std::cout &lt;&lt; <span class="stringliteral">&quot;sqr_spatial_thresh: &quot;</span> &lt;&lt; sqr_spatial_thresh &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00303"></a><span class="lineno">  303</span>&#160;                    std::cout &lt;&lt; <span class="stringliteral">&quot;ang_diff: &quot;</span> &lt;&lt; diff &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00304"></a><span class="lineno">  304</span>&#160;                    std::cout &lt;&lt; <span class="stringliteral">&quot;sqr_ang_thresh: &quot;</span> &lt;&lt; sqr_ang_thresh &lt;&lt; std::endl; fflush(stdout);</div>
-<div class="line"><a name="l00305"></a><span class="lineno">  305</span>&#160;</div>
-<div class="line"><a name="l00306"></a><span class="lineno">  306</span>&#160;                    std::cerr &lt;&lt; <span class="stringliteral">&quot;gt: &quot;</span> &lt;&lt; (dist_weight * sqr_dists[pid_id] / sqr_spatial_thresh + diff * diff / sqr_ang_thresh )</div>
-<div class="line"><a name="l00307"></a><span class="lineno">  307</span>&#160;                              &lt;&lt; <span class="stringliteral">&quot; vs &quot;</span> &lt;&lt; patchPatchDistanceFunctor.template eval&lt;_PointPrimitiveT&gt;( p1_proxy, p2_proxy, points, NULL ) &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160;                }</div>
-<div class="line"><a name="l00309"></a><span class="lineno">  309</span>&#160;                <span class="keywordflow">else</span></div>
-<div class="line"><a name="l00310"></a><span class="lineno">  310</span>&#160;                    std::cout &lt;&lt; <span class="stringliteral">&quot;[&quot;</span> &lt;&lt; __func__ &lt;&lt; <span class="stringliteral">&quot;]: &quot;</span> &lt;&lt; <span class="stringliteral">&quot;diff ok&quot;</span> &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00311"></a><span class="lineno">  311</span>&#160;</div>
-<div class="line"><a name="l00312"></a><span class="lineno">  312</span>&#160;                <span class="comment">//if ( (sqrt(sqr_dists[pid_id]) &lt; spatial_thresh) &amp;&amp; (diff &lt; ang_thresh) )                                      // original condition</span></div>
-<div class="line"><a name="l00313"></a><span class="lineno">  313</span>&#160;                <span class="comment">//if ( (dist_weight * sqr_dists[pid_id] / sqr_spatial_thresh + diff * diff / sqr_ang_thresh ) &lt;= _Scalar(1) )     // ellipse longer along line</span></div>
-<div class="line"><a name="l00314"></a><span class="lineno">  314</span>&#160;                <span class="keywordflow">if</span> ( patchPatchDistanceFunctor.template eval&lt;_PointPrimitiveT&gt;(p1_proxy, p2_proxy, points, NULL) &lt; patchPatchDistanceFunctor.getThreshold() )</div>
-<div class="line"><a name="l00315"></a><span class="lineno">  315</span>&#160;                {</div>
-<div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160;                    patches.back().push_back( <a class="code" href="namespace_g_f2_1_1segmentation.html#ab1b3fa4a3c6e32b0912447d24457be4f">segmentation::PidLid</a>(pid2,-1) );</div>
-<div class="line"><a name="l00317"></a><span class="lineno">  317</span>&#160;                    patches.back().updateWithPoint( points[pid2] );</div>
-<div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160;                    assigned[<a class="code" href="lp_8m.html#a4ef62f8677d097c35ad5abfa948c8004">pid2</a>] = <span class="keyword">true</span>;</div>
-<div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160;                    <span class="comment">// enqueue for visit</span></div>
-<div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160;                    starting_cands.push_front( pid2 );</div>
-<div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160;                }</div>
-<div class="line"><a name="l00322"></a><span class="lineno">  322</span>&#160;            }</div>
-<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;        }</div>
+<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;        <span class="comment">// look for unassigned neighbours</span></div>
+<div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;        searchPoint.x = points[ <a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a> ].template pos()(0);</div>
+<div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160;        searchPoint.y = points[ <a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a> ].template pos()(1);</div>
+<div class="line"><a name="l00285"></a><span class="lineno">  285</span>&#160;        searchPoint.z = points[ <a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a> ].template pos()(2);</div>
+<div class="line"><a name="l00286"></a><span class="lineno">  286</span>&#160;        found_points_count = tree-&gt;radiusSearch( searchPoint, max_dist, neighs, sqr_dists, 0);</div>
+<div class="line"><a name="l00287"></a><span class="lineno">  287</span>&#160;</div>
+<div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160;        <span class="keywordflow">if</span> ( neighs.size() != found_points_count )</div>
+<div class="line"><a name="l00289"></a><span class="lineno">  289</span>&#160;            std::cerr &lt;&lt; <span class="stringliteral">&quot;as;dlkjfa;lkdsjfl;asdjkf neighs.size() &quot;</span> &lt;&lt; neighs.size() &lt;&lt; <span class="stringliteral">&quot; != &quot;</span> &lt;&lt; found_points_count &lt;&lt; <span class="stringliteral">&quot; found_points_count&quot;</span> &lt;&lt; std::endl;</div>
+<div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160;</div>
+<div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160;        <span class="keywordflow">for</span> ( <span class="keywordtype">size_t</span> pid_id = 0; pid_id != neighs.size(); ++pid_id )</div>
+<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;        {</div>
+<div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160;            <span class="keyword">const</span> <span class="keywordtype">int</span> <a class="code" href="lp_8m.html#a4ef62f8677d097c35ad5abfa948c8004">pid2</a> = neighs[ pid_id ];</div>
+<div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;            <span class="keywordflow">if</span> ( !assigned[pid2] )</div>
+<div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160;            {</div>
+<div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;                <span class="comment">//_Scalar diff = GF2::angleInRad( patches.back().template dir(), points[pid2].template dir() );</span></div>
+<div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160;</div>
+<div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;                <span class="comment">// location from point, but direction is the representative&#39;s</span></div>
+<div class="line"><a name="l00299"></a><span class="lineno">  299</span>&#160;                _PointPrimitiveT p1_proxy(points[pid].<span class="keyword">template</span> pos(), patches.back().template <a class="code" href="fmincon__merged_8m.html#a4ca269cf93df1b512b52174c1a256fe5">dir</a>());</div>
+<div class="line"><a name="l00300"></a><span class="lineno">  300</span>&#160;                PatchT p2_proxy; p2_proxy.push_back( <a class="code" href="namespace_g_f2_1_1segmentation.html#ab1b3fa4a3c6e32b0912447d24457be4f">segmentation::PidLid</a>(pid2,-1) ); p2_proxy.update( points );</div>
+<div class="line"><a name="l00301"></a><span class="lineno">  301</span>&#160;</div>
+<div class="line"><a name="l00302"></a><span class="lineno">  302</span>&#160;                <span class="comment">//if ( (sqrt(sqr_dists[pid_id]) &lt; spatial_thresh) &amp;&amp; (diff &lt; ang_thresh) )                                      // original condition</span></div>
+<div class="line"><a name="l00303"></a><span class="lineno">  303</span>&#160;                <span class="keywordflow">if</span> ( patchPatchDistanceFunctor.template eval&lt;_PointPrimitiveT&gt;(p1_proxy, p2_proxy, points, NULL) &lt; patchPatchDistanceFunctor.getThreshold() )</div>
+<div class="line"><a name="l00304"></a><span class="lineno">  304</span>&#160;                {</div>
+<div class="line"><a name="l00305"></a><span class="lineno">  305</span>&#160;                    patches.back().push_back( <a class="code" href="namespace_g_f2_1_1segmentation.html#ab1b3fa4a3c6e32b0912447d24457be4f">segmentation::PidLid</a>(pid2,-1) );</div>
+<div class="line"><a name="l00306"></a><span class="lineno">  306</span>&#160;                    patches.back().updateWithPoint( points[pid2] );</div>
+<div class="line"><a name="l00307"></a><span class="lineno">  307</span>&#160;                    assigned[<a class="code" href="lp_8m.html#a4ef62f8677d097c35ad5abfa948c8004">pid2</a>] = <span class="keyword">true</span>;</div>
+<div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160;                    <span class="comment">// enqueue for visit</span></div>
+<div class="line"><a name="l00309"></a><span class="lineno">  309</span>&#160;                    starting_cands.push_front( pid2 );</div>
+<div class="line"><a name="l00310"></a><span class="lineno">  310</span>&#160;                }</div>
+<div class="line"><a name="l00311"></a><span class="lineno">  311</span>&#160;            }</div>
+<div class="line"><a name="l00312"></a><span class="lineno">  312</span>&#160;        }</div>
+<div class="line"><a name="l00313"></a><span class="lineno">  313</span>&#160;</div>
+<div class="line"><a name="l00314"></a><span class="lineno">  314</span>&#160;        visited[<a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a>] = <span class="keyword">true</span>;</div>
+<div class="line"><a name="l00315"></a><span class="lineno">  315</span>&#160;    }</div>
+<div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160;</div>
+<div class="line"><a name="l00317"></a><span class="lineno">  317</span>&#160;    <span class="comment">// copy patches to groups</span></div>
+<div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160;    _PatchesT tmp_groups;                                       <span class="comment">// local var, if output not needed</span></div>
+<div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160;    _PatchesT *groups = groups_arg ? groups_arg : &amp;tmp_groups;  <span class="comment">// relay, if output needed</span></div>
+<div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160;    (*groups).insert( (*groups).end(), patches.begin(), patches.end() );</div>
+<div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160;</div>
+<div class="line"><a name="l00322"></a><span class="lineno">  322</span>&#160;    _tagPointsFromGroups&lt;_PointPrimitiveT,_Scalar&gt;</div>
+<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;                        ( <a class="code" href="globfit_8m.html#ab9a89211ecb71d18bbd259853fda1c54">points</a>, *groups, patchPatchDistanceFunctor, gid_tag_name );</div>
 <div class="line"><a name="l00324"></a><span class="lineno">  324</span>&#160;</div>
-<div class="line"><a name="l00325"></a><span class="lineno">  325</span>&#160;        visited[<a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a>] = <span class="keyword">true</span>;</div>
-<div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160;    }</div>
+<div class="line"><a name="l00325"></a><span class="lineno">  325</span>&#160;    <span class="keywordflow">return</span> EXIT_SUCCESS;</div>
+<div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160;} <span class="comment">// ...Segmentation::regionGrow()</span></div>
 <div class="line"><a name="l00327"></a><span class="lineno">  327</span>&#160;</div>
-<div class="line"><a name="l00328"></a><span class="lineno">  328</span>&#160;    <span class="comment">// copy patches to groups</span></div>
-<div class="line"><a name="l00329"></a><span class="lineno">  329</span>&#160;    _PatchesT tmp_groups;                                       <span class="comment">// local var, if output not needed</span></div>
-<div class="line"><a name="l00330"></a><span class="lineno">  330</span>&#160;    _PatchesT *groups = groups_arg ? groups_arg : &amp;tmp_groups;  <span class="comment">// relay, if output needed</span></div>
-<div class="line"><a name="l00331"></a><span class="lineno">  331</span>&#160;    (*groups).insert( (*groups).end(), patches.begin(), patches.end() );</div>
-<div class="line"><a name="l00332"></a><span class="lineno">  332</span>&#160;</div>
-<div class="line"><a name="l00333"></a><span class="lineno">  333</span>&#160;    _tagPointsFromGroups&lt;_PointPrimitiveT,_Scalar&gt;</div>
-<div class="line"><a name="l00334"></a><span class="lineno">  334</span>&#160;                        ( <a class="code" href="globfit_8m.html#ab9a89211ecb71d18bbd259853fda1c54">points</a>, *groups, patchPatchDistanceFunctor, gid_tag_name );</div>
-<div class="line"><a name="l00335"></a><span class="lineno">  335</span>&#160;</div>
-<div class="line"><a name="l00336"></a><span class="lineno">  336</span>&#160;    <span class="keywordflow">return</span> EXIT_SUCCESS;</div>
-<div class="line"><a name="l00337"></a><span class="lineno">  337</span>&#160;} <span class="comment">// ...Segmentation::regionGrow()</span></div>
-<div class="line"><a name="l00338"></a><span class="lineno">  338</span>&#160;</div>
-<div class="line"><a name="l00339"></a><span class="lineno">  339</span>&#160;<span class="keyword">template</span> &lt; <span class="keyword">class    </span>_PointPrimitiveT</div>
-<div class="line"><a name="l00340"></a><span class="lineno">  340</span>&#160;         , <span class="keyword">typename</span> _Scalar</div>
-<div class="line"><a name="l00341"></a><span class="lineno">  341</span>&#160;         , <span class="keyword">class    </span>_PointPatchDistanceFunctorT</div>
-<div class="line"><a name="l00342"></a><span class="lineno">  342</span>&#160;         , <span class="keyword">class    </span>_PatchT</div>
-<div class="line"><a name="l00343"></a><span class="lineno">  343</span>&#160;         , <span class="keyword">class    </span>_PointContainerT</div>
-<div class="line"><a name="l00344"></a><span class="lineno">  344</span>&#160;         &gt;  <span class="keywordtype">int</span></div>
-<div class="line"><a name="l00345"></a><span class="lineno"><a class="line" href="class_g_f2_1_1_segmentation.html#a7e9a7a9553e58ce5f5bbaec4fbc73ee0">  345</a></span>&#160;<a class="code" href="class_g_f2_1_1_segmentation.html#a7e9a7a9553e58ce5f5bbaec4fbc73ee0">Segmentation::_tagPointsFromGroups</a>( _PointContainerT                 &amp; <a class="code" href="globfit_8m.html#ab9a89211ecb71d18bbd259853fda1c54">points</a></div>
-<div class="line"><a name="l00346"></a><span class="lineno">  346</span>&#160;                                  , _PatchT                     <span class="keyword">const</span>&amp; groups</div>
-<div class="line"><a name="l00347"></a><span class="lineno">  347</span>&#160;                                  , _PointPatchDistanceFunctorT <span class="keyword">const</span>&amp; pointPatchDistanceFunctor</div>
-<div class="line"><a name="l00348"></a><span class="lineno">  348</span>&#160;                                  , <span class="keywordtype">int</span>                         <span class="keyword">const</span>  gid_tag_name )</div>
-<div class="line"><a name="l00349"></a><span class="lineno">  349</span>&#160;{</div>
-<div class="line"><a name="l00350"></a><span class="lineno">  350</span>&#160;    <span class="comment">// set group tag for grouped points</span></div>
-<div class="line"><a name="l00351"></a><span class="lineno">  351</span>&#160;    std::vector&lt;bool&gt; visited( points.size(), false );</div>
-<div class="line"><a name="l00352"></a><span class="lineno">  352</span>&#160;    <span class="keywordflow">for</span> ( <span class="keywordtype">int</span> gid = 0; gid != groups.size(); ++gid )</div>
-<div class="line"><a name="l00353"></a><span class="lineno">  353</span>&#160;        <span class="keywordflow">for</span> ( <span class="keywordtype">size_t</span> pid_id = 0; pid_id != groups[gid].size(); ++pid_id )</div>
-<div class="line"><a name="l00354"></a><span class="lineno">  354</span>&#160;        {</div>
-<div class="line"><a name="l00355"></a><span class="lineno">  355</span>&#160;            <span class="keyword">const</span> <span class="keywordtype">int</span> <a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a> = groups[gid][pid_id].first;</div>
-<div class="line"><a name="l00356"></a><span class="lineno">  356</span>&#160;</div>
-<div class="line"><a name="l00357"></a><span class="lineno">  357</span>&#160;            visited.at(pid) = <span class="keyword">true</span>; <span class="comment">// TODO: change to []</span></div>
-<div class="line"><a name="l00358"></a><span class="lineno">  358</span>&#160;            points[<a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a>].setTag( gid_tag_name, gid );</div>
-<div class="line"><a name="l00359"></a><span class="lineno">  359</span>&#160;        }</div>
-<div class="line"><a name="l00360"></a><span class="lineno">  360</span>&#160;</div>
-<div class="line"><a name="l00361"></a><span class="lineno">  361</span>&#160;    <span class="comment">// add left out points to closest patch</span></div>
-<div class="line"><a name="l00362"></a><span class="lineno">  362</span>&#160;    <span class="keywordflow">for</span> ( <span class="keywordtype">int</span> <a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a> = 0; <a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a> != points.size(); ++<a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a> )</div>
-<div class="line"><a name="l00363"></a><span class="lineno">  363</span>&#160;    {</div>
-<div class="line"><a name="l00364"></a><span class="lineno">  364</span>&#160;        <span class="keywordflow">if</span> ( visited[<a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a>] )</div>
-<div class="line"><a name="l00365"></a><span class="lineno">  365</span>&#160;            <span class="keywordflow">continue</span>;</div>
+<div class="line"><a name="l00328"></a><span class="lineno">  328</span>&#160;<span class="keyword">template</span> &lt; <span class="keyword">class    </span>_PointPrimitiveT</div>
+<div class="line"><a name="l00329"></a><span class="lineno">  329</span>&#160;         , <span class="keyword">typename</span> _Scalar</div>
+<div class="line"><a name="l00330"></a><span class="lineno">  330</span>&#160;         , <span class="keyword">class    </span>_PointPatchDistanceFunctorT</div>
+<div class="line"><a name="l00331"></a><span class="lineno">  331</span>&#160;         , <span class="keyword">class    </span>_PatchT</div>
+<div class="line"><a name="l00332"></a><span class="lineno">  332</span>&#160;         , <span class="keyword">class    </span>_PointContainerT</div>
+<div class="line"><a name="l00333"></a><span class="lineno">  333</span>&#160;         &gt;  <span class="keywordtype">int</span></div>
+<div class="line"><a name="l00334"></a><span class="lineno"><a class="line" href="class_g_f2_1_1_segmentation.html#a7e9a7a9553e58ce5f5bbaec4fbc73ee0">  334</a></span>&#160;<a class="code" href="class_g_f2_1_1_segmentation.html#a7e9a7a9553e58ce5f5bbaec4fbc73ee0">Segmentation::_tagPointsFromGroups</a>( _PointContainerT                 &amp; <a class="code" href="globfit_8m.html#ab9a89211ecb71d18bbd259853fda1c54">points</a></div>
+<div class="line"><a name="l00335"></a><span class="lineno">  335</span>&#160;                                  , _PatchT                     <span class="keyword">const</span>&amp; groups</div>
+<div class="line"><a name="l00336"></a><span class="lineno">  336</span>&#160;                                  , _PointPatchDistanceFunctorT <span class="keyword">const</span>&amp; pointPatchDistanceFunctor</div>
+<div class="line"><a name="l00337"></a><span class="lineno">  337</span>&#160;                                  , <span class="keywordtype">int</span>                         <span class="keyword">const</span>  gid_tag_name )</div>
+<div class="line"><a name="l00338"></a><span class="lineno">  338</span>&#160;{</div>
+<div class="line"><a name="l00339"></a><span class="lineno">  339</span>&#160;    <span class="comment">// set group tag for grouped points</span></div>
+<div class="line"><a name="l00340"></a><span class="lineno">  340</span>&#160;    std::vector&lt;bool&gt; visited( points.size(), false );</div>
+<div class="line"><a name="l00341"></a><span class="lineno">  341</span>&#160;    <span class="keywordflow">for</span> ( <span class="keywordtype">int</span> gid = 0; gid != groups.size(); ++gid )</div>
+<div class="line"><a name="l00342"></a><span class="lineno">  342</span>&#160;        <span class="keywordflow">for</span> ( <span class="keywordtype">size_t</span> pid_id = 0; pid_id != groups[gid].size(); ++pid_id )</div>
+<div class="line"><a name="l00343"></a><span class="lineno">  343</span>&#160;        {</div>
+<div class="line"><a name="l00344"></a><span class="lineno">  344</span>&#160;            <span class="keyword">const</span> <span class="keywordtype">int</span> <a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a> = groups[gid][pid_id].first;</div>
+<div class="line"><a name="l00345"></a><span class="lineno">  345</span>&#160;</div>
+<div class="line"><a name="l00346"></a><span class="lineno">  346</span>&#160;            visited.at(pid) = <span class="keyword">true</span>; <span class="comment">// TODO: change to []</span></div>
+<div class="line"><a name="l00347"></a><span class="lineno">  347</span>&#160;            points[<a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a>].setTag( gid_tag_name, gid );</div>
+<div class="line"><a name="l00348"></a><span class="lineno">  348</span>&#160;        }</div>
+<div class="line"><a name="l00349"></a><span class="lineno">  349</span>&#160;</div>
+<div class="line"><a name="l00350"></a><span class="lineno">  350</span>&#160;    <span class="comment">// add left out points to closest patch</span></div>
+<div class="line"><a name="l00351"></a><span class="lineno">  351</span>&#160;    <span class="keywordflow">for</span> ( <span class="keywordtype">int</span> <a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a> = 0; <a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a> != points.size(); ++<a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a> )</div>
+<div class="line"><a name="l00352"></a><span class="lineno">  352</span>&#160;    {</div>
+<div class="line"><a name="l00353"></a><span class="lineno">  353</span>&#160;        <span class="keywordflow">if</span> ( visited[<a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a>] )</div>
+<div class="line"><a name="l00354"></a><span class="lineno">  354</span>&#160;            <span class="keywordflow">continue</span>;</div>
+<div class="line"><a name="l00355"></a><span class="lineno">  355</span>&#160;</div>
+<div class="line"><a name="l00356"></a><span class="lineno">  356</span>&#160;        _Scalar     min_dist = std::numeric_limits&lt;_Scalar&gt;::max(), <a class="code" href="point__plane_8m.html#a93606e6aea9563f73484a536c9c5636d">dist</a>;</div>
+<div class="line"><a name="l00357"></a><span class="lineno">  357</span>&#160;        <span class="keywordtype">int</span>         min_gid  = 0;</div>
+<div class="line"><a name="l00358"></a><span class="lineno">  358</span>&#160;        <span class="keywordflow">for</span> ( <span class="keywordtype">int</span> gid = 1; gid != groups.size(); ++gid )</div>
+<div class="line"><a name="l00359"></a><span class="lineno">  359</span>&#160;        {</div>
+<div class="line"><a name="l00360"></a><span class="lineno">  360</span>&#160;            <span class="keywordflow">if</span> ( (<a class="code" href="point__plane_8m.html#a93606e6aea9563f73484a536c9c5636d">dist</a> = pointPatchDistanceFunctor.template evalSpatial&lt;_PointPrimitiveT&gt;(pid, groups[gid], points)) &lt; min_dist )</div>
+<div class="line"><a name="l00361"></a><span class="lineno">  361</span>&#160;            {</div>
+<div class="line"><a name="l00362"></a><span class="lineno">  362</span>&#160;                min_dist = <a class="code" href="point__plane_8m.html#a93606e6aea9563f73484a536c9c5636d">dist</a>;</div>
+<div class="line"><a name="l00363"></a><span class="lineno">  363</span>&#160;                min_gid  = gid;</div>
+<div class="line"><a name="l00364"></a><span class="lineno">  364</span>&#160;            }</div>
+<div class="line"><a name="l00365"></a><span class="lineno">  365</span>&#160;        }</div>
 <div class="line"><a name="l00366"></a><span class="lineno">  366</span>&#160;</div>
-<div class="line"><a name="l00367"></a><span class="lineno">  367</span>&#160;        _Scalar     min_dist = std::numeric_limits&lt;_Scalar&gt;::max(), <a class="code" href="point__plane_8m.html#a93606e6aea9563f73484a536c9c5636d">dist</a>;</div>
-<div class="line"><a name="l00368"></a><span class="lineno">  368</span>&#160;        <span class="keywordtype">int</span>         min_gid  = 0;</div>
-<div class="line"><a name="l00369"></a><span class="lineno">  369</span>&#160;        <span class="keywordflow">for</span> ( <span class="keywordtype">int</span> gid = 1; gid != groups.size(); ++gid )</div>
-<div class="line"><a name="l00370"></a><span class="lineno">  370</span>&#160;        {</div>
-<div class="line"><a name="l00371"></a><span class="lineno">  371</span>&#160;            <span class="keywordflow">if</span> ( (<a class="code" href="point__plane_8m.html#a93606e6aea9563f73484a536c9c5636d">dist</a> = pointPatchDistanceFunctor.template evalSpatial&lt;_PointPrimitiveT&gt;(pid, groups[gid], points)) &lt; min_dist )</div>
-<div class="line"><a name="l00372"></a><span class="lineno">  372</span>&#160;            {</div>
-<div class="line"><a name="l00373"></a><span class="lineno">  373</span>&#160;                min_dist = <a class="code" href="point__plane_8m.html#a93606e6aea9563f73484a536c9c5636d">dist</a>;</div>
-<div class="line"><a name="l00374"></a><span class="lineno">  374</span>&#160;                min_gid  = gid;</div>
-<div class="line"><a name="l00375"></a><span class="lineno">  375</span>&#160;            }</div>
-<div class="line"><a name="l00376"></a><span class="lineno">  376</span>&#160;        }</div>
-<div class="line"><a name="l00377"></a><span class="lineno">  377</span>&#160;</div>
-<div class="line"><a name="l00378"></a><span class="lineno">  378</span>&#160;        points[<a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a>].setTag( gid_tag_name, min_gid );</div>
-<div class="line"><a name="l00379"></a><span class="lineno">  379</span>&#160;    }</div>
-<div class="line"><a name="l00380"></a><span class="lineno">  380</span>&#160;</div>
-<div class="line"><a name="l00381"></a><span class="lineno">  381</span>&#160;    <span class="keywordflow">return</span> EXIT_SUCCESS;</div>
-<div class="line"><a name="l00382"></a><span class="lineno">  382</span>&#160;} <span class="comment">// ...Segmentation::tagPointsFromGroups()</span></div>
-<div class="line"><a name="l00383"></a><span class="lineno">  383</span>&#160;</div>
-<div class="line"><a name="l00384"></a><span class="lineno">  384</span>&#160;} <span class="comment">//...ns GF2</span></div>
-<div class="line"><a name="l00385"></a><span class="lineno">  385</span>&#160;</div>
-<div class="line"><a name="l00386"></a><span class="lineno">  386</span>&#160;<span class="preprocessor">#endif // GF2_SEGMENTATION_HPP</span></div>
+<div class="line"><a name="l00367"></a><span class="lineno">  367</span>&#160;        points[<a class="code" href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a>].setTag( gid_tag_name, min_gid );</div>
+<div class="line"><a name="l00368"></a><span class="lineno">  368</span>&#160;    }</div>
+<div class="line"><a name="l00369"></a><span class="lineno">  369</span>&#160;</div>
+<div class="line"><a name="l00370"></a><span class="lineno">  370</span>&#160;    <span class="keywordflow">return</span> EXIT_SUCCESS;</div>
+<div class="line"><a name="l00371"></a><span class="lineno">  371</span>&#160;} <span class="comment">// ...Segmentation::tagPointsFromGroups()</span></div>
+<div class="line"><a name="l00372"></a><span class="lineno">  372</span>&#160;</div>
+<div class="line"><a name="l00373"></a><span class="lineno">  373</span>&#160;} <span class="comment">//...ns GF2</span></div>
+<div class="line"><a name="l00374"></a><span class="lineno">  374</span>&#160;</div>
+<div class="line"><a name="l00375"></a><span class="lineno">  375</span>&#160;<span class="preprocessor">#endif // GF2_SEGMENTATION_HPP</span></div>
 <div class="ttc" id="my__ply__read_8m_html_ab6eb9cb199df2a09b72fbc4375c0c335"><div class="ttname"><a href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a></div><div class="ttdeci">pid</div><div class="ttdef"><b>Definition:</b> <a href="my__ply__read_8m_source.html#l00011">my_ply_read.m:11</a></div></div>
 <div class="ttc" id="class_g_f2_1_1_segmentation_html_ab540cb80acb78ea18b5306b7ffbbd389"><div class="ttname"><a href="class_g_f2_1_1_segmentation.html#ab540cb80acb78ea18b5306b7ffbbd389">GF2::Segmentation::orientPoints</a></div><div class="ttdeci">static int orientPoints(_PointContainerT &amp;points, _Scalar const scale, int const nn_K)</div><div class="ttdef"><b>Definition:</b> <a href="segmentation_8hpp_source.html#l00024">segmentation.hpp:24</a></div></div>
 <div class="ttc" id="fmincon__merged_8m_html_a24ea4de43963cf4fe19a84bb8e3cfdf7"><div class="ttname"><a href="fmincon__merged_8m.html#a24ea4de43963cf4fe19a84bb8e3cfdf7">fit_lines</a></div><div class="ttdeci">fit_lines</div><div class="ttdef"><b>Definition:</b> <a href="fmincon__merged_8m_source.html#l00091">fmincon_merged.m:91</a></div></div>
 <div class="ttc" id="lp_8m_html_a629c932e04d057de3f60912da6e565c2"><div class="ttname"><a href="lp_8m.html#a629c932e04d057de3f60912da6e565c2">cloud</a></div><div class="ttdeci">cloud[Px, Py, Pz,~]</div><div class="ttdef"><b>Definition:</b> <a href="lp_8m_source.html#l00014">lp.m:14</a></div></div>
-<div class="ttc" id="class_g_f2_1_1_segmentation_html_a7e9a7a9553e58ce5f5bbaec4fbc73ee0"><div class="ttname"><a href="class_g_f2_1_1_segmentation.html#a7e9a7a9553e58ce5f5bbaec4fbc73ee0">GF2::Segmentation::_tagPointsFromGroups</a></div><div class="ttdeci">static int _tagPointsFromGroups(_PointContainerT &amp;points, _PatchT const &amp;groups, _PointPatchDistanceFunctorT const &amp;pointPatchDistanceFunctor, int const gid_tag_name)</div><div class="ttdef"><b>Definition:</b> <a href="segmentation_8hpp_source.html#l00345">segmentation.hpp:345</a></div></div>
+<div class="ttc" id="class_g_f2_1_1_segmentation_html_a7e9a7a9553e58ce5f5bbaec4fbc73ee0"><div class="ttname"><a href="class_g_f2_1_1_segmentation.html#a7e9a7a9553e58ce5f5bbaec4fbc73ee0">GF2::Segmentation::_tagPointsFromGroups</a></div><div class="ttdeci">static int _tagPointsFromGroups(_PointContainerT &amp;points, _PatchT const &amp;groups, _PointPatchDistanceFunctorT const &amp;pointPatchDistanceFunctor, int const gid_tag_name)</div><div class="ttdef"><b>Definition:</b> <a href="segmentation_8hpp_source.html#l00334">segmentation.hpp:334</a></div></div>
+<div class="ttc" id="class_g_f2_1_1_segmentation_html_a412e46ffae6efb8e08c71a19e6ce8694"><div class="ttname"><a href="class_g_f2_1_1_segmentation.html#a412e46ffae6efb8e08c71a19e6ce8694">GF2::Segmentation::regionGrow</a></div><div class="ttdeci">static int regionGrow(_PointContainerT &amp;points, _PatchesT &amp;groups_arg, _Scalar const , _PatchPatchDistanceFunctorT const &amp;patchPatchDistanceFunctor, int const gid_tag_name, int const nn_K)</div><div class="ttdoc">Greedy region growing. </div><div class="ttdef"><b>Definition:</b> <a href="segmentation_8hpp_source.html#l00208">segmentation.hpp:208</a></div></div>
 <div class="ttc" id="globfit_8m_html_ab9a89211ecb71d18bbd259853fda1c54"><div class="ttname"><a href="globfit_8m.html#ab9a89211ecb71d18bbd259853fda1c54">points</a></div><div class="ttdeci">points</div><div class="ttdef"><b>Definition:</b> <a href="globfit_8m_source.html#l00007">globfit.m:7</a></div></div>
 <div class="ttc" id="globfit_8m_html_a3d6cbfbc95fcc0bac7015e7f5743e466"><div class="ttname"><a href="globfit_8m.html#a3d6cbfbc95fcc0bac7015e7f5743e466">scale</a></div><div class="ttdeci">end end scale</div><div class="ttdef"><b>Definition:</b> <a href="globfit_8m_source.html#l00026">globfit.m:26</a></div></div>
 <div class="ttc" id="get__line_8m_html_a4fa05b1f00fcde100685cc887554b93b"><div class="ttname"><a href="get__line_8m.html#a4fa05b1f00fcde100685cc887554b93b">line</a></div><div class="ttdeci">line</div><div class="ttdef"><b>Definition:</b> <a href="get__line_8m_source.html#l00003">get_line.m:3</a></div></div>
@@ -478,18 +484,16 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="ttc" id="lp_8m_html_a4ef62f8677d097c35ad5abfa948c8004"><div class="ttname"><a href="lp_8m.html#a4ef62f8677d097c35ad5abfa948c8004">pid2</a></div><div class="ttdeci">fill line for pid2</div><div class="ttdef"><b>Definition:</b> <a href="lp_8m_source.html#l00048">lp.m:48</a></div></div>
 <div class="ttc" id="fmincon__merged_8m_html_a4ca269cf93df1b512b52174c1a256fe5"><div class="ttname"><a href="fmincon__merged_8m.html#a4ca269cf93df1b512b52174c1a256fe5">dir</a></div><div class="ttdeci">dir</div><div class="ttdef"><b>Definition:</b> <a href="fmincon__merged_8m_source.html#l00141">fmincon_merged.m:141</a></div></div>
 <div class="ttc" id="namespace_g_f2_1_1segmentation_html_ab1b3fa4a3c6e32b0912447d24457be4f"><div class="ttname"><a href="namespace_g_f2_1_1segmentation.html#ab1b3fa4a3c6e32b0912447d24457be4f">GF2::segmentation::PidLid</a></div><div class="ttdeci">std::pair&lt; int, int &gt; PidLid</div><div class="ttdef"><b>Definition:</b> <a href="segmentation_8h_source.html#l00007">segmentation.h:7</a></div></div>
-<div class="ttc" id="namespace_g_f2_html_ae2700dd8e83f9f7ee506d3c5b0d34108"><div class="ttname"><a href="namespace_g_f2.html#ae2700dd8e83f9f7ee506d3c5b0d34108">GF2::angleInRad</a></div><div class="ttdeci">Scalar angleInRad(Eigen::Matrix&lt; Scalar, Dim, 1 &gt; const &amp;v1, Eigen::Matrix&lt; Scalar, Dim, 1 &gt; const &amp;v2)</div><div class="ttdef"><b>Definition:</b> <a href="my__types_8h_source.html#l00032">my_types.h:32</a></div></div>
 <div class="ttc" id="class_g_f2_1_1_segmentation_html_a5455cad2a3e2f91b7dc498d7139bb961"><div class="ttname"><a href="class_g_f2_1_1_segmentation.html#a5455cad2a3e2f91b7dc498d7139bb961">GF2::Segmentation::fitLocal</a></div><div class="ttdeci">static int fitLocal(_PrimitiveContainerT &amp;lines, _PointContainerPtrT const cloud, std::vector&lt; int &gt; const *indices, int const K, float const radius, bool const soft_radius, std::vector&lt; int &gt; *mapping)</div><div class="ttdoc">propose Create local fits to local neighbourhoods, these will be the point orientations. </div><div class="ttdef"><b>Definition:</b> <a href="segmentation_8hpp_source.html#l00060">segmentation.hpp:60</a></div></div>
 <div class="ttc" id="struct_g_f2_1_1segmentation_1_1_patch_html"><div class="ttname"><a href="struct_g_f2_1_1segmentation_1_1_patch.html">GF2::segmentation::Patch</a></div><div class="ttdef"><b>Definition:</b> <a href="segmentation_8h_source.html#l00010">segmentation.h:10</a></div></div>
 <div class="ttc" id="containers_8hpp_html"><div class="ttname"><a href="containers_8hpp.html">containers.hpp</a></div></div>
-<div class="ttc" id="class_g_f2_1_1_segmentation_html_a0920269b484d69420187c2074bddf11c"><div class="ttname"><a href="class_g_f2_1_1_segmentation.html#a0920269b484d69420187c2074bddf11c">GF2::Segmentation::regionGrow</a></div><div class="ttdeci">static int regionGrow(_PointContainerT &amp;points, _Scalar const scale, std::vector&lt; _Scalar &gt; const &amp;, _PatchPatchDistanceFunctorT const &amp;patchPatchDistanceFunctor, int const gid_tag_name, int const nn_K, _PatchesT *groups_arg=NULL)</div><div class="ttdoc">Greedy region growing. </div><div class="ttdef"><b>Definition:</b> <a href="segmentation_8hpp_source.html#l00196">segmentation.hpp:196</a></div></div>
 <div class="ttc" id="point__plane_8m_html_a93606e6aea9563f73484a536c9c5636d"><div class="ttname"><a href="point__plane_8m.html#a93606e6aea9563f73484a536c9c5636d">dist</a></div><div class="ttdeci">dist</div><div class="ttdef"><b>Definition:</b> <a href="point__plane_8m_source.html#l00003">point_plane.m:3</a></div></div>
 <div class="ttc" id="namespace_g_f2_1_1containers_html_a3c5bd8be9debd9a6eafe6bb99af7e26e"><div class="ttname"><a href="namespace_g_f2_1_1containers.html#a3c5bd8be9debd9a6eafe6bb99af7e26e">GF2::containers::add</a></div><div class="ttdeci">static _InnerT &amp; add(std::vector&lt; std::vector&lt; _InnerT &gt; &gt; &amp;prims, int gid, _InnerT const &amp;primitive)</div><div class="ttdef"><b>Definition:</b> <a href="containers_8hpp_source.html#l00013">containers.hpp:13</a></div></div>
 <div class="ttc" id="scale__optimization_8m_html_aa3bc9f08cad6c0b386cc994140e1ce2e"><div class="ttname"><a href="scale__optimization_8m.html#aa3bc9f08cad6c0b386cc994140e1ce2e">size</a></div><div class="ttdeci">size(unique(A,'rows')) subplot(121) hist(qo</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Sep 5 2014 11:33:03 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Sep 5 2014 16:31:26 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

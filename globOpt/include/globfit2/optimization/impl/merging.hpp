@@ -39,7 +39,8 @@ Merging::mergeCli( int argc, char** argv )
         valid_input &= boost::filesystem::exists( cloud_path );
 
         pcl::console::parse_argument( argc, argv, "--angle-gen", angle_gen );
-        params.do_adopt = pcl::console::find_switch( argc, argv, "--adopt" ) ? 2 : 0;
+        pcl::console::parse_argument( argc, argv, "--adopt", params.do_adopt );
+        pcl::console::parse_argument( argc, argv, "--thresh-mult", params.spatial_threshold_mult );
 
         std::cerr << "[" << __func__ << "]: " << "Usage:\t gurobi_opt --formulate\n"
                   << "\t--scale " << params.scale << "\n"
@@ -47,6 +48,7 @@ Merging::mergeCli( int argc, char** argv )
                   << "\t--cloud " << cloud_path << "\n"
                   << "\t[--angle-gen " << angle_gen << "]\n"
                   << "\t[--adopt " << params.do_adopt << "]\n"
+                  << "\t[--thresh-mult " << params.spatial_threshold_mult << "]\n"
                   << std::endl;
 
         if ( !valid_input || pcl::console::find_switch(argc,argv,"--help") || pcl::console::find_switch(argc,argv,"-h") )
@@ -72,18 +74,19 @@ Merging::mergeCli( int argc, char** argv )
     }
 
     // Read desired angles
-    params.angles = { _Scalar(0) };
-    {
-        for ( _Scalar angle = angle_gen; angle < M_PI; angle+= angle_gen )
-            params.angles.push_back( angle );
-        params.angles.push_back( M_PI );
+    processing::appendAnglesFromGenerator( params.angles, angle_gen, true );
+//    params.angles = { _Scalar(0) };
+//    {
+//        for ( _Scalar angle = angle_gen; angle < M_PI; angle+= angle_gen )
+//            params.angles.push_back( angle );
+//        params.angles.push_back( M_PI );
 
-        // log
-        std::cout << "[" << __func__ << "]: " << "Desired angles: {";
-        for ( size_t vi=0;vi!=params.angles.size();++vi)
-            std::cout << params.angles[vi] << ((vi==params.angles.size()-1) ? "" : ", ");
-        std::cout << "}\n";
-    } // ... read angles
+//        // log
+//        std::cout << "[" << __func__ << "]: " << "Desired angles: {";
+//        for ( size_t vi=0;vi!=params.angles.size();++vi)
+//            std::cout << params.angles[vi] << ((vi==params.angles.size()-1) ? "" : ", ");
+//        std::cout << "}\n";
+//    } // ... read angles
 
     // associations
     std::vector<std::pair<int,int> > points_primitives;
@@ -107,21 +110,25 @@ Merging::mergeCli( int argc, char** argv )
 
     //____________________________WORK____________________________
 
+    // ADOPT
     if ( params.do_adopt )
+    {
         adoptPoints<GF2::MyPointPrimitiveDistanceFunctor, _PointPrimitiveT, _PrimitiveT, typename PrimitiveMapT::mapped_type::const_iterator>
-                    ( points, prims_map, params.scale );
+                    ( points, prims_map, params.scale, params.do_adopt );
+    }
 
+    // MERGE
     std::cout << "starting mergeSameDirGids" << std::endl; fflush(stdout);
     RepresentativeSqrPatchPatchDistanceFunctorT<_Scalar, SpatialPatchPatchSingleDistanceFunctorT<_Scalar> >
             patchPatchDistFunct( params.scale * params.patch_dist_limit_mult
                                , params.angle_limit
                                , params.scale
                                , params.patch_spatial_weight );
-
     PrimitiveMapT out_prims;
     mergeSameDirGids<_PrimitiveT, _PointPrimitiveT, typename PrimitiveMapT::mapped_type::const_iterator>
-            ( out_prims, points, prims_map, params.scale, params.parallel_limit, patchPatchDistFunct );
+            ( out_prims, points, prims_map, params.scale, params.spatial_threshold_mult * params.scale, params.parallel_limit, patchPatchDistFunct );
 
+    // SAVE
     if ( params.do_adopt )
     {
         io::savePrimitives   <_PrimitiveT, typename PrimitiveMapT::mapped_type::const_iterator>( out_prims, "primitives.bonmin_it1_adopt.csv" );
@@ -146,9 +153,10 @@ Merging::mergeCli( int argc, char** argv )
 * \tparam _PointContainerT     Holds the points. Concept: std::vector< \ref GF2::PointPrimitive >.
 * \tparam _PrimitiveContainerT Holds the primitives grouped by GID in a two level structure. Concept: std::map< int, std::vector< \ref GF2::LinePrimitive2 > >.
 * \tparam _Scalar              Floating point precision of primitives, points, etc. Concept: \ref GF2::PointPrimitive::Scalar.
-* \param points[in,out]        Contains the points, some assigned, some to be assigned to the primitives in prims.
-* \param prims[in]             Contains some primitives tagged with GID and DIR_GID. GID defines the assignment between points and primitives.
-* \param scale[in]             Distance threshold parameter.
+* \param[in,out] points        Contains the points, some assigned, some to be assigned to the primitives in prims.
+* \param[in]     prims         Contains some primitives tagged with GID and DIR_GID. GID defines the assignment between points and primitives.
+* \param[in]     scale         Distance threshold parameter.
+* \param[in]     mode          1: re-assign un-ambiguous points (1 adopter); 2: first re-assign unambiguous, then closest, if inside explaining primitive's scale.
 */
 template < class _PointPrimitiveDistanceFunctor
          , class _PointPrimitiveT
@@ -159,7 +167,8 @@ template < class _PointPrimitiveDistanceFunctor
          , typename _Scalar >
 int Merging::adoptPoints( _PointContainerT          & points
                         , _PrimitiveContainerT const& prims
-                        , _Scalar              const  scale )
+                        , _Scalar              const  scale
+                        , char                 const  mode )
 {
     //typedef GF2::MyPointPrimitiveDistanceFunctor _PointPrimitiveDistanceFunctor;
     typedef typename _PrimitiveContainerT::const_iterator             outer_const_iterator;
@@ -186,6 +195,7 @@ int Merging::adoptPoints( _PointContainerT          & points
     int change = 0, iteration = 0;
     do
     {
+        std::cout << "[" << __func__ << "]: " << "iteration " << iteration << std::endl;
         // reset re-assignment counter
         change = 0;
 
@@ -231,7 +241,7 @@ int Merging::adoptPoints( _PointContainerT          & points
             {
                 // store point id
                 const int pid = *points_it;
-                std::cout << "[" << __func__ << "]: " << "point " << pid << " have " << adopter_gids[pid].size() << " adopters" << std::endl;
+                //std::cout << "[" << __func__ << "]: " << "point " << pid << " have " << adopter_gids[pid].size() << " adopters" << std::endl;
 
                 if ( !adopter_gids[pid].size() ) std::cerr << "[" << __func__ << "]: " << "point " << pid << " seems to be an outlier...no points could adopt it..." << std::endl;
 
@@ -248,7 +258,7 @@ int Merging::adoptPoints( _PointContainerT          & points
                 }
             }
         }
-        else
+        else if ( mode == 2 )
         {
             int closest_gid = -3; // gid of point, that is closest to an orphan, termination crit
             do
@@ -289,7 +299,9 @@ int Merging::adoptPoints( _PointContainerT          & points
                 if ( closest_gid >= 0 )
                 {
                     points[ *closest_orphan ].setTag( _PointPrimitiveT::GID, closest_gid );
+                    std::cout << "erasing orphan " << std::distance( orphan_pids.begin(), closest_orphan ) << "/" << orphan_pids.size();
                     orphan_pids.erase( closest_orphan );
+                    std::cout << " size now " << orphan_pids.size() << std::endl;
                     ++change;
                 }
             } while ( (closest_gid >= 0) && orphan_pids.size() );
@@ -302,8 +314,20 @@ int Merging::adoptPoints( _PointContainerT          & points
     return err;
 } //...adoptPoints()
 
-/*!
- * \brief Merges adjacent patches that have the same direction ID
+/*! \brief Decides, if two patches are adjacent and have the same direction. Used in \ref erging::mergeSameDirGids().
+ *
+ */
+template <typename _Scalar>
+inline bool decide_merge( _Scalar min_dist, _Scalar threshold, _Scalar angle, _Scalar parallel_limit )
+{
+    return (min_dist < threshold) && (angle < parallel_limit);
+} //...decide_merge
+
+/*! \brief Merges adjacent patches that have the same direction ID or are almost parallel.
+ *  \tparam _PatchPatchDistanceFunctorT  Concept: \ref GF2::RepresentativeSqrPatchPatchDistanceFunctorT.
+ *  \param[in] patchPatchDistFunct       Distance functor between two patches, to define adjacency.
+ *  \param[in] spatial_threshold         Two extrema should be at least this close to be merged. Concept: \ref MergeParams::spatial_threshold_mult == 3 * scale.
+ *  \sa #decide_merge()
  */
 template < class    _PrimitiveT
          , class    _PointPrimitiveT
@@ -316,6 +340,7 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
                              , _PointContainerT                 & points
                              , _PrimitiveContainerT        const& primitives
                              , _Scalar                     const  scale
+                             , _Scalar                     const  spatial_threshold
                              , _Scalar                     const  parallel_limit
                              , _PatchPatchDistanceFunctorT const& patchPatchDistFunct )
 {
@@ -435,7 +460,7 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
                     _Scalar ang = angleInRad( primitives.at( gid0 ).at( lid0 ).template dir(),
                                               primitives.at( gid1 ).at( lid1 ).template dir() );
 
-                    if ( (min_dist < 3. * scale) && (dir0 == dir1) && (ang < parallel_limit) )
+                    if ( decide_merge(min_dist, spatial_threshold, ang, parallel_limit) ) // (min_dist < 3. * scale) && (dir0 == dir1) && (ang < parallel_limit) )
                     {
                         std::cout << "would merge "
                                   << "(" << gid0 << "," << lid0 << "," << dir0 << ")"
@@ -483,6 +508,7 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
             if ( aliases.find(key) == aliases.end() )
             {
                 containers::add<_PrimitiveT>( out_primitives, gid, *inner_it );
+#warning TODO: average instead of throw away
             }
         }
     }

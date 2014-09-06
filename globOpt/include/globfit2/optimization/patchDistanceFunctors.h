@@ -284,8 +284,10 @@ struct RepresentativePatchPatchDistanceFunctorT
 }; // ...struct FullLinkagePointPatchDistanceFunctorT
 #endif
 
-//! \brief Distance is combined by spatial and angular terms according to formula: \f$ patch\_spatial\_weight^2 \cdot \frac{spat\_dist^2}{spat\_thresh} + \frac{ang\_diff^2}{ang\_thresh} < 1 \f$.
-//!        The weight was mostly set to 0.5 \sa \ref GF2::CandidateGeneratorParams.
+/*! \brief Distance is combined by spatial and angular terms according to formula: \f$ patch\_spatial\_weight^2 \cdot \frac{spat\_dist^2}{spat\_thresh} + \frac{ang\_diff^2}{ang\_thresh} < 1 \f$.
+*          It's basically an ellipse in hough-space. The weight was mostly set to 0.5 \sa \ref GF2::CandidateGeneratorParams.
+*   \todo  Change to actually use the direction to threshold ( ellipsoid in real space ).
+*/
 template < typename _Scalar
          , class    _SpatialPatchPatchDistanceFunctorT /*= SpatialPatchPatchSingleDistanceFunctorT<_Scalar> */>
 struct RepresentativeSqrPatchPatchDistanceFunctorT
@@ -297,7 +299,6 @@ struct RepresentativeSqrPatchPatchDistanceFunctorT
             , _sqr_spatial_thresh( spatial_threshold * spatial_threshold )
             , _sqr_ang_thresh    ( angle_threshold   * angle_threshold   ) {}
 
-        // TODO: constructor caching sqrdists
 
         template <class _PointT, class _PatchAT, class _PatchBT, class _PointContainerT >
         inline _Scalar eval( _PatchAT               const& patch0

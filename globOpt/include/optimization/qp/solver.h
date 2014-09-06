@@ -204,6 +204,12 @@ Solver::generateCli( int    argc
         //generatorParams.parseRefitMode( patch_refit_mode_string );
         pcl::console::parse_argument( argc, argv, "--angle-gen", angle_gen );
         pcl::console::parse_argument( argc, argv, "--patch-pop-limit", generatorParams.patch_population_limit );
+        // small_mode
+        {
+            int small_mode = 0;
+            pcl::console::parse_argument( argc, argv, "--small-mode", small_mode );
+            generatorParams.small_mode = static_cast<CandidateGeneratorParams<Scalar>::SmallPatchesMode>( small_mode );
+        }
 
         // print usage
         {
@@ -228,6 +234,7 @@ Solver::generateCli( int    argc
             std::cerr << "\t [--patch-dist-limit " << generatorParams.patch_dist_limit_mult << "]\n";
             std::cerr << "\t [--angle-gen " << angle_gen << "]\n";
             std::cerr << "\t [--patch-pop-limit " << generatorParams.patch_population_limit << "]\n";
+            std::cerr << "\t [--small-mode " << generatorParams.small_mode << " 0: IGNORE, 1: RECEIVE_SIMILAR, 2: RECEIVE_ALL]\n";
             std::cerr << std::endl;
 
             if ( !valid_input || pcl::console::find_switch(argc,argv,"--help") || pcl::console::find_switch(argc,argv,"-h") )
@@ -249,17 +256,19 @@ Solver::generateCli( int    argc
     // Read desired angles
     if ( EXIT_SUCCESS == err )
     {
-        generatorParams.angles = { Scalar(0) };
-        // generate
-        for ( Scalar angle = angle_gen; angle < M_PI; angle+= angle_gen )
-            generatorParams.angles.push_back( angle );
-        generatorParams.angles.push_back( M_PI );
+        processing::appendAnglesFromGenerator( generatorParams.angles, angle_gen, true );
+        processing::appendAnglesFromGenerator( generatorParams.angles, angle_gen, true );
+//        generatorParams.angles = { Scalar(0) };
+//        // generate
+//        for ( Scalar angle = angle_gen; angle < M_PI; angle+= angle_gen )
+//            generatorParams.angles.push_back( angle );
+//        generatorParams.angles.push_back( M_PI );
 
-        // print
-        std::cout << "Desired angles: {";
-        for ( size_t vi=0;vi!=generatorParams.angles.size();++vi)
-            std::cout << generatorParams.angles[vi] << ((vi==generatorParams.angles.size()-1) ? "" : ", ");
-        std::cout << "}\n";
+//        // print
+//        std::cout << "Desired angles: {";
+//        for ( size_t vi=0;vi!=generatorParams.angles.size();++vi)
+//            std::cout << generatorParams.angles[vi] << ((vi==generatorParams.angles.size()-1) ? "" : ", ");
+//        std::cout << "}\n";
     } //...read angles
 
     // Read points
@@ -285,72 +294,6 @@ Solver::generateCli( int    argc
     {
         switch ( generatorParams.patch_dist_mode )
         {
-#if GF2_WITH_FULL_LINKAGE
-            case CandidateGeneratorParams<Scalar>::FULL_MIN:
-            {
-                // "full min": merge minimum largest angle between any two points, IF smallest spatial distance between points < scale * patch_dist_limit
-                FullLinkagePatchPatchDistanceFunctorT<Scalar, SpatialPatchPatchMinDistanceFunctorT<Scalar>
-                                                     > patchPatchDistanceFunctor( generatorParams.patch_dist_limit_mult * generatorParams.scale
-                                                                                , generatorParams.angle_limit
-                                                                                , generatorParams.scale );
-
-                err = Segmentation::patchify<PrimitiveT>( initial_primitives           // tagged lines at GID with patch_id
-                                            , points                // filled points with directions and tagged at GID with patch_id
-                                            , generatorParams.scale
-                                            , generatorParams.angles
-                                            , patchPatchDistanceFunctor
-                                            );
-            }
-                break;
-
-            case CandidateGeneratorParams<Scalar>::FULL_MAX:
-            {
-                // "full max": merge minimum largest angle between any two points, IF biggest spatial distance between points < scale * patch_dist_limit
-                FullLinkagePatchPatchDistanceFunctorT<Scalar, SpatialPatchPatchMaxDistanceFunctorT<Scalar>
-                                                     > patchPatchDistanceFunctor( generatorParams.patch_dist_limit_mult * generatorParams.scale
-                                                                                , generatorParams.angle_limit
-                                                                                , generatorParams.scale );
-                err = Segmentation::patchify<PrimitiveT>( initial_primitives           // tagged lines at GID with patch_id
-                                            , points                // filled points with directions and tagged at GID with patch_id
-                                            , generatorParams.scale
-                                            , generatorParams.angles
-                                            , patchPatchDistanceFunctor
-                                            );
-            }
-                break;
-
-            case CandidateGeneratorParams<Scalar>::SQR_MIN:
-            {
-                // "squared min": merge minimum, "max_angle^2 + (pi^2 / 4scale^2) * min_distance", IF smallest spatial distance between points < scale * patch_dist_limit. NOTE: use angle_thresh = 1..5
-                SquaredPatchPatchDistanceFunctorT<Scalar, SpatialPatchPatchMinDistanceFunctorT<Scalar>
-                                                 > patchPatchDistanceFunctor( generatorParams.patch_dist_limit_mult * generatorParams.scale
-                                                                            , generatorParams.angle_limit
-                                                                            , generatorParams.scale );
-                err = Segmentation::patchify<PrimitiveT>( initial_primitives           // tagged lines at GID with patch_id
-                                            , points                // filled points with directions and tagged at GID with patch_id
-                                            , generatorParams.scale
-                                            , generatorParams.angles
-                                            , patchPatchDistanceFunctor
-                                            );
-            }
-                break;
-
-            case CandidateGeneratorParams<Scalar>::REPR_MIN:
-            {
-                // "representative min:" merge closest representative angles, IF smallest spatial distance between points < scale * patch_dist_limit.
-                RepresentativePatchPatchDistanceFunctorT< Scalar,SpatialPatchPatchMinDistanceFunctorT<Scalar>
-                                                        > patchPatchDistanceFunctor( generatorParams.patch_dist_limit_mult * generatorParams.scale
-                                                                                   , generatorParams.angle_limit
-                                                                                   , generatorParams.scale );
-                err = Segmentation::patchify<PrimitiveT>( initial_primitives           // tagged lines at GID with patch_id
-                                            , points                // filled points with directions and tagged at GID with patch_id
-                                            , generatorParams.scale
-                                            , generatorParams.angles
-                                            , patchPatchDistanceFunctor
-                                            );
-            }
-                break;
-#endif // GF2_WITH_FULL_LINKAGE
             case CandidateGeneratorParams<Scalar>::REPR_SQR:
             {
                 // "representative min:" merge closest representative angles, IF smallest spatial distance between points < scale * patch_dist_limit.

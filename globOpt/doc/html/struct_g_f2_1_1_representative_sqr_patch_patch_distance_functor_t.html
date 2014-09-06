@@ -102,7 +102,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>Distance is combined by spatial and angular terms according to formula: \( patch\_spatial\_weight^2 \cdot \frac{spat\_dist^2}{spat\_thresh} + \frac{ang\_diff^2}{ang\_thresh} &lt; 1 \). The weight was mostly set to 0.5.  
+<p>Distance is combined by spatial and angular terms according to formula: \( patch\_spatial\_weight^2 \cdot \frac{spat\_dist^2}{spat\_thresh} + \frac{ang\_diff^2}{ang\_thresh} &lt; 1 \). It's basically an ellipse in hough-space. The weight was mostly set to 0.5.  
  <a href="struct_g_f2_1_1_representative_sqr_patch_patch_distance_functor_t.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="patch_distance_functors_8h_source.html">patchDistanceFunctors.h</a>&gt;</code></p>
@@ -168,10 +168,11 @@ Additional Inherited Members</h2></td></tr>
 <div class="textblock"><h3>template&lt;typename _Scalar, class _SpatialPatchPatchDistanceFunctorT&gt;<br/>
 struct GF2::RepresentativeSqrPatchPatchDistanceFunctorT&lt; _Scalar, _SpatialPatchPatchDistanceFunctorT &gt;</h3>
 
-<p>Distance is combined by spatial and angular terms according to formula: \( patch\_spatial\_weight^2 \cdot \frac{spat\_dist^2}{spat\_thresh} + \frac{ang\_diff^2}{ang\_thresh} &lt; 1 \). The weight was mostly set to 0.5. </p>
+<p>Distance is combined by spatial and angular terms according to formula: \( patch\_spatial\_weight^2 \cdot \frac{spat\_dist^2}{spat\_thresh} + \frac{ang\_diff^2}{ang\_thresh} &lt; 1 \). It's basically an ellipse in hough-space. The weight was mostly set to 0.5. </p>
 <dl class="section see"><dt>See Also</dt><dd><a class="el" href="struct_g_f2_1_1_candidate_generator_params.html">GF2::CandidateGeneratorParams</a>. </dd></dl>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000002">Todo:</a></b></dt><dd>Change to actually use the direction to threshold ( ellipsoid in real space ). </dd></dl>
 
-<p>Definition at line <a class="el" href="patch_distance_functors_8h_source.html#l00291">291</a> of file <a class="el" href="patch_distance_functors_8h_source.html">patchDistanceFunctors.h</a>.</p>
+<p>Definition at line <a class="el" href="patch_distance_functors_8h_source.html#l00293">293</a> of file <a class="el" href="patch_distance_functors_8h_source.html">patchDistanceFunctors.h</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a class="anchor" id="a2c9a87b39c40dc76e3ce5e30a62bd2d1"></a>
 <div class="memitem">
@@ -219,7 +220,7 @@ template&lt;typename _Scalar, class _SpatialPatchPatchDistanceFunctorT&gt; </div
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="patch_distance_functors_8h_source.html#l00294">294</a> of file <a class="el" href="patch_distance_functors_8h_source.html">patchDistanceFunctors.h</a>.</p>
+<p>Definition at line <a class="el" href="patch_distance_functors_8h_source.html#l00296">296</a> of file <a class="el" href="patch_distance_functors_8h_source.html">patchDistanceFunctors.h</a>.</p>
 
 </div>
 </div>
@@ -272,7 +273,7 @@ template&lt;class _PointT , class _PatchAT , class _PatchBT , class _PointContai
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="patch_distance_functors_8h_source.html#l00303">303</a> of file <a class="el" href="patch_distance_functors_8h_source.html">patchDistanceFunctors.h</a>.</p>
+<p>Definition at line <a class="el" href="patch_distance_functors_8h_source.html#l00304">304</a> of file <a class="el" href="patch_distance_functors_8h_source.html">patchDistanceFunctors.h</a>.</p>
 
 </div>
 </div>
@@ -301,7 +302,7 @@ template&lt;typename _Scalar, class _SpatialPatchPatchDistanceFunctorT&gt; </div
 
 <p>Returns the threshold to apply to the returned value of <a class="el" href="struct_g_f2_1_1_representative_sqr_patch_patch_distance_functor_t.html#aa1674ac28f97780e9a3253582a2d4f40">eval()</a>. (&lt;= 1.) </p>
 
-<p>Definition at line <a class="el" href="patch_distance_functors_8h_source.html#l00322">322</a> of file <a class="el" href="patch_distance_functors_8h_source.html">patchDistanceFunctors.h</a>.</p>
+<p>Definition at line <a class="el" href="patch_distance_functors_8h_source.html#l00323">323</a> of file <a class="el" href="patch_distance_functors_8h_source.html">patchDistanceFunctors.h</a>.</p>
 
 </div>
 </div>
@@ -330,7 +331,7 @@ template&lt;typename _Scalar, class _SpatialPatchPatchDistanceFunctorT&gt; </div
 
 <p>Reimplemented from <a class="el" href="struct_g_f2_1_1_abstract_patch_patch_distance_functor_t.html#a9d3980a718b30d47f1214d033e78148c">GF2::AbstractPatchPatchDistanceFunctorT&lt; _Scalar, _SpatialPatchPatchDistanceFunctorT &gt;</a>.</p>
 
-<p>Definition at line <a class="el" href="patch_distance_functors_8h_source.html#l00324">324</a> of file <a class="el" href="patch_distance_functors_8h_source.html">patchDistanceFunctors.h</a>.</p>
+<p>Definition at line <a class="el" href="patch_distance_functors_8h_source.html#l00325">325</a> of file <a class="el" href="patch_distance_functors_8h_source.html">patchDistanceFunctors.h</a>.</p>
 
 </div>
 </div>
@@ -355,7 +356,7 @@ template&lt;typename _Scalar, class _SpatialPatchPatchDistanceFunctorT&gt; </div
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="patch_distance_functors_8h_source.html#l00329">329</a> of file <a class="el" href="patch_distance_functors_8h_source.html">patchDistanceFunctors.h</a>.</p>
+<p>Definition at line <a class="el" href="patch_distance_functors_8h_source.html#l00330">330</a> of file <a class="el" href="patch_distance_functors_8h_source.html">patchDistanceFunctors.h</a>.</p>
 
 </div>
 </div>
@@ -379,7 +380,7 @@ template&lt;typename _Scalar, class _SpatialPatchPatchDistanceFunctorT&gt; </div
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="patch_distance_functors_8h_source.html#l00327">327</a> of file <a class="el" href="patch_distance_functors_8h_source.html">patchDistanceFunctors.h</a>.</p>
+<p>Definition at line <a class="el" href="patch_distance_functors_8h_source.html#l00328">328</a> of file <a class="el" href="patch_distance_functors_8h_source.html">patchDistanceFunctors.h</a>.</p>
 
 </div>
 </div>
@@ -403,7 +404,7 @@ template&lt;typename _Scalar, class _SpatialPatchPatchDistanceFunctorT&gt; </div
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="patch_distance_functors_8h_source.html#l00328">328</a> of file <a class="el" href="patch_distance_functors_8h_source.html">patchDistanceFunctors.h</a>.</p>
+<p>Definition at line <a class="el" href="patch_distance_functors_8h_source.html#l00329">329</a> of file <a class="el" href="patch_distance_functors_8h_source.html">patchDistanceFunctors.h</a>.</p>
 
 </div>
 </div>
@@ -413,7 +414,7 @@ template&lt;typename _Scalar, class _SpatialPatchPatchDistanceFunctorT&gt; </div
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Sep 5 2014 11:33:03 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Sep 5 2014 16:31:26 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

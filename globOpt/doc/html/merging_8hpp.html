@@ -93,7 +93,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="header">
   <div class="summary">
 <a href="#namespaces">Namespaces</a> &#124;
-<a href="#define-members">Macros</a>  </div>
+<a href="#define-members">Macros</a> &#124;
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">merging.hpp File Reference</div>  </div>
 </div><!--header-->
@@ -110,13 +111,20 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
 Namespaces</h2></td></tr>
 <tr class="memitem:namespace_g_f2"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_g_f2.html">GF2</a></td></tr>
-<tr class="memdesc:namespace_g_f2"><td class="mdescLeft">&#160;</td><td class="mdescRight">GUROBIOPT. <br/></td></tr>
+<tr class="memdesc:namespace_g_f2"><td class="mdescLeft">&#160;</td><td class="mdescRight">GlobOpt main namespace. <br/></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
 Macros</h2></td></tr>
 <tr class="memitem:ade362cef44735595de208e05d466fc5c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="merging_8hpp.html#ade362cef44735595de208e05d466fc5c">CHECK</a>(err, <a class="el" href="globfit_8m.html#af575f17e6be3f269b86b041a60560dbf">text</a>)&#160;&#160;&#160;{ <a class="el" href="lp_8m.html#aa2d7a046563556d378644ded23e8524a">if</a> ( err != EXIT_SUCCESS )  std::cerr &lt;&lt; &quot;[&quot; &lt;&lt; __func__ &lt;&lt; &quot;]: &quot; &lt;&lt; <a class="el" href="globfit_8m.html#af575f17e6be3f269b86b041a60560dbf">text</a> &lt;&lt; &quot; returned an error! Code: &quot; &lt;&lt; err &lt;&lt; std::endl; }</td></tr>
 <tr class="separator:ade362cef44735595de208e05d466fc5c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:adac5eb9e014f10b3a0f64d5bde6a9fab"><td class="memTemplParams" colspan="2">template&lt;typename _Scalar &gt; </td></tr>
+<tr class="memitem:adac5eb9e014f10b3a0f64d5bde6a9fab"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespace_g_f2.html#adac5eb9e014f10b3a0f64d5bde6a9fab">GF2::decide_merge</a> (_Scalar min_dist, _Scalar threshold, _Scalar angle, _Scalar parallel_limit)</td></tr>
+<tr class="memdesc:adac5eb9e014f10b3a0f64d5bde6a9fab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Decides, if two patches are adjacent and have the same direction. Used in erging::mergeSameDirGids().  <a href="#adac5eb9e014f10b3a0f64d5bde6a9fab">More...</a><br/></td></tr>
+<tr class="separator:adac5eb9e014f10b3a0f64d5bde6a9fab"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Macro Definition Documentation</h2>
 <a class="anchor" id="ade362cef44735595de208e05d466fc5c"></a>
@@ -150,7 +158,7 @@ Macros</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Sep 5 2014 11:33:03 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Sep 5 2014 16:31:26 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

@@ -180,9 +180,21 @@ namespace GF2
                         {
                             _Scalar angdiff   = _PrimitivePrimitiveAngleFunctorT::template eval<_Scalar>( prim0, prim1, angles, &closest_angle );
                             bool    close_ang = angdiff < angle_limit;
-                            add0 |= (close_ang || (populations[gid0] < params.patch_population_limit)); // prim0 needs to be close to prim1 in angle, or small to copy the dir of prim1.
-                            add1 |= (close_ang || (populations[gid1] < params.patch_population_limit)); // prim1 needs to be close to prim0 in angle, or small to copy the dir of prim0.
+                            add0 |= close_ang; // prim0 needs to be close to prim1 in angle
+                            add1 |= close_ang; // prim1 needs to be close to prim0 in angle
                         }
+
+                        if ( params.small_mode == CandidateGeneratorParams<_Scalar>::SmallPatchesMode::RECEIVE_ALL )
+                        {
+                            add0 |= (populations[gid0] < params.patch_population_limit); // prim0 needs to be small to copy the dir of prim1.
+                            add1 |= (populations[gid1] < params.patch_population_limit); // prim1 needs to be small to copy the dir of prim0.
+                        }
+                        else if ( params.small_mode == CandidateGeneratorParams<_Scalar>::SmallPatchesMode::IGNORE )
+                        {
+                            add0 &= (populations[gid0] >= params.patch_population_limit);
+                            add1 &= (populations[gid0] >= params.patch_population_limit);
+                        }
+
 
                         // filter by population
                         {
@@ -208,7 +220,7 @@ namespace GF2
                                 std::cerr << "[" << __func__ << "]: " << "pop[" << gid1 << "] is " << populations[gid1] << std::endl;
                         }
 
-        #warning todo: filter already copied direction ids
+        #warning todo: filter already copied direction ids // respect IGNORE please
 
                         if ( !add0 && !add1 )
                             continue;

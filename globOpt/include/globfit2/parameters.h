@@ -11,16 +11,20 @@ namespace GF2 {
     struct CommonParams
     {
             //! \brief Scale parameter of input.
-            _Scalar scale                       = 0.05;
+            _Scalar scale = 0.05;
 
             //! \brief Desired angles.
-            std::vector<_Scalar> angles           = { 0, M_PI_2, M_PI };
+            std::vector<_Scalar> angles = { 0, M_PI_2, M_PI };
 
-            //!< \brief Point-count threshold, that decides if a patch is big or small.
-            //!         Used in \ref CandidateGenerator::generate(), \ref ProblemSetup::formulate(), \ref problemSetup::largePatchesNeedDirectionConstraint().
-            //!         In \ref CandidateGenerator::generate() decides, when a patch can distribute its directions.
-            //!         In \ref ProblemSetup::formulate() decides, which constraint is to be used in \ref problemSetup::largePatchesNeedDirectionConstraint().
-            int patch_population_limit      = 5;
+            //! \brief  Point-count threshold, that decides if a patch is big or small. (small: \#points < patch_pop_limit, large: \#points >= patch_pop_limit).
+            //!         \n Used in \ref CandidateGenerator::generate(), \ref ProblemSetup::formulate(), \ref problemSetup::largePatchesNeedDirectionConstraint().
+            //!         \n In \ref CandidateGenerator::generate() decides, when a patch can distribute its directions.
+            //!         \n In \ref ProblemSetup::formulate() decides, which constraint is to be used in \ref problemSetup::largePatchesNeedDirectionConstraint().
+            int patch_population_limit = 5;
+
+            //! \brief Two lines are parallel, if their angle is smaller than this.
+            //!        Used in \ref Merging::mergeSameDirGids() and visualization.
+            _Scalar parallel_limit = _Scalar(1e-6);
 
     }; //...CommonParams
 
@@ -28,6 +32,9 @@ namespace GF2 {
     template <typename _Scalar>
     struct CandidateGeneratorParams : public CommonParams<_Scalar>
     {
+            /*!
+             * \copydoc CandidateGeneratorParams::patch_dist_mode.
+             */
             enum PatchPatchDistMode {
 #if GF2_WITH_FULL_LINKAGE
                                       FULL_MIN      //!< \brief \ref FullLinkagePatchPatchDistanceFunctorT, \ref SpatialPatchPatchMinDistanceFunctorT
@@ -37,6 +44,16 @@ namespace GF2 {
 #endif // GF2_WITH_FULL_LINKAGE
                                       REPR_SQR      //!< \brief \ref RepresentativeSqrPatchPatchDistanceFunctorT, \ref SpatialPatchPatchSingleDistanceFunctorT
                                     };
+
+            /*!
+             * \brief Determines, what to do with small patches during generation fase.
+             */
+            enum SmallPatchesMode {
+                IGNORE              //!< \brief Don't send nor receive directions. Other selected primitives will have to explain this patch.
+                , RECEIVE_SIMILAR   /*!  \brief Don't send but receive similar directions. It's not optimal to bias the selection to the noisy local fit. Better to use IGNORE.
+                                                \note This is the default behaviour for large patches. */
+                , RECEIVE_ALL       //!< \brief Don't send but receive all directions. This option makes it untractable, needs sub-sampling.
+            };
 
             //! \brief Angle threshold for similar lines.
             //!        Used in \ref Segmentation::patchify() and \ref Merging::mergeSameDirGids().
@@ -64,9 +81,10 @@ namespace GF2 {
             //!        Used in \ref CandidateGenerator::generate().
             _Scalar   angle_limit_div             = 10.f;
 
-            //! \brief Two lines are parallel, if their angle is smaller than this.
-            //!        Used in \ref Merging::mergeSameDirGids() and visualization.
-            _Scalar   parallel_limit              = _Scalar(1e-6);
+            /*! \brief Determines, what to do with small patches during generation fase.
+             *         Used in \ref CandidateGenerator::generate().
+             */
+            SmallPatchesMode small_mode = IGNORE;
 
             //_____________________________________________
             //____________________Parsers__________________
@@ -198,13 +216,17 @@ namespace GF2 {
     {
         using CommonParams<_Scalar>::scale;
         using CommonParams<_Scalar>::angles;
+        using CommonParams<_Scalar>::parallel_limit;
         using CandidateGeneratorParams<_Scalar>::patch_dist_limit_mult;
         using CandidateGeneratorParams<_Scalar>::angle_limit;
         using CandidateGeneratorParams<_Scalar>::patch_spatial_weight;
-        using CandidateGeneratorParams<_Scalar>::parallel_limit;
 
-        //< \brief Adopt orphaned points greedily, 1: unambiguous only, 2: all.
-        char do_adopt = 2;
+        //! \brief Adopt orphaned points greedily, 1: unambiguous only, 2: all.
+        int do_adopt = 2;
+
+        /*! \brief Multiplied by scale decides, whether two patches are adjacent (have two extrema closer than spatial_threshold_mult * scale).
+         *         Used in \ref Merging::mergeSameDirGids(). */
+        _Scalar spatial_threshold_mult = _Scalar( 2.5 );
     };
 
 }

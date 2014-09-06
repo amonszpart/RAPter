@@ -97,7 +97,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>GUROBIOPT.  
+<p>GlobOpt main namespace.  
 <a href="#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
@@ -109,6 +109,7 @@ Namespaces</h2></td></tr>
 <tr class="memitem:namespace_g_f2_1_1problem_setup"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_g_f2_1_1problem_setup.html">problemSetup</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:namespace_g_f2_1_1processing"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_g_f2_1_1processing.html">processing</a></td></tr>
+<tr class="memdesc:namespace_g_f2_1_1processing"><td class="mdescLeft">&#160;</td><td class="mdescRight">Various 3D processing snippets that don't fit elsewhere. <br/></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:namespace_g_f2_1_1segmentation"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_g_f2_1_1segmentation.html">segmentation</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -143,7 +144,7 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculates and merges distance in spatial and angular domain between two patches.  <a href="struct_g_f2_1_1_abstract_patch_patch_distance_functor_t.html#details">More...</a><br/></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_representative_sqr_patch_patch_distance_functor_t.html">RepresentativeSqrPatchPatchDistanceFunctorT</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Distance is combined by spatial and angular terms according to formula: \( patch\_spatial\_weight^2 \cdot \frac{spat\_dist^2}{spat\_thresh} + \frac{ang\_diff^2}{ang\_thresh} &lt; 1 \). The weight was mostly set to 0.5.  <a href="struct_g_f2_1_1_representative_sqr_patch_patch_distance_functor_t.html#details">More...</a><br/></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Distance is combined by spatial and angular terms according to formula: \( patch\_spatial\_weight^2 \cdot \frac{spat\_dist^2}{spat\_thresh} + \frac{ang\_diff^2}{ang\_thresh} &lt; 1 \). It's basically an ellipse in hough-space. The weight was mostly set to 0.5.  <a href="struct_g_f2_1_1_representative_sqr_patch_patch_distance_functor_t.html#details">More...</a><br/></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_g_f2_1_1_problem_setup.html">ProblemSetup</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Class to formulate problem into an quadratic optimization problem.  <a href="class_g_f2_1_1_problem_setup.html#details">More...</a><br/></td></tr>
@@ -209,7 +210,6 @@ Typedefs</h2></td></tr>
 <tr class="memitem:af9ca2fafa8af7848cb0e458ad24e9c05"><td class="memItemLeft" align="right" valign="top">typedef <a class="el" href="namespaceam.html#a06dbc09d269453511f8b4349f693890c">am::MaskType</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_g_f2.html#af9ca2fafa8af7848cb0e458ad24e9c05">MaskType</a></td></tr>
 <tr class="separator:af9ca2fafa8af7848cb0e458ad24e9c05"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2e8b80dc19219b3a3364dfd852fa5d0b"><td class="memItemLeft" align="right" valign="top">typedef std::map&lt; int, int &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_g_f2.html#a2e8b80dc19219b3a3364dfd852fa5d0b">GidIntMap</a></td></tr>
-<tr class="memdesc:a2e8b80dc19219b3a3364dfd852fa5d0b"><td class="mdescLeft">&#160;</td><td class="mdescRight">&lt;  <a href="#a2e8b80dc19219b3a3364dfd852fa5d0b">More...</a><br/></td></tr>
 <tr class="separator:a2e8b80dc19219b3a3364dfd852fa5d0b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5425a2968b615a577990da18e1f9eaf5"><td class="memItemLeft" align="right" valign="top">typedef <a class="el" href="patch_cost_function_8m.html#a6e40cb7ed7a7636bf9d7a6be7c3cad8a">std::set</a>&lt; int &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_g_f2.html#a5425a2968b615a577990da18e1f9eaf5">PidSet</a></td></tr>
 <tr class="separator:a5425a2968b615a577990da18e1f9eaf5"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -245,6 +245,10 @@ Functions</h2></td></tr>
 <tr class="separator:ae2700dd8e83f9f7ee506d3c5b0d34108"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab64a59155ebbb09699d8569124f59ff9"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_g_f2.html#ab64a59155ebbb09699d8569124f59ff9">equal2D</a> (int l0, int l1, int l2, int l3)</td></tr>
 <tr class="separator:ab64a59155ebbb09699d8569124f59ff9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adac5eb9e014f10b3a0f64d5bde6a9fab"><td class="memTemplParams" colspan="2">template&lt;typename _Scalar &gt; </td></tr>
+<tr class="memitem:adac5eb9e014f10b3a0f64d5bde6a9fab"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespace_g_f2.html#adac5eb9e014f10b3a0f64d5bde6a9fab">decide_merge</a> (_Scalar min_dist, _Scalar threshold, _Scalar angle, _Scalar parallel_limit)</td></tr>
+<tr class="memdesc:adac5eb9e014f10b3a0f64d5bde6a9fab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Decides, if two patches are adjacent and have the same direction. Used in erging::mergeSameDirGids().  <a href="#adac5eb9e014f10b3a0f64d5bde6a9fab">More...</a><br/></td></tr>
+<tr class="separator:adac5eb9e014f10b3a0f64d5bde6a9fab"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a66dbdd5324889fcb1a5e03ebdb273abd"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_g_f2.html#a66dbdd5324889fcb1a5e03ebdb273abd">rotatePoints</a> (cv::Point2f &amp;p1, cv::Point2f &amp;p2, cv::Point2f const &amp;center, float const angle)</td></tr>
 <tr class="separator:a66dbdd5324889fcb1a5e03ebdb273abd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a51698cc5d8a1bd699b57e171a2ee9667"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_g_f2.html#a51698cc5d8a1bd699b57e171a2ee9667">gtStairs</a> (cv::Mat &amp;img, std::vector&lt;::<a class="el" href="class_g_f2_1_1_line_primitive.html">GF2::LinePrimitive</a> &gt; &amp;lines, int steps, float line_width_percentage_of_column, float decay, float <a class="el" href="patch_cost_function_8m.html#acec6d8ad52a28972fa74e071c1a63b6a">scale</a>)</td></tr>
@@ -253,8 +257,9 @@ Functions</h2></td></tr>
 <tr class="separator:ad407270259fd24f6e98197133a87f6a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>GUROBIOPT. </p>
-<p><a class="el" href="class_g_f2_1_1_solver.html">Solver</a>. </p>
+<div class="textblock"><p>GlobOpt main namespace. </p>
+<p><a class="el" href="class_g_f2_1_1_solver.html">Solver</a>.</p>
+<p>GUROBIOPT. </p>
 </div><h2 class="groupheader">Typedef Documentation</h2>
 <a class="anchor" id="a61142c2375e2e34e8a868abe01f1ecf6"></a>
 <div class="memitem">
@@ -294,10 +299,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>&lt; </p>
-<p>globOpt namespace </p>
-
-<p>Definition at line <a class="el" href="processing_2util_8hpp_source.html#l00011">11</a> of file <a class="el" href="processing_2util_8hpp_source.html">util.hpp</a>.</p>
+<p>Definition at line <a class="el" href="processing_2util_8hpp_source.html#l00012">12</a> of file <a class="el" href="processing_2util_8hpp_source.html">util.hpp</a>.</p>
 
 </div>
 </div>
@@ -311,7 +313,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="processing_2util_8hpp_source.html#l00014">14</a> of file <a class="el" href="processing_2util_8hpp_source.html">util.hpp</a>.</p>
+<p>Definition at line <a class="el" href="processing_2util_8hpp_source.html#l00015">15</a> of file <a class="el" href="processing_2util_8hpp_source.html">util.hpp</a>.</p>
 
 </div>
 </div>
@@ -325,7 +327,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="processing_2util_8hpp_source.html#l00015">15</a> of file <a class="el" href="processing_2util_8hpp_source.html">util.hpp</a>.</p>
+<p>Definition at line <a class="el" href="processing_2util_8hpp_source.html#l00016">16</a> of file <a class="el" href="processing_2util_8hpp_source.html">util.hpp</a>.</p>
 
 </div>
 </div>
@@ -353,7 +355,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="processing_2util_8hpp_source.html#l00012">12</a> of file <a class="el" href="processing_2util_8hpp_source.html">util.hpp</a>.</p>
+<p>Definition at line <a class="el" href="processing_2util_8hpp_source.html#l00013">13</a> of file <a class="el" href="processing_2util_8hpp_source.html">util.hpp</a>.</p>
 
 </div>
 </div>
@@ -367,7 +369,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="processing_2util_8hpp_source.html#l00013">13</a> of file <a class="el" href="processing_2util_8hpp_source.html">util.hpp</a>.</p>
+<p>Definition at line <a class="el" href="processing_2util_8hpp_source.html#l00014">14</a> of file <a class="el" href="processing_2util_8hpp_source.html">util.hpp</a>.</p>
 
 </div>
 </div>
@@ -421,6 +423,58 @@ template&lt;typename Scalar , int Dim&gt; </div>
 </div><div class="memdoc">
 
 <p>Definition at line <a class="el" href="my__types_8h_source.html#l00032">32</a> of file <a class="el" href="my__types_8h_source.html">my_types.h</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="adac5eb9e014f10b3a0f64d5bde6a9fab"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename _Scalar &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool GF2::decide_merge </td>
+          <td>(</td>
+          <td class="paramtype">_Scalar&#160;</td>
+          <td class="paramname"><em>min_dist</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">_Scalar&#160;</td>
+          <td class="paramname"><em>threshold</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">_Scalar&#160;</td>
+          <td class="paramname"><em>angle</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">_Scalar&#160;</td>
+          <td class="paramname"><em>parallel_limit</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Decides, if two patches are adjacent and have the same direction. Used in erging::mergeSameDirGids(). </p>
+
+<p>Definition at line <a class="el" href="merging_8hpp_source.html#l00321">321</a> of file <a class="el" href="merging_8hpp_source.html">merging.hpp</a>.</p>
 
 </div>
 </div>
@@ -1014,7 +1068,7 @@ template&lt;typename Scalar , int Dim&gt; </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Sep 5 2014 11:33:03 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Sep 5 2014 16:31:26 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

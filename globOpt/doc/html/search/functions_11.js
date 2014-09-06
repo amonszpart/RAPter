@@ -7,7 +7,7 @@ var searchData=
   ['readpoints',['readPoints',['../namespace_g_f2_1_1io.html#a3e6a9c58eb7a7260d47fe912e26dbef1',1,'GF2::io']]],
   ['readprimitives',['readPrimitives',['../namespace_g_f2_1_1io.html#ad0b245a95d11640b1711a239f46c7de2',1,'GF2::io']]],
   ['recalculate',['recalculate',['../classam_1_1kmeans_1_1_point_primitive.html#a07c37c5e00b1ace2a03067dabdf30987',1,'am::kmeans::PointPrimitive::recalculate()'],['../classam_1_1kmeans_1_1_primitive.html#a5a7dffe725dae187bfcef8c301415e4f',1,'am::kmeans::Primitive::recalculate()']]],
-  ['regiongrow',['regionGrow',['../class_g_f2_1_1_segmentation.html#a0920269b484d69420187c2074bddf11c',1,'GF2::Segmentation']]],
+  ['regiongrow',['regionGrow',['../class_g_f2_1_1_segmentation.html#a412e46ffae6efb8e08c71a19e6ce8694',1,'GF2::Segmentation']]],
   ['report',['report',['../classam_1_1_sim_ann_opt_problem.html#a51c188af55db7cb8cc13fd7dad4d3424',1,'am::SimAnnOptProblem']]],
   ['representativesqrpatchpatchdistancefunctort',['RepresentativeSqrPatchPatchDistanceFunctorT',['../struct_g_f2_1_1_representative_sqr_patch_patch_distance_functor_t.html#a2c9a87b39c40dc76e3ce5e30a62bd2d1',1,'GF2::RepresentativeSqrPatchPatchDistanceFunctorT']]],
   ['rot_5flines',['rot_lines',['../perturb__rects_8m.html#a7c364a9aec02b49c5b7be2f737526aa7',1,'perturb_rects.m']]],
