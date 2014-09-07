@@ -34,6 +34,16 @@ int main( int argc, char *argv[] )
         return GF2::Solver::sampleInput( argc, argv );
     }
 #endif
+    else if ( pcl::console::find_switch(argc,argv,"--segment") )
+    {
+        return GF2::Segmentation::segmentCli<
+                    GF2::Solver::PrimitiveT
+                    , GF2::Solver::PrimitiveContainerT
+                    , GF2::Solver::PointPrimitiveT
+                    , GF2::Solver::PointContainerT
+                    , GF2::Solver::PrimitiveT::Scalar>
+                ( argc, argv );
+    }
     else if ( pcl::console::find_switch(argc,argv,"--generate") )
     {
         return GF2::Solver::generateCli( argc, argv );

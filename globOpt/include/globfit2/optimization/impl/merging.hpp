@@ -75,18 +75,6 @@ Merging::mergeCli( int argc, char** argv )
 
     // Read desired angles
     processing::appendAnglesFromGenerator( params.angles, angle_gen, true );
-//    params.angles = { _Scalar(0) };
-//    {
-//        for ( _Scalar angle = angle_gen; angle < M_PI; angle+= angle_gen )
-//            params.angles.push_back( angle );
-//        params.angles.push_back( M_PI );
-
-//        // log
-//        std::cout << "[" << __func__ << "]: " << "Desired angles: {";
-//        for ( size_t vi=0;vi!=params.angles.size();++vi)
-//            std::cout << params.angles[vi] << ((vi==params.angles.size()-1) ? "" : ", ");
-//        std::cout << "}\n";
-//    } // ... read angles
 
     // associations
     std::vector<std::pair<int,int> > points_primitives;
