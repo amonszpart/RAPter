@@ -52,22 +52,39 @@ function my_exec() {
 
 # Segmentation. OUTPUT: patches.csv, points_primitives.csv
 my_exec "$executable --segment --angle-limit $anglelimit --scale $scale"
+
+input="patches.csv";
+assoc="points_primitives.csv";
+
+# show segment output
+# my_exec "../globOptVis --show --scale $scale --use-tags --ids --pop-limit $poplimit -p patches.csv -a $assoc &"
+# exit
+
 # Generate candidates. OUT: candidates_it0.csv
-my_exec "$executable --generate -sc $scale -al $anglelimit -ald 1 -p patches.csv --patch-pop-limit $poplimit"
+my_exec "$executable --generate -sc $scale -al $anglelimit -ald 1 --patch-pop-limit $poplimit -p $input --assoc $assoc"
 # Formulate optimization problem. OUT: "problem" directory
-my_exec "$executable --formulate --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --candidates candidates_it0.csv --dir-bias 1 --patch-pop-limit $poplimit"
+my_exec "$executable --formulate --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --dir-bias 1 --patch-pop-limit $poplimit --candidates candidates_it0.csv -a $assoc"
 # Solve optimization problem. OUT: primitives_it0.bonmin.csv
 my_exec "$executable --solver bonmin -v --problem problem --time -1 --candidates candidates_it0.csv"
 # Show output of first iteration.
-my_exec "../globOptVis --show --scale $scale -a points_primitives.csv --ids -p primitives_it0.bonmin.csv --pop-limit $poplimit &"
+my_exec "../globOptVis --show --scale $scale --ids --pop-limit $poplimit -p primitives_it0.bonmin.csv -a $assoc &"
+
+# Merge adjacent candidates with same dir id. OUT: primitives_merged_it0.csv, points_primitives_it0.csv
+my_exec "$executable --merge --scale $scale --adopt 0 --prims primitives_it0.bonmin.csv"
+
+# Show output of first iteration.
+my_exec "../globOptVis --show --scale $scale --ids --pop-limit $poplimit -p primitives_merged_it0.csv -a points_primitives_it0.csv &"
+
+input="primitives_merged_it0.csv";
+assoc="points_primitives_it0.csv";
 
 # Generate candidates from output of first. OUT: candidates_it1.csv
-my_exec "$executable --generate -sc $scale -al 1 -ald 1 -p primitives_it0.bonmin.csv --small-mode 2 --patch-pop-limit $poplimit"
+my_exec "$executable --generate -sc $scale -al 1 -ald 1 --small-mode 2 --patch-pop-limit $poplimit -p $input --assoc $assoc"
 # Show candidates:
 # my_exec "../globOptVis --show --scale $scale -a points_primitives.csv --ids -p candidates_it0.csv --pop-limit $poplimit &"
 # Formulate optimization problem. OUT: "problem" directory
-my_exec "$executable --formulate --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --candidates candidates_it1.csv --constr-mode 0 --dir-bias 1  --patch-pop-limit 6"
+my_exec "$executable --formulate --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --constr-mode 0 --dir-bias 1 --patch-pop-limit $poplimit --candidates candidates_it1.csv -a $assoc"
 # Solve optimization problem. OUT: primitives_it1.bonmin.csv
 my_exec "$executable --solver bonmin -v --problem problem --time -1 --candidates candidates_it1.csv"
 # Show output of second iteration.
-my_exec "../globOptVis --show --scale $scale -a points_primitives.csv --ids -p primitives_it1.bonmin.csv --pop-limit 0 &"
+my_exec "../globOptVis --show --scale $scale --ids --pop-limit 0 -a points_primitives.csv &"
