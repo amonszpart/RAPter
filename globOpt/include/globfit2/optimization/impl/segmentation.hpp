@@ -77,7 +77,7 @@ Segmentation:: fitLocal( _PrimitiveContainerT        & lines
     // get neighbourhoods
     std::vector< std::vector<int   > > neighs;
     std::vector< std::vector<Scalar> > sqr_dists;
-    smartgeometry::getNeighbourhoodIndices( /*   [out] neighbours: */ neighs
+    processing::getNeighbourhoodIndices( /*   [out] neighbours: */ neighs
                                             , /* [in]  pointCloud: */ cloud
                                             , /* [in]     indices: */ indices
                                             , /* [out]  sqr_dists: */ &sqr_dists
@@ -105,13 +105,13 @@ Segmentation:: fitLocal( _PrimitiveContainerT        & lines
         }
 
         Eigen::Matrix<Scalar,TLine::Dim,1> line;
-        int err = smartgeometry::geometry::fitLinearPrimitive<PointsT,Scalar,TLine::Dim>( /*           output: */ line
-                                                                                          , /*         points: */ *cloud
-                                                                                          , /*          scale: */ radius
-                                                                                          , /*        indices: */ &(neighs[pid])
-                                                                                          , /*    refit times: */ 2
-                                                                                          , /* use input line: */ false
-                                                                                          );
+        int err = processing::fitLinearPrimitive<PointsT,Scalar,TLine::Dim>( /*           output: */ line
+                                                                             , /*         points: */ *cloud
+                                                                             , /*          scale: */ radius
+                                                                             , /*        indices: */ &(neighs[pid])
+                                                                             , /*    refit times: */ 2
+                                                                             , /* use input line: */ false
+                                                                             );
         if ( err == EXIT_SUCCESS )      lines.emplace_back( TLine(line) );
         if ( point_ids )
         {

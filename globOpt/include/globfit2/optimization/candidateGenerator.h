@@ -8,7 +8,7 @@
 #if GF2_USE_PCL
 #   include "pcl/common/intersections.h"   // lineWithLineIntersection
 #   include "pcl/kdtree/kdtree.h"          // nearestneighboursearch
-#   include "pcltools/util.hpp"            // addGaussianNoise, fitLinearPrimitive
+#   include "globfit2/processing/util.hpp"            // addGaussianNoise, fitLinearPrimitive
 #endif // GF2_USE_PCL
 
 #include "globfit2/optimization/patchDistanceFunctors.h" // FullLinkagePointPatchDistanceFunctor
