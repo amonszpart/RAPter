@@ -176,7 +176,8 @@ Segmentation::patchify( _PrimitiveContainerT                   & patches
     for ( size_t gid = 0; gid != groups.size(); ++gid )
     {
         containers::add( patches, gid, groups[gid].getRepresentative() )
-                .setTag( _PrimitiveT::GID, gid );
+                .setTag( _PrimitiveT::GID    , gid )
+                .setTag( _PrimitiveT::DIR_GID, gid );
     }
 
     return EXIT_SUCCESS;
@@ -472,7 +473,7 @@ Segmentation::segmentCli( int    argc
     // Save point GID tags
     if ( EXIT_SUCCESS == err )
     {
-        std::string assoc_path = boost::filesystem::path( cloud_path ).parent_path().string() + "/" + "points_primitives.txt";
+        std::string assoc_path = boost::filesystem::path( cloud_path ).parent_path().string() + "/" + "points_primitives.csv";
 
         util::saveBackup( assoc_path );
         err = io::writeAssociations<_PointPrimitiveT>( points, assoc_path );
@@ -485,7 +486,7 @@ Segmentation::segmentCli( int    argc
     // save primitives
     if ( EXIT_SUCCESS == err )
     {
-        std::string candidates_path = boost::filesystem::path( cloud_path ).parent_path().string() + "/" + "patches.txt";
+        std::string candidates_path = boost::filesystem::path( cloud_path ).parent_path().string() + "/" + "patches.csv";
 
         util::saveBackup( candidates_path );
         err = io::savePrimitives<_PrimitiveT,typename _PrimitiveContainerT::value_type::const_iterator>( /* what: */ initial_primitives, /* where_to: */ candidates_path );

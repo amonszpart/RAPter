@@ -34,7 +34,8 @@ namespace GF2 {
                 , bool                 const  spin      = true
                 , std::vector<_Scalar> const* angles    = NULL
                 , bool                 const  show_ids  = false
-                , char                 const  use_tags  = false  );
+                , char                 const  use_tags  = false
+                , int                  const  pop_limit = 10 );
 
             //! \brief Shows a polygon that approximates the bounding ellipse of a cluster
             template <typename _Scalar> static inline int
@@ -75,7 +76,8 @@ namespace GF2
                                                            , bool                 const  spin      /* = true */
                                                            , std::vector<_Scalar> const* angles    /* = NULL */
                                                            , bool                 const  show_ids  /* = false */
-                                                           , char                 const  use_tags  /* = false */ )
+                                                           , char                 const  use_tags  /* = false */
+                                                           , int                  const  pop_limit /* = 10 */ )
     {
 #if 1
         typedef typename PrimitiveContainerT::value_type::value_type PrimitiveT;
@@ -97,7 +99,9 @@ namespace GF2
         std::cout << "[" << __func__ << "]: "
                   << "points: " << points.size()
                   << ", lines: " << nlines
-                  << ", max_group_id: " << max_group_id << std::endl;
+                  << ", max_group_id: " << max_group_id
+                  << ", pop-limit: " << pop_limit
+                  << std::endl;
         std::vector<Eigen::Vector3f> colours = util::nColoursEigen( max_group_id+1, /* scale: */ 255.f, /* shuffle: */ false );
 
         std::cout << "[" << __func__ << "]: " << " initing vis" << std::endl; fflush(stdout);
@@ -170,15 +174,15 @@ namespace GF2
 
                 } //...if use_tags
                 PrimitiveT::template draw<PointT>( primitives[lid][lid1]
-                                                   , &points //cloud
-                                                   , /*   threshold: */ scale * _Scalar(10)
-                                                   , /*     indices: */ use_tags ? &indices : NULL
-                                                   , /*      viewer: */ vptr
-                                                   , /*   unique_id: */ line_name
-                                                   , /*      colour: */ prim_colour(0), prim_colour(1), prim_colour(2)
-                                                   , /* viewport_id: */ 0
-                                                   , /*     stretch: */ _Scalar(1.2)
-                                                   );
+                                                 , &points //cloud
+                                                 , /*   threshold: */ scale * _Scalar(10)
+                                                 , /*     indices: */ use_tags ? &indices : NULL
+                                                 , /*      viewer: */ vptr
+                                                 , /*   unique_id: */ line_name
+                                                 , /*      colour: */ prim_colour(0), prim_colour(1), prim_colour(2)
+                                                 , /* viewport_id: */ 0
+                                                 , /*     stretch: */ _Scalar(1.2)
+                                                 );
                 vptr->setShapeRenderingProperties( pcl::visualization::PCL_VISUALIZER_LINE_WIDTH, 2.0, line_name, 0 );
 
                 // add line size
@@ -206,11 +210,11 @@ namespace GF2
                 // draw connections
                 if ( angles )
                 {
-                    if ( populations[gid] > 10 )
+                    if ( populations[gid] > pop_limit )
                     {
                         for ( size_t lid2 = lid; lid2 != primitives.size(); ++lid2 )
                         {
-                            if ( populations[ primitives[lid2].at(0).getTag(PrimitiveT::GID) ]< 10 )
+                            if ( populations[ primitives[lid2].at(0).getTag(PrimitiveT::GID) ]< pop_limit )
                                 continue;
 
                             for ( size_t lid3 = lid1; lid3 < primitives[lid2].size(); ++lid3 )

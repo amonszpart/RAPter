@@ -23,6 +23,7 @@ my_exec "$executable --solver bonmin -v --problem problem --time -1 --candidates
 my_exec "../globOptVis --show --scale $scale -a points_primitives.csv --ids -p primitives_it0.bonmin.csv --pop-limit $poplimit &"
 
 my_exec "$executable --generate -sc $scale -al 1 -ald 1 -p primitives_it0.bonmin.csv --small-mode 2 --patch-pop-limit $poplimit"
+my_exec "../globOptVis --show --scale $scale -a points_primitives.csv --ids -p candidates_it0.csv --pop-limit $poplimit &"
 my_exec "$executable --formulate --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --candidates candidates_it1.csv --constr-mode 0 --dir-bias 1  --patch-pop-limit 6"
 my_exec "$executable --solver bonmin -v --problem problem --time -1 --candidates candidates_it1.csv"
 my_exec "../globOptVis --show --scale $scale -a points_primitives.csv --ids -p primitives_it1.bonmin.csv --pop-limit 0 &"

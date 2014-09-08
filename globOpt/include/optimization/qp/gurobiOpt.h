@@ -277,7 +277,7 @@ namespace GF2
 
             {
                 std::stringstream ss;
-                ss << params.store_path << "/" << "primitives_" << str_time_stamp << ".txt";
+                ss << params.store_path << "/" << "primitives_" << str_time_stamp << ".csv";
                 io::savePrimitives( out_lines, ss.str() );
             }
         }
@@ -285,7 +285,7 @@ namespace GF2
         if ( grb_cb )
         {
             std::stringstream ss;
-            ss << params.store_path << "/" << "scores_" << str_time_stamp << ".txt";
+            ss << params.store_path << "/" << "scores_" << str_time_stamp << ".csv";
             grb_cb->saveScores( ss.str(), /* gnuplot: */ false, time_offset );
         }
 
@@ -758,7 +758,7 @@ namespace GF2
 
                     }
 
-                    std::string f_assoc_path = params.store_path + "/" + "points_primitives.txt";
+                    std::string f_assoc_path = params.store_path + "/" + "points_primitives.csv";
                     if ( !boost::filesystem::exists(f_assoc_path) )
                     {
                         ofstream f_assoc( f_assoc_path );
