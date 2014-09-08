@@ -10,10 +10,9 @@ SET( OpenCV_DIR "${THIRD_PARTY_DIR}/opencv-trunk/install/share/OpenCV/"
 SET( PCL_DIR "${THIRD_PARTY_DIR}/pcl-trunk2/install/share/pcl-1.7/"
           CACHE FILEPATH "Folder containing \"PCLConfig.cmake\", usually \"{PCL_INSTALL_DIR}/share/pcl-1.7/\".")
 
-SET( PATH_MOSEK_DIR "${THIRD_PARTY_DIR}/mosek/7/tools/platform/linux64x86/"
-        CACHE FILEPATH "Folder containing \"bin\" and \"h\" folders in Mosek. usually \"{MOSEK_INSTALL_DIR}/7/tools/platform/linux64x86/\"." )
-SET( PATH_BONMIN_DIR "${THIRD_PARTY_DIR}/CoinBonmin-stable/build/"
-        CACHE FILEPATH "Folder containing \"lib\" and \"include\" for the BonMin library, usually \"{BONMIN_INSTALL_DIR}\".")
+SET( PATH_MOSEK_DIR  "${THIRD_PARTY_DIR}/mosek/7/tools/platform/linux64x86" )
+SET( PATH_BONMIN_DIR "${THIRD_PARTY_DIR}/CoinBonmin-stable/build/")
+
 SET( PATH_GUROBI_DIR "${THIRD_PARTY_DIR}/gurobi562/linux64/"
         CACHE FILEPATH "Folder containing libgurobixx.so and libgurobi_c++.a, usually \"{GUROBI_INSTALL_DIR}/gurobi562/linux64/\".")
 SET( PATH_QCQPCPP_ROOT "${WORKSPACE_DIR}/QCQPcpp/"
@@ -31,7 +30,7 @@ SET( WITH_BONMIN ON CACHE BINARY "Allow Bonmin to be used for optimization.")
 IF(WITH_BONMIN)
     ADD_DEFINITIONS(-DGF2_WITH_BONMIN)
 ENDIF()
-SET( WITH_GUROBI ON CACHE BINARY "Allow Gruboi to be used for optimization.")
+SET( WITH_GUROBI OFF CACHE BINARY "Allow Gruboi to be used for optimization.")
 IF(WITH_GUROBI)
     ADD_DEFINITIONS(-DGF2_WITH_GUROBI)
 ENDIF()
@@ -120,8 +119,16 @@ IF(WITH_MOSEK)
     SET( MOSEK_LIBRARIES "libmosek64" )
 ENDIF(WITH_MOSEK)
 
+
 # Bonmin
 IF(WITH_BONMIN)
+    IF(EXISTS ${PATH_BONMIN_DIR}lib/libcoinhsl.so)
+      SET (BONMIN_SOLVER_LIB ${PATH_BONMIN_DIR}lib/libcoinhsl.so)
+      MESSAGE(STATUS "HSL Solver available, use instead of MUMPS")
+    ELSE()
+        SET (BONMIN_SOLVER_LIB ${PATH_BONMIN_DIR}lib/libcoinmumps.so)
+    ENDIF(EXISTS ${BONMIN_DIR}lib/libcoinhsl.so)
+
     SET( BONMIN_LIBRARIES
         ${PATH_BONMIN_DIR}/lib/libipopt.so
         ${PATH_BONMIN_DIR}/lib/libbonmin.so
@@ -129,7 +136,8 @@ IF(WITH_BONMIN)
         #${PATH_BONMIN_DIR}lib/libCbcSolver.so
         ${PATH_BONMIN_DIR}/lib/libCgl.so
         ${PATH_BONMIN_DIR}/lib/libClp.so
-        ${PATH_BONMIN_DIR}/lib/libcoinhsl.so
+        ${BONMIN_SOLVER_LIB}
+        #${BONMIN_DIR}lib/libcoinhsl.so
         ${PATH_BONMIN_DIR}/lib/libCoinUtils.so
         ${PATH_BONMIN_DIR}/lib/libOsi.so
         #${PATH_BONMIN_DIR}/lib/libOsiCbc.so
@@ -191,6 +199,7 @@ SET( GLOBOPT_H_LIST
     include/globfit2/parameters.h
     include/globfit2/my_types.h
     include/globfit2/primitives/linePrimitive.h
+    include/globfit2/primitives/primitive.h
     include/globfit2/primitives/linePrimitive2.h
     include/globfit2/primitives/pointPrimitive.h
     include/globfit2/optimization/patchDistanceFunctors.h
@@ -223,8 +232,8 @@ TARGET_LINK_LIBRARIES( ${GLOBOPT_TARGET_NAME}
     ${GUROBI_LIBRARIES}
     ${MOSEK_LIBRARIES}
     ${BONMIN_LIBRARIES}
-    ${GLOBOPTVIS_LIBRARIES}
-    ${WORKSPACE_DIR}/globOpt/globOpt/../visualization/build/Release/lib/libglobOptVis.a
+#    ${GLOBOPTVIS_LIBRARIES}
+#    ${WORKSPACE_DIR}/globOpt/globOpt/../visualization/build/Release/lib/libglobOptVis.a
     ${OpenCV_LIBRARIES}
     ${PCL_LIBRARIES}
     #pthread

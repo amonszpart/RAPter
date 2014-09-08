@@ -10,6 +10,8 @@
 #   include <pcl/point_cloud.h>
 #endif
 
+#include "pcltools/util.hpp"
+
 #include "globfit2/util/containers.hpp" // add( map, gid, primitive), add( vector, gid, primitive )
 #include "globfit2/parameters.h"        // CandidateGeneratorParams
 
@@ -105,14 +107,14 @@ Segmentation:: fitLocal( _PrimitiveContainerT        & lines
         }
 
         Eigen::Matrix<Scalar,TLine::Dim,1> line;
-        int err = processing::fitLinearPrimitive<PointsT,Scalar,TLine::Dim>( /*           output: */ line
+        int err = smartgeometry::geometry::fitLinearPrimitive<PointsT,Scalar,TLine::Dim>( /*           output: */ line
                                                                              , /*         points: */ *cloud
                                                                              , /*          scale: */ radius
                                                                              , /*        indices: */ &(neighs[pid])
                                                                              , /*    refit times: */ 2
                                                                              , /* use input line: */ false
                                                                              );
-        if ( err == EXIT_SUCCESS )      lines.emplace_back( TLine(line) );
+        if ( err == EXIT_SUCCESS )      lines.emplace_back( TLine(line));
         if ( point_ids )
         {
             point_ids->emplace_back( pid );

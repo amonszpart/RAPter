@@ -17,6 +17,9 @@ namespace GF2
     class Primitive
     {
         public:
+            EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+
             // ____________________TYPEDEFS____________________
             typedef _Scalar Scalar;                          //!< Scalar typedef to reach from outside.
             enum { Dim = _Dim };                             //!< Standard typedef for _Dim template parameter.

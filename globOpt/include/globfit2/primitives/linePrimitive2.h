@@ -17,9 +17,10 @@ namespace GF2
                 , DIR_GID   //!< direction group id   - which group this primitive got it's direction from
             };//...TAGS
 
-#if __cplusplus > 199711L
+#if 0 // __cplusplus > 199711L
             //! \brief Inheriting contructor.
             using ::GF2::LinePrimitive::LinePrimitive;
+            //LinePrimitive2() : ParentT() {}
 #else
             LinePrimitive2() : ParentT() {}
 

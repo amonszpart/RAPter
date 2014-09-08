@@ -112,7 +112,7 @@ namespace GF2 {
          * @param refit                 How many refit iterations. 0 means once, obviously (TODO to fix...).
          * @param start_from_input_line Assume, that \param line contains a meaningful input, and calculate weights on the 0th iteration already.
          */
-        template <class PrimitiveT, class PointsT, typename Scalar = float, int rows = 6> inline int
+        template <class PrimitiveT, class PointsT, typename Scalar, int rows> inline int
         fitLinearPrimitive( PrimitiveT                      & primitive
                             , PointsT                  const& cloud
                             , Scalar                          scale
@@ -176,7 +176,7 @@ namespace GF2 {
                 for ( size_t point_id = 0; point_id != N; ++point_id )
                 {
                     const unsigned int id = p_indices ? (*p_indices)[point_id] : point_id;
-                    auto pos = cloud[ id ].pos() - centroid; // eigen expression template
+                    typename PointsT::value_type pos = cloud[ id ].template pos() - centroid; // eigen expression template
                     cov   += pos * pos.transpose() * weights[ id ];
                 }                
                 cov /= sumW;

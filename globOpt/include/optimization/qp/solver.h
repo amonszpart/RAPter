@@ -452,9 +452,11 @@ Solver::solve( int    argc
     {
         switch ( solver )
         {
+#ifdef GF2_WITH_MOSEK
             case MOSEK:
                 p_problem = new qcqpcpp::MosekOpt<OptScalar>( /* env: */ NULL );
                 break;
+#endif
             case BONMIN:
                 p_problem = new qcqpcpp::BonminOpt<OptScalar>();
                 break;
@@ -480,7 +482,7 @@ Solver::solve( int    argc
             p_problem->setTimeLimit( max_time );
         if ( solver == BONMIN )
         {
-#           ifdef WITH_BONMIN
+#           ifdef GF2_WITH_BONMIN
             static_cast<qcqpcpp::BonminOpt<OptScalar>*>(p_problem)->setAlgorithm( Bonmin::Algorithm(bmode) );
 #           endif // WITH_BONMIN
         }
@@ -496,12 +498,14 @@ Solver::solve( int    argc
         // update
         r = p_problem->update();
 
+#ifdef GF2_WITH_MOSEK
         // check output
         if ( r != MSK_RES_OK )
         {
             std::cerr << "[" << __func__ << "]: " << "ooo...update didn't work with code " << r << std::endl;
             err = EXIT_FAILURE;
         }
+#endif
 
         // log
         if ( verbose ) { std::cout << "[" << __func__ << "]: " << "problem update finished\n"; fflush(stdout); }

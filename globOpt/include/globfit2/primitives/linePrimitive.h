@@ -25,7 +25,7 @@ namespace GF2
             typedef ::GF2::Primitive<6> ParentT;
         public:
             // ____________________CONSTRUCT____________________
-#if __cplusplus > 199711L
+#if 0 //__cplusplus > 199711L
             //! \brief Inherited constructor from Primitive.
             using ::GF2::Primitive<6>::Primitive;
 #else
