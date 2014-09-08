@@ -137,7 +137,7 @@ Merging::mergeCli( int argc, char** argv )
 
     {
         std::stringstream ss;
-        ss << "points_primitives_it" << iteration << ".csv" << std::endl;
+        ss << "points_primitives_it" << iteration << ".csv";
         io::writeAssociations<_PointPrimitiveT>( points, ss.str() );
         std::cout << "wrote " << ss.str() << std::endl;
     }
