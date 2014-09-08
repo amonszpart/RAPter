@@ -2,10 +2,13 @@ SET(PROJECT_NAME globOptVis)
 PROJECT(${PROJECT_NAME})
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
-SET( PCL_DIR "/home/bontius/workspace/3rdparty/pcl-trunk2/install/share/pcl-1.7/"
+SET( WORKSPACE_DIR "$ENV{HOME}/workspace" )
+SET( THIRD_PARTY_DIR "${WORKSPACE_DIR}/3rdparty" )
+
+SET( PCL_DIR "${THIRD_PARTY_DIR}/pcl-trunk2/install/share/pcl-1.7/"
           CACHE FILEPATH "Folder containing \"PCLConfig.cmake\", usually \"{PCL_INSTALL_DIR}/share/pcl-1.7/\".")
-SET( OpenCV_DIR "/home/bontius/workspace/3rdparty/opencv-trunk/install/share/OpenCV/"
-        CACHE FILEPATH "Folder containing the OpenCVConfig.cmake file, usually \"{OPENCV_INSTALL_DIR}/share/OpenCV/\"" FORCE)
+#SET( OpenCV_DIR "/home/bontius/workspace/3rdparty/opencv-trunk/install/share/OpenCV/"
+#        CACHE FILEPATH "Folder containing the OpenCVConfig.cmake file, usually \"{OPENCV_INSTALL_DIR}/share/OpenCV/\"" FORCE)
 #SET( PATH_PCLTOOLS_ROOT "/home/bontius/workspace/geometry-tools/PCLTools/"
 #        CACHE FILEPATH "Folder containing \"include\" directory from the SG PCLTools library. Can be downloaded from \"https://github.com/smartgeometry-ucl/geometry-tools/tree/master/PCLTools\".")
 
