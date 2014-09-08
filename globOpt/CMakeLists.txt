@@ -2,25 +2,28 @@ SET(PROJECT_NAME globOpt)
 PROJECT(${PROJECT_NAME})
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
-SET( OpenCV_DIR "/home/bontius/workspace/3rdparty/opencv-trunk/install/share/OpenCV/"
+SET( WORKSPACE_DIR "$ENV{HOME}/workspace" )
+SET( THIRD_PARTY_DIR "${WORKSPACE_DIR}/3rdparty" )
+
+SET( OpenCV_DIR "${THIRD_PARTY_DIR}/opencv-trunk/install/share/OpenCV/"
         CACHE FILEPATH "Folder containing the OpenCVConfig.cmake file, usually \"{OPENCV_INSTALL_DIR}/share/OpenCV/\"")
-SET( PCL_DIR "/home/bontius/workspace/3rdparty/pcl-trunk2/install/share/pcl-1.7/"
+SET( PCL_DIR "${THIRD_PARTY_DIR}/pcl-trunk2/install/share/pcl-1.7/"
           CACHE FILEPATH "Folder containing \"PCLConfig.cmake\", usually \"{PCL_INSTALL_DIR}/share/pcl-1.7/\".")
 
-SET( PATH_MOSEK_DIR "/home/bontius/workspace/3rdparty/mosek/7/tools/platform/linux64x86/"
+SET( PATH_MOSEK_DIR "${THIRD_PARTY_DIR}/mosek/7/tools/platform/linux64x86/"
         CACHE FILEPATH "Folder containing \"bin\" and \"h\" folders in Mosek. usually \"{MOSEK_INSTALL_DIR}/7/tools/platform/linux64x86/\"." )
-SET( PATH_BONMIN_DIR "/home/bontius/workspace/3rdparty/CoinBonmin-stable/build/"
+SET( PATH_BONMIN_DIR "${THIRD_PARTY_DIR}/CoinBonmin-stable/build/"
         CACHE FILEPATH "Folder containing \"lib\" and \"include\" for the BonMin library, usually \"{BONMIN_INSTALL_DIR}\".")
-SET( PATH_GUROBI_DIR "/home/bontius/workspace/3rdparty/gurobi562/linux64/"
+SET( PATH_GUROBI_DIR "${THIRD_PARTY_DIR}/gurobi562/linux64/"
         CACHE FILEPATH "Folder containing libgurobixx.so and libgurobi_c++.a, usually \"{GUROBI_INSTALL_DIR}/gurobi562/linux64/\".")
-SET( PATH_QCQPCPP_ROOT "/home/bontius/workspace/QCQPcpp/"
+SET( PATH_QCQPCPP_ROOT "${WORKSPACE_DIR}/QCQPcpp/"
         CACHE FILEPATH "Root directory of QCQPcpp library containing the \"include\" directory.")
-SET( PATH_PCLTOOLS_ROOT "/home/bontius/workspace/geometry-tools/PCLTools/"
+SET( PATH_PCLTOOLS_ROOT "${WORKSPACE_DIR}/geometry-tools/PCLTools/"
         CACHE FILEPATH "Folder containing \"include\" directory from the SG PCLTools library. Can be downloaded from \"https://github.com/smartgeometry-ucl/geometry-tools/tree/master/PCLTools\".")
 SET( PATH_VIS_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../visualization/"
         CACHE FILEPATH "Folder containing separate visulizer library")
 
-SET( WITH_MOSEK ON CACHE BINARY "Allow Mosek to be used for optimization.")
+SET( WITH_MOSEK OFF CACHE BINARY "Allow Mosek to be used for optimization.")
 IF(WITH_MOSEK)
     ADD_DEFINITIONS(-DGF2_WITH_MOSEK)
 ENDIF()
@@ -43,7 +46,7 @@ IF(WITH_FULL_LINKAGE)
     ADD_DEFINITIONS(-DGF2_WITH_FULL_LINKAGE)
 ENDIF(WITH_FULL_LINKAGE)
 
-#SET( FH_DIR /home/bontius/workspace/3rdparty/segmentFH )
+#SET( FH_DIR ${THIRD_PARTY_DIR}/segmentFH )
 
 # BUILD
 SET( dir ${CMAKE_CURRENT_SOURCE_DIR}/build/${CMAKE_BUILD_TYPE} )
@@ -221,7 +224,7 @@ TARGET_LINK_LIBRARIES( ${GLOBOPT_TARGET_NAME}
     ${MOSEK_LIBRARIES}
     ${BONMIN_LIBRARIES}
     ${GLOBOPTVIS_LIBRARIES}
-    /home/bontius/workspace/globOpt/globOpt/../visualization/build/Release/lib/libglobOptVis.a
+    ${WORKSPACE_DIR}/globOpt/globOpt/../visualization/build/Release/lib/libglobOptVis.a
     ${OpenCV_LIBRARIES}
     ${PCL_LIBRARIES}
     #pthread
