@@ -35,6 +35,7 @@ namespace containers {
         return ( *prims[gid].find(primitive) );
     }
 
+    // vector< vector >::const_iterator
     template <class _PrimitiveT> static inline
     typename std::vector<_PrimitiveT> const&
     valueOf( typename std::vector<std::vector<_PrimitiveT> >::const_iterator const& it )
@@ -42,14 +43,38 @@ namespace containers {
         return *it;
     }
 
+    // vector< vector >::iterator
+    template <class _PrimitiveT> static inline
+    typename std::vector<_PrimitiveT> &
+    valueOf( typename std::vector<std::vector<_PrimitiveT> >::iterator & it )
+    {
+        return *it;
+    }
+
+    // map< vector >::const_iterator
     template <class _PrimitiveT> static inline
     std::vector<_PrimitiveT> const& valueOf( typename std::map<int,std::vector<_PrimitiveT> >::const_iterator const& it )
     {
         return it->second;
     }
 
+    // map< vector >::iterator
+    template <class _PrimitiveT> static inline
+    std::vector<_PrimitiveT> & valueOf( typename std::map<int,std::vector<_PrimitiveT> >::iterator & it )
+    {
+        return it->second;
+    }
+
+    // vector::const_iterator
     template <class _PrimitiveT> static inline
     _PrimitiveT const& valueOf( typename std::vector<_PrimitiveT>::const_iterator const& it )
+    {
+        return *it;
+    }
+
+    // vector::iterator
+    template <class _PrimitiveT> static inline
+    _PrimitiveT & valueOf( typename std::vector<_PrimitiveT>::iterator & it )
     {
         return *it;
     }

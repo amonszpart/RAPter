@@ -14,6 +14,24 @@
 
 namespace GF2 {
 
+namespace merging
+{
+    /*! \brief Dummy concept, how to use \ref processing::transformPrimitiveMap in globfit2/processing/util.hpp.
+     */
+    template <class _PrimitiveT>
+    struct RefitFunctor
+    {
+            int eval( _PrimitiveT& prim ) const
+            {
+                std::cout << "[" << __func__ << "]: "
+                          << "transforming primitive with GID: " << prim.getTag( _PrimitiveT::GID )
+                          << ", and DIR_GID: " << prim.getTag( _PrimitiveT::DIR_GID )
+                          << std::endl;
+                return 0;
+            } //...eval()
+    };
+}
+
 template < class    _PrimitiveContainerT
          , class    _PointContainerT
          , typename _Scalar
@@ -120,6 +138,16 @@ Merging::mergeCli( int argc, char** argv )
     PrimitiveMapT out_prims;
     mergeSameDirGids<_PrimitiveT, _PointPrimitiveT, typename PrimitiveMapT::mapped_type::const_iterator>
             ( out_prims, points, prims_map, params.scale, params.spatial_threshold_mult * params.scale, params.parallel_limit, patchPatchDistFunct );
+
+    // dummy example of an iteration over all primitives
+    {
+        merging::RefitFunctor<_PrimitiveT> refitFunctor;
+        processing::transformPrimitivesMap< _PrimitiveT
+                                          , typename PrimitiveMapT::mapped_type::iterator
+                                          , merging::RefitFunctor<_PrimitiveT>
+                                          > ( /* [in,out] primitives: */ out_prims
+                                            , /* [in]        functor: */ refitFunctor );
+    }
 
     // SAVE
     std::string o_path;
