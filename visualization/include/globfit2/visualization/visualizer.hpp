@@ -35,7 +35,8 @@ namespace GF2 {
                 , std::vector<_Scalar> const* angles    = NULL
                 , bool                 const  show_ids  = false
                 , char                 const  use_tags  = false
-                , int                  const  pop_limit = 10 );
+                , int                  const  pop_limit = 10
+                , std::string          const& title     = "" );
 
             //! \brief Shows a polygon that approximates the bounding ellipse of a cluster
             template <typename _Scalar> static inline int
@@ -77,7 +78,8 @@ namespace GF2
                                                            , std::vector<_Scalar> const* angles    /* = NULL */
                                                            , bool                 const  show_ids  /* = false */
                                                            , char                 const  use_tags  /* = false */
-                                                           , int                  const  pop_limit /* = 10 */ )
+                                                           , int                  const  pop_limit /* = 10 */
+                                                           , std::string          const& title     /* = "" */ )
     {
 #if 1
         typedef typename PrimitiveContainerT::value_type::value_type PrimitiveT;
@@ -106,7 +108,7 @@ namespace GF2
 
         std::cout << "[" << __func__ << "]: " << " initing vis" << std::endl; fflush(stdout);
         //pcl::visualization::PCLVisualizer::Ptr vptr( new pcl::visualization::PCLVisualizer() );
-        vis::MyVisPtr vptr( new pcl::visualization::PCLVisualizer() );
+        vis::MyVisPtr vptr( new pcl::visualization::PCLVisualizer(title) );
         std::cout << "[" << __func__ << "]: " << " finished initing vis" << std::endl; fflush(stdout);
         vptr->setBackgroundColor( .7, .7, .7 );
         MyCloud::Ptr cloud( new MyCloud );

@@ -57,10 +57,14 @@ lines::showLinesCli( int argc, char** argv )
                   << "\t[--use-tags \tuse associations to create line segments]\n"
                   << "\t[--ids \tshow point GID-s and line GIDs]\n"
                   << "\t[--no-clusters \tdon't show the \"ellipses\"]\n"
-                  << "\t[--pop-limit \tpoplation limit for small patches]"
+                  << "\t[--pop-limit \tpoplation limit for small patches]\n"
+                  << "\t[--title \t window title]"
                   << std::endl;
         return EXIT_SUCCESS;
     }
+
+    std::string title = "";
+    pcl::console::parse_argument( argc, argv, "--title", title );
 
     int pop_limit = 10;
     pcl::console::parse_argument( argc, argv, "--pop-limit", pop_limit );
@@ -150,6 +154,7 @@ lines::showLinesCli( int argc, char** argv )
                                                                       , /*    show_ids: */ show_ids
                                                                       , /*    use_tags: */ use_tags
                                                                       , /*   pop-limit: */ pop_limit
+                                                                      , /*       title: */ title
                                                                       );
     return EXIT_SUCCESS;
 } // ... Solver::show()
