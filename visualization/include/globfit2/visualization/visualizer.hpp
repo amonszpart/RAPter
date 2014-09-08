@@ -36,7 +36,8 @@ namespace GF2 {
                 , bool                 const  show_ids  = false
                 , char                 const  use_tags  = false
                 , int                  const  pop_limit = 10
-                , std::string          const& title     = "" );
+                , std::string          const& title     = ""
+                , bool                 const  show_pids = false );
 
             //! \brief Shows a polygon that approximates the bounding ellipse of a cluster
             template <typename _Scalar> static inline int
@@ -79,7 +80,8 @@ namespace GF2
                                                            , bool                 const  show_ids  /* = false */
                                                            , char                 const  use_tags  /* = false */
                                                            , int                  const  pop_limit /* = 10 */
-                                                           , std::string          const& title     /* = "" */ )
+                                                           , std::string          const& title     /* = "" */
+                                                           , bool                 const  show_pids /* = false */ )
     {
 #if 1
         typedef typename PrimitiveContainerT::value_type::value_type PrimitiveT;
@@ -127,7 +129,7 @@ namespace GF2
             }
         }
         vptr->addPointCloud( cloud, "cloud", 0 );
-        if ( show_ids )
+        if ( show_pids )
         {
             for ( int pid = 0; pid != points.size(); ++pid )
             {

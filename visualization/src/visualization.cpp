@@ -58,10 +58,12 @@ lines::showLinesCli( int argc, char** argv )
                   << "\t[--ids \tshow point GID-s and line GIDs]\n"
                   << "\t[--no-clusters \tdon't show the \"ellipses\"]\n"
                   << "\t[--pop-limit \tpoplation limit for small patches]\n"
+                  << "\t[--pids \tdisplay point ids]\n"
                   << "\t[--title \t window title]"
                   << std::endl;
         return EXIT_SUCCESS;
     }
+    bool show_pids = pcl::console::find_switch( argc, argv, "--pids" );
 
     std::string title = "";
     pcl::console::parse_argument( argc, argv, "--title", title );
@@ -155,6 +157,7 @@ lines::showLinesCli( int argc, char** argv )
                                                                       , /*    use_tags: */ use_tags
                                                                       , /*   pop-limit: */ pop_limit
                                                                       , /*       title: */ title
+                                                                      , /*   show_pids: */ show_pids
                                                                       );
     return EXIT_SUCCESS;
 } // ... Solver::show()
