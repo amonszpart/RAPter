@@ -100,7 +100,51 @@ namespace GF2 {
             return EXIT_SUCCESS;
         } //...appendAnglesFromGenerator()
         
-        
+        /*! \brief Applies a functor to each primitive.
+         *  \tparam _PrimitiveT          Primitive wrapper class. Concept: LinePrimitive2.
+         *  \tparam _inner_iterator      Iterates over the mapped_value of _PrimitiveContainerT. Concept: std::vector<int>::iterator.
+         *  \tparam _PrimitiveContainerT Stores all lines of a patch under it's GID key. Concept: std::map< int, std::vector<_PrimitiveT> >.
+         *  \tparam _FunctorT            Has an eval(_PrimitiveT &) function to be called for each primitive.
+         *  \param[in,out] prims         The primitives to transform.
+         *  \param[in] functor           An instance of the functor that should be called for each primitive.
+         */
+        template < class _PrimitiveT
+                 , typename _inner_iterator
+                 , class _FunctorT
+                 , class _PrimitiveContainerT
+                 >
+        int transformPrimitivesMap( _PrimitiveContainerT       & primitives
+                                  , _FunctorT             const& functor = NULL
+                                  )
+        {
+            typedef typename _PrimitiveContainerT::iterator outer_iterator;
+
+            int ret = 0;
+
+            // for all patches
+            for ( outer_iterator outer_it  = primitives.begin();
+                                 outer_it != primitives.end();
+                               ++outer_it )
+            {
+                //int gid = -2; // (-1 is "unset")
+                int lid =  0; // linear index of primitive in container (to keep track)
+                // for all directions
+                for ( _inner_iterator inner_it  = containers::valueOf<_PrimitiveT>(outer_it).begin();
+                                      inner_it != containers::valueOf<_PrimitiveT>(outer_it).end();
+                                    ++inner_it, ++lid )
+                {
+                    // save patch gid
+                    //if ( gid == -2 )
+                    //    gid = inner_it->getTag( _PrimitiveT::GID );
+
+                    // apply functor to primitive
+                    ret += functor.eval( *inner_it );
+
+                } //...inner loop (for each direction in patch)
+            } //...outer loop (for each patch)
+
+            return ret;
+        } //...TransformPrimitivesMap
         
         
         /**
@@ -242,72 +286,72 @@ namespace GF2 {
      * @param[in ] radius               Optional, maximum radius to look for K neighbours in
      * @param[in ] soft_radius          Return K neighbours even if some outside radius
      */
-    template <typename MyPointT>
-    inline int
-    getNeighbourhoodIndices( std::vector<std::vector<int> >                            & neighbour_indices
-                            , boost::shared_ptr<pcl::PointCloud<MyPointT> >              cloud
-                            , std::vector<int>                                    const* indices_arg        = NULL
-                            , std::vector<std::vector<float> >                         * p_distances        = NULL
-                            , int                                                        K                  = 15
-                            , float                                                      radius             = -1.f
-                            , bool                                                       soft_radius        = false
-                            )
-    {
-        // prepare output
-        const int   N              = indices_arg ? indices_arg->size() : cloud->size();
-        const bool  doRadiusSearch = radius > 0.f;
-
-        neighbour_indices.resize( N, std::vector<int>(K) );
-        if ( p_distances )    p_distances->resize( N );
-
-        // create KdTree
-        typename pcl::search::KdTree<MyPointT>::Ptr tree( new pcl::search::KdTree<MyPointT> );
-        if ( indices_arg )
+        template <typename MyPointT>
+        inline int
+        getNeighbourhoodIndices( std::vector<std::vector<int> >                            & neighbour_indices
+                                , boost::shared_ptr<pcl::PointCloud<MyPointT> >              cloud
+                                , std::vector<int>                                    const* indices_arg        = NULL
+                                , std::vector<std::vector<float> >                         * p_distances        = NULL
+                                , int                                                        K                  = 15
+                                , float                                                      radius             = -1.f
+                                , bool                                                       soft_radius        = false
+                                )
         {
-            pcl::IndicesPtr indices_ptr( new std::vector<int>() );
-            *indices_ptr = *indices_arg; // copy indices
-            tree->setInputCloud( cloud, indices_ptr );
-        }
-        else
-            tree->setInputCloud( cloud );
+            // prepare output
+            const int   N              = indices_arg ? indices_arg->size() : cloud->size();
+            const bool  doRadiusSearch = radius > 0.f;
 
-        MyPointT            searchPoint;
-        std::vector<float>  sqr_dists( K );
-        int                 found_points_count = 0;
-        for ( size_t pid = 0; pid != N; ++pid )
-        {
-            // copy search point
-            searchPoint = indices_arg ? cloud->at( (*indices_arg)[pid] )
-                                      : cloud->at( pid                 );
+            neighbour_indices.resize( N, std::vector<int>(K) );
+            if ( p_distances )    p_distances->resize( N );
 
-            // calculate neighbourhood indices
-            if ( doRadiusSearch ) found_points_count = tree->radiusSearch  ( searchPoint, radius, neighbour_indices[pid], sqr_dists, K );
-            else                  found_points_count = tree->nearestKSearch( searchPoint,      K, neighbour_indices[pid], sqr_dists    );
-
-            if ( (found_points_count <2 ) && (soft_radius) )
-                found_points_count = tree->nearestKSearch( searchPoint,      K, neighbour_indices[pid], sqr_dists    );
-
-            // output distances
-            if ( found_points_count > 0 )
+            // create KdTree
+            typename pcl::search::KdTree<MyPointT>::Ptr tree( new pcl::search::KdTree<MyPointT> );
+            if ( indices_arg )
             {
-                if ( p_distances )
-                {
-                    p_distances->at(pid) = sqr_dists;
-                }
+                pcl::IndicesPtr indices_ptr( new std::vector<int>() );
+                *indices_ptr = *indices_arg; // copy indices
+                tree->setInputCloud( cloud, indices_ptr );
             }
             else
-            {
-                // clear results for this point
-                neighbour_indices[pid].resize(0);
-                if ( p_distances )
-                    p_distances->at(pid).resize(0);
-                // report error
-                std::cerr << __func__ << ": no neighs found for point " << pid << std::endl;
-            }
-        }
+                tree->setInputCloud( cloud );
 
-        return EXIT_SUCCESS;
-    }
+            MyPointT            searchPoint;
+            std::vector<float>  sqr_dists( K );
+            int                 found_points_count = 0;
+            for ( size_t pid = 0; pid != N; ++pid )
+            {
+                // copy search point
+                searchPoint = indices_arg ? cloud->at( (*indices_arg)[pid] )
+                                          : cloud->at( pid                 );
+
+                // calculate neighbourhood indices
+                if ( doRadiusSearch ) found_points_count = tree->radiusSearch  ( searchPoint, radius, neighbour_indices[pid], sqr_dists, K );
+                else                  found_points_count = tree->nearestKSearch( searchPoint,      K, neighbour_indices[pid], sqr_dists    );
+
+                if ( (found_points_count <2 ) && (soft_radius) )
+                    found_points_count = tree->nearestKSearch( searchPoint,      K, neighbour_indices[pid], sqr_dists    );
+
+                // output distances
+                if ( found_points_count > 0 )
+                {
+                    if ( p_distances )
+                    {
+                        p_distances->at(pid) = sqr_dists;
+                    }
+                }
+                else
+                {
+                    // clear results for this point
+                    neighbour_indices[pid].resize(0);
+                    if ( p_distances )
+                        p_distances->at(pid).resize(0);
+                    // report error
+                    std::cerr << __func__ << ": no neighs found for point " << pid << std::endl;
+                }
+            }
+
+            return EXIT_SUCCESS;
+        }
 
     } //...ns processing
 } //...ns GF2
