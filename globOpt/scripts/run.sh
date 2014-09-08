@@ -58,7 +58,7 @@ input="patches.csv";
 assoc="points_primitives.csv";
 
 # show segment output
-# my_exec "../globOptVis --show --scale $scale --use-tags --ids --pop-limit $poplimit -p patches.csv -a $assoc &"
+# my_exec "../globOptVis --show --scale $scale --use-tags --ids --pop-limit $poplimit -p patches.csv -a $assoc --title "Segment output"&"
 # exit
 
 # Generate candidates. OUT: candidates_it0.csv
