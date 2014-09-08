@@ -12,8 +12,8 @@ First, download Bonmin:
 svn co https://projects.coin-or.org/svn/Bonmin/stable/1.5 CoinBonmin-stable
 ```
 Then:
-* install the following packages (Debian/Ubuntu): 'liblapack-dev libblas-dev fortran-compiler'.
-* install 3rd party solver using the script 'path/to/Bonmin/ThirdParty/Mumps/get.Mumps'.
+* install the following packages (Debian/Ubuntu): `liblapack-dev libblas-dev fortran-compiler`.
+* install 3rd party solver using the script `path/to/Bonmin/ThirdParty/Mumps/get.Mumps`.
 * Compile and install:
 ```
 mkdir build
@@ -33,12 +33,12 @@ cmake ..
 make
 ```
 
-You can run cmake with '-DUSE_MOSEK' if you need it.
+You can run cmake with `-DUSE_MOSEK` if you need it.
 
 
 ##Compilation
 ###GlobOpt
-You need to have all the dependencies in the folder '~/workspace/3rdparty/'
+You need to have all the dependencies in the folder  `~/workspace/3rdparty/`
 ```
 mkdir build
 cd build
