@@ -325,7 +325,53 @@ inline bool decide_merge( _Scalar min_dist, _Scalar threshold, _Scalar angle, _S
     return (min_dist < threshold) && (angle < parallel_limit);
 } //...decide_merge
 
+template <class _PrimitiveT, typename _Scalar>
+inline _Scalar segmentDistance( std::vector<Eigen::Matrix<_Scalar,3,1> > const& extrema0
+                              , _PrimitiveT const& l0
+                              , std::vector<Eigen::Matrix<_Scalar,3,1> > const& extrema1
+                              , _PrimitiveT const& l1 )
+{
+    _Scalar min_dist = std::numeric_limits<_Scalar>::max();
+
+    for ( int i = 0; i != extrema0.size(); ++i )
+        for ( int j = 0; j != extrema1.size(); ++j )
+        {
+            Eigen::Matrix<_Scalar,3,1> const& e0 = extrema0[i];
+            Eigen::Matrix<_Scalar,3,1> const& e1 = extrema1[j];
+
+            Eigen::Matrix<_Scalar,3,1> p0 = l1.projectPoint( e0 );
+            Eigen::Matrix<_Scalar,3,1> p1 = l0.projectPoint( e1 );
+
+            _Scalar paramCoord0 = (p0 - extrema1[0]).norm() / (extrema1[1]-extrema1[0]).norm();
+            _Scalar paramCoord1 = (p1 - extrema0[0]).norm() / (extrema0[1]-extrema0[0]).norm();
+
+            std::cout << "paramCoord0: " << paramCoord0
+                      << ", paramCoord1: " << paramCoord1 << std::endl;
+
+            bool in0 = (paramCoord0 >= _Scalar(0.) && paramCoord0 <= _Scalar(1.) );
+            bool in1 = (paramCoord1 >= _Scalar(0.) && paramCoord1 <= _Scalar(1.) );
+            switch ( in0 + in1 )
+            {
+                case 0: std::cout  << "non";
+                    min_dist = std::min( min_dist, (e1 - e0).norm() );
+                    break;
+                case 1: std::cout  << "one";
+                         if ( in0 ) { min_dist = std::min( min_dist, (p1-e1).norm()); std::cout << " (p1-e1).norm(): " << (p1-e1).norm(); }
+                    else if ( in1 ) { min_dist = std::min( min_dist, (p0-e0).norm()); std::cout << " (p0-e0).norm(): " << (p0-e0).norm(); }
+                    break;
+                case 2:
+                    std::cout  << "mutual std::min( " << min_dist << ", std::min( " << (p1-e1).norm() << ", " << (p0-e0).norm() << " ))" << std::endl;
+                    min_dist = std::min( min_dist, std::min( (p1-e1).norm(), (p0-e0).norm()) );
+                    break;
+            }
+            std::cout << std::endl;
+        }
+
+    return min_dist;
+}
+
 /*! \brief Merges adjacent patches that have the same direction ID or are almost parallel.
+ *
  *  \tparam _PatchPatchDistanceFunctorT  Concept: \ref GF2::RepresentativeSqrPatchPatchDistanceFunctorT.
  *  \param[in] patchPatchDistFunct       Distance functor between two patches, to define adjacency.
  *  \param[in] spatial_threshold         Two extrema should be at least this close to be merged. Concept: \ref MergeParams::spatial_threshold_mult == 3 * scale.
@@ -428,20 +474,20 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
                     if ( (gid_it == gid_it1) && (prim_it == prim_it1) )
                         continue;
 
-                    // log
-                    if ( 1 )
-                        std::cout << "comparing "
-                                  << "(" << std::distance<typename GidLidExtremaT::const_iterator>( extrema.begin(), gid_it )
-                                  << "," << std::distance<typename LidExtremaT::const_iterator>( gid_it->second.begin(), prim_it ) << ")"
-                                  << " with "
-                                  << "(" << std::distance<typename GidLidExtremaT::const_iterator>( extrema.begin(), gid_it1 )
-                                  << "," << std::distance<typename LidExtremaT::const_iterator>( gid_it1->second.begin(), prim_it1 ) << ")"
-                                  << std::endl;
+                    int gid0 = gid_it->first ,
+                        gid1 = gid_it1->first;
+                    int lid0 = std::distance<typename LidExtremaT::const_iterator>( gid_it ->second.begin(), prim_it ),
+                        lid1 = std::distance<typename LidExtremaT::const_iterator>( gid_it1->second.begin(), prim_it1 );
 
                     // get minimum endpoint distance
                     ExtremaT const& extrema0 = prim_it->second,
                                     extrema1 = prim_it1->second;
                     _Scalar min_dist = std::numeric_limits<_Scalar>::max();
+#if 1
+                    _PrimitiveT const& prim0 = primitives.at(gid0).at(lid0);
+                    _PrimitiveT const& prim1 = primitives.at(gid1).at(lid1);
+                    min_dist = segmentDistance( extrema0, prim0, extrema1, prim1 );
+#else
                     for ( int i = 0; i != extrema0.size(); ++i )
                         for ( int j = 0; j != extrema1.size(); ++j )
                         {
@@ -451,18 +497,16 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
                                 min_dist = dist;
                             }
                         }
+#endif
 
-                    int gid0 = gid_it->first ,
-                        gid1 = gid_it1->first;
-                    int lid0 = std::distance<typename LidExtremaT::const_iterator>( gid_it->second.begin(), prim_it ),
-                        lid1 = std::distance<typename LidExtremaT::const_iterator>( gid_it1->second.begin(), prim_it1 );
 
                     int dir0 = primitives.at( gid0 ).at( lid0 ).getTag( _PrimitiveT::DIR_GID );
                     int dir1 = primitives.at( gid1 ).at( lid1 ).getTag( _PrimitiveT::DIR_GID );
                     _Scalar ang = angleInRad( primitives.at( gid0 ).at( lid0 ).template dir(),
                                               primitives.at( gid1 ).at( lid1 ).template dir() );
 
-                    std::cout << "testing " << min_dist << " < " <<  spatial_threshold << " && " << ang << " < " << parallel_limit;
+                    std::cout << "testing (" << gid0 << "," << dir0 << ")" << " vs. " << "(" << gid1 << "," << dir1 << ")\t"
+                              << min_dist << " < " <<  spatial_threshold << " && " << ang << " < " << parallel_limit;
                     if ( decide_merge(min_dist, spatial_threshold, ang, parallel_limit) ) // (min_dist < 3. * scale) && (dir0 == dir1) && (ang < parallel_limit) )
                     {
                         std::cout << "would merge "
@@ -470,7 +514,7 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
                                   << " with "
                                   << "(" << gid1 << "," << lid1 << "," << dir1 << ")"
                                   << std::endl;
-                        fflush(stdout);
+                        fflush( stdout );
 
                         GidLid key0( gid0, lid0 ),
                                key1( gid1, lid1 );
