@@ -35,7 +35,8 @@ ProblemSetup::formulateCli( int    argc
 
     //Scalar                    scale            = 0.05f;
     std::string               cloud_path       = "cloud.ply",
-                              candidates_path  = "candidates.csv";
+                              candidates_path  = "candidates.csv",
+                              assoc_path       = "points_primitives.csv";
     //std::vector<Scalar>       angles           = {0, M_PI_2, M_PI };   // TODO: param
     params.angles = {0, M_PI_2, M_PI };
     //Eigen::Matrix<Scalar,3,1> weights;           weights << 1, 5, 1;   // --unary 1 --pw 5 --cmplx 1
@@ -64,6 +65,12 @@ ProblemSetup::formulateCli( int    argc
         pcl::console::parse_argument( argc, argv, "--srand", srand_val );
         pcl::console::parse_argument( argc, argv, "--rod"  , problem_rel_path );
         pcl::console::parse_argument( argc, argv, "--dir-bias", params.dir_id_bias );
+        if ( (pcl::console::parse_argument( argc, argv, "--assoc", assoc_path) < 0) && pcl::console::parse_argument( argc, argv, "-a", assoc_path ) < 0 )
+        {
+            std::cerr << "[" << __func__ << "]: " << "associations (points_primitives.csv) is compulsory!" << std::endl;
+            valid_input = false;
+        }
+
         // data_cost_mode
         {
             pcl::console::parse_argument( argc, argv, "--data-mode", data_cost_mode_str );
@@ -92,6 +99,7 @@ ProblemSetup::formulateCli( int    argc
                   << " --scale " << params.scale << "\n"
                   << " --cloud " << cloud_path << "\n"
                   << " --candidates " << candidates_path << "\n"
+                  << " -a,--assoc " << assoc_path << "\n"
                   << " [--dir-bias " << params.dir_id_bias << "]\n"
                   << " [--unary " << params.weights(0) << "]\n"
                   << " [--pw " << params.weights(1) << "]\n"
@@ -128,7 +136,7 @@ ProblemSetup::formulateCli( int    argc
 
     // read point-primitive associations
     std::vector<std::pair<int,int> > points_primitives;
-    io::readAssociations( points_primitives, "points_primitives.csv", NULL );
+    io::readAssociations( points_primitives, assoc_path, NULL );
     for ( size_t i = 0; i != points.size(); ++i )
     {
         if ( i > points_primitives.size() )
