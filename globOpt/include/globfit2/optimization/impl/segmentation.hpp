@@ -296,14 +296,14 @@ Segmentation::regionGrow( _PointContainerT                       & points
             const int pid2 = neighs[ pid_id ];
             if ( !assigned[pid2] )
             {
-                //_Scalar diff = GF2::angleInRad( patches.back().template dir(), points[pid2].template dir() );
+                _Scalar diff = GF2::angleInRad( patches.back().template dir(), points[pid2].template dir() );
 
                 // location from point, but direction is the representative's
-                _PointPrimitiveT p1_proxy(points[pid].template pos(), patches.back().template dir());
-                PatchT p2_proxy; p2_proxy.push_back( segmentation::PidLid(pid2,-1) ); p2_proxy.update( points );
+                //_PointPrimitiveT p1_proxy(points[pid].template pos(), patches.back().template dir());
+                //PatchT p2_proxy; p2_proxy.push_back( segmentation::PidLid(pid2,-1) ); p2_proxy.update( points );
 
-                //if ( (sqrt(sqr_dists[pid_id]) < spatial_thresh) && (diff < ang_thresh) )                                      // original condition
-                if ( patchPatchDistanceFunctor.template eval<_PointPrimitiveT>(p1_proxy, p2_proxy, points, NULL) < patchPatchDistanceFunctor.getThreshold() )
+                if ( (sqrt(sqr_dists[pid_id]) < patchPatchDistanceFunctor.getSpatialThreshold()) && (diff < patchPatchDistanceFunctor.getAngularThreshold()) ) // original condition
+                //if ( patchPatchDistanceFunctor.template eval<_PointPrimitiveT>(p1_proxy, p2_proxy, points, NULL) < patchPatchDistanceFunctor.getThreshold() )
                 {
                     patches.back().push_back( segmentation::PidLid(pid2,-1) );
                     patches.back().updateWithPoint( points[pid2] );
