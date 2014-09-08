@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['parseiteration',['parseIteration',['../namespace_g_f2_1_1util.html#a91a072ca17767a33582cd9a11b61f657',1,'GF2::util']]],
   ['parsepatchdistmode',['parsePatchDistMode',['../struct_g_f2_1_1_candidate_generator_params.html#a6d923c38a3c5b62f6ad57e365c016d09',1,'GF2::CandidateGeneratorParams']]],
   ['patch',['Patch',['../struct_g_f2_1_1segmentation_1_1_patch.html#ae14c9d86e10bcdfd07d2a04145c3d903',1,'GF2::segmentation::Patch::Patch()'],['../struct_g_f2_1_1segmentation_1_1_patch.html#a9c021e56b9bec5252a365f16a4403041',1,'GF2::segmentation::Patch::Patch(PidLid const &amp;elem)']]],
   ['patchify',['patchify',['../class_g_f2_1_1_segmentation.html#a5060de9c9444d728400f8ea8e0f575df',1,'GF2::Segmentation']]],

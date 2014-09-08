@@ -35,7 +35,7 @@ ProblemSetup::formulateCli( int    argc
 
     //Scalar                    scale            = 0.05f;
     std::string               cloud_path       = "cloud.ply",
-                              candidates_path  = "candidates.txt";
+                              candidates_path  = "candidates.csv";
     //std::vector<Scalar>       angles           = {0, M_PI_2, M_PI };   // TODO: param
     params.angles = {0, M_PI_2, M_PI };
     //Eigen::Matrix<Scalar,3,1> weights;           weights << 1, 5, 1;   // --unary 1 --pw 5 --cmplx 1
@@ -63,6 +63,7 @@ ProblemSetup::formulateCli( int    argc
         pcl::console::parse_argument( argc, argv, "--cost-fn", cost_string );
         pcl::console::parse_argument( argc, argv, "--srand", srand_val );
         pcl::console::parse_argument( argc, argv, "--rod"  , problem_rel_path );
+        pcl::console::parse_argument( argc, argv, "--dir-bias", params.dir_id_bias );
         // data_cost_mode
         {
             pcl::console::parse_argument( argc, argv, "--data-mode", data_cost_mode_str );
@@ -91,6 +92,7 @@ ProblemSetup::formulateCli( int    argc
                   << " --scale " << params.scale << "\n"
                   << " --cloud " << cloud_path << "\n"
                   << " --candidates " << candidates_path << "\n"
+                  << " [--dir-bias " << params.dir_id_bias << "]\n"
                   << " [--unary " << params.weights(0) << "]\n"
                   << " [--pw " << params.weights(1) << "]\n"
                   << " [--cmp " << params.weights(2) << "]\n"
@@ -126,7 +128,7 @@ ProblemSetup::formulateCli( int    argc
 
     // read point-primitive associations
     std::vector<std::pair<int,int> > points_primitives;
-    io::readAssociations( points_primitives, "points_primitives.txt", NULL );
+    io::readAssociations( points_primitives, "points_primitives.csv", NULL );
     for ( size_t i = 0; i != points.size(); ++i )
     {
         if ( i > points_primitives.size() )
@@ -160,6 +162,7 @@ ProblemSetup::formulateCli( int    argc
                                                        , params.weights
                                                        , primPrimDistFunctor
                                                        , params.patch_population_limit
+                                                       , params.dir_id_bias
                                                        , verbose );
 
     // dump. default output: ./problem/*.csv; change by --rod
@@ -195,6 +198,7 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
                        , Eigen::Matrix<_Scalar,-1,1>                                   const& weights
                        , AbstractPrimitivePrimitiveEnergyFunctor<_Scalar,_PrimitiveT>* const& primPrimDistFunctor
                        , int                                                           const  patch_pop_limit
+                       , _Scalar                                                       const  dir_id_bias
                        , int                                                           const  verbose
         )
 {
@@ -303,8 +307,8 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
                         if ( (lid == olid) && (lid1 == olid1) ) continue;
 
                         _Scalar dist = primPrimDistFunctor->eval( prims[lid][lid1], prims[olid][olid1] );
-//                            if ( prims[lid][lid1].getTag(_PrimitiveT::DIR_GID) == prims[olid][olid1].getTag(_PrimitiveT::DIR_GID) )
-//                                dist += Scalar(1);
+                        if ( prims[lid][lid1].getTag(_PrimitiveT::DIR_GID) != prims[olid][olid1].getTag(_PrimitiveT::DIR_GID) )
+                            dist += dir_id_bias;
                         dist *= weights(1);
                         problem.addQObjective( lids_varids[ IntPair(lid,lid1) ], lids_varids[ IntPair(olid,olid1) ], dist );
                     } // ... olid1

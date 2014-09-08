@@ -162,15 +162,24 @@ namespace GF2
                      >
             static inline int formulateCli( int argc, char** argv );
 
-            //! \brief                          Step 2. Reads the output from generate and sets up the optimization problem in form of sparse matrices.
-            //! \tparam _PrimitiveContainerT    Concept: vector< vector< \ref GF2::LinePrimitive2 > >.
-            //! \tparam _PointContainerT        Concept: vector< \ref GF2::PointPrimitive >.
-            //! \param  prims                   Holds the input primitives to setup the optimization with.
-            //! \param  points                  Holds the input points.
-            //! \param  primPrimDistFunctor     Functor, that calculates the distance between two primitives. Concept: \ref SqrtPrimitivePrimitiveEnergyFunctor.
-            //! \return                         Outputs EXIT_SUCCESS or the error the OptProblem implementation returns.
-            //! \note                           \p points are assumed to be tagged at _PointPrimitiveT::GID with the _PrimitiveT::GID of the \p prims.
-            //! \sa \ref problemSetup::largePatchesNeedDirectionConstraint
+            /*! \brief                          Step 2. Reads the output from generate and sets up the optimization problem in form of sparse matrices.
+             *  \tparam _PrimitiveContainerT    Concept: vector< vector< \ref GF2::LinePrimitive2 > >.
+             *  \tparam _PointContainerT        Concept: vector< \ref GF2::PointPrimitive >.
+             *  \param[in,out] problem          QCQPcpp::OptProblem (\ref problemSetup::OptProblemT) typed problem to append to.
+             *  \param[in] prims                Holds the input primitives to setup the optimization with.
+             *  \param[in] points               Holds the input points.
+             *  \param[in] constr_mode          See \ref ProblemSetupParams::CONSTR_MODE. \copybrief GF2::ProblemSetupParams::CONSTR_MODE.
+             *  \param[in] data_cost_mode       See \ref ProblemSetupParams::DATA_COST_MODE.
+             *  \param[in] scale                Scale of input, can be used for data cost.
+             *  \param[in] weights              Weights for problemsetup, contains data, pairwise and complexity weight in this order.
+             *  \param[in] primPrimDistFunctor  Functor, that calculates the distance between two primitives. Concept: \ref SqrtPrimitivePrimitiveEnergyFunctor.
+             *  \param[in] patch_pop_limit      Decides, whether a patch is large or small. Used in \ref problemSetup::largePatchesNeedDirectionConstraint.
+             *  \param[in] dir_id_bias          \copydoc ProblemSetupParams::dir_id_bias.
+             *  \param[in] verbose              Debug messages display.
+             *  \return                         Outputs EXIT_SUCCESS or the error the OptProblem implementation returns.
+             *  \note                           \p points are assumed to be tagged at _PointPrimitiveT::GID with the _PrimitiveT::GID of the \p prims.
+             *  \sa \ref problemSetup::largePatchesNeedDirectionConstraint
+             */
             template < class _PointPrimitiveDistanceFunctor
                      , class _PrimitiveContainerT
                      , class _PointContainerT
@@ -181,13 +190,13 @@ namespace GF2
             formulate( problemSetup::OptProblemT                                               & problem
                      , _PrimitiveContainerT                                               const& prims
                      , _PointContainerT                                                   const& points
-                     //, std::vector<std::pair<int,int> >                                   const& points_primitives
                      , typename ProblemSetupParams<_Scalar>::CONSTR_MODE                  const  constr_mode
                      , typename ProblemSetupParams<_Scalar>::DATA_COST_MODE               const  data_cost_mode
                      , _Scalar                                                            const  scale
                      , Eigen::Matrix<_Scalar,-1,1>                                        const& weights
                      , GF2::AbstractPrimitivePrimitiveEnergyFunctor<_Scalar,_PrimitiveT>* const& primPrimDistFunctor
                      , int                                                                const  patch_pop_limit
+                     , _Scalar                                                            const  dir_id_bias
                      , int                                                                const  verbose = 0 );
 
     }; //...class ProblemSetup

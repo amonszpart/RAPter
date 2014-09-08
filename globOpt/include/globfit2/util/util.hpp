@@ -130,6 +130,21 @@ inline std::string timestamp2Str()
     return std::string( buffer );
 } //...timestamp2Str()
 
+inline int parseIteration( std::string const& input_prims_path )
+{
+    int iteration = 0;
+
+    size_t it_loc = input_prims_path.find("_it");
+    if ( it_loc == std::string::npos )
+        iteration = -1;
+    else
+    {
+        iteration = atoi( input_prims_path.substr( it_loc+3,1 ).c_str() );
+    }
+
+    return iteration;
+}
+
 } //...namespace util
 } //...namespace GF2
 

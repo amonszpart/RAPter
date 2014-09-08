@@ -8,6 +8,7 @@
 #include "globfit2/io/io.h"
 #include "globfit2/processing/util.hpp"          //getPopulations()
 #include "globfit2/optimization/patchDistanceFunctors.h" // RepresentativeSqrPatchPatchDistanceFunctorT
+#include "globfit2/util/util.hpp"
 
 #define CHECK(err,text) { if ( err != EXIT_SUCCESS )  std::cerr << "[" << __func__ << "]: " << text << " returned an error! Code: " << err << std::endl; }
 
@@ -25,7 +26,8 @@ Merging::mergeCli( int argc, char** argv )
     MergeParams<_Scalar> params;
 
     std::string cloud_path = "cloud.ply",
-                prims_path = "primitives.bonmin.txt";
+                prims_path = "primitives.bonmin.csv",
+                assoc_path = "points_primitives.csv";
     _Scalar     angle_gen  = M_PI_2;
     // parse params
     {
@@ -41,11 +43,14 @@ Merging::mergeCli( int argc, char** argv )
         pcl::console::parse_argument( argc, argv, "--angle-gen", angle_gen );
         pcl::console::parse_argument( argc, argv, "--adopt", params.do_adopt );
         pcl::console::parse_argument( argc, argv, "--thresh-mult", params.spatial_threshold_mult );
+        pcl::console::parse_argument( argc, argv, "--assoc", assoc_path );
+        pcl::console::parse_argument( argc, argv, "-a", assoc_path );
 
         std::cerr << "[" << __func__ << "]: " << "Usage:\t gurobi_opt --formulate\n"
                   << "\t--scale " << params.scale << "\n"
                   << "\t--prims " << prims_path << "\n"
                   << "\t--cloud " << cloud_path << "\n"
+                  << "\t-a,--assoc " << assoc_path << "\n"
                   << "\t[--angle-gen " << angle_gen << "]\n"
                   << "\t[--adopt " << params.do_adopt << "]\n"
                   << "\t[--thresh-mult " << params.spatial_threshold_mult << "]\n"
@@ -75,22 +80,10 @@ Merging::mergeCli( int argc, char** argv )
 
     // Read desired angles
     processing::appendAnglesFromGenerator( params.angles, angle_gen, true );
-//    params.angles = { _Scalar(0) };
-//    {
-//        for ( _Scalar angle = angle_gen; angle < M_PI; angle+= angle_gen )
-//            params.angles.push_back( angle );
-//        params.angles.push_back( M_PI );
-
-//        // log
-//        std::cout << "[" << __func__ << "]: " << "Desired angles: {";
-//        for ( size_t vi=0;vi!=params.angles.size();++vi)
-//            std::cout << params.angles[vi] << ((vi==params.angles.size()-1) ? "" : ", ");
-//        std::cout << "}\n";
-//    } // ... read angles
 
     // associations
     std::vector<std::pair<int,int> > points_primitives;
-    io::readAssociations( points_primitives, "points_primitives.txt", NULL );
+    io::readAssociations( points_primitives, assoc_path, NULL );
     for ( size_t i = 0; i != points.size(); ++i )
     {
         // error check
@@ -129,16 +122,36 @@ Merging::mergeCli( int argc, char** argv )
             ( out_prims, points, prims_map, params.scale, params.spatial_threshold_mult * params.scale, params.parallel_limit, patchPatchDistFunct );
 
     // SAVE
-    if ( params.do_adopt )
+    std::string o_path;
+    int         iteration = 0;
     {
-        io::savePrimitives   <_PrimitiveT, typename PrimitiveMapT::mapped_type::const_iterator>( out_prims, "primitives.bonmin_it1_adopt.csv" );
-        io::writeAssociations<_PointPrimitiveT>( points   , "points_primitives_it1_adopt.csv" );
+        iteration = util::parseIteration( prims_path );
+        std::stringstream ss;
+        size_t it_loc = prims_path.find("_it");
+        std::string fname = prims_path.substr( 0, it_loc );
+        ss << fname << "_merged_it" << iteration << ".csv";
+        o_path = ss.str();
+        io::savePrimitives   <_PrimitiveT, typename PrimitiveMapT::mapped_type::const_iterator>( out_prims, o_path );
+        std::cout << "wrote " << o_path << std::endl;
     }
-    else
+
     {
-        io::savePrimitives   <_PrimitiveT, typename PrimitiveMapT::mapped_type::const_iterator>( out_prims, "primitives.bonmin_it1.csv" );
-        io::writeAssociations<_PointPrimitiveT>( points   , "points_primitives_it1.csv" );
+        std::stringstream ss;
+        ss << "points_primitives_it" << iteration << ".csv" << std::endl;
+        io::writeAssociations<_PointPrimitiveT>( points, ss.str() );
+        std::cout << "wrote " << ss.str() << std::endl;
     }
+
+//    if ( params.do_adopt )
+//    {
+//        io::savePrimitives   <_PrimitiveT, typename PrimitiveMapT::mapped_type::const_iterator>( out_prims, "primitives.bonmin_it1_adopt.csv" );
+//        io::writeAssociations<_PointPrimitiveT>( points   , "points_primitives_it1_adopt.csv" );
+//    }
+//    else
+//    {
+//        io::savePrimitives   <_PrimitiveT, typename PrimitiveMapT::mapped_type::const_iterator>( out_prims, "primitives.bonmin_it1.csv" );
+//        io::writeAssociations<_PointPrimitiveT>( points   , "points_primitives_it1.csv" );
+//    }
 
     std::cout << "stopped mergeSameDirGids" << std::endl; fflush(stdout);
     return EXIT_SUCCESS;
@@ -427,7 +440,7 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
                         continue;
 
                     // log
-                    if ( 0 )
+                    if ( 1 )
                         std::cout << "comparing "
                                   << "(" << std::distance<typename GidLidExtremaT::const_iterator>( extrema.begin(), gid_it )
                                   << "," << std::distance<typename LidExtremaT::const_iterator>( gid_it->second.begin(), prim_it ) << ")"
@@ -460,6 +473,7 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
                     _Scalar ang = angleInRad( primitives.at( gid0 ).at( lid0 ).template dir(),
                                               primitives.at( gid1 ).at( lid1 ).template dir() );
 
+                    std::cout << "testing " << min_dist << " < " <<  spatial_threshold << " && " << ang << " < " << parallel_limit;
                     if ( decide_merge(min_dist, spatial_threshold, ang, parallel_limit) ) // (min_dist < 3. * scale) && (dir0 == dir1) && (ang < parallel_limit) )
                     {
                         std::cout << "would merge "
@@ -480,6 +494,8 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
                         else
                             aliases[ key1 ] = key0;
                     }
+                    else
+                        std::cout << " NO" << std::endl;
                 }
             }
         }

@@ -1,7 +1,7 @@
 var searchData=
 [
   ['p',['p',['../globfit_8m.html#ac483f6ce851c9ecd9fb835ff7551737c',1,'p():&#160;globfit.m'],['../compare_mosek_gurobi_8m.html#afbcb83a10f6d485c6c4fa702380a4ceb',1,'p():&#160;compareMosekGurobi.m'],['../scale__optimization_8m.html#ac483f6ce851c9ecd9fb835ff7551737c',1,'p():&#160;scale_optimization.m'],['../test__fmincon_8m.html#ac483f6ce851c9ecd9fb835ff7551737c',1,'p():&#160;test_fmincon.m']]],
-  ['pairwise_5fweight',['pairwise_weight',['../struct_g_f2_1_1_gurobi_opt_params.html#acfa54672fe1a609ec46cb9de9319393e',1,'GF2::GurobiOptParams::pairwise_weight()'],['../class_g_f2_1_1_gurobi_opt.html#a8178efc83dca8a30730bcd5cc2b9eb25',1,'GF2::GurobiOpt::PAIRWISE_WEIGHT()']]],
+  ['pairwise_5fweight',['PAIRWISE_WEIGHT',['../class_g_f2_1_1_gurobi_opt.html#a8178efc83dca8a30730bcd5cc2b9eb25',1,'GF2::GurobiOpt::PAIRWISE_WEIGHT()'],['../struct_g_f2_1_1_gurobi_opt_params.html#acfa54672fe1a609ec46cb9de9319393e',1,'GF2::GurobiOptParams::pairwise_weight()']]],
   ['par',['par',['../line__normal_8m.html#a8a4e5ec5926f293767f3c555868e4c21',1,'line_normal.m']]],
   ['parallel_5flimit',['parallel_limit',['../struct_g_f2_1_1_common_params.html#a5b765b056d979f766cf933a9bd4b981d',1,'GF2::CommonParams']]],
   ['patch_5fdist_5flimit_5fmult',['patch_dist_limit_mult',['../struct_g_f2_1_1_candidate_generator_params.html#ac2ede42aac59593b6d19eb03639955e9',1,'GF2::CandidateGeneratorParams']]],

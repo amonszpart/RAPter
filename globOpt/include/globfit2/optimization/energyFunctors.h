@@ -43,7 +43,7 @@ namespace GF2
         eval( PrimitiveT            const& p1
             , PrimitiveT            const& p2
             , std::vector<Scalar>   const& angles
-            , Scalar                     * closest_angle = NULL )
+            , int                        * closest_angle_id = NULL )
         {
             // angle
             Scalar angle = GF2::angleInRad( p1.dir(), p2.dir() );
@@ -65,8 +65,10 @@ namespace GF2
                 {
                     min_angle = diff;
                     // output, if requested
-                    if ( closest_angle )
-                        *closest_angle = angles[i];
+//                    if ( closest_angle )
+//                        *closest_angle = angles[i];
+                    if ( closest_angle_id )
+                        *closest_angle_id = i;
                 } //...select min
             } //...for all angles
 

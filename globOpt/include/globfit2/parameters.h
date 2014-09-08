@@ -209,6 +209,9 @@ namespace GF2 {
         CONSTR_MODE                  constr_mode     = PATCH_WISE;
         //! \brief \copydoc DATA_COST_MODE
         DATA_COST_MODE               data_cost_mode  = ASSOC_BASED;
+
+        //! \brief Added to pairwise cost, if direction ids don't match.
+        _Scalar                      dir_id_bias     = _Scalar( 0. );
     };
 
     template <typename _Scalar>

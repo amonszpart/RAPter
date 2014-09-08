@@ -147,7 +147,7 @@ Solver::sampleInput( int argc, char** argv )
 } // ...Solver::sampleInput()
 #endif // GF2_WITH_SAMPLE_INPUT
 
-//! \brief                  Step 1. Generates primitives from a cloud. Reads "cloud.ply" and saves "candidates.txt".
+//! \brief                  Step 1. Generates primitives from a cloud. Reads "cloud.ply" and saves "candidates.csv".
 //! \param argc             Contains --cloud cloud.ply, and --scale scale.
 //! \param argv             Contains --cloud cloud.ply, and --scale scale.
 //! \return                 EXIT_SUCCESS.
@@ -169,6 +169,8 @@ Solver::generateCli( int    argc
                                                           };
     //std::string                 patch_refit_mode_string = "avg_dir";
     //std::vector<std::string>    patch_refit_mode_opts   = { "spatial", "avg_dir" };
+    std::string                 input_prims_path         = "patches.csv";
+    std::string                 associations_path       = "points_primitives.csv";
 
     // parse input
     if ( err == EXIT_SUCCESS )
@@ -184,17 +186,40 @@ Solver::generateCli( int    argc
         }
 
         // scale
-        if ( (pcl::console::parse_argument( argc, argv, "--scale", generatorParams.scale) < 0) )
+        if ( (pcl::console::parse_argument( argc, argv, "--scale", generatorParams.scale) < 0) && (pcl::console::parse_argument( argc, argv, "-sc", generatorParams.scale) < 0) )
         {
             std::cerr << "[" << __func__ << "]: " << "--scale is compulsory" << std::endl;
             valid_input = false;
         }
 
+        if (    (pcl::console::parse_argument( argc, argv, "-p", input_prims_path) < 0)
+             && (pcl::console::parse_argument( argc, argv, "--prims", input_prims_path) < 0)
+             && (!boost::filesystem::exists(input_prims_path)) )
+        {
+            std::cerr << "[" << __func__ << "]: " << "-p or --prims is compulsory" << std::endl;
+            valid_input = false;
+        }
+
+        if (    (pcl::console::parse_argument( argc, argv, "-a", associations_path) < 0)
+             && (pcl::console::parse_argument( argc, argv, "--assoc", associations_path) < 0)
+             && (!boost::filesystem::exists(associations_path)) )
+        {
+            std::cerr << "[" << __func__ << "]: " << "-a or --assoc is compulsory" << std::endl;
+            valid_input = false;
+        }
+
         pcl::console::parse_argument( argc, argv, "--angle-limit", generatorParams.angle_limit );
+        pcl::console::parse_argument( argc, argv, "-al", generatorParams.angle_limit );
         pcl::console::parse_argument( argc, argv, "--angle-limit-div", generatorParams.angle_limit_div );
+        pcl::console::parse_argument( argc, argv, "-ald", generatorParams.angle_limit_div );
         pcl::console::parse_argument( argc, argv, "--patch-dist-limit", generatorParams.patch_dist_limit_mult ); // gets multiplied by scale
+        pcl::console::parse_argument( argc, argv, "--angle-gen", angle_gen );
+        pcl::console::parse_argument( argc, argv, "--patch-pop-limit", generatorParams.patch_population_limit );
+
+        // patchDistMode
         pcl::console::parse_argument( argc, argv, "--mode", mode_string );
         generatorParams.parsePatchDistMode( mode_string );
+        // refit
         if ( pcl::console::find_switch( argc, argv, "--patch-refit" ) )
         {
             std::cerr << "[" << __func__ << "]: " << "--patch-refit option has been DEPRECATED. exiting." << std::endl;
@@ -202,8 +227,7 @@ Solver::generateCli( int    argc
         }
         //pcl::console::parse_argument( argc, argv, "--patch-refit", patch_refit_mode_string );
         //generatorParams.parseRefitMode( patch_refit_mode_string );
-        pcl::console::parse_argument( argc, argv, "--angle-gen", angle_gen );
-        pcl::console::parse_argument( argc, argv, "--patch-pop-limit", generatorParams.patch_population_limit );
+
         // small_mode
         {
             int small_mode = 0;
@@ -213,9 +237,11 @@ Solver::generateCli( int    argc
 
         // print usage
         {
-            std::cerr << "[" << __func__ << "]: " << "Usage:\t gurobi_opt --generate \n";
+            std::cerr << "[" << __func__ << "]: " << "Usage:\t " << argv[0] << " --generate \n";
             std::cerr << "\t --cloud " << cloud_path << "\n";
-            std::cerr << "\t --scale " << generatorParams.scale      << "\n";
+            std::cerr << "\t -sc,--scale " << generatorParams.scale << "\n";
+            std::cerr << "\t -p,--prims" << input_prims_path << "\n";
+            std::cerr << "\t -a,--assoc" << associations_path << "\n";
 
             // linkage mode (full_min, full_max, squared_min, repr_min)
             std::cerr << "\t [--mode *" << generatorParams.printPatchDistMode() << "*\t";
@@ -229,12 +255,12 @@ Solver::generateCli( int    argc
 //                std::cerr << "|" << patch_refit_mode_opts[m];
 //            std::cerr << "]\n";
 
-            std::cerr << "\t [--angle-limit " << generatorParams.angle_limit << "]\n";
-            std::cerr << "\t [--angle-limit-div " << generatorParams.angle_limit_div << "]\n";
+            std::cerr << "\t [-al,--angle-limit " << generatorParams.angle_limit << "]\n";
+            std::cerr << "\t [-ald,--angle-limit-div " << generatorParams.angle_limit_div << "]\n";
             std::cerr << "\t [--patch-dist-limit " << generatorParams.patch_dist_limit_mult << "]\n";
             std::cerr << "\t [--angle-gen " << angle_gen << "]\n";
             std::cerr << "\t [--patch-pop-limit " << generatorParams.patch_population_limit << "]\n";
-            std::cerr << "\t [--small-mode " << generatorParams.small_mode << " 0: IGNORE, 1: RECEIVE_SIMILAR, 2: RECEIVE_ALL]\n";
+            std::cerr << "\t [--small-mode " << generatorParams.small_mode << "\t | 0: IGNORE, 1: RECEIVE_SIMILAR, 2: RECEIVE_ALL]\n";
             std::cerr << std::endl;
 
             if ( !valid_input || pcl::console::find_switch(argc,argv,"--help") || pcl::console::find_switch(argc,argv,"-h") )
@@ -257,18 +283,6 @@ Solver::generateCli( int    argc
     if ( EXIT_SUCCESS == err )
     {
         processing::appendAnglesFromGenerator( generatorParams.angles, angle_gen, true );
-        processing::appendAnglesFromGenerator( generatorParams.angles, angle_gen, true );
-//        generatorParams.angles = { Scalar(0) };
-//        // generate
-//        for ( Scalar angle = angle_gen; angle < M_PI; angle+= angle_gen )
-//            generatorParams.angles.push_back( angle );
-//        generatorParams.angles.push_back( M_PI );
-
-//        // print
-//        std::cout << "Desired angles: {";
-//        for ( size_t vi=0;vi!=generatorParams.angles.size();++vi)
-//            std::cout << generatorParams.angles[vi] << ((vi==generatorParams.angles.size()-1) ? "" : ", ");
-//        std::cout << "}\n";
     } //...read angles
 
     // Read points
@@ -279,47 +293,24 @@ Solver::generateCli( int    argc
         if ( err != EXIT_SUCCESS )  std::cerr << "[" << __func__ << "]: " << "readPoints returned error " << err << std::endl;
     } //...read points
 
+    std::vector<std::pair<int,int> > points_primitives;
+    io::readAssociations( points_primitives, associations_path, NULL );
+    for ( size_t i = 0; i != points.size(); ++i )
+    {
+        // store association in point
+        points[i].setTag( PointPrimitiveT::GID, points_primitives[i].first );
+    }
+
+    // read primitives
+    PrimitiveContainerT initial_primitives;
+    {
+        std::cout << "[" << __func__ << "]: " << "reading primitives from " << input_prims_path << "...";
+        io::readPrimitives<PrimitiveT, typename PrimitiveContainerT::value_type>( initial_primitives, input_prims_path );
+        std::cout << "reading primitives ok (#: " << initial_primitives.size() << ")\n";
+    } //...read primitives
+
     //_____________________WORK_______________________
     //_______________________________________________
-
-    // orientPoints
-    if ( EXIT_SUCCESS == err )
-    {
-        err = Segmentation::orientPoints<PointPrimitiveT,PrimitiveT>( points, generatorParams.scale, generatorParams.nn_K );
-        if ( err != EXIT_SUCCESS ) std::cerr << "[" << __func__ << "]: " << "orientPoints exited with error! Code: " << err << std::endl;
-    } //...orientPoints
-
-    PrimitiveContainerT initial_primitives;
-    if ( EXIT_SUCCESS == err )
-    {
-        switch ( generatorParams.patch_dist_mode )
-        {
-            case CandidateGeneratorParams<Scalar>::REPR_SQR:
-            {
-                // "representative min:" merge closest representative angles, IF smallest spatial distance between points < scale * patch_dist_limit.
-                RepresentativeSqrPatchPatchDistanceFunctorT< Scalar,SpatialPatchPatchSingleDistanceFunctorT<Scalar>
-                                                        > patchPatchDistanceFunctor( generatorParams.scale * generatorParams.patch_dist_limit_mult
-                                                                                   , generatorParams.angle_limit
-                                                                                   , generatorParams.scale
-                                                                                   , generatorParams.patch_spatial_weight );
-                err = Segmentation::patchify<PrimitiveT>( initial_primitives    // tagged lines at GID with patch_id
-                                            , points                            // filled points with directions and tagged at GID with patch_id
-                                            , generatorParams.scale
-                                            , generatorParams.angles
-                                            , patchPatchDistanceFunctor
-                                            , generatorParams.nn_K
-                                            );
-            }
-                break;
-
-            default:
-                std::cerr << "unknown patch patch distance mode!" << std::endl;
-                err = EXIT_FAILURE;
-                break;
-        }
-
-        if ( err != EXIT_SUCCESS ) std::cerr << "[" << __func__ << "]: " << "patchify exited with error! Code: " << err << std::endl;
-    }
 
     // Generate
     PrimitiveContainerT primitives;
@@ -331,10 +322,11 @@ Solver::generateCli( int    argc
         if ( err != EXIT_SUCCESS ) std::cerr << "[" << __func__ << "]: " << "generate exited with error! Code: " << err << std::endl;
     } //...generate
 
+#if 0 // these shouldn't change here
     // Save point GID tags
     if ( EXIT_SUCCESS == err )
     {
-        std::string assoc_path = boost::filesystem::path( cloud_path ).parent_path().string() + "/" + "points_primitives.txt";
+        std::string assoc_path = boost::filesystem::path( cloud_path ).parent_path().string() + "/" + "points_primitives.csv";
 
         util::saveBackup( assoc_path );
         err = io::writeAssociations<PointPrimitiveT>( points, assoc_path );
@@ -343,23 +335,30 @@ Solver::generateCli( int    argc
         else                        std::cout << "[" << __func__ << "]: " << "wrote to " << assoc_path << std::endl;
 
     } //...save Associations
+#endif
 
     // save primitives
+    std::string o_path = boost::filesystem::path( cloud_path ).parent_path().string() + "/";
     if ( EXIT_SUCCESS == err )
     {
-        std::string candidates_path = boost::filesystem::path( cloud_path ).parent_path().string() + "/" + "candidates.txt";
+        std::string output_prims_path( o_path + "candidates.csv" );
+        {
+            int iteration = 0;
+            iteration = util::parseIteration( input_prims_path ) + 1;
+            std::stringstream ss;
+            ss << o_path << "candidates_it" << iteration << ".csv";
+            output_prims_path = ss.str();
+        }
 
-        util::saveBackup( candidates_path );
-        err = io::savePrimitives<PrimitiveT,typename PrimitiveContainerT::value_type::const_iterator>( /* what: */ primitives, /* where_to: */ candidates_path );
+        util::saveBackup( output_prims_path );
+        err = io::savePrimitives<PrimitiveT,typename PrimitiveContainerT::value_type::const_iterator>( /* what: */ primitives, /* where_to: */ output_prims_path );
 
         if ( err != EXIT_SUCCESS )  std::cerr << "[" << __func__ << "]: " << "saveBackup or savePrimitive exited with error! Code: " << err << std::endl;
-        else                        std::cout << "[" << __func__ << "]: " << "wrote to " << candidates_path << std::endl;
+        else                        std::cout << "[" << __func__ << "]: " << "wrote to " << output_prims_path << std::endl;
     } //...save primitives
 
     return err;
 } // ...Solver::generate()
-
-
 
 //! \brief      Step 3. Reads a formulated problem from path and runs qcqpcpp::OptProblem::optimize() on it.
 //! \param argc Number of command line arguments.
@@ -588,7 +587,15 @@ Solver::solve( int    argc
                 if ( parent_path.empty() )  parent_path = "./";
                 else                        parent_path += "/";
 
-                std::string out_prim_path = parent_path + rel_out_path + "/primitives." + solver_str + ".txt";
+                std::string out_prim_path = parent_path + rel_out_path + "/primitives." + solver_str + ".csv";
+                {
+                    int iteration = 0;
+                    iteration = std::max(0,util::parseIteration(candidates_path) );
+                    std::stringstream ss;
+                    ss << parent_path + rel_out_path << "/primitives_it" << iteration << "." << solver_str << ".csv";
+                    out_prim_path = ss.str();
+                }
+
                 util::saveBackup    ( out_prim_path );
                 io::savePrimitives<PrimitiveT, PrimitiveContainerT::value_type::const_iterator>( out_prims, out_prim_path, /* verbose: */ true );
             } // if --candidates
@@ -612,7 +619,7 @@ Solver::datafit( int    argc
 {
     Scalar                  scale           = 0.05f;
     std::string             cloud_path      = "cloud.ply",
-                            primitives_path = "candidates.txt";
+                            primitives_path = "candidates.csv";
     Scalar                  angle_gen       = M_PI_2;
     bool                    verbose         = false;
 
@@ -903,7 +910,7 @@ Solver::datafit( int    argc
                 }
 
                 // dump associations
-                std::string f_assoc_path = params.store_path + "/" + "points_primitives.txt";
+                std::string f_assoc_path = params.store_path + "/" + "points_primitives.csv";
                 if ( !boost::filesystem::exists(f_assoc_path) )
                 {
                     ofstream f_assoc( f_assoc_path );

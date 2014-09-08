@@ -81,6 +81,21 @@ namespace segmentation {
 class Segmentation
 {
     public:
+        /*! \brief                  Step 1. Generates primitives from a cloud. Reads "cloud.ply" and saves "candidates.txt".
+         *  \param argc             Contains --cloud cloud.ply, and --scale scale.
+         *  \param argv             Contains --cloud cloud.ply, and --scale scale.
+         *  \return                 EXIT_SUCCESS.
+         *  \post                   "patches.txt" and "points_primitives.txt" on disk in "cloud.ply"'s parent path.
+         */
+        template < class _PrimitiveT
+                 , class _PrimitiveContainerT
+                 , class _PointPrimitiveT
+                 , class _PointContainerT
+                 , typename _Scalar
+                 >
+        static inline int
+        segmentCli( int argc, char** argv );
+
         //! \param[in/out] points
         //! \param[in]     scale    Fit radius
         //! \param[in]     nn_K     Nearest neighbour count to fit primitive to.
@@ -139,11 +154,10 @@ class Segmentation
          *  \param[in] gid_tag_name              The key value of GID in _PointT. Suggested to be: _PointT::GID.
          *  \param[in] nn_K                      Number of nearest neighbour points looked for.
          */
-        template < class       _PrimitiveContainerT
+        template < class       _PrimitiveT
                  , class       _PointContainerT
                  , class       _PatchPatchDistanceFunctorT
                  , class       _PatchesT
-                 , class       _PrimitiveT          = typename _PrimitiveContainerT::value_type
                  , typename    _Scalar              = typename _PrimitiveT::Scalar
                  , class       _PointT              = typename _PointContainerT::value_type
                  >

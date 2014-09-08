@@ -9,7 +9,6 @@ var searchData=
   ['simannoptproblem_2eh',['simAnnOptProblem.h',['../sim_ann_opt_problem_8h.html',1,'']]],
   ['simannoptproblem_2ehpp',['simAnnOptProblem.hpp',['../sim_ann_opt_problem_8hpp.html',1,'']]],
   ['solver_2eh',['solver.h',['../solver_8h.html',1,'']]],
-  ['starting_5fvalues_2em',['starting_values.m',['../2rects__noise__0_8003_2starting__values_8m.html',1,'']]],
   ['starting_5fvalues_2em',['starting_values.m',['../simple_2starting__values_8m.html',1,'']]],
   ['starting_5fvalues_2em',['starting_values.m',['../__rot__rects__noise__0_8015__20140711__1054_2starting__values_8m.html',1,'']]],
   ['starting_5fvalues_2em',['starting_values.m',['../__simple_2starting__values_8m.html',1,'']]],

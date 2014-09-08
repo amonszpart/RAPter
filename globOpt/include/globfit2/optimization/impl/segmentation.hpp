@@ -2,7 +2,7 @@
 #define GF2_SEGMENTATION_HPP
 
 #include "globfit2/optimization/segmentation.h"
-#include "globfit2/my_types.h"                  //PCLPointAllocator
+#include "globfit2/my_types.h"                  // PCLPointAllocator
 #include <vector>
 
 #if GF2_USE_PCL
@@ -11,6 +11,7 @@
 #endif
 
 #include "globfit2/util/containers.hpp" // add( map, gid, primitive), add( vector, gid, primitive )
+#include "globfit2/parameters.h"        // CandidateGeneratorParams
 
 namespace GF2 {
 
@@ -161,7 +162,7 @@ Segmentation::patchify( _PrimitiveContainerT                   & patches
     // (1) group
     PatchesT groups;
     {
-        regionGrow<_PrimitiveContainerT>
+        regionGrow<_PrimitiveT>
                   ( /* [in,out]  points/pointsWGIDTag: */ points
                   , /* [out]          groups_pointids: */ groups
                   , /* [in]                     scale: */ scale
@@ -175,7 +176,8 @@ Segmentation::patchify( _PrimitiveContainerT                   & patches
     for ( size_t gid = 0; gid != groups.size(); ++gid )
     {
         containers::add( patches, gid, groups[gid].getRepresentative() )
-                .setTag( _PrimitiveT::GID, gid );
+                .setTag( _PrimitiveT::GID    , gid )
+                .setTag( _PrimitiveT::DIR_GID, gid );
     }
 
     return EXIT_SUCCESS;
@@ -198,11 +200,10 @@ Segmentation::patchify( _PrimitiveContainerT                   & patches
  *  \param[in] gid_tag_name              The key value of GID in _PointT. Suggested to be: _PointT::GID.
  *  \param[in] nn_K                      Number of nearest neighbour points looked for.
  */
-template < class       _PrimitiveContainerT
+template < class       _PrimitiveT
          , class       _PointContainerT
          , class       _PatchPatchDistanceFunctorT
          , class       _PatchesT
-         , class       _PrimitiveT
          , typename    _Scalar
          , class       _PointPrimitiveT> int
 Segmentation::regionGrow( _PointContainerT                       & points
@@ -315,16 +316,187 @@ Segmentation::regionGrow( _PointContainerT                       & points
     }
 
     // copy patches to groups
-//    _PatchesT tmp_groups;                                       // local var, if output not needed
-//    _PatchesT *groups = groups_arg ? groups_arg : &tmp_groups;  // relay, if output needed
-    //(*groups).insert( (*groups).end(), patches.begin(), patches.end() );
     groups_arg.insert( groups_arg.end(), patches.begin(), patches.end() );
 
+    // assign points to patches
     _tagPointsFromGroups<_PointPrimitiveT,_Scalar>
                         ( points, groups_arg, patchPatchDistanceFunctor, gid_tag_name );
 
     return EXIT_SUCCESS;
 } // ...Segmentation::regionGrow()
+
+/*  \brief                  Step 1. Generates primitives from a cloud. Reads "cloud.ply" and saves "candidates.txt".
+ *  \param argc             Contains --cloud cloud.ply, and --scale scale.
+ *  \param argv             Contains --cloud cloud.ply, and --scale scale.
+ *  \return                 EXIT_SUCCESS.
+ *  \post                   "patches.txt" and "points_primitives.txt" on disk in "cloud.ply"'s parent path.
+ */
+template < class _PrimitiveT
+         , class _PrimitiveContainerT
+         , class _PointPrimitiveT
+         , class _PointContainerT
+         , typename _Scalar
+         >
+int
+Segmentation::segmentCli( int    argc
+                        , char** argv )
+{
+    int err = EXIT_SUCCESS;
+
+    CandidateGeneratorParams<_Scalar> generatorParams;
+    std::string                 cloud_path              = "./cloud.ply";
+    _Scalar                     angle_gen               = M_PI_2;
+    std::string                 mode_string             = "representative_sqr";
+    std::vector<std::string>    mode_opts               = { "representative_sqr" };
+
+    // parse input
+    if ( err == EXIT_SUCCESS )
+    {
+        bool valid_input = true;
+
+        // scale
+        if ( (pcl::console::parse_argument( argc, argv, "--scale", generatorParams.scale) < 0) )
+        {
+            std::cerr << "[" << __func__ << "]: " << "--scale is compulsory" << std::endl;
+            valid_input = false;
+        }
+
+        // cloud
+        if ( (pcl::console::parse_argument( argc, argv, "--cloud", cloud_path) < 0)
+             && !boost::filesystem::exists( cloud_path ) )
+        {
+            std::cerr << "[" << __func__ << "]: " << "--cloud does not exist: " << cloud_path << std::endl;
+            valid_input = false;
+        }
+
+        pcl::console::parse_argument( argc, argv, "--angle-limit", generatorParams.angle_limit );
+        pcl::console::parse_argument( argc, argv, "--patch-dist-limit", generatorParams.patch_dist_limit_mult ); // gets multiplied by scale
+        pcl::console::parse_argument( argc, argv, "--mode", mode_string );
+        generatorParams.parsePatchDistMode( mode_string );
+
+        if ( pcl::console::find_switch( argc, argv, "--patch-refit" ) )
+        {
+            std::cerr << "[" << __func__ << "]: " << "--patch-refit option has been DEPRECATED. exiting." << std::endl;
+            return EXIT_FAILURE;
+        }
+        pcl::console::parse_argument( argc, argv, "--angle-gen", angle_gen );
+
+        // print usage
+        {
+            std::cerr << "[" << __func__ << "]: " << "Usage:\t " << argv[0] << " --segment \n";
+            std::cerr << "\t --cloud " << cloud_path << "\n";
+            std::cerr << "\t --scale " << generatorParams.scale      << "\n";
+
+            // linkage mode (full_min, full_max, squared_min, repr_min)
+            std::cerr << "\t [--mode *" << generatorParams.printPatchDistMode() << "*\t";
+            for ( size_t m = 0; m != mode_opts.size(); ++m )
+                std::cerr << "|" << mode_opts[m];
+            std::cerr << "]\n";
+
+            std::cerr << "\t [--angle-limit " << generatorParams.angle_limit << "]\n";
+            std::cerr << "\t [--patch-dist-limit " << generatorParams.patch_dist_limit_mult << "]\n";
+            std::cerr << "\t [--angle-gen " << angle_gen << "]\n";
+            std::cerr << std::endl;
+
+            if ( !valid_input || pcl::console::find_switch(argc,argv,"--help") || pcl::console::find_switch(argc,argv,"-h") )
+                return EXIT_FAILURE;
+        }
+
+        if ( boost::filesystem::is_directory(cloud_path) )
+        {
+            cloud_path += "/cloud.ply";
+        }
+
+        if ( !boost::filesystem::exists(cloud_path) )
+        {
+            std::cerr << "[" << __func__ << "]: " << "cloud file does not exist! " << cloud_path << std::endl;
+            return EXIT_FAILURE;
+        }
+    } // ... parse input
+
+    // Read desired angles
+    if ( EXIT_SUCCESS == err )
+    {
+        processing::appendAnglesFromGenerator( generatorParams.angles, angle_gen, true );
+    } //...read angles
+
+    // Read points
+    _PointContainerT points;
+    if ( EXIT_SUCCESS == err )
+    {
+        err = io::readPoints<_PointPrimitiveT>( points, cloud_path );
+        if ( err != EXIT_SUCCESS )  std::cerr << "[" << __func__ << "]: " << "readPoints returned error " << err << std::endl;
+    } //...read points
+
+    //_____________________WORK_______________________
+    //_______________________________________________
+
+    // orientPoints
+    if ( EXIT_SUCCESS == err )
+    {
+        err = Segmentation::orientPoints<_PointPrimitiveT,_PrimitiveT>( points, generatorParams.scale, generatorParams.nn_K );
+        if ( err != EXIT_SUCCESS ) std::cerr << "[" << __func__ << "]: " << "orientPoints exited with error! Code: " << err << std::endl;
+    } //...orientPoints
+
+    _PrimitiveContainerT initial_primitives;
+    if ( EXIT_SUCCESS == err )
+    {
+        switch ( generatorParams.patch_dist_mode )
+        {
+            case CandidateGeneratorParams<_Scalar>::REPR_SQR:
+            {
+                // "representative min:" merge closest representative angles, IF smallest spatial distance between points < scale * patch_dist_limit.
+                RepresentativeSqrPatchPatchDistanceFunctorT< _Scalar,SpatialPatchPatchSingleDistanceFunctorT<_Scalar>
+                                                        > patchPatchDistanceFunctor( generatorParams.scale * generatorParams.patch_dist_limit_mult
+                                                                                   , generatorParams.angle_limit
+                                                                                   , generatorParams.scale
+                                                                                   , generatorParams.patch_spatial_weight );
+                err = Segmentation::patchify<_PrimitiveT>( initial_primitives    // tagged lines at GID with patch_id
+                                            , points                            // filled points with directions and tagged at GID with patch_id
+                                            , generatorParams.scale
+                                            , generatorParams.angles
+                                            , patchPatchDistanceFunctor
+                                            , generatorParams.nn_K
+                                            );
+            }
+                break;
+
+            default:
+                std::cerr << "unknown patch patch distance mode!" << std::endl;
+                err = EXIT_FAILURE;
+                break;
+        }
+
+        if ( err != EXIT_SUCCESS ) std::cerr << "[" << __func__ << "]: " << "patchify exited with error! Code: " << err << std::endl;
+    }
+
+    // Save point GID tags
+    if ( EXIT_SUCCESS == err )
+    {
+        std::string assoc_path = boost::filesystem::path( cloud_path ).parent_path().string() + "/" + "points_primitives.csv";
+
+        util::saveBackup( assoc_path );
+        err = io::writeAssociations<_PointPrimitiveT>( points, assoc_path );
+
+        if ( err != EXIT_SUCCESS )  std::cerr << "[" << __func__ << "]: " << "saveBackup or writeAssociations exited with error! Code: " << err << std::endl;
+        else                        std::cout << "[" << __func__ << "]: " << "wrote to " << assoc_path << std::endl;
+
+    } //...save Associations
+
+    // save primitives
+    if ( EXIT_SUCCESS == err )
+    {
+        std::string candidates_path = boost::filesystem::path( cloud_path ).parent_path().string() + "/" + "patches.csv";
+
+        util::saveBackup( candidates_path );
+        err = io::savePrimitives<_PrimitiveT,typename _PrimitiveContainerT::value_type::const_iterator>( /* what: */ initial_primitives, /* where_to: */ candidates_path );
+
+        if ( err != EXIT_SUCCESS )  std::cerr << "[" << __func__ << "]: " << "saveBackup or savePrimitive exited with error! Code: " << err << std::endl;
+        else                        std::cout << "[" << __func__ << "]: " << "wrote to " << candidates_path << std::endl;
+    } //...save primitives
+
+    return err;
+} // ...Segmentation::segmentCli()
 
 template < class    _PointPrimitiveT
          , typename _Scalar

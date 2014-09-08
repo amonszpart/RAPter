@@ -49,27 +49,32 @@ lines::showLinesCli( int argc, char** argv )
     {
         std::cout << "[" << __func__ << "]: " << "Usage: gurobi_opt --show\n"
                   << "\t--dir \tthe directory containing the files to display\n"
-                  << "\t--prims \tthe primitives file name in \"dir\"\n"
+                  << "\t-p,--prims \tthe primitives file name in \"dir\"\n"
                   << "\t--cloud \tthe cloud file name in \"dir\"\n"
                   << "\t[--scale \talgorithm parameter]\n"
-                  << "\t[--assoc \tpoint to line associations]\n"
+                  << "\t[-a,--assoc \tpoint to line associations]\n"
                   << "\t[--no-rel \tdon't show perfect relationships as gray lines]\n"
                   << "\t[--use-tags \tuse associations to create line segments]\n"
-                  << "\t[--ids \tshow point GID-s and line GIDs]"
-                  << "\t[--no-clusters \tdon't show the \"ellipses\"]"
+                  << "\t[--ids \tshow point GID-s and line GIDs]\n"
+                  << "\t[--no-clusters \tdon't show the \"ellipses\"]\n"
+                  << "\t[--pop-limit \tpoplation limit for small patches]"
                   << std::endl;
         return EXIT_SUCCESS;
     }
-    std::string dir;
+
+    int pop_limit = 10;
+    pcl::console::parse_argument( argc, argv, "--pop-limit", pop_limit );
+
+    std::string dir = ".";
     if ( pcl::console::parse_argument( argc, argv, "--dir", dir) < 0 )
     {
-        std::cerr << "[" << __func__ << "]: " << "no directory specified by --dir ...exiting" << std::endl;
-        return EXIT_FAILURE;
+        std::cerr << "[" << __func__ << "]: " << "no directory specified by --dir ...assuming local \".\"" << std::endl;
+        //return EXIT_FAILURE;
     }
     int err = EXIT_SUCCESS;
 
     std::string primitives_file;
-    if ( pcl::console::parse_argument( argc, argv, "--prims", primitives_file) < 0 )
+    if ( (pcl::console::parse_argument( argc, argv, "--prims", primitives_file) < 0) && (pcl::console::parse_argument( argc, argv, "-p", primitives_file) < 0) )
     {
         std::cerr << "[" << __func__ << "]: " << "no primitive file specified by --prims ...exiting" << std::endl;
         return EXIT_FAILURE;
@@ -100,7 +105,7 @@ lines::showLinesCli( int argc, char** argv )
     // parse associations
 
     std::string assoc_file;
-    if ( pcl::console::parse_argument(argc,argv,"--assoc",assoc_file) > 0 )
+    if ( (pcl::console::parse_argument(argc,argv,"--assoc",assoc_file) > 0) || (pcl::console::parse_argument(argc,argv,"-a",assoc_file) > 0) )
     {
         std::vector<std::pair<int,int> > points_primitives;
         std::map<int,int>                linear_indices; // <pid,lid>
@@ -131,18 +136,21 @@ lines::showLinesCli( int argc, char** argv )
         use_tags += (char)pcl::console::find_switch( argc, argv, "--no-clusters" );
 
     Scalar scale = 0.1;
-    pcl::console::parse_argument( argc, argv, "--scale", scale );
+    pcl::console::parse_argument(argc, argv, "--scale", scale);
 
     bool dont_show_rels = pcl::console::find_switch( argc, argv, "--no-rel" );
     bool show_ids       = pcl::console::find_switch( argc, argv, "--ids" );
 
-    GF2::Visualizer<PrimitiveContainerT,PointContainerT>::show<Scalar>( lines, points, scale
-                                                                        , (Eigen::Vector3f() << 1,0,0).finished()
-                                                                        , /*        spin: */ true
-                                                                        , /* connections: */ dont_show_rels ? NULL : &angles
-                                                                        , /*    show_ids: */ show_ids
-                                                                        , /*    use_tags: */ use_tags
-                                                                        );
+    GF2::Visualizer<PrimitiveContainerT,PointContainerT>::show<Scalar>( lines
+                                                                      , points
+                                                                      , scale
+                                                                      , (Eigen::Vector3f() << 1,0,0).finished()
+                                                                      , /*        spin: */ true
+                                                                      , /* connections: */ dont_show_rels ? NULL : &angles
+                                                                      , /*    show_ids: */ show_ids
+                                                                      , /*    use_tags: */ use_tags
+                                                                      , /*   pop-limit: */ pop_limit
+                                                                      );
     return EXIT_SUCCESS;
 } // ... Solver::show()
 

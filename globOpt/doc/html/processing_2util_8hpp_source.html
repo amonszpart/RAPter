@@ -145,59 +145,41 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00071"></a><span class="lineno"><a class="line" href="namespace_g_f2_1_1processing.html#a58cba102f9c9b0bcc70da6250e3ced17">   71</a></span>&#160;        <a class="code" href="namespace_g_f2_1_1processing.html#a58cba102f9c9b0bcc70da6250e3ced17">appendAnglesFromGenerator</a>( _AnglesContainerT &amp;angles, _Scalar &amp;angle_gen, <span class="keywordtype">char</span> verbose = <span class="keyword">true</span> )</div>
 <div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;        {</div>
 <div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;            std::set&lt;_Scalar&gt; angles_set;</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;            <span class="comment">//angles_set.insert( )</span></div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;            <span class="keywordflow">if</span> ( <a class="code" href="lp_8m.html#a7fea6220f744ddc6392dbce4b6090493">std::find</a>(angles.begin(), angles.end(), _Scalar(0)) != angles.end() )</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;            {</div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;                <span class="comment">// log</span></div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;                <span class="keywordflow">if</span> ( verbose )</div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;                {</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;                    std::cout &lt;&lt; <span class="stringliteral">&quot;[&quot;</span> &lt;&lt; __func__ &lt;&lt; <span class="stringliteral">&quot;]: &quot;</span> &lt;&lt; <span class="stringliteral">&quot;adding 0 to &quot;</span>;</div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;                    <span class="keywordflow">for</span>(<span class="keywordtype">size_t</span> <a class="code" href="read__ply_8m.html#ac3bb6f719742fd1e5768d6d1361cfb49">vi</a>=0;<a class="code" href="read__ply_8m.html#ac3bb6f719742fd1e5768d6d1361cfb49">vi</a>!=angles.size();++<a class="code" href="read__ply_8m.html#ac3bb6f719742fd1e5768d6d1361cfb49">vi</a>)</div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;                        std::cout &lt;&lt; angles[<a class="code" href="read__ply_8m.html#ac3bb6f719742fd1e5768d6d1361cfb49">vi</a>] &lt;&lt; ((<a class="code" href="read__ply_8m.html#ac3bb6f719742fd1e5768d6d1361cfb49">vi</a>==angles.size()-1) ? <span class="stringliteral">&quot;&quot;</span> : <span class="stringliteral">&quot;, &quot;</span>);</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;                    std::cout &lt;&lt; <span class="stringliteral">&quot;\n&quot;</span>;</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;                }</div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;</div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;                angles.push_back( _Scalar(0) );</div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;            }</div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;</div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;            <span class="comment">// generate</span></div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;            <span class="keywordflow">for</span> ( _Scalar angle = angle_gen; angle &lt; M_PI; angle+= angle_gen )</div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;                angles.push_back( angle );</div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;</div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;            <span class="keywordflow">if</span> ( <a class="code" href="lp_8m.html#a7fea6220f744ddc6392dbce4b6090493">std::find</a>(angles.begin(), angles.end(), _Scalar(M_PI)) != angles.end() )</div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;            {</div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;                <span class="comment">// log</span></div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;                <span class="keywordflow">if</span> ( verbose )</div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;                {</div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;                    std::cout &lt;&lt; <span class="stringliteral">&quot;[&quot;</span> &lt;&lt; __func__ &lt;&lt; <span class="stringliteral">&quot;]: &quot;</span> &lt;&lt; <span class="stringliteral">&quot;adding &quot;</span> &lt;&lt; M_PI &lt;&lt; <span class="stringliteral">&quot; to &quot;</span>;</div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;                    <span class="keywordflow">for</span> ( <span class="keywordtype">size_t</span> <a class="code" href="read__ply_8m.html#ac3bb6f719742fd1e5768d6d1361cfb49">vi</a>=0;<a class="code" href="read__ply_8m.html#ac3bb6f719742fd1e5768d6d1361cfb49">vi</a>!=angles.size();++<a class="code" href="read__ply_8m.html#ac3bb6f719742fd1e5768d6d1361cfb49">vi</a>)</div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;                        std::cout &lt;&lt; angles[<a class="code" href="read__ply_8m.html#ac3bb6f719742fd1e5768d6d1361cfb49">vi</a>] &lt;&lt; ((<a class="code" href="read__ply_8m.html#ac3bb6f719742fd1e5768d6d1361cfb49">vi</a>==angles.size()-1) ? <span class="stringliteral">&quot;&quot;</span> : <span class="stringliteral">&quot;, &quot;</span>);</div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;                    std::cout &lt;&lt; <span class="stringliteral">&quot;\n&quot;</span>;</div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;                }</div>
-<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;</div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;                angles.push_back( _Scalar(M_PI) );</div>
-<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;            }</div>
-<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;</div>
-<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;            <span class="comment">// print</span></div>
-<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;            <span class="keywordflow">if</span> ( verbose )</div>
-<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;            {</div>
-<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;                std::cout &lt;&lt; <span class="stringliteral">&quot;Desired angles: {&quot;</span>;</div>
-<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;                <span class="keywordflow">for</span> ( <span class="keywordtype">size_t</span> <a class="code" href="read__ply_8m.html#ac3bb6f719742fd1e5768d6d1361cfb49">vi</a>=0;<a class="code" href="read__ply_8m.html#ac3bb6f719742fd1e5768d6d1361cfb49">vi</a>!=angles.size();++<a class="code" href="read__ply_8m.html#ac3bb6f719742fd1e5768d6d1361cfb49">vi</a>)</div>
-<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;                    std::cout &lt;&lt; angles[<a class="code" href="read__ply_8m.html#ac3bb6f719742fd1e5768d6d1361cfb49">vi</a>] &lt;&lt; ((<a class="code" href="read__ply_8m.html#ac3bb6f719742fd1e5768d6d1361cfb49">vi</a>==angles.size()-1) ? <span class="stringliteral">&quot;&quot;</span> : <span class="stringliteral">&quot;, &quot;</span>);</div>
-<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;                std::cout &lt;&lt; <span class="stringliteral">&quot;}\n&quot;</span>;</div>
-<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;            }</div>
-<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;</div>
-<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;            <span class="keywordflow">return</span> EXIT_SUCCESS;</div>
-<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;        } <span class="comment">//...appendAnglesFromGenerator()</span></div>
-<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;</div>
-<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;    } <span class="comment">//...ns processing</span></div>
-<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;} <span class="comment">//...ns GF2</span></div>
-<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;</div>
-<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;<span class="preprocessor">#endif // GF2_PROC_UTIL_HPP</span></div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;            <span class="comment">// copy</span></div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;            angles_set.insert( angles.begin(), angles.end() );</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;            <span class="comment">// insert 0 element</span></div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;            angles_set.insert( _Scalar(0) );</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;            <span class="comment">// generate</span></div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;            <span class="keywordflow">for</span> ( _Scalar angle = angle_gen; angle &lt; M_PI; angle+= angle_gen )</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;                angles_set.insert( angle );</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;            <span class="comment">// insert 0 element</span></div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;            angles_set.insert( _Scalar(M_PI) );</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;            angles.resize( angles_set.size() );</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;            std::copy( angles_set.begin(), angles_set.end(), angles.begin() );</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;            <span class="comment">// print</span></div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;            <span class="keywordflow">if</span> ( verbose )</div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;            {</div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;                std::cout &lt;&lt; <span class="stringliteral">&quot;Desired angles: {&quot;</span>;</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;                <span class="keywordflow">for</span> ( <span class="keywordtype">size_t</span> <a class="code" href="read__ply_8m.html#ac3bb6f719742fd1e5768d6d1361cfb49">vi</a>=0;<a class="code" href="read__ply_8m.html#ac3bb6f719742fd1e5768d6d1361cfb49">vi</a>!=angles.size();++<a class="code" href="read__ply_8m.html#ac3bb6f719742fd1e5768d6d1361cfb49">vi</a>)</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;                    std::cout &lt;&lt; angles[<a class="code" href="read__ply_8m.html#ac3bb6f719742fd1e5768d6d1361cfb49">vi</a>] &lt;&lt; ((<a class="code" href="read__ply_8m.html#ac3bb6f719742fd1e5768d6d1361cfb49">vi</a>==angles.size()-1) ? <span class="stringliteral">&quot;&quot;</span> : <span class="stringliteral">&quot;, &quot;</span>);</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;                std::cout &lt;&lt; <span class="stringliteral">&quot;}\n&quot;</span>;</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;            }</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;            <span class="keywordflow">return</span> EXIT_SUCCESS;</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;        } <span class="comment">//...appendAnglesFromGenerator()</span></div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;    } <span class="comment">//...ns processing</span></div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;} <span class="comment">//...ns GF2</span></div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;<span class="preprocessor">#endif // GF2_PROC_UTIL_HPP</span></div>
 <div class="ttc" id="my__ply__read_8m_html_ab6eb9cb199df2a09b72fbc4375c0c335"><div class="ttname"><a href="my__ply__read_8m.html#ab6eb9cb199df2a09b72fbc4375c0c335">pid</a></div><div class="ttdeci">pid</div><div class="ttdef"><b>Definition:</b> <a href="my__ply__read_8m_source.html#l00011">my_ply_read.m:11</a></div></div>
 <div class="ttc" id="namespace_g_f2_1_1processing_html_a6876e4311dec7c5e71f60f6cea83445d"><div class="ttname"><a href="namespace_g_f2_1_1processing.html#a6876e4311dec7c5e71f60f6cea83445d">GF2::processing::getPopulations</a></div><div class="ttdeci">int getPopulations(_GidIntSetMap &amp;populations, _PointContainerT const &amp;points)</div><div class="ttdoc">Calculate the number of points that are assigned to a GID (group id). </div><div class="ttdef"><b>Definition:</b> <a href="processing_2util_8hpp_source.html#l00049">util.hpp:49</a></div></div>
 <div class="ttc" id="namespace_g_f2_html_a5425a2968b615a577990da18e1f9eaf5"><div class="ttname"><a href="namespace_g_f2.html#a5425a2968b615a577990da18e1f9eaf5">GF2::PidSet</a></div><div class="ttdeci">std::set&lt; int &gt; PidSet</div><div class="ttdef"><b>Definition:</b> <a href="processing_2util_8hpp_source.html#l00013">util.hpp:13</a></div></div>
-<div class="ttc" id="lp_8m_html_a7fea6220f744ddc6392dbce4b6090493"><div class="ttname"><a href="lp_8m.html#a7fea6220f744ddc6392dbce4b6090493">find</a></div><div class="ttdeci">end end find(chosen==1) sum(chosen) return</div></div>
 <div class="ttc" id="namespace_g_f2_1_1processing_html_a58cba102f9c9b0bcc70da6250e3ced17"><div class="ttname"><a href="namespace_g_f2_1_1processing.html#a58cba102f9c9b0bcc70da6250e3ced17">GF2::processing::appendAnglesFromGenerator</a></div><div class="ttdeci">int appendAnglesFromGenerator(_AnglesContainerT &amp;angles, _Scalar &amp;angle_gen, char verbose=true)</div><div class="ttdoc">Adds angles from generator to in/out vector angles. </div><div class="ttdef"><b>Definition:</b> <a href="processing_2util_8hpp_source.html#l00071">util.hpp:71</a></div></div>
 <div class="ttc" id="globfit_8m_html_ab9a89211ecb71d18bbd259853fda1c54"><div class="ttname"><a href="globfit_8m.html#ab9a89211ecb71d18bbd259853fda1c54">points</a></div><div class="ttdeci">points</div><div class="ttdef"><b>Definition:</b> <a href="globfit_8m_source.html#l00007">globfit.m:7</a></div></div>
 <div class="ttc" id="namespace_g_f2_html_a2e8b80dc19219b3a3364dfd852fa5d0b"><div class="ttname"><a href="namespace_g_f2.html#a2e8b80dc19219b3a3364dfd852fa5d0b">GF2::GidIntMap</a></div><div class="ttdeci">std::map&lt; int, int &gt; GidIntMap</div><div class="ttdef"><b>Definition:</b> <a href="processing_2util_8hpp_source.html#l00012">util.hpp:12</a></div></div>
@@ -211,7 +193,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Sep 5 2014 16:31:26 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Sep 8 2014 11:09:05 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>
