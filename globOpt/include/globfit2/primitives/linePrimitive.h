@@ -127,25 +127,26 @@ namespace GF2
                 }
 
 
+                // select min-max inliier from projected cloud
                 _Scalar min_dist = 0.f, max_dist = 0.f;
                 int     min_id   = 0  , max_id   = 0;
-                Vec3 p0       = on_line_cloud[0];
-                Vec3 line_dir = this->dir();
+                Vec3    p0       = on_line_cloud[0];
+                Vec3    line_dir = this->dir();
 
                 for ( size_t point_id = 1; point_id != on_line_cloud.size(); ++point_id )
                 {
-                    Vec3 p1 = on_line_cloud[ point_id ];
-                    Vec3 p0p1 = p1-p0;
-                    float dist = p0p1.dot( p0 + line_dir );
+                    Vec3 const& p1   = on_line_cloud[ point_id ];
+                    Vec3        p0p1 = p1-p0;
+                    float       dist = p0p1.dot( p0 + line_dir );
                     if ( dist < min_dist )
                     {
                         min_dist = dist;
-                        min_id = point_id;
+                        min_id   = point_id;
                     }
                     else if ( dist > max_dist )
                     {
                         max_dist = dist;
-                        max_id = point_id;
+                        max_id   = point_id;
                     }
                 }
 
@@ -257,57 +258,6 @@ namespace GF2
                 return err;
             }
 #endif // GF2_USE_PCL
-#if 0
-            // ____________________DEPRECATED____________________
-            //! \deprecated Decides, if two lines are different up to a position and and an angle threshold.
-            static bool
-            different( LinePrimitive const& me, LinePrimitive const& other, Scalar pos_diff, Scalar ang_diff )
-            {
-                // pos
-                if ( (me.pos() - other.pos()).norm() > pos_diff ) return true;
-
-                // angle
-                Scalar angle = acos( me.dir().dot(other.dir()) ); if ( angle != angle ) angle = static_cast<Scalar>(0);
-                return ( angle > ang_diff );
-            } //...different()
-
-
-            static Scalar
-            distanceToPoint( Eigen::Matrix<Scalar,Dim,1> line, Eigen::Matrix<Scalar,4,1> point, bool squared = false )
-            {
-                  // Obtain the line point and direction
-                  Eigen::Matrix<Scalar,4,1> line_pt ( line[0], line[1], line[2], 0 );
-                  Eigen::Matrix<Scalar,4,1> line_dir( line[3], line[4], line[5], 0 );
-                  line_dir.normalize ();
-
-                  // Calculate the distance from the point to the line
-                  // D = ||(P2-P1) x (P1-P0)|| / ||P2-P1|| = norm (cross (p2-p1, p2-p0)) / norm(p2-p1)
-                  // Need to estimate sqrt here to keep MSAC and friends general
-                  if ( squared )    return (line_pt - point).cross3(line_dir).squaredNorm();
-                  else              return (line_pt - point).cross3(line_dir).norm();
-            } //...distanceToPoint()
-
-            inline Scalar distanceToPoint( Eigen::Matrix<Scalar,4,1> const& point, bool squared = false ) const { return distanceToPoint( _coeffs,   point, squared ); }
-
-            static inline Scalar
-            point3Distance( Eigen::Matrix<Scalar,3,1> const& point, Eigen::Matrix<Scalar,-1,1> const& line )
-            {
-                return (line.template head<3>() - point).cross( line.template segment<3>(3) ).norm();
-            }
-
-            static inline Scalar
-            point4Distance( Eigen::Matrix<Scalar,4,1> const& point, Eigen::Matrix<Scalar,-1,1> const& line )
-            {
-                  // Calculate the distance from the point to the line
-                  // D = ||(P2-P1) x (P1-P0)|| / ||P2-P1|| = norm (cross (p2-p1, p2-p0)) / norm(p2-p1)
-                  return (line.template head<3>() - point.head<3>()).cross(line.template segment<3>(3)).norm();
-            }
-
-            // non-static relays
-            inline Scalar point3Distance ( Eigen::Matrix<Scalar,3,1> const& point                       ) const { return point3Distance (   point, _coeffs          ); }
-            inline Scalar point4Distance ( Eigen::Matrix<Scalar,4,1> const& point                       ) const { return point4Distance (   point, _coeffs          ); }
-#endif
-
 
     }; // LinePrimitive
 
