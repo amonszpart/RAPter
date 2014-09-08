@@ -14,7 +14,7 @@ var searchData=
   ['recalculate',['recalculate',['../classam_1_1kmeans_1_1_point_primitive.html#a07c37c5e00b1ace2a03067dabdf30987',1,'am::kmeans::PointPrimitive::recalculate()'],['../classam_1_1kmeans_1_1_primitive.html#a5a7dffe725dae187bfcef8c301415e4f',1,'am::kmeans::Primitive::recalculate()']]],
   ['receive_5fall',['RECEIVE_ALL',['../struct_g_f2_1_1_candidate_generator_params.html#a36f15dcec7f6f8c16de9faad9c147715a99ee37c769e5977746d60dcf4affea88',1,'GF2::CandidateGeneratorParams']]],
   ['receive_5fsimilar',['RECEIVE_SIMILAR',['../struct_g_f2_1_1_candidate_generator_params.html#a36f15dcec7f6f8c16de9faad9c147715ae311549031f6544561197029600b863e',1,'GF2::CandidateGeneratorParams']]],
-  ['regiongrow',['regionGrow',['../class_g_f2_1_1_segmentation.html#a412e46ffae6efb8e08c71a19e6ce8694',1,'GF2::Segmentation']]],
+  ['regiongrow',['regionGrow',['../class_g_f2_1_1_segmentation.html#abd83c460861845398b5e145fc3fd505e',1,'GF2::Segmentation']]],
   ['report',['report',['../classam_1_1_sim_ann_opt_problem.html#a51c188af55db7cb8cc13fd7dad4d3424',1,'am::SimAnnOptProblem']]],
   ['repr_5fsqr',['REPR_SQR',['../struct_g_f2_1_1_candidate_generator_params.html#ad77f8dcaded6acd49862ecaf81be83f8adc031901eac4a91172d2234cf2234215',1,'GF2::CandidateGeneratorParams']]],
   ['representativesqrpatchpatchdistancefunctort',['RepresentativeSqrPatchPatchDistanceFunctorT',['../struct_g_f2_1_1_representative_sqr_patch_patch_distance_functor_t.html',1,'GF2']]],

@@ -102,7 +102,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>Collection of parameters the <a class="el" href="class_g_f2_1_1_problem_setup.html#ac0b593cf6470b65e3e6a0d680ad79ff9">ProblemSetup::formulate</a> needs.  
+<p>Collection of parameters the <a class="el" href="class_g_f2_1_1_problem_setup.html#a8a537f87ba3ab66d84e15a04e69ef43d">ProblemSetup::formulate</a> needs.  
  <a href="struct_g_f2_1_1_problem_setup_params.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="parameters_8h_source.html">parameters.h</a>&gt;</code></p>
@@ -142,6 +142,9 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:a56cfb8c77632a2bfd5c2a67049ec1ee3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="struct_g_f2_1_1_problem_setup_params.html#a29f561b77c951dc2e6dc14bbadd81c2b">DATA_COST_MODE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_problem_setup_params.html#a56cfb8c77632a2bfd5c2a67049ec1ee3">data_cost_mode</a> = <a class="el" href="struct_g_f2_1_1_problem_setup_params.html#a29f561b77c951dc2e6dc14bbadd81c2ba66b2408351195ebf4702a12a37e3fc96">ASSOC_BASED</a></td></tr>
 <tr class="memdesc:a56cfb8c77632a2bfd5c2a67049ec1ee3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Options to calculate data cost of primitive by.  <a href="#a56cfb8c77632a2bfd5c2a67049ec1ee3">More...</a><br/></td></tr>
 <tr class="separator:a56cfb8c77632a2bfd5c2a67049ec1ee3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a73aa7a3ffdde0b17767e9b7ff0feab53"><td class="memItemLeft" align="right" valign="top">_Scalar&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_problem_setup_params.html#a73aa7a3ffdde0b17767e9b7ff0feab53">dir_id_bias</a> = _Scalar( 0. )</td></tr>
+<tr class="memdesc:a73aa7a3ffdde0b17767e9b7ff0feab53"><td class="mdescLeft">&#160;</td><td class="mdescRight">Added to pairwise cost, if direction ids don't match.  <a href="#a73aa7a3ffdde0b17767e9b7ff0feab53">More...</a><br/></td></tr>
+<tr class="separator:a73aa7a3ffdde0b17767e9b7ff0feab53"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_attribs_struct_g_f2_1_1_common_params"><td colspan="2" onclick="javascript:toggleInherit('pub_attribs_struct_g_f2_1_1_common_params')"><img src="closed.png" alt="-"/>&#160;Public Attributes inherited from <a class="el" href="struct_g_f2_1_1_common_params.html">GF2::CommonParams&lt; _Scalar &gt;</a></td></tr>
 <tr class="memitem:a414729020b67204b42ca6ab1ad32aa5d inherit pub_attribs_struct_g_f2_1_1_common_params"><td class="memItemLeft" align="right" valign="top">_Scalar&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_common_params.html#a414729020b67204b42ca6ab1ad32aa5d">scale</a> = 0.05</td></tr>
 <tr class="memdesc:a414729020b67204b42ca6ab1ad32aa5d inherit pub_attribs_struct_g_f2_1_1_common_params"><td class="mdescLeft">&#160;</td><td class="mdescRight">Scale parameter of input.  <a href="#a414729020b67204b42ca6ab1ad32aa5d">More...</a><br/></td></tr>
@@ -151,9 +154,9 @@ Public Attributes</h2></td></tr>
 <tr class="separator:aab94199958a72779c5067ef29b406ee9 inherit pub_attribs_struct_g_f2_1_1_common_params"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa92313337cd21986a6086eb08c06cbd2 inherit pub_attribs_struct_g_f2_1_1_common_params"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_common_params.html#aa92313337cd21986a6086eb08c06cbd2">patch_population_limit</a> = 5</td></tr>
 <tr class="memdesc:aa92313337cd21986a6086eb08c06cbd2 inherit pub_attribs_struct_g_f2_1_1_common_params"><td class="mdescLeft">&#160;</td><td class="mdescRight">Point-count threshold, that decides if a patch is big or small. (small: #points &lt; patch_pop_limit, large: #points &gt;= patch_pop_limit). <br/>
- Used in <a class="el" href="class_g_f2_1_1_candidate_generator.html#abc056da8bccd683fc95fa64446e1e9d8">CandidateGenerator::generate()</a>, <a class="el" href="class_g_f2_1_1_problem_setup.html#ac0b593cf6470b65e3e6a0d680ad79ff9">ProblemSetup::formulate()</a>, <a class="el" href="namespace_g_f2_1_1problem_setup.html#a1b8fa7d0f5ce7e0627ba0c0aeac33c74">problemSetup::largePatchesNeedDirectionConstraint()</a>. <br/>
+ Used in <a class="el" href="class_g_f2_1_1_candidate_generator.html#abc056da8bccd683fc95fa64446e1e9d8">CandidateGenerator::generate()</a>, <a class="el" href="class_g_f2_1_1_problem_setup.html#a8a537f87ba3ab66d84e15a04e69ef43d">ProblemSetup::formulate()</a>, <a class="el" href="namespace_g_f2_1_1problem_setup.html#a1b8fa7d0f5ce7e0627ba0c0aeac33c74">problemSetup::largePatchesNeedDirectionConstraint()</a>. <br/>
  In <a class="el" href="class_g_f2_1_1_candidate_generator.html#abc056da8bccd683fc95fa64446e1e9d8">CandidateGenerator::generate()</a> decides, when a patch can distribute its directions. <br/>
- In <a class="el" href="class_g_f2_1_1_problem_setup.html#ac0b593cf6470b65e3e6a0d680ad79ff9">ProblemSetup::formulate()</a> decides, which constraint is to be used in <a class="el" href="namespace_g_f2_1_1problem_setup.html#a1b8fa7d0f5ce7e0627ba0c0aeac33c74">problemSetup::largePatchesNeedDirectionConstraint()</a>.  <a href="#aa92313337cd21986a6086eb08c06cbd2">More...</a><br/></td></tr>
+ In <a class="el" href="class_g_f2_1_1_problem_setup.html#a8a537f87ba3ab66d84e15a04e69ef43d">ProblemSetup::formulate()</a> decides, which constraint is to be used in <a class="el" href="namespace_g_f2_1_1problem_setup.html#a1b8fa7d0f5ce7e0627ba0c0aeac33c74">problemSetup::largePatchesNeedDirectionConstraint()</a>.  <a href="#aa92313337cd21986a6086eb08c06cbd2">More...</a><br/></td></tr>
 <tr class="separator:aa92313337cd21986a6086eb08c06cbd2 inherit pub_attribs_struct_g_f2_1_1_common_params"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5b765b056d979f766cf933a9bd4b981d inherit pub_attribs_struct_g_f2_1_1_common_params"><td class="memItemLeft" align="right" valign="top">_Scalar&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_g_f2_1_1_common_params.html#a5b765b056d979f766cf933a9bd4b981d">parallel_limit</a> = _Scalar(1e-6)</td></tr>
 <tr class="memdesc:a5b765b056d979f766cf933a9bd4b981d inherit pub_attribs_struct_g_f2_1_1_common_params"><td class="mdescLeft">&#160;</td><td class="mdescRight">Two lines are parallel, if their angle is smaller than this. Used in <a class="el" href="class_g_f2_1_1_merging.html#a5e3f8e461538f9842412f7597de9c699">Merging::mergeSameDirGids()</a> and visualization.  <a href="#a5b765b056d979f766cf933a9bd4b981d">More...</a><br/></td></tr>
@@ -163,7 +166,7 @@ Public Attributes</h2></td></tr>
 <div class="textblock"><h3>template&lt;typename _Scalar&gt;<br/>
 struct GF2::ProblemSetupParams&lt; _Scalar &gt;</h3>
 
-<p>Collection of parameters the <a class="el" href="class_g_f2_1_1_problem_setup.html#ac0b593cf6470b65e3e6a0d680ad79ff9">ProblemSetup::formulate</a> needs. </p>
+<p>Collection of parameters the <a class="el" href="class_g_f2_1_1_problem_setup.html#a8a537f87ba3ab66d84e15a04e69ef43d">ProblemSetup::formulate</a> needs. </p>
 
 <p>Definition at line <a class="el" href="parameters_8h_source.html#l00187">187</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
 </div><h2 class="groupheader">Member Enumeration Documentation</h2>
@@ -262,6 +265,24 @@ template&lt;typename _Scalar&gt; </div>
 
 </div>
 </div>
+<a class="anchor" id="a73aa7a3ffdde0b17767e9b7ff0feab53"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename _Scalar&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">_Scalar <a class="el" href="struct_g_f2_1_1_problem_setup_params.html">GF2::ProblemSetupParams</a>&lt; _Scalar &gt;::dir_id_bias = _Scalar( 0. )</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Added to pairwise cost, if direction ids don't match. </p>
+
+<p>Definition at line <a class="el" href="parameters_8h_source.html#l00214">214</a> of file <a class="el" href="parameters_8h_source.html">parameters.h</a>.</p>
+
+</div>
+</div>
 <a class="anchor" id="a7069a872d02c3d98c2589b4f4ba7e3a2"></a>
 <div class="memitem">
 <div class="memproto">
@@ -286,7 +307,7 @@ template&lt;typename _Scalar&gt; </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Sep 5 2014 16:31:26 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Sep 8 2014 11:09:05 for globOpt by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>
