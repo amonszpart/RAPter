@@ -142,17 +142,6 @@ Merging::mergeCli( int argc, char** argv )
         std::cout << "wrote " << ss.str() << std::endl;
     }
 
-//    if ( params.do_adopt )
-//    {
-//        io::savePrimitives   <_PrimitiveT, typename PrimitiveMapT::mapped_type::const_iterator>( out_prims, "primitives.bonmin_it1_adopt.csv" );
-//        io::writeAssociations<_PointPrimitiveT>( points   , "points_primitives_it1_adopt.csv" );
-//    }
-//    else
-//    {
-//        io::savePrimitives   <_PrimitiveT, typename PrimitiveMapT::mapped_type::const_iterator>( out_prims, "primitives.bonmin_it1.csv" );
-//        io::writeAssociations<_PointPrimitiveT>( points   , "points_primitives_it1.csv" );
-//    }
-
     std::cout << "stopped mergeSameDirGids" << std::endl; fflush(stdout);
     return EXIT_SUCCESS;
 }//...Merging::mergeCli()
