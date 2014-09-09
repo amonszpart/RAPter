@@ -246,12 +246,13 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
     {
         switch ( constr_mode )
         {
-            case ProblemSetupParams<_Scalar>::CONSTR_MODE::POINT_WISE:
-                err = problemSetup::everyPointNeedsPatchConstraint<_PointPrimitiveDistanceFunctor, _PrimitiveT, _PointPrimitiveT>
-                        ( problem, prims, points, lids_varids, weights, scale );
-                break;
             case ProblemSetupParams<_Scalar>::CONSTR_MODE::PATCH_WISE:
                 err = problemSetup::everyPatchNeedsDirectionConstraint<_PointPrimitiveDistanceFunctor, _PrimitiveT, _PointPrimitiveT>
+                        ( problem, prims, points, lids_varids, weights, scale );
+                break;
+
+            case ProblemSetupParams<_Scalar>::CONSTR_MODE::POINT_WISE:
+                err = problemSetup::everyPointNeedsPatchConstraint<_PointPrimitiveDistanceFunctor, _PrimitiveT, _PointPrimitiveT>
                         ( problem, prims, points, lids_varids, weights, scale );
                 break;
             case ProblemSetupParams<_Scalar>::CONSTR_MODE::HYBRID:
@@ -418,6 +419,7 @@ namespace problemSetup {
                                       , _WeightsT            const& /*weights*/
                                       , _Scalar              const  /*scale*/ )
     {
+        bool verbose = false;
         typedef typename _AssocT::key_type IntPair;
 
         int err = EXIT_SUCCESS;
@@ -434,14 +436,22 @@ namespace problemSetup {
             // add 1 for each direction patch -> at least one direction has to be chosen for this patch
             for ( size_t lid1 = 0; lid1 != prims[lid].size(); ++lid1 )
             {
+                if ( verbose && (lid1 == 0) ) std::cout << "[" << __func__ << "]: " << "Constraining " << prims[lid][lid1].getTag( _PrimitiveT::GID ) << " to choose one of ";
                 coeffs[ /* varid: */ lids_varids.at(IntPair(lid,lid1)) ] = 1.0;
+                if ( verbose ) std::cout << prims[lid][lid1].getTag( _PrimitiveT::DIR_GID ) << ", ";
             }
+            if ( verbose )std::cout << " directions";
 
             // unique insertion
             unsigned prev_size = uniqueA.size(); // store prev set size to check for unique insert
             uniqueA.insert( coeffs );            // insert into set
             if ( uniqueA.size() > prev_size )    // if line was unique, add to problem
+            {
                 problem.addLinConstraint( _OptProblemT::BOUND::GREATER_EQ, 1, problem.getINF(), coeffs ); // 1 <= A( lid, : ) * X <= INF
+                if  ( verbose )     std::cout << " ADDED\n";
+            }
+            else
+                if ( verbose )          std::cout << " IGNORED\n";
         } // ... for each patch
 
         return err;

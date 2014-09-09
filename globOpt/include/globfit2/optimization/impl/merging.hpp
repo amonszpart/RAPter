@@ -18,17 +18,65 @@ namespace merging
 {
     /*! \brief Dummy concept, how to use \ref processing::transformPrimitiveMap in globfit2/processing/util.hpp.
      */
-    template <class _PrimitiveT>
+    template <class _PrimitiveT, class _PointContainerT, typename _Scalar>
     struct RefitFunctor
     {
+            RefitFunctor( _PointContainerT const& points, GidPidVectorMap const& populations, _Scalar scale ) : _points(points), _populations(populations), _scale(scale) {}
             int eval( _PrimitiveT& prim ) const
             {
+                const int gid = prim.getTag( _PrimitiveT::GID );
+                const int dir_gid = prim.getTag( _PrimitiveT::DIR_GID );
                 std::cout << "[" << __func__ << "]: "
-                          << "transforming primitive with GID: " << prim.getTag( _PrimitiveT::GID )
-                          << ", and DIR_GID: " << prim.getTag( _PrimitiveT::DIR_GID )
+                          << "transforming primitive with GID: " << gid
+                          << ", and DIR_GID: " << dir_gid
                           << std::endl;
+
+                GidPidVectorMap::const_iterator pop_it = _populations.find( prim.getTag(_PrimitiveT::GID) );
+                if ( (pop_it != _populations.end()) && (pop_it->second.size()) ) // if population exists, and has non-zero points
+                {
+                    std::cout << "refit from: " << prim().transpose();
+                    _PrimitiveT refit;
+                    processing::fitLinearPrimitive<_PrimitiveT::Dim>( /* [in,out] primitives: */ refit
+                                                                    , /*              points: */ _points
+                                                                    , /*               scale: */ _scale
+                                                                    , /*             indices: */ &(pop_it->second)
+                                                                    , /*    refit iter count: */ 2                 // fit and refit twice
+                                                                    , /*    start from input: */ &prim             // use to calculate initial weights
+                                                                    , /* refit position only: */ false
+                                                                    , /*               debug: */ false  );
+                    prim = _PrimitiveT( refit.template pos(), prim.template dir() );
+                    prim.setTag( _PrimitiveT::GID, gid ).setTag( _PrimitiveT::DIR_GID, dir_gid );
+
+                    std::cout << " to: "  << prim().transpose();
+                    std::cout << " from " << _populations.at(gid).size() << " points" << std::endl;
+
+                    return 0;
+                }
+                else
+                    return 0;
+            } //...eval()
+
+            _PointContainerT const& _points;
+            GidPidVectorMap  const& _populations;
+            _Scalar                 _scale;
+    };
+
+    /*! \brief Dummy concept, how to use \ref processing::transformPrimitiveMap in globfit2/processing/util.hpp.
+     */
+    template <class _PrimitiveT>
+    struct DirectionGroupArityFunctor
+    {
+            inline
+            DirectionGroupArityFunctor( ) {}
+
+            inline
+            int eval(const  _PrimitiveT& prim, int )
+            {
+                _arities[prim.getTag( _PrimitiveT::DIR_GID )] ++;
                 return 0;
             } //...eval()
+
+            std::map<int,int> _arities;
     };
 }
 
@@ -153,11 +201,19 @@ Merging::mergeCli( int argc, char** argv )
 
 
     // dummy example of an iteration over all primitives
+    if ( 1 ) // refit produces nan-s in the lines, not sure if it's because of the merge input, or processing::fitLinearPrimitive
     {
-        merging::RefitFunctor<_PrimitiveT> refitFunctor;
+        typedef merging::RefitFunctor<_PrimitiveT,_PointContainerT,_Scalar> RefitFunctorT;
+
+        // get points assigned to each patch
+        GidPidVectorMap populations;
+        processing::getPopulations( populations, points );
+        // initialize refit functor
+        RefitFunctorT refitFunctor( points, populations, params.scale );
+        // refit all lines
         processing::transformPrimitivesMap< _PrimitiveT
                                           , typename PrimitiveMapT::mapped_type::iterator
-                                          , merging::RefitFunctor<_PrimitiveT>
+                                          , RefitFunctorT
                                           > ( /* [in,out] primitives: */ *out
                                             , /* [in]        functor: */ refitFunctor );
     }
@@ -444,22 +500,113 @@ inline bool decide_merge(
 }
 
 
-
 template <class Container,
-          class PrimitiveT>
-inline void merge( Container& out_primitives,
-                   const PrimitiveT& l0,
-                   const PrimitiveT& l1){
+          class PrimitiveT,
+          class Population,
+          class PointCloud,
+          class Scalar>
+inline void merge( Container&        out_primitives, // [out] Container storing merged primitives
+                   PrimitiveT        l0,             // [in]  First primitive (local copy)
+                   const Population& pop0,           // [in]  First primitive population (point ids)
+                   PrimitiveT        l1,             // [in]  Second primitive (local copy)
+                   const Population& pop1,           // [in]  Second primitive population (point ids)
+                   PointCloud&       points,         // [in]  Point cloud
+                   Scalar            scale,          // [in]  Working scale (for refit)
+                   bool              nogeneration=false){
 
-    std::cout << "merging (" << l0.getTag(PrimitiveT::GID )     << ","
-                             << l0.getTag(PrimitiveT::DIR_GID ) << ")"
-              << " and ("    << l1.getTag(PrimitiveT::GID ) << ","
-                             << l1.getTag(PrimitiveT::DIR_GID ) << ")\t" << std::endl;
+    int gid0 = l0.getTag(PrimitiveT::GID );
+    int gid1 = l1.getTag(PrimitiveT::GID );
+    int did0 = l0.getTag(PrimitiveT::DIR_GID );
+    int did1 = l1.getTag(PrimitiveT::DIR_GID );
 
-    // for now, do nothing except duplicating the two primitives
+    std::cout << "merging (" << gid0 << ","
+                             << did0 << ")"
+              << " and ("    << gid1 << ","
+                             << did1 << std::endl;
 
-    containers::add<PrimitiveT>( out_primitives, l0.getTag(PrimitiveT::GID ), l0 );
-    containers::add<PrimitiveT>( out_primitives, l1.getTag(PrimitiveT::GID ), l1 );
+    // When the direction id of the two primitives are differents,
+    // the merging behavior is changing according to the arity of the
+    // involved direction groups in which the two primitives belong:
+    //  a. two groups arity = 1: we have no directionnal constraint on both primitives, so
+    //                           we merge the two populations, refit position and direction,
+    //                           store all of this in the first primitive and discard the
+    //                           second one.
+    //  b. one group arity = 1:  the associated primitive can be discarded, and its points merged into the
+    //                           other one. A position-only fit must then be recomputed to preserve
+    //                           the directionnal constraint (group arity != 1)
+    //  c. no group arity = 1:   both primitives are constrained by direction. Here we duplicate both of
+    //                           them, and insert them to the other direction group (position fit only).
+    //
+    // When the direction id of the two primitives are equals, we can merge refit only the position.
+    // This lead to call case b.
+
+    // Compute arity when the two ids are different
+    // Values are initialized with
+    // int arity0 = 1;
+    // int arity1 = 2;
+    // to be sure to jump to case b. if the two direction ids are identical
+    int arity0 = 1;
+    int arity1 = 2;
+
+    if (did0 != did1){
+        merging::DirectionGroupArityFunctor<PrimitiveT> functor;
+        processing::filterPrimitives<PrimitiveT,
+                typename Container::mapped_type::const_iterator > (out_primitives, functor);
+        arity0 = functor._arities[did0];
+        arity1 = functor._arities[did1];
+    }
+
+
+    if (arity0 == 1 && arity1 == 1){
+        // two free patches, that have no constraints on their direction
+        // here the plan is
+        std::cout << "Case A" << std::endl;
+
+
+    }else  if (arity0 != 1 && arity1 != 1){
+        // two constrained patches, we need to generate new primitives.
+        std::cout << "Case C" << std::endl;
+    }else {
+        // one patch is free, the other constrained.
+        std::cout << "Case B" << std::endl;
+
+        // prepare population for refit
+        Population pop = pop0;
+        pop.insert(pop.end(), pop1.begin(), pop1.end());
+
+        // refit and add to container
+        PrimitiveT mergedPrim;
+        PrimitiveT *sourcePrim = arity0 != 1 ? & l0 : & l1;
+        processing::fitLinearPrimitive<PrimitiveT::Dim>( /* [in,out] primitives: */ mergedPrim
+                                                       , /*              points: */ points
+                                                       , /*               scale: */ scale
+                                                       , /*             indices: */ pop
+                                                       , /*    refit iter count: */ 2                 // fit and refit twice
+                                                       , /*    start from input: */ sourcePrim
+                                                       , /* refit position only: */ true
+                                                       , /*               debug: */ false  );
+
+
+        if (arity0 != 1){
+            mergedPrim.setTag( PrimitiveT::GID, gid ).setTag( PrimitiveT::DIR_GID, dir_gid );
+            //mergedPrim.copyFlagsFrom(*sourcePrim);
+
+
+            typedef typename _PointContainerT::value_type _PointPrimitiveT;
+
+            for ( size_t pid = 0; pid != points.size(); ++pid )
+            {
+                const int gid = points[pid].getTag( _PointPrimitiveT::GID );
+                containers::add( populations, gid, static_cast<int>(pid) );
+            }
+        }
+
+    }
+
+    // for now, do nothing except: the two primitives are kept
+
+    //containers::add<PrimitiveT>( out_primitives, l0.getTag(PrimitiveT::GID ), l0 );
+    //containers::add<PrimitiveT>( out_primitives, l1.getTag(PrimitiveT::GID ), l1 );
 }
 
 /*! \brief Merges adjacent patches that have the same direction ID or are almost parallel.
@@ -540,10 +687,6 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
         CHECK( err, "calcExtrema" )
     } //...getExtrema
 
-    bool needOtherLoop = false;
-
-    // while (needOtherLoop){
-    // needOtherLoop = false;
 
     // Store the primitives that have been matched
     // First  (key)   = candidate,
@@ -569,8 +712,9 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
     // After processing, the aliases set contains for any candidate described by a GidLid:
     //   aliases [candGidLid];
     //
-    // This structure is read later to detect the primitives that have not been merged (not present
-    // as key)
+    // The output buffer is initialized with the input. All merging operations will remove
+    // old primitives and replace them by merged one.
+    out_primitives = primitives;
 
     // Reference traversal
     for ( GidIt gid_it = extrema.cbegin(); gid_it != extrema.cend(); ++gid_it )
@@ -639,9 +783,13 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
                         aliases.insert(candGidLid);
                         aliases.insert(refGidLid);
 
-                        merge( out_primitives, // [out] Container storing merged primitives
-                               prim0,          // [in]  First primitive
-                               prim1);         // [in]  Second primitive
+                        merge( out_primitives,     // [out] Container storing merged primitives
+                               prim0,              // [in]  First primitive (can be invalidated during the call)
+                               populations[gid0],  // [in]  First primitive population (point ids)
+                               prim1,              // [in]  Second primitive
+                               populations[gid1],  // [in]  Second primitive population (point ids)
+                               points,             // [in]  Point cloud
+                               scale);             // [in]  Working scale (for refit)
 
                         is0Valid = false;
                         continue;  // jump to the next couple ref/candidate primitive
@@ -653,28 +801,28 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
 
             // if we reach that case, we know that this primitive will not been visited anymore,
             // so it can be add to the out_primitive container
-            if (is0Valid){
-                containers::add<_PrimitiveT>( out_primitives, gid0, prim0 );
+//            if (is0Valid){
+//                containers::add<_PrimitiveT>( out_primitives, gid0, prim0 );
 
-                std::cout << "store remaining (" << prim0.getTag(_PrimitiveT::GID )     << ","
-                          << prim0.getTag(_PrimitiveT::DIR_GID ) << ")t" << std::endl;
-            }
+//                std::cout << "store remaining (" << prim0.getTag(_PrimitiveT::GID )     << ","
+//                          << prim0.getTag(_PrimitiveT::DIR_GID ) << ")t" << std::endl;
+//            }
         }
     }
 
-//    cout << "[in]:  " << primitives.size() << endl;
-//    for ( outer_const_iterator outer_it  = primitives.begin();
-//          (outer_it != primitives.end());
-//          ++outer_it )
-//        //std::cout << (*outer_it).second.size() << std::endl;
-//        cout << (*outer_it).second.at(0).getTag(_PrimitiveT::GID ) << " - " << (*outer_it).second.at(0).getTag(_PrimitiveT::DIR_GID ) << endl;
+    cout << "[in]:  " << primitives.size() << endl;
+    for ( outer_const_iterator outer_it  = primitives.begin();
+          (outer_it != primitives.end());
+          ++outer_it )
+        //std::cout << (*outer_it).second.size() << std::endl;
+        cout << (*outer_it).second.at(0).getTag(_PrimitiveT::GID ) << " - " << (*outer_it).second.at(0).getTag(_PrimitiveT::DIR_GID ) << endl;
 
-//    cout << "[out]: " << out_primitives.size() << endl;
-//    for ( outer_const_iterator outer_it  = out_primitives.begin();
-//          (outer_it != out_primitives.end()) ;
-//          ++outer_it )
-//        //std::cout << (*outer_it).second.size() << std::endl;
-//        cout << (*outer_it).second.at(0).getTag(_PrimitiveT::GID ) << " - " << (*outer_it).second.at(0).getTag(_PrimitiveT::DIR_GID ) << endl;
+    cout << "[out]: " << out_primitives.size() << endl;
+    for ( outer_const_iterator outer_it  = out_primitives.begin();
+          (outer_it != out_primitives.end()) ;
+          ++outer_it )
+        //std::cout << (*outer_it).second.size() << std::endl;
+        cout << (*outer_it).second.at(0).getTag(_PrimitiveT::GID ) << " - " << (*outer_it).second.at(0).getTag(_PrimitiveT::DIR_GID ) << endl;
 
 
     // debug
@@ -688,7 +836,7 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
 //        }
 //    }
 //    dbg.close();
-    return needOtherLoop;
+    return out_primitives.size() != primitives.size();
 } //...Merging::mergeSameDirGids()
 
 } //...namespace GF2

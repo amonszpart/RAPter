@@ -180,20 +180,20 @@ namespace GF2 {
         
         /**
          * @brief fitLine               [Re]Fits 3D line to a [part of a] pointcloud.
-         * @param line                  Output line, and possibly input line to refit, if \param start_from_input_line is true.
+         * @param[out] line             Output line, and possibly input line to refit, if \param start_from_input_line is true.
          * @param cloud                 Points to fit to. Must have methods operator[] and pos()->Eigen::Vector3f. If \param p_indices!=NULL, must have at least max(*p_indices) points.
          * @param scale                 Distance where point get's zero weight
          * @param p_indices             Indices to use from cloud. Can be NULL, in which case the whole cloud is used.
-         * @param refit                 How many refit iterations. 0 means once, obviously (TODO to fix...).
-         * @param start_from_input_line Assume, that \param line contains a meaningful input, and calculate weights on the 0th iteration already.
+         * @param refit                 How many refit iterations. 0 means fit once, and refit 0 times, obviously (TODO to fix...).
+         * @param initial_line          Use this line to calculate weights on the 0th iteration already.
          */
-        template <class PrimitiveT, class PointsT, typename Scalar, int rows> inline int
+        template <int rows, class PrimitiveT, class PointsT, typename Scalar> inline int
         fitLinearPrimitive( PrimitiveT                      & primitive
                             , PointsT                  const& cloud
                             , Scalar                          scale
-                            , std::vector<int>              * p_indices             = NULL
+                            , std::vector<int>         const* p_indices             = NULL
                             , int                             refit                 = 0
-                            , bool                            start_from_input      = false
+                            , PrimitiveT               const* initial_line          = NULL
                             , bool                            debug                 = false )
         {
             //SG_STATIC_ASSERT( (rows == 4) || (rows == 6), smartgeometry_fit_linear_model_rows_not_4_or_6 );
@@ -205,6 +205,10 @@ namespace GF2 {
             // skip, if not enought points found to fit to
             if ( N < 2 ) { std::cerr << "[" << __func__ << "]: " << "can't fit line to less then 2 points..." << std::endl; return EXIT_FAILURE; }
 
+            // copy input, if exists
+            if ( initial_line )
+                primitive = *initial_line;
+
             int iteration = 0; // track refit iterations
             do
             {
@@ -212,13 +216,14 @@ namespace GF2 {
                 std::vector<Scalar> weights( N, 1.f );
 
                 // calculate weights, if value in "line" already meaningful
-                if ( start_from_input || (iteration > 0) )
+                if ( initial_line || (iteration > 0) )
                 {
                     // calculate distance from all points
                     for ( size_t point_id = 0; point_id != N; ++point_id )
                     {
                         weights[point_id] = primitive.getDistance( cloud[ p_indices ? (*p_indices)[point_id] : point_id ].pos() );
                     }
+                    std::cout << std::endl;
 
                     // the farther away, the smaller weight -->
                     // w_i = f( dist_i / scale ), dist_i < scale; f(x) = (x^2-1)^2
@@ -232,27 +237,34 @@ namespace GF2 {
                         }
                         else
                             weights[wi] = static_cast<Scalar>(0);                               // outside scale, truncated to 0
+
                     }
                 }
 
                 // compute centroid of cloud or selected points
-                Position centroid;
+                Position centroid( Position::Zero() );
                 Scalar sumW = 0;
                 for ( size_t point_id = 0; point_id != N; ++point_id )
                 {
                     const unsigned int id = p_indices ? (*p_indices)[point_id] : point_id;
-                    centroid += cloud[ id ].pos() * weights[ id ];
-                    sumW     +=                     weights[ id ];
-                }                
-                centroid /= sumW;
+                    centroid += cloud[ id ].pos() * weights[ point_id ];
+                    sumW     +=                     weights[ point_id ];
+                }
+                if ( sumW > Scalar(0.) )
+                    centroid /= sumW;
+
+                if ( 0 )
+                {
+                    // TODO: return centroid only
+                }
 
                 // compute neighbourhood covariance matrix
-                Eigen::Matrix<Scalar,3,3> cov;                
+                Eigen::Matrix<Scalar,3,3> cov( Eigen::Matrix<Scalar,3,3>::Zero() );
                 for ( size_t point_id = 0; point_id != N; ++point_id )
                 {
                     const unsigned int id = p_indices ? (*p_indices)[point_id] : point_id;
-                    typename PointsT::value_type pos = cloud[ id ].template pos() - centroid; // eigen expression template
-                    cov   += pos * pos.transpose() * weights[ id ];
+                    Position pos = cloud[ id ].template pos() - centroid; // eigen expression template
+                    cov   += pos * pos.transpose() * weights[ point_id ];
                 }                
                 cov /= sumW;
 
@@ -356,11 +368,7 @@ namespace GF2 {
                                           : cloud->at( pid                 );
 
                 // calculate neighbourhood indices
-                if ( doRadiusSearch )
-                {
-                    found_points_count = tree->radiusSearch  ( searchPoint, radius, neighbour_indices[pid], sqr_dists, /* all: */ 0 );
-                    std::cout << "found: " << found_points_count << std::endl;
-                }
+                if ( doRadiusSearch ) found_points_count = tree->radiusSearch  ( searchPoint, radius, neighbour_indices[pid], sqr_dists, /* all: */ 0 );
                 else                  found_points_count = tree->nearestKSearch( searchPoint,      K, neighbour_indices[pid], sqr_dists    );
 
                 if ( (found_points_count <2 ) && (soft_radius) )

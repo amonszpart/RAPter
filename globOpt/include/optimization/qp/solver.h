@@ -302,10 +302,12 @@ Solver::generateCli( int    argc
     }
 
     // read primitives
+    typedef std::map<int, typename PrimitiveContainerT::value_type> PrimitiveMapT;
     PrimitiveContainerT initial_primitives;
+    PrimitiveMapT patches;
     {
         std::cout << "[" << __func__ << "]: " << "reading primitives from " << input_prims_path << "...";
-        io::readPrimitives<PrimitiveT, typename PrimitiveContainerT::value_type>( initial_primitives, input_prims_path );
+        io::readPrimitives<PrimitiveT, typename PrimitiveContainerT::value_type>( initial_primitives, input_prims_path, &patches );
         std::cout << "reading primitives ok (#: " << initial_primitives.size() << ")\n";
     } //...read primitives
 
@@ -313,11 +315,12 @@ Solver::generateCli( int    argc
     //_______________________________________________
 
     // Generate
-    PrimitiveContainerT primitives;
+    //PrimitiveContainerT primitives;
+    PrimitiveMapT primitives;
     if ( EXIT_SUCCESS == err )
     {
-        err = CandidateGenerator::generate< MyPrimitivePrimitiveAngleFunctor >
-                                          ( primitives, initial_primitives, points, generatorParams.scale, generatorParams.angles, generatorParams );
+        err = CandidateGenerator::generate< MyPrimitivePrimitiveAngleFunctor, MyPointPrimitiveDistanceFunctor, PrimitiveT >
+                                          ( primitives, patches/*initial_primitives*/, points, generatorParams.scale, generatorParams.angles, generatorParams );
 
         if ( err != EXIT_SUCCESS ) std::cerr << "[" << __func__ << "]: " << "generate exited with error! Code: " << err << std::endl;
     } //...generate
