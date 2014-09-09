@@ -18,17 +18,46 @@ namespace merging
 {
     /*! \brief Dummy concept, how to use \ref processing::transformPrimitiveMap in globfit2/processing/util.hpp.
      */
-    template <class _PrimitiveT>
+    template <class _PrimitiveT, class _PointContainerT, typename _Scalar>
     struct RefitFunctor
     {
+            RefitFunctor( _PointContainerT const& points, GidPidVectorMap const& populations, _Scalar scale ) : _points(points), _populations(populations), _scale(scale) {}
             int eval( _PrimitiveT& prim ) const
             {
+                const int gid = prim.getTag( _PrimitiveT::GID );
+                const int dir_gid = prim.getTag( _PrimitiveT::DIR_GID );
                 std::cout << "[" << __func__ << "]: "
-                          << "transforming primitive with GID: " << prim.getTag( _PrimitiveT::GID )
-                          << ", and DIR_GID: " << prim.getTag( _PrimitiveT::DIR_GID )
+                          << "transforming primitive with GID: " << gid
+                          << ", and DIR_GID: " << dir_gid
                           << std::endl;
-                return 0;
+
+                GidPidVectorMap::const_iterator pop_it = _populations.find( prim.getTag(_PrimitiveT::GID) );
+                if ( (pop_it != _populations.end()) && (pop_it->second.size()) ) // if population exists, and has non-zero points
+                {
+                    std::cout << "refit from: " << prim().transpose();
+                    _PrimitiveT refit;
+                    processing::fitLinearPrimitive<_PrimitiveT::Dim>( /* [in,out] primitives: */ refit
+                                                                    , /*              points: */ _points
+                                                                    , /*               scale: */ _scale
+                                                                    , /*             indices: */ &(pop_it->second)
+                                                                    , /*    refit iter count: */ 2                 // fit and refit twice
+                                                                    , /*    start from input: */ &prim             // use to calculate initial weights
+                                                                    , /*               debug: */ false  );
+                    prim = _PrimitiveT( refit.template pos(), prim.template dir() );
+                    prim.setTag( _PrimitiveT::GID, gid ).setTag( _PrimitiveT::DIR_GID, dir_gid );
+
+                    std::cout << " to: "  << prim().transpose();
+                    std::cout << " from " << _populations.at(gid).size() << " points" << std::endl;
+
+                    return 0;
+                }
+                else
+                    return 0;
             } //...eval()
+
+            _PointContainerT const& _points;
+            GidPidVectorMap  const& _populations;
+            _Scalar                 _scale;
     };
 }
 
@@ -140,11 +169,19 @@ Merging::mergeCli( int argc, char** argv )
             ( out_prims, points, prims_map, params.scale, params.spatial_threshold_mult * params.scale, params.parallel_limit, patchPatchDistFunct );
 
     // dummy example of an iteration over all primitives
+    if ( 1 ) // refit produces nan-s in the lines, not sure if it's because of the merge input, or processing::fitLinearPrimitive
     {
-        merging::RefitFunctor<_PrimitiveT> refitFunctor;
+        typedef merging::RefitFunctor<_PrimitiveT,_PointContainerT,_Scalar> RefitFunctorT;
+
+        // get points assigned to each patch
+        GidPidVectorMap populations;
+        processing::getPopulations( populations, points );
+        // initialize refit functor
+        RefitFunctorT refitFunctor( points, populations, params.scale );
+        // refit all lines
         processing::transformPrimitivesMap< _PrimitiveT
                                           , typename PrimitiveMapT::mapped_type::iterator
-                                          , merging::RefitFunctor<_PrimitiveT>
+                                          , RefitFunctorT
                                           > ( /* [in,out] primitives: */ out_prims
                                             , /* [in]        functor: */ refitFunctor );
     }
