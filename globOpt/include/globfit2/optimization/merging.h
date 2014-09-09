@@ -54,7 +54,7 @@ class Merging
                  , class    _PatchPatchDistanceFunctorT >
         static inline int mergeSameDirGids( _PrimitiveContainerT      & out_primitives
                                           , _PointContainerT          & points
-                                          , _PrimitiveContainerT const& primitives
+                                          , _PrimitiveContainerT /*const&*/ primitives
                                           , _Scalar              const  scale
                                           , _Scalar              const  spatial_threshold
                                           , _Scalar              const  parallel_limit
