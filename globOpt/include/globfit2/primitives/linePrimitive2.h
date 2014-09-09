@@ -13,9 +13,14 @@ namespace GF2
         public:
             //! \brief Defines the tags (ids) that this primitive can manage using setTag and getTag functions.
             enum TAGS {
-                GID       = 0 //!< group id             - which group this primitive is supposed to explain
-                , DIR_GID = 1 //!< direction group id   - which group this primitive got it's direction from
-                , CHOSEN  = 2 //!< an additional flag to store, if this is part of a solution.
+                GID        = 0  //!< group id             - which group this primitive is supposed to explain
+                , DIR_GID  = 1  //!< direction group id   - which group this primitive got it's direction from
+                , CHOSEN   = 2  //!< an additional flag to store, if this is part of a solution.
+                , USER_ID1 = 10 //!< additional flag to store processing attributes (values only in the generation scope)
+                , USER_ID2 = 11 //!< additional flag to store processing attributes (values only in the generation scope)
+                , USER_ID3 = 12 //!< additional flag to store processing attributes (values only in the generation scope)
+                , USER_ID4 = 13 //!< additional flag to store processing attributes (values only in the generation scope)
+                , USER_ID5 = 14 //!< additional flag to store processing attributes (values only in the generation scope)
             };//...TAGS
 
 #if 0 // __cplusplus > 199711L
