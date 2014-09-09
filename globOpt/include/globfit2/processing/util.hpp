@@ -186,6 +186,7 @@ namespace GF2 {
          * @param p_indices             Indices to use from cloud. Can be NULL, in which case the whole cloud is used.
          * @param refit                 How many refit iterations. 0 means fit once, and refit 0 times, obviously (TODO to fix...).
          * @param initial_line          Use this line to calculate weights on the 0th iteration already.
+         * @param fit_pos_only          Use this to refit only the position of the line or both position and orientation. Requires initial_line!=NULL
          */
         template <int rows, class PrimitiveT, class PointsT, typename Scalar> inline int
         fitLinearPrimitive( PrimitiveT                      & primitive
@@ -194,6 +195,7 @@ namespace GF2 {
                             , std::vector<int>         const* p_indices             = NULL
                             , int                             refit                 = 0
                             , PrimitiveT               const* initial_line          = NULL
+                            , bool                            fit_pos_only          = false
                             , bool                            debug                 = false )
         {
             //SG_STATIC_ASSERT( (rows == 4) || (rows == 6), smartgeometry_fit_linear_model_rows_not_4_or_6 );
@@ -204,6 +206,8 @@ namespace GF2 {
 
             // skip, if not enought points found to fit to
             if ( N < 2 ) { std::cerr << "[" << __func__ << "]: " << "can't fit line to less then 2 points..." << std::endl; return EXIT_FAILURE; }
+
+            if ( fit_pos_only && initial_line == NULL ){ std::cerr << "[" << __func__ << "]: " << "can't fit position only without initial line..." << std::endl; return EXIT_FAILURE; }
 
             // copy input, if exists
             if ( initial_line )
@@ -223,7 +227,6 @@ namespace GF2 {
                     {
                         weights[point_id] = primitive.getDistance( cloud[ p_indices ? (*p_indices)[point_id] : point_id ].pos() );
                     }
-                    std::cout << std::endl;
 
                     // the farther away, the smaller weight -->
                     // w_i = f( dist_i / scale ), dist_i < scale; f(x) = (x^2-1)^2
@@ -253,9 +256,11 @@ namespace GF2 {
                 if ( sumW > Scalar(0.) )
                     centroid /= sumW;
 
-                if ( 0 )
+                if ( fit_pos_only )
                 {
-                    // TODO: return centroid only
+                    primitive = PrimitiveT(centroid.template head<3>(),
+                                           initial_line->dir());
+                    continue; // we can stop now and go to next iteration
                 }
 
                 // compute neighbourhood covariance matrix
