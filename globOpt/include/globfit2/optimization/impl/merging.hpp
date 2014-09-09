@@ -43,8 +43,12 @@ namespace merging
                                                                     , /*    refit iter count: */ 2                 // fit and refit twice
                                                                     , /*    start from input: */ &prim             // use to calculate initial weights
                                                                     , /*               debug: */ false  );
+                    // save tags
+                    Taggable tmp; tmp.copyTagsFrom( prim );
+                    // create new primitive
                     prim = _PrimitiveT( refit.template pos(), prim.template dir() );
-                    prim.setTag( _PrimitiveT::GID, gid ).setTag( _PrimitiveT::DIR_GID, dir_gid );
+                    // rewrite tags
+                    prim.copyTagsFrom( tmp );
 
                     std::cout << " to: "  << prim().transpose();
                     std::cout << " from " << _populations.at(gid).size() << " points" << std::endl;
