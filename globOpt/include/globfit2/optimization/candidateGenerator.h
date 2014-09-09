@@ -26,20 +26,25 @@ namespace GF2
     class CandidateGenerator
     {
         public:
-            //! \brief Main functionality to generate lines from points.
+            /*! \brief Main functionality to generate lines from points.
+             *
+             *  \tparam _PointPrimitiveDistanceFunctorT Concept: \ref MyPointPrimitiveDistanceFunctor.
+             *  \tparam _PrimitiveT                     Concept: \ref GF2::LinePrimitive2.
+             */
             template <  class       PrimitivePrimitiveAngleFunctorT // concept: energyFunctors.h::PrimitivePrimitiveAngleFunctor
+                      , class       _PointPrimitiveDistanceFunctorT
+                      , class       _PrimitiveT
                       , class       PrimitiveContainerT             // concept: std::vector<std::vector<LinePrimitive2>>
                       , class       PointContainerT                 // concept: std::vector<PointPrimitive>
-                      , class       PrimitiveT                      = typename PrimitiveContainerT::value_type::value_type  // concept: LinePrimitive2
-                      , typename    Scalar                          = typename PrimitiveT::Scalar                           // concept: float
+                      , typename    Scalar
                       >
             static inline int
             generate( PrimitiveContainerT                     &  out_lines
-                      , PrimitiveContainerT              const&  in_lines
-                      , PointContainerT                  const&  points // non-const to be able to add group tags
-                      , Scalar                           const   scale
-                      , std::vector<Scalar>              const&  angles
-                      , CandidateGeneratorParams<Scalar> const&  params );
+                    , PrimitiveContainerT              const&  in_lines
+                    , PointContainerT                  const&  points // non-const to be able to add group tags
+                    , Scalar                           const   scale
+                    , std::vector<Scalar>              const&  angles
+                    , CandidateGeneratorParams<Scalar> const&  params );
 #if GF2_WITH_SAMPLE_INPUT
             //! \brief image_2_2DCloud
             template <  class       PointAllocatorFunctorT
@@ -74,10 +79,88 @@ namespace GF2
 {
     inline bool equal2D( int l0, int l1, int l2, int l3 ) { return (l0 == l2) && (l1 == l3); }
 
+    /*! \brief Called from \ref CandidateGenerator::generate() via \ref processing::filterPrimitives, decides if a primitive has the GID looked for.
+     * \tparam _PrimitiveT Concept: \ref GF2::LinePrimtive2.
+     */
+    template <class _PointPrimitiveDistanceFunctor, class _PrimitiveT, class _PointPrimitiveT, typename _Scalar>
+    struct NearbyPrimitivesFunctor
+    {
+            NearbyPrimitivesFunctor( _PointPrimitiveT const& point, _Scalar scale ) : _point(point), _scale(scale) {}
+
+            inline int eval( _PrimitiveT const& prim, int const lid )
+            {
+                // store if inside scale
+                if ( _PointPrimitiveDistanceFunctor::template eval<_Scalar>(_point, prim) < _scale )
+                {
+                    _gidLids.push_back( std::pair<int,int>(prim.getTag(_PrimitiveT::GID), lid) );
+                } //...if dist
+
+                return 0;
+            }
+
+            _PointPrimitiveT                  _point;
+            _Scalar                           _scale;
+            std::vector< std::pair<int,int> > _gidLids; //!< Output unique IDs of primitives.
+    }; //NearbyPrimitivesFunctor
+
+
+    /*! \brief Called from getOrphanGids via \ref processing::filterPrimitives, decides if a primitive has the GID looked for.
+     */
+    template <class _PrimitiveT>
+    struct FindGidFunctor
+    {
+            FindGidFunctor( int gid ) : _gid(gid) {}
+            inline int eval( _PrimitiveT const& prim, int /*lid*/ ) const { return prim.getTag(_PrimitiveT::GID) == _gid; }
+            int  _gid; //!< \brief GID looked for.
+    }; //...FindGidFunctor
+
+    /*! \brief Gathers groupIDs that don't have primitives selected for them.
+     *
+     *  \tparam _PrimitiveT           Concept: \ref GF2::LinePrimtive2.
+     *  \tparam _inner_const_iterator Concept: _PrimitiveContainerT::value_type::const_iterator if vector, _PrimitiveContainerT::mapped_type::const_iterator if map.
+     *  \tparam _PidContainerT        Container holding the orphan point ids. Concept: std::set<int>.
+     *  \tparam _GidContainerT        Container holding the patch ids (GIDs) with orphan points. Concept: std::set<int>.
+     *  \tparam _PointContainerT      Concept: vector<_PointPrimitiveT>.
+     *  \tparam _PrimitiveContainerT  Concept: vector< vector< _PrimitiveT> >
+     *
+     * \param[in] point_gid_tag      Identifies the field, where the GID is stored in the pointPrimitives. Concept: _PointPrimitiveT::GID
+     */
+    template < class _PrimitiveT
+             , class _inner_const_iterator
+             , class _PidContainerT
+             , class _GidContainerT
+             , class _PointContainerT
+             , class _PrimitiveContainerT
+             >
+    inline int getOrphanGids( _GidContainerT            & orphan_gids
+                            , _PointContainerT     const& points
+                            , _PrimitiveContainerT const& prims
+                            , int                  const  point_gid_tag
+                            , _PidContainerT            * orphan_pids   = NULL )
+    {
+        // select unassigned points
+        for ( size_t pid = 0; pid != points.size(); ++pid )
+        {
+            int gid = points[pid].getTag( point_gid_tag );
+
+            FindGidFunctor<_PrimitiveT> functor(gid);
+            if ( !processing::filterPrimitives< _PrimitiveT, _inner_const_iterator>
+                                              ( prims, functor )                                )
+            {
+                orphan_gids.insert( gid );
+                if ( orphan_pids )
+                    orphan_pids->insert( pid );
+            }
+        }
+        return EXIT_SUCCESS;
+    }
+
+
     template <  class       _PrimitivePrimitiveAngleFunctorT
+              , class       _PointPrimitiveDistanceFunctorT
+              , class       _PrimitiveT
               , class       _PrimitiveContainerT
               , class       _PointContainerT
-              , class       _PrimitiveT
               , typename    _Scalar> int
     CandidateGenerator::generate( _PrimitiveContainerT                   & out_lines
                                 , _PrimitiveContainerT              const& in_lines
@@ -88,24 +171,25 @@ namespace GF2
     {
         typedef typename _PointContainerT::value_type                     _PointPrimitiveT;
         typedef typename _PrimitiveContainerT::const_iterator             outer_const_iterator;
-        typedef typename outer_const_iterator::value_type::const_iterator inner_const_iterator;
+        //typedef typename outer_const_iterator::value_type::const_iterator inner_const_iterator;
+        typedef typename _PrimitiveContainerT::mapped_type::const_iterator inner_const_iterator;
 
         if ( out_lines.size() ) std::cerr << "[" << __func__ << "]: " << "warning, out_lines not empty!" << std::endl;
         if ( params.patch_population_limit <= 0 ) { std::cerr << "[" << __func__ << "]: " << "error, popfilter is necessary!!!" << std::endl; return EXIT_FAILURE; }
 
         // (2) Mix and Filter
         // count patch populations
-        GidIntMap populations; // populations[patch_id] = all points with GID==patch_id
+        GidPidVectorMap populations; // populations[patch_id] = all points with GID==patch_id
         {
-            processing::calcPopulations( populations, points );
+            processing::getPopulations( populations, points );
         }
 
         // convert local fits
         const _Scalar angle_limit( params.angle_limit / params.angle_limit_div );
         int           nlines = 0;
 
-        // test
-        std::map< int, std::set<int> > copied; // [gid][dir_gid]
+        // filter already copied directions
+        std::map< int, std::set<int> > copied; // [gid] = [ dir0, dir 1, dir2, ... ]
 
         int l0, l1, l2, l3;
         l0 = l1 = l2 = l3 = 0;                  // linear indices cached
@@ -141,13 +225,16 @@ namespace GF2
 
                 // OUTER1 (c)
                 l2 = l0; // reset linear counter
-                for ( outer_const_iterator outer_it1  = in_lines.begin() + std::distance( in_lines.begin(), outer_it0 );
+                for ( outer_const_iterator outer_it1  = in_lines.begin();
                                            outer_it1 != in_lines.end();
                                          ++outer_it1, ++l2 )
                 {
+                    if ( outer_it1 == in_lines.begin() )
+                         std::advance( outer_it1, std::distance<outer_const_iterator>( in_lines.begin(), outer_it0) );
+
                     // INNER1 (d)
                     l3 = l1; // reset linear counter
-                    for ( inner_const_iterator inner_it1  = containers::valueOf<_PrimitiveT>(outer_it1).begin() + std::distance( containers::valueOf<_PrimitiveT>(outer_it0).begin(), inner_it0 );
+                    for ( inner_const_iterator inner_it1  = containers::valueOf<_PrimitiveT>(outer_it1).begin() + std::distance<inner_const_iterator>( containers::valueOf<_PrimitiveT>(outer_it0).begin(), inner_it0 );
                                                inner_it1 != containers::valueOf<_PrimitiveT>(outer_it1).end();
                                              ++inner_it1, ++l3 )
                     {
@@ -184,13 +271,13 @@ namespace GF2
 
                         if ( params.small_mode == CandidateGeneratorParams<_Scalar>::SmallPatchesMode::RECEIVE_ALL )
                         {
-                            add0 |= (populations[gid0] < params.patch_population_limit); // prim0 needs to be small to copy the dir of prim1.
-                            add1 |= (populations[gid1] < params.patch_population_limit); // prim1 needs to be small to copy the dir of prim0.
+                            add0 |= (populations[gid0].size() < params.patch_population_limit); // prim0 needs to be small to copy the dir of prim1.
+                            add1 |= (populations[gid1].size() < params.patch_population_limit); // prim1 needs to be small to copy the dir of prim0.
                         }
                         else if ( params.small_mode == CandidateGeneratorParams<_Scalar>::SmallPatchesMode::IGNORE )
                         {
                             // both need to be large to work
-                            add0 &= add1 &= (populations[gid0] >= params.patch_population_limit) && (populations[gid1] >= params.patch_population_limit);
+                            add0 &= add1 &= (populations[gid0].size() >= params.patch_population_limit) && (populations[gid1].size() >= params.patch_population_limit);
                             //add1 &= (populations[gid0] >= params.patch_population_limit);
                         }
 
@@ -268,6 +355,68 @@ namespace GF2
 
         return EXIT_SUCCESS;
     } // ...CandidateGenerator::generate()
+
+#if 0
+    int addPrimitivesToSmallPatches()
+    {
+        // preprocess: add dummy primitives to small clusters so that they can receive others
+        if ( params.small_mode == CandidateGeneratorParams<_Scalar>::SmallPatchesMode::RECEIVE_ALL )
+        {
+            std::set<int> orphan_gids, orphan_pids;
+            getOrphanGids<_PrimitiveT, inner_const_iterator>( orphan_gids, points, in_lines, _PointPrimitiveT::GID, &orphan_pids );
+
+            // debug
+            std::cout << "orphan_gids: ";
+            for ( auto it = orphan_gids.begin(); it != orphan_gids.end(); ++it )
+            {
+                std::cout << *it << ", ";
+            }
+            std::cout << std::endl;
+
+            // for all points
+            std::map< int, std::set<int> > copied;
+            std::set<int>::const_iterator pid_it_end = orphan_pids.end();
+            for ( std::set<int>::const_iterator pid_it = orphan_pids.begin(); pid_it != pid_it_end; ++pid_it )
+            {
+                const int gid = points[*pid_it].getTag( _PointPrimitiveT::GID );
+
+                // get all adopters
+                NearbyPrimitivesFunctor<_PointPrimitiveDistanceFunctorT, _PrimitiveT, _PointPrimitiveT, _Scalar> functor( points[*pid_it], params.scale );
+                processing::filterPrimitives<_PrimitiveT, inner_const_iterator>( in_lines, functor );
+
+                // debug
+                std::cout << "[" << __func__ << "]: " << "point" << *pid_it << "(" << gid << ") has the following adopters: ";
+                for ( std::vector<std::pair<int,int> >::const_iterator it = functor._gidLids.begin(); it != functor._gidLids.end(); ++it )
+                {
+                    _PrimitiveT const& prim( in_lines.at(it->first).at(it->second) );
+                    const int dir_gid = prim.getTag(_PrimitiveT::DIR_GID);
+                    if ( copied[gid].find( dir_gid ) == copied[gid].end() )
+                    {
+                        // create candidate
+                        _PrimitiveT cand( /* pos: */ processing::getCentroid<_Scalar>(points,populations[gid]) // todo: cache centroids
+                                          , /* dir: */ prim.template dir() );
+                        // add group ids
+                        cand.setTag( _PrimitiveT::GID    , gid     ); // from point patch
+                        cand.setTag( _PrimitiveT::DIR_GID, dir_gid ); // from explaining primitive
+                        // add to candidates
+                        containers::add( out_lines, gid, cand );
+                        // remember patch-direction combination
+                        copied[gid].insert( dir_gid );
+                        ++nlines;
+
+                        // debug
+                        std::cout << "!" << prim.getTag(_PrimitiveT::GID) << "," << prim.getTag(_PrimitiveT::DIR_GID) << "!; ";
+                    }
+                    else
+                        std::cout << "(" << prim.getTag(_PrimitiveT::GID) << "," << prim.getTag(_PrimitiveT::DIR_GID) << "); ";
+                }
+                std::cout << std::endl;
+
+
+            }
+        }
+    }
+#endif
 
 #if GF2_WITH_SAMPLE_INPUT
     /**
