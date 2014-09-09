@@ -367,21 +367,52 @@ inline bool decide_merge(
     // l0a-l0b and l1a-l1b
     //  1. We project l0a and l0b to l1 (orthogonally to l1), and compute the norm of l0a-proj(l0a,l1) and l0b-proj(l0b,l1)
     //  2. Compute the other way
-    //  2. The two lines can be merged both norms of one of the two ways are below the scale parameters
+    //  3. Check if the two lines are almost aligned (all norms are smaller than the scale parameters)
+    //  4. If one way is correct, project second line end points to the first one
+    //     and check at least one end point is projected the segment
     const Eigen::Matrix<_Scalar,3,1> & l0a = extrema0[0];
     const Eigen::Matrix<_Scalar,3,1> & l0b = extrema0[1];
     const Eigen::Matrix<_Scalar,3,1> & l1a = extrema1[0];
     const Eigen::Matrix<_Scalar,3,1> & l1b = extrema1[1];
 
-    Eigen::Matrix<_Scalar,3,1> n0 = l0.template normal<_Scalar>();
-    Eigen::Matrix<_Scalar,3,1> n1 = l1.template normal<_Scalar>();
+    const Eigen::Matrix<_Scalar,3,1> n0 = l0.template normal<_Scalar>();
 
+    //const _Scalar sqScale = scale*scale;
+    //const _Scalar l0SqLengthAndScale = (l0b-l0a).squaredNorm() + scale*scale;
 
-    return ( std::abs(n1.dot(l0a-l1a)) <= scale && // get l0a-proj(l0a,l1)
-             std::abs(n1.dot(l0b-l1a)) <= scale ) ||
-           ( std::abs(n0.dot(l1a-l0a)) <= scale && // get l0a-proj(l0a,l1)
-             std::abs(n0.dot(l1b-l0a)) <= scale )
-            ;
+    // check if l1 is aligned to l0
+    if ( std::abs(n0.dot(l1a-l0a)) <= scale && // check l1a-proj(l1a,l0) <= scale
+         std::abs(n0.dot(l1b-l0a)) <= scale){  // check l1b-proj(l1b,l0) <= scale
+
+        // check if at least one l1 endpoint is projected onto l0
+        const Eigen::Matrix<_Scalar,3,1> l0dir = (l0b - l0a).normalized();
+        const _Scalar dl0  = (l0b - l0a).norm() + scale;
+        const _Scalar dl1a = l0dir.dot(l1a-l0a);
+        const _Scalar dl1b = l0dir.dot(l1b-l0a);
+
+        if ((dl1a >= _Scalar(0.) && dl1a <= dl0) ||
+            (dl1b >= _Scalar(0.) && dl1b <= dl0))
+                return true;
+    }
+
+    const Eigen::Matrix<_Scalar,3,1> n1 = l1.template normal<_Scalar>();
+
+    // check if l0 is aligned to l1
+    if (( std::abs(n1.dot(l0a-l1a)) <= scale &&  // check l0a-proj(l0a,l0) <= scale
+          std::abs(n1.dot(l0b-l1a)) <= scale )){ // check l0b-proj(l0b,l0) <= scale
+
+        // check if at least one l0 endpoint is projected onto l1
+        const Eigen::Matrix<_Scalar,3,1> l1dir = (l1b - l1a).normalized();
+        const _Scalar dl1  = (l1b - l1a).norm() + scale;
+        const _Scalar dl0a = l1dir.dot(l0a-l1a);
+        const _Scalar dl0b = l1dir.dot(l0b-l1a);
+
+        if ((dl0a >= _Scalar(0.) && dl0a <= dl1) ||
+            (dl0b >= _Scalar(0.) && dl0b <= dl1))
+                return true;
+    }
+
+    return false;
 
 
     /*_Scalar min_dist = std::numeric_limits<_Scalar>::max();
