@@ -127,7 +127,7 @@ IF(WITH_BONMIN)
       MESSAGE(STATUS "HSL Solver available, use instead of MUMPS")
     ELSE()
         SET (BONMIN_SOLVER_LIB ${PATH_BONMIN_DIR}lib/libcoinmumps.so)
-    ENDIF(EXISTS ${BONMIN_DIR}lib/libcoinhsl.so)
+    ENDIF(EXISTS ${PATH_BONMIN_DIR}lib/libcoinhsl.so)
 
     SET( BONMIN_LIBRARIES
         ${PATH_BONMIN_DIR}/lib/libipopt.so
