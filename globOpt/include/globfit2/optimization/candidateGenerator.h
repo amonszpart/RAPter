@@ -300,6 +300,11 @@ namespace GF2
                             _PrimitiveT cand0 = _PrimitiveT( prim0.pos(), dir0 );
                             cand0.setTag( _PrimitiveT::GID    , prim0.getTag(_PrimitiveT::GID) );
                             cand0.setTag( _PrimitiveT::DIR_GID, prim1.getTag(_PrimitiveT::DIR_GID) ); // recently changed this from GID
+                            if ( same_line )
+                            {
+                                std::cout << "copying chosen " << prim0.getTag(_PrimitiveT::CHOSEN) << ", but maybe: " << prim1.getTag(_PrimitiveT::CHOSEN) << std::endl;
+                                cand0.setTag(_PrimitiveT::CHOSEN, prim0.getTag(_PrimitiveT::CHOSEN) ); // keep chosen lines chosen
+                            }
                             // insert
                             int check = containers::add( out_lines, gid0, cand0 ).getTag( _PrimitiveT::GID );
                             ++nlines;

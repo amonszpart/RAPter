@@ -379,7 +379,7 @@ Solver::solve( int    argc
     Scalar                                max_time      = 360;
     int                                   bmode         = 0; // Bonmin solver mode, B_Bb by default
     std::string                           rel_out_path  = ".";
-
+    std::string                           x0_path       = "";
 
     // parse
     {
@@ -422,6 +422,16 @@ Solver::solve( int    argc
         pcl::console::parse_argument( argc, argv, "--bmode", bmode );
         pcl::console::parse_argument( argc, argv, "--rod"  , rel_out_path );
 
+        // X0
+        if (pcl::console::parse_argument( argc, argv, "--x0", x0_path ) >= 0)
+        {
+            if ( !boost::filesystem::exists(x0_path) )
+            {
+                std::cerr << "[" << __func__ << "]: " << "X0 path does not exist! " << x0_path << std::endl;
+                valid_input = false;
+            }
+        }
+
         // usage print
         std::cerr << "[" << __func__ << "]: " << "Usage:\t gurobi_opt\n"
                   << "\t--solver *" << solver_str << "* (mosek | bonmin | gurobi)\n"
@@ -436,6 +446,7 @@ Solver::solve( int    argc
                          << "\t\t5 = B_IFP Bonmin's implemantation of iterated feasibility pump for MINLP]\n"
                   << "\t[--verbose] " << "\n"
                   << "\t[--rod " << rel_out_path << "]\t\t Relative output directory\n"
+                  << "\t[--x0 " << x0_path << "]\t Path to starting point sparse matrix\n"
                   << "\t[--help, -h] "
                   << std::endl;
 
@@ -487,6 +498,13 @@ Solver::solve( int    argc
         {
 #           ifdef GF2_WITH_BONMIN
             static_cast<qcqpcpp::BonminOpt<OptScalar>*>(p_problem)->setAlgorithm( Bonmin::Algorithm(bmode) );
+            OptProblemT::SparseMatrix x0;
+            if ( !x0_path.empty() )
+            {
+                x0 = qcqpcpp::io::readSparseMatrix<OptScalar>( x0_path, 0 );
+                static_cast<qcqpcpp::BonminOpt<OptScalar>*>(p_problem)->setStartingPoint( x0 );
+            }
+
 #           endif // WITH_BONMIN
         }
     }
@@ -585,10 +603,12 @@ Solver::solve( int    argc
                     {
                         if ( int(round(x_out[prim_id])) > 0 )
                         {
-                            std::cout << "saving " << l << ", " << l1 << ", X: " << x_out[prim_id] << std::endl;
+                            std::cout << "saving " << prims[l][l1].getTag(PrimitiveT::GID) << ", " << prims[l][l1].getTag(PrimitiveT::DIR_GID) << ", X: " << x_out[prim_id] << "\t, ";
+                            prims[l][l1].setTag( PrimitiveT::CHOSEN, 1 );
                             out_prims.back().push_back( prims[l][l1] );
                         }
                     } // ... for l1
+                std::cout << std::endl;
 
                 std::string parent_path = boost::filesystem::path(candidates_path).parent_path().string();
                 if ( parent_path.empty() )  parent_path = "./";
