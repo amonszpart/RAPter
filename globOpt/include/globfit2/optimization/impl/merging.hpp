@@ -347,19 +347,75 @@ int Merging::adoptPoints( _PointContainerT          & points
 /*! \brief Decides, if two patches are adjacent and have the same direction. Used in \ref erging::mergeSameDirGids().
  *
  */
-template <typename _Scalar>
-inline bool decide_merge( _Scalar min_dist, _Scalar threshold, _Scalar angle, _Scalar parallel_limit )
-{
-    return (min_dist < threshold) && (angle < parallel_limit);
-} //...decide_merge
+//template <typename _Scalar>
+//inline bool decide_merge( _Scalar min_dist, _Scalar threshold, _Scalar angle, _Scalar parallel_limit )
+//{
+//    return (min_dist < threshold) && (angle < parallel_limit);
+//} //...decide_merge
 
 template <class _PrimitiveT, typename _Scalar>
-inline _Scalar segmentDistance( std::vector<Eigen::Matrix<_Scalar,3,1> > const& extrema0
-                              , _PrimitiveT const& l0
-                              , std::vector<Eigen::Matrix<_Scalar,3,1> > const& extrema1
-                              , _PrimitiveT const& l1 )
+//inline _Scalar segmentDistance(
+inline bool decide_merge(
+        std::vector<Eigen::Matrix<_Scalar,3,1> > const& extrema0
+        , _PrimitiveT const& l0
+        , std::vector<Eigen::Matrix<_Scalar,3,1> > const& extrema1
+        , _PrimitiveT const& l1
+        , _Scalar scale)
 {
-    _Scalar min_dist = std::numeric_limits<_Scalar>::max();
+
+    // We have two lines l0 and l1, respectively defined by
+    // l0a-l0b and l1a-l1b
+    //  1. We project l0a and l0b to l1 (orthogonally to l1), and compute the norm of l0a-proj(l0a,l1) and l0b-proj(l0b,l1)
+    //  2. Compute the other way
+    //  3. Check if the two lines are almost aligned (all norms are smaller than the scale parameters)
+    //  4. If one way is correct, project second line end points to the first one
+    //     and check at least one end point is projected the segment
+    const Eigen::Matrix<_Scalar,3,1> & l0a = extrema0[0];
+    const Eigen::Matrix<_Scalar,3,1> & l0b = extrema0[1];
+    const Eigen::Matrix<_Scalar,3,1> & l1a = extrema1[0];
+    const Eigen::Matrix<_Scalar,3,1> & l1b = extrema1[1];
+
+    const Eigen::Matrix<_Scalar,3,1> n0 = l0.template normal<_Scalar>();
+
+    //const _Scalar sqScale = scale*scale;
+    //const _Scalar l0SqLengthAndScale = (l0b-l0a).squaredNorm() + scale*scale;
+
+    // check if l1 is aligned to l0
+    if ( std::abs(n0.dot(l1a-l0a)) <= scale && // check l1a-proj(l1a,l0) <= scale
+         std::abs(n0.dot(l1b-l0a)) <= scale){  // check l1b-proj(l1b,l0) <= scale
+
+        // check if at least one l1 endpoint is projected onto l0
+        const Eigen::Matrix<_Scalar,3,1> l0dir = (l0b - l0a).normalized();
+        const _Scalar dl0  = (l0b - l0a).norm() + scale;
+        const _Scalar dl1a = l0dir.dot(l1a-l0a);
+        const _Scalar dl1b = l0dir.dot(l1b-l0a);
+
+        if ((dl1a >= _Scalar(0.) && dl1a <= dl0) ||
+            (dl1b >= _Scalar(0.) && dl1b <= dl0))
+                return true;
+    }
+
+    const Eigen::Matrix<_Scalar,3,1> n1 = l1.template normal<_Scalar>();
+
+    // check if l0 is aligned to l1
+    if (( std::abs(n1.dot(l0a-l1a)) <= scale &&  // check l0a-proj(l0a,l0) <= scale
+          std::abs(n1.dot(l0b-l1a)) <= scale )){ // check l0b-proj(l0b,l0) <= scale
+
+        // check if at least one l0 endpoint is projected onto l1
+        const Eigen::Matrix<_Scalar,3,1> l1dir = (l1b - l1a).normalized();
+        const _Scalar dl1  = (l1b - l1a).norm() + scale;
+        const _Scalar dl0a = l1dir.dot(l0a-l1a);
+        const _Scalar dl0b = l1dir.dot(l0b-l1a);
+
+        if ((dl0a >= _Scalar(0.) && dl0a <= dl1) ||
+            (dl0b >= _Scalar(0.) && dl0b <= dl1))
+                return true;
+    }
+
+    return false;
+
+
+    /*_Scalar min_dist = std::numeric_limits<_Scalar>::max();
 
     for ( int i = 0; i != extrema0.size(); ++i )
         for ( int j = 0; j != extrema1.size(); ++j )
@@ -395,7 +451,7 @@ inline _Scalar segmentDistance( std::vector<Eigen::Matrix<_Scalar,3,1> > const& 
             std::cout << std::endl;
         }
 
-    return min_dist;
+    return min_dist;*/
 }
 
 /*! \brief Merges adjacent patches that have the same direction ID or are almost parallel.
@@ -474,6 +530,8 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
         CHECK( err, "calcExtrema" )
     } //...getExtrema
 
+    std::cout << "SCALE = " << scale << std::endl;
+
     typedef std::map< GidLid, GidLid > AliasesT;
     AliasesT aliases;
     // outer traversal
@@ -514,7 +572,7 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
 #if 1
                     _PrimitiveT const& prim0 = primitives.at(gid0).at(lid0);
                     _PrimitiveT const& prim1 = primitives.at(gid1).at(lid1);
-                    min_dist = segmentDistance( extrema0, prim0, extrema1, prim1 );
+                    //min_dist = segmentDistance( extrema0, prim0, extrema1, prim1 );
 #else
                     for ( int i = 0; i != extrema0.size(); ++i )
                         for ( int j = 0; j != extrema1.size(); ++j )
@@ -528,14 +586,15 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
 #endif
 
 
-                    int dir0 = primitives.at( gid0 ).at( lid0 ).getTag( _PrimitiveT::DIR_GID );
-                    int dir1 = primitives.at( gid1 ).at( lid1 ).getTag( _PrimitiveT::DIR_GID );
-                    _Scalar ang = angleInRad( primitives.at( gid0 ).at( lid0 ).template dir(),
-                                              primitives.at( gid1 ).at( lid1 ).template dir() );
+                    int dir0 = primitives.at( gid0 ).at( lid0 ).getTag( _PrimitiveT::DIR_GID ); //used for print only
+                    int dir1 = primitives.at( gid1 ).at( lid1 ).getTag( _PrimitiveT::DIR_GID ); //used for print only
+                    //_Scalar ang = angleInRad( primitives.at( gid0 ).at( lid0 ).template dir(),  //used for print only
+                    //                          primitives.at( gid1 ).at( lid1 ).template dir() );
 
-                    std::cout << "testing (" << gid0 << "," << dir0 << ")" << " vs. " << "(" << gid1 << "," << dir1 << ")\t"
-                              << min_dist << " < " <<  spatial_threshold << " && " << ang << " < " << parallel_limit;
-                    if ( decide_merge(min_dist, spatial_threshold, ang, parallel_limit) ) // (min_dist < 3. * scale) && (dir0 == dir1) && (ang < parallel_limit) )
+                    std::cout << "testing (" << gid0 << "," << dir0 << ")" << " vs. " << "(" << gid1 << "," << dir1 << ")\t" << endl;
+                    //          << min_dist << " < " <<  spatial_threshold << " && " << ang << " < " << parallel_limit;
+                    //if ( decide_merge(min_dist, spatial_threshold, ang, parallel_limit) ) // (min_dist < 3. * scale) && (dir0 == dir1) && (ang < parallel_limit) )
+                    if (decide_merge( extrema0, prim0, extrema1, prim1, scale ))
                     {
                         std::cout << "would merge "
                                   << "(" << gid0 << "," << lid0 << "," << dir0 << ")"
