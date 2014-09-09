@@ -191,8 +191,6 @@ namespace GF2
         // filter already copied directions
         std::map< int, std::set<int> > copied; // [gid] = [ dir0, dir 1, dir2, ... ]
 
-        int l0, l1, l2, l3;
-        l0 = l1 = l2 = l3 = 0;                  // linear indices cached
         int gid0, gid1, dir_gid0, dir_gid1;
         gid0 = gid1 = dir_gid0 = dir_gid1 = -1; // group tags cached
 
@@ -201,57 +199,52 @@ namespace GF2
         // for a = 0 {   for b = 0 {   for c = a {   for d = b {   ...   } } } }
 
         // OUTER0 (a)
-        l0 = 0; // reset linear counter
         for ( outer_const_iterator outer_it0  = in_lines.begin();
                                    outer_it0 != in_lines.end();
-                                 ++outer_it0, ++l0 )
+                                 ++outer_it0 )
         {
             // INNER1 (b)
-            l1 = 0; // reset linear counter
+            gid0 = -2; // -1 is unset, -2 is unread
             for ( inner_const_iterator inner_it0  = containers::valueOf<_PrimitiveT>(outer_it0).begin();
                                        inner_it0 != containers::valueOf<_PrimitiveT>(outer_it0).end();
-                                     ++inner_it0, ++l1 )
+                                     ++inner_it0 )
             {
                 // cache outer primitive
                 _PrimitiveT const& prim0 = containers::valueOf<_PrimitiveT>( inner_it0 );
                 dir_gid0                 = prim0.getTag( _PrimitiveT::DIR_GID );
 
                 // cache group id of patch at first member
-                if ( !l1 )
+                if ( gid0 == -2 )
                     gid0 = prim0.getTag( _PrimitiveT::GID ); // store gid of first member in patch
                 else if ( prim0.getTag(_PrimitiveT::GID) != gid0 )
                     std::cerr << "[" << __func__ << "]: " << "Not good, prims under one gid don't have same GID..." << std::endl;
 
 
                 // OUTER1 (c)
-                l2 = l0; // reset linear counter
+                gid1 = -2; // -1 is unset, -2 is unread
                 for ( outer_const_iterator outer_it1  = in_lines.begin();
                                            outer_it1 != in_lines.end();
-                                         ++outer_it1, ++l2 )
+                                         ++outer_it1 )
                 {
                     if ( outer_it1 == in_lines.begin() )
                          std::advance( outer_it1, std::distance<outer_const_iterator>( in_lines.begin(), outer_it0) );
 
                     // INNER1 (d)
-                    l3 = l1; // reset linear counter
-                    for ( inner_const_iterator inner_it1  = containers::valueOf<_PrimitiveT>(outer_it1).begin() + std::distance<inner_const_iterator>( containers::valueOf<_PrimitiveT>(outer_it0).begin(), inner_it0 );
+                    for ( inner_const_iterator inner_it1  = (outer_it0 == outer_it1) ? inner_it0
+                                                                                     : containers::valueOf<_PrimitiveT>(outer_it1).begin();
                                                inner_it1 != containers::valueOf<_PrimitiveT>(outer_it1).end();
-                                             ++inner_it1, ++l3 )
+                                             ++inner_it1 )
                     {
                         // cache inner primitive
                         _PrimitiveT const& prim1 = containers::valueOf<_PrimitiveT>( inner_it1 );
                         dir_gid1                 = prim1.getTag( _PrimitiveT::DIR_GID );
 
                         // cache group id of patch at first member
-                        if ( !l3 )
+                        if ( gid1 == -2 )
                             gid1 = prim1.getTag( _PrimitiveT::GID );
 
                         // check, if same line (don't need both copies then, since 01-01 =~= 01-01)
-                        const bool same_line = equal2D( l0, l1, l2, l3 );
-                        if ( same_line != ((outer_it0 == outer_it1) && (inner_it0 == inner_it1)) )
-                        {
-                            std::cerr << "iterator based same_line will NOT work..." << std::endl;
-                        }
+                        const bool same_line = ((outer_it0 == outer_it1) && (inner_it0 == inner_it1));
 
                         bool add0 = same_line, // add0: new primitive at location of prim0, with direction from prim1. We need to keep a copy, so true if same_line.
                              add1 = false;     // add1: new primitive at location of prim1, with direction from prim0
@@ -278,15 +271,14 @@ namespace GF2
                         {
                             // both need to be large to work
                             add0 &= add1 &= (populations[gid0].size() >= params.patch_population_limit) && (populations[gid1].size() >= params.patch_population_limit);
-                            //add1 &= (populations[gid0] >= params.patch_population_limit);
                         }
 
                         // store already copied pairs
                         {
-                            if ( copied[gid0].find( dir_gid1 ) != copied[gid0].end() )
+                            if ( copied[gid0].find(dir_gid1) != copied[gid0].end() )
                                 add0 = false;
 
-                            if ( copied[gid1].find( dir_gid0 ) != copied[gid1].end() )
+                            if ( copied[gid1].find(dir_gid0) != copied[gid1].end() )
                                 add1 = false;
                         }
 
@@ -321,13 +313,15 @@ namespace GF2
 
                             // debug
                             if ( copied[cand0.getTag(_PrimitiveT::GID)].size() == tmp_size )
-                                std::cerr << "[" << __func__ << "][" << __LINE__ << "]: NOOOOO insertion, should not happen" << std::endl;
+                                std::cerr << "[" << __func__ << "][" << __LINE__ << "]: NOOOOO insertion, should not happen"
+                                          << cand0.getTag( _PrimitiveT::GID ) << ", " << cand0.getTag( _PrimitiveT::DIR_GID )
+                                          << std::endl;
                         }
 
                         if ( !same_line && add1 ) // add other copy only, if it's not the same line (we don't want duplicates)
                         {
                             _PrimitiveT cand1 = _PrimitiveT( prim1.pos(), dir1 );
-                            cand1.setTag( _PrimitiveT::GID    , prim1.getTag(_PrimitiveT::GID) );
+                            cand1.setTag( _PrimitiveT::GID    , prim1.getTag(_PrimitiveT::GID    ) );
                             cand1.setTag( _PrimitiveT::DIR_GID, prim0.getTag(_PrimitiveT::DIR_GID) );
 
                             // copy line from pid1 to pid
@@ -343,7 +337,7 @@ namespace GF2
 
                             // debug
                             if ( copied[cand1.getTag(_PrimitiveT::GID)].size() == tmp_size )
-                                std::cerr << "[" << __func__ << "][" << __LINE__ << "]: NOOOOO insertion, should not happen" << std::endl;
+                                std::cerr << "[" << __func__ << "][" << __LINE__ << "]: NOOOOO insertion, should not happen for " << cand1.getTag( _PrimitiveT::GID ) << ", " << cand1.getTag( _PrimitiveT::DIR_GID ) << std::endl;
                         } //...if add1
                     } //...for l3
                 } //...for l2
