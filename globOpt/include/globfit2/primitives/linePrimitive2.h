@@ -13,8 +13,9 @@ namespace GF2
         public:
             //! \brief Defines the tags (ids) that this primitive can manage using setTag and getTag functions.
             enum TAGS {
-                GID         //!< group id             - which group this primitive is supposed to explain
-                , DIR_GID   //!< direction group id   - which group this primitive got it's direction from
+                GID       = 0 //!< group id             - which group this primitive is supposed to explain
+                , DIR_GID = 1 //!< direction group id   - which group this primitive got it's direction from
+                , CHOSEN  = 2 //!< an additional flag to store, if this is part of a solution.
             };//...TAGS
 
 #if 0 // __cplusplus > 199711L

@@ -189,6 +189,7 @@ ProblemSetup::formulateCli( int    argc
     return err;
 } //...ProblemSetup::formulateCli()
 
+
 template < class _PointPrimitiveDistanceFunctor
          , class _PrimitiveContainerT
          , class _PointContainerT
@@ -199,7 +200,6 @@ template < class _PointPrimitiveDistanceFunctor
 ProblemSetup::formulate( problemSetup::OptProblemT                                          & problem
                        , _PrimitiveContainerT                                          const& prims
                        , _PointContainerT                                              const& points
-                       //, std::vector<std::pair<int,int> >                              const& points_primitives
                        , typename ProblemSetupParams<_Scalar>::CONSTR_MODE             const  constr_mode
                        , typename ProblemSetupParams<_Scalar>::DATA_COST_MODE          const  data_cost_mode
                        , _Scalar                                                       const  scale
@@ -220,6 +220,7 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
 
     typedef std::pair<int,int> IntPair;
     /*   */ std::map <IntPair,int> lids_varids;
+    std::set<int> chosen_varids;
 
     // ____________________________________________________
     // Variables - Add variables to problem
@@ -235,7 +236,10 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
                 sprintf( name, "x_%d_%d", gid, dir_gid );
 
                 // store var_id for later, add binary variable
-                lids_varids[ IntPair(lid,lid1) ] = problem.addVariable( OptProblemT::BOUND::RANGE, 0.0, 1.0, OptProblemT::VAR_TYPE::INTEGER );
+                const int var_id = problem.addVariable( OptProblemT::BOUND::RANGE, 0.0, 1.0, OptProblemT::VAR_TYPE::INTEGER );
+                lids_varids[ IntPair(lid,lid1) ] = var_id;
+                if ( prims[lid][lid1].getTag(_PrimitiveT::CHOSEN) > 0 )
+                    chosen_varids.insert( var_id );
             }
         }
     } // ... variables
@@ -325,6 +329,20 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
             } // ... lid1
         } // ... lid
     } //...pairwise cost
+
+    // ____________________________________________________
+    // Initial solution
+    {
+        if ( chosen_varids.size() )
+        {
+            OptProblemT::SparseMatrix x0( problem.getVarCount(), 1 );
+            for ( std::set<int>::const_iterator it = chosen_varids.begin(); it != chosen_varids.end(); ++it )
+            {
+                x0.insert( *it, 0 ) = 1;
+            }
+            problem.setStartingPoint( x0 );
+        }
+    } //...Initial solution
 
     // log
     if ( (EXIT_SUCCESS == err) && verbose )

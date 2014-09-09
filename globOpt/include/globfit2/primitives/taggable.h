@@ -63,6 +63,26 @@ namespace GF2
                     return -1;
             }
 
+            inline int
+            copyTagsFrom( Taggable const& other )
+            {
+                _tags     = other._tags;
+                _str_tags = other._str_tags;
+
+                return EXIT_SUCCESS;
+            }
+
+            /*! \brief Hack to return all int keyed tags. Used in \ref io::savePrimitives(). TODO: change to Taggable.serialize, deserialize.
+             */
+            inline std::vector<int>
+            getIntTags() const
+            {
+                std::vector<int> tags;
+                for ( std::map<int,int>::const_iterator it = _tags.begin(); it != _tags.end(); ++it )
+                    tags.push_back( it->second );
+                return tags;
+            }
+
         protected:
             std::map<int,int>           _tags;      //!< \brief Stores values for int keys.
             std::map<std::string,int>   _str_tags;  //!< \brief Stores values for string keys.
