@@ -347,7 +347,7 @@ Segmentation::segmentCli( int    argc
 
     CandidateGeneratorParams<_Scalar> generatorParams;
     std::string                 cloud_path              = "./cloud.ply";
-    _Scalar                     angle_gen               = M_PI_2;
+    std::vector<_Scalar>        angle_gens              = { _Scalar(90.) };
     std::string                 mode_string             = "representative_sqr";
     std::vector<std::string>    mode_opts               = { "representative_sqr" };
 
@@ -381,7 +381,7 @@ Segmentation::segmentCli( int    argc
             std::cerr << "[" << __func__ << "]: " << "--patch-refit option has been DEPRECATED. exiting." << std::endl;
             return EXIT_FAILURE;
         }
-        pcl::console::parse_argument( argc, argv, "--angle-gen", angle_gen );
+        pcl::console::parse_x_arguments( argc, argv, "--angle-gens", angle_gens );
 
         // print usage
         {
@@ -397,7 +397,7 @@ Segmentation::segmentCli( int    argc
 
             std::cerr << "\t [--angle-limit " << generatorParams.angle_limit << "]\n";
             std::cerr << "\t [--patch-dist-limit " << generatorParams.patch_dist_limit_mult << "]\n";
-            std::cerr << "\t [--angle-gen " << angle_gen << "]\n";
+            std::cerr << "\t [--angle-gens "; for(int i=0;i!=angle_gens.size();++i)std::cerr<<angle_gens[i];std::cerr<<"]\n";
             std::cerr << std::endl;
 
             if ( !valid_input || pcl::console::find_switch(argc,argv,"--help") || pcl::console::find_switch(argc,argv,"-h") )
@@ -419,7 +419,7 @@ Segmentation::segmentCli( int    argc
     // Read desired angles
     if ( EXIT_SUCCESS == err )
     {
-        processing::appendAnglesFromGenerator( generatorParams.angles, angle_gen, true );
+        processing::appendAnglesFromGenerators( generatorParams.angles, angle_gens, true );
     } //...read angles
 
     // Read points

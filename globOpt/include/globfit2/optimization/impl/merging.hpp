@@ -79,7 +79,7 @@ Merging::mergeCli( int argc, char** argv )
     std::string cloud_path = "cloud.ply",
                 prims_path = "primitives.bonmin.csv",
                 assoc_path = "points_primitives.csv";
-    _Scalar     angle_gen  = M_PI_2;
+    std::vector<_Scalar>  angle_gens = { _Scalar(90.) };
     // parse params
     {
         bool valid_input = true;
@@ -91,7 +91,7 @@ Merging::mergeCli( int argc, char** argv )
         pcl::console::parse_argument( argc, argv, "--cloud", cloud_path );
         valid_input &= boost::filesystem::exists( cloud_path );
 
-        pcl::console::parse_argument( argc, argv, "--angle-gen", angle_gen );
+        pcl::console::parse_x_arguments( argc, argv, "--angle-gens", angle_gens );
         pcl::console::parse_argument( argc, argv, "--adopt", params.do_adopt );
         pcl::console::parse_argument( argc, argv, "--thresh-mult", params.spatial_threshold_mult );
         pcl::console::parse_argument( argc, argv, "--assoc", assoc_path );
@@ -102,8 +102,8 @@ Merging::mergeCli( int argc, char** argv )
                   << "\t--prims " << prims_path << "\n"
                   << "\t--cloud " << cloud_path << "\n"
                   << "\t-a,--assoc " << assoc_path << "\n"
-                  << "\t[--angle-gen " << angle_gen << "]\n"
-                  << "\t[--adopt " << params.do_adopt << "]\n"
+                  << "\t[--angle-gens "; for(int i=0;i!=angle_gens.size();++i)std::cerr<<angle_gens[i]<<",";std::cerr<<"]\n";
+        std::cerr << "\t[--adopt " << params.do_adopt << "]\n"
                   << "\t[--thresh-mult " << params.spatial_threshold_mult << "]\n"
                   << std::endl;
 
@@ -130,7 +130,7 @@ Merging::mergeCli( int argc, char** argv )
     }
 
     // Read desired angles
-    processing::appendAnglesFromGenerator( params.angles, angle_gen, true );
+    processing::appendAnglesFromGenerators( params.angles, angle_gens, true );
 
     // associations
     std::vector<std::pair<int,int> > points_primitives;

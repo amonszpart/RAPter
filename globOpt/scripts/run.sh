@@ -39,6 +39,8 @@ else
 	poplimit=5
 fi
 
+anglegens="36,90";
+
 echo "angle-limit: $anglelimit"
 echo "scale: $scale"
 echo "pw: $pw"
@@ -52,7 +54,7 @@ function my_exec() {
 }
 
 # Segmentation. OUTPUT: patches.csv, points_primitives.csv
-my_exec "$executable --segment --angle-limit $anglelimit --scale $scale"
+my_exec "$executable --segment --angle-limit $anglelimit --scale $scale --angle-gens $anglegens"
 
 input="patches.csv";
 assoc="points_primitives.csv";
@@ -62,16 +64,17 @@ assoc="points_primitives.csv";
 # exit
 
 # Generate candidates. OUT: candidates_it0.csv
-my_exec "$executable --generate -sc $scale -al $anglelimit -ald 1 --patch-pop-limit $poplimit -p $input --assoc $assoc"
+my_exec "$executable --generate -sc $scale -al $anglelimit -ald 1 --patch-pop-limit $poplimit -p $input --assoc $assoc --angle-gens $anglegens"
+#my_exec "../globOptVis --show --scale $scale --use-tags --ids --pop-limit $poplimit -p candidates_it0.csv -a $assoc --title \"generate output\" &"
+
 # Formulate optimization problem. OUT: "problem" directory
-my_exec "$executable --formulate --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --dir-bias 1 --patch-pop-limit $poplimit --candidates candidates_it0.csv -a $assoc"
+my_exec "$executable --formulate --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --dir-bias 1 --patch-pop-limit $poplimit --angle-gens $anglegens --candidates candidates_it0.csv -a $assoc"
 # Solve optimization problem. OUT: primitives_it0.bonmin.csv
 my_exec "$executable --solver bonmin --problem problem -v --time -1 --candidates candidates_it0.csv"
 # Show output of first iteration.
 my_exec "../globOptVis --show --scale $scale --ids --pop-limit $poplimit -p primitives_it0.bonmin.csv -a $assoc --title \"1st iteration output\" &"
-
 # Merge adjacent candidates with same dir id. OUT: primitives_merged_it0.csv, points_primitives_it0.csv
-my_exec "$executable --merge --scale $scale --adopt 0 --prims primitives_it0.bonmin.csv -a $assoc"
+my_exec "$executable --merge --scale $scale --adopt 0 --prims primitives_it0.bonmin.csv -a $assoc --angle-gens $anglegens"
 
 input="primitives_merged_it0.csv";
 assoc="points_primitives_it0.csv";
@@ -80,16 +83,16 @@ assoc="points_primitives_it0.csv";
 my_exec "../globOptVis --show --scale $scale --ids --pop-limit $poplimit -p $input -a $assoc --title \"Merged 1st iteration output\" &"
 
 # Generate candidates from output of first. OUT: candidates_it1.csv
-my_exec "$executable --generate -sc $scale -al 1 -ald 1 --small-mode 2 --patch-pop-limit $poplimit -p $input --assoc $assoc"
+my_exec "$executable --generate -sc $scale -al 1 -ald 1 --small-mode 2 --patch-pop-limit $poplimit --angle-gens $anglegens -p $input --assoc $assoc"
 # Show candidates:
 # my_exec "../globOptVis --show --scale $scale -a points_primitives.csv --ids -p candidates_it0.csv --pop-limit $poplimit &"
 # Formulate optimization problem. OUT: "problem" directory
-my_exec "$executable --formulate --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --constr-mode 0 --dir-bias 1 --patch-pop-limit $poplimit --candidates candidates_it1.csv -a $assoc"
+my_exec "$executable --formulate --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --constr-mode 0 --dir-bias 1 --patch-pop-limit $poplimit --angle-gens $anglegens --candidates candidates_it1.csv -a $assoc"
 # Solve optimization problem. OUT: primitives_it1.bonmin.csv
-my_exec "$executable --solver bonmin -v --problem problem --time -1 --candidates candidates_it1.csv"
+my_exec "$executable --solver bonmin -v --problem problem --time -1 --angle-gens $anglegens --candidates candidates_it1.csv"
 
 # Merge adjacent candidates with same dir id. OUT: primitives_merged_it1.csv, points_primitives_it1.csv
-my_exec "$executable --merge --scale $scale --adopt 0 --prims primitives_it1.bonmin.csv -a $assoc"
+my_exec "$executable --merge --scale $scale --adopt 0 --angle-gens $anglegens --prims primitives_it1.bonmin.csv -a $assoc"
 
 # Show output of second iteration.
-my_exec "../globOptVis --show --scale $scale --ids --pop-limit 0 --prims primitives_merged_it1.csv -a points_primitives_it1.csv --title \"Merged 2nd iteration output\"&"
+my_exec "../globOptVis --show --scale $scale --ids --pop-limit 0 --angle-gens $anglegens --prims primitives_merged_it1.csv -a points_primitives_it1.csv --title \"Merged 2nd iteration output\"&"

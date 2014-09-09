@@ -69,8 +69,9 @@ namespace GF2 {
          *  \param[in] verbose        Enable logging.
          */
         template <class _AnglesContainerT, class _Scalar> inline int
-        appendAnglesFromGenerator( _AnglesContainerT &angles, _Scalar &angle_gen, char verbose = true )
+        appendAnglesFromGenerators( _AnglesContainerT &angles, std::vector<_Scalar> &angle_gens, char verbose = true )
         {
+            std::cout << "[" << __func__ << "]: " << "ASSUMING DEGREES" << std::endl;
             std::set<_Scalar> angles_set;
             // copy
             angles_set.insert( angles.begin(), angles.end() );
@@ -78,9 +79,13 @@ namespace GF2 {
             // insert 0 element
             angles_set.insert( _Scalar(0) );
 
-            // generate
-            for ( _Scalar angle = angle_gen; angle < M_PI; angle+= angle_gen )
-                angles_set.insert( angle );
+            for ( int i = 0; i != angle_gens.size(); ++i )
+            {
+                _Scalar angle_gen_rad = angle_gens[i] * M_PI/_Scalar(180.);
+                // generate
+                for ( _Scalar angle = angle_gen_rad; angle < M_PI; angle+= angle_gen_rad )
+                    angles_set.insert( angle );
+            }
 
             // insert 0 element
             angles_set.insert( _Scalar(M_PI) );
@@ -93,7 +98,7 @@ namespace GF2 {
             {
                 std::cout << "Desired angles: {";
                 for ( size_t vi=0;vi!=angles.size();++vi)
-                    std::cout << angles[vi] << ((vi==angles.size()-1) ? "" : ", ");
+                    std::cout << angles[vi] << "(" << angles[vi] * _Scalar(180.) / M_PI << ")" << ((vi==angles.size()-1) ? "" : ", ");
                 std::cout << "}\n";
             }
 

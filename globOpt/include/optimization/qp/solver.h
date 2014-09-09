@@ -160,7 +160,7 @@ Solver::generateCli( int    argc
 
     CandidateGeneratorParams<Scalar> generatorParams;
     std::string                 cloud_path              = "./cloud.ply";
-    Scalar                      angle_gen               = M_PI_2;
+    std::vector<Scalar>         angle_gens              = { Scalar(90.) };
     std::string                 mode_string             = "representative_sqr";
     std::vector<std::string>    mode_opts               = { "representative_sqr"
 #if GF2_WITH_FULL_LINKAGE
@@ -213,7 +213,7 @@ Solver::generateCli( int    argc
         pcl::console::parse_argument( argc, argv, "--angle-limit-div", generatorParams.angle_limit_div );
         pcl::console::parse_argument( argc, argv, "-ald", generatorParams.angle_limit_div );
         pcl::console::parse_argument( argc, argv, "--patch-dist-limit", generatorParams.patch_dist_limit_mult ); // gets multiplied by scale
-        pcl::console::parse_argument( argc, argv, "--angle-gen", angle_gen );
+        pcl::console::parse_x_arguments( argc, argv, "--angle-gens", angle_gens );
         pcl::console::parse_argument( argc, argv, "--patch-pop-limit", generatorParams.patch_population_limit );
 
         // patchDistMode
@@ -258,7 +258,7 @@ Solver::generateCli( int    argc
             std::cerr << "\t [-al,--angle-limit " << generatorParams.angle_limit << "]\n";
             std::cerr << "\t [-ald,--angle-limit-div " << generatorParams.angle_limit_div << "]\n";
             std::cerr << "\t [--patch-dist-limit " << generatorParams.patch_dist_limit_mult << "]\n";
-            std::cerr << "\t [--angle-gen " << angle_gen << "]\n";
+            std::cerr << "\t [--angle-gens "; for(size_t vi=0;vi!=angle_gens.size();++vi)std::cerr<<angle_gens[vi]<<","; std::cerr << "]\n";
             std::cerr << "\t [--patch-pop-limit " << generatorParams.patch_population_limit << "]\n";
             std::cerr << "\t [--small-mode " << generatorParams.small_mode << "\t | 0: IGNORE, 1: RECEIVE_SIMILAR, 2: RECEIVE_ALL]\n";
             std::cerr << std::endl;
@@ -282,7 +282,7 @@ Solver::generateCli( int    argc
     // Read desired angles
     if ( EXIT_SUCCESS == err )
     {
-        processing::appendAnglesFromGenerator( generatorParams.angles, angle_gen, true );
+        processing::appendAnglesFromGenerators( generatorParams.angles, angle_gens, true );
     } //...read angles
 
     // Read points

@@ -14,7 +14,7 @@ namespace GF2 {
             _Scalar scale = 0.05;
 
             //! \brief Desired angles.
-            std::vector<_Scalar> angles = { 0, M_PI_2, M_PI };
+            std::vector<_Scalar> angles; // = { 0, M_PI_2, M_PI };
 
             //! \brief  Point-count threshold, that decides if a patch is big or small. (small: \#points < patch_pop_limit, large: \#points >= patch_pop_limit).
             //!         \n Used in \ref CandidateGenerator::generate(), \ref ProblemSetup::formulate(), \ref problemSetup::largePatchesNeedDirectionConstraint().

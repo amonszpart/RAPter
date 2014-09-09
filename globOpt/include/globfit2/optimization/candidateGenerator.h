@@ -302,7 +302,6 @@ namespace GF2
                             cand0.setTag( _PrimitiveT::DIR_GID, prim1.getTag(_PrimitiveT::DIR_GID) ); // recently changed this from GID
                             if ( same_line )
                             {
-                                std::cout << "copying chosen " << prim0.getTag(_PrimitiveT::CHOSEN) << ", but maybe: " << prim1.getTag(_PrimitiveT::CHOSEN) << std::endl;
                                 cand0.setTag(_PrimitiveT::CHOSEN, prim0.getTag(_PrimitiveT::CHOSEN) ); // keep chosen lines chosen
                             }
                             // insert

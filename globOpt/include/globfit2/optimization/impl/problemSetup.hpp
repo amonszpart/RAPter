@@ -38,8 +38,9 @@ ProblemSetup::formulateCli( int    argc
                               candidates_path  = "candidates.csv",
                               assoc_path       = "points_primitives.csv";
     //std::vector<Scalar>       angles           = {0, M_PI_2, M_PI };   // TODO: param
-    params.angles = {0, M_PI_2, M_PI };
+    //params.angles = {0, M_PI_2, M_PI };
     //Eigen::Matrix<Scalar,3,1> weights;           weights << 1, 5, 1;   // --unary 1 --pw 5 --cmplx 1
+    std::vector<Scalar>       angle_gens       = { M_PI_2 };
     int                       srand_val        = 123456;
     std::string               cost_string      = "sqrt";
     std::string               problem_rel_path = "problem";
@@ -64,6 +65,7 @@ ProblemSetup::formulateCli( int    argc
         pcl::console::parse_argument( argc, argv, "--cost-fn", cost_string );
         pcl::console::parse_argument( argc, argv, "--srand", srand_val );
         pcl::console::parse_argument( argc, argv, "--rod"  , problem_rel_path );
+        pcl::console::parse_x_arguments( argc, argv, "--angle-gens", angle_gens );
         pcl::console::parse_argument( argc, argv, "--dir-bias", params.dir_id_bias );
         if ( (pcl::console::parse_argument( argc, argv, "--assoc", assoc_path) < 0) && pcl::console::parse_argument( argc, argv, "-a", assoc_path ) < 0 )
         {
@@ -100,7 +102,8 @@ ProblemSetup::formulateCli( int    argc
                   << " --cloud " << cloud_path << "\n"
                   << " --candidates " << candidates_path << "\n"
                   << " -a,--assoc " << assoc_path << "\n"
-                  << " [--dir-bias " << params.dir_id_bias << "]\n"
+                  << " [--angle-gens "; for(size_t vi=0;vi!=angle_gens.size();++vi)std::cerr<<angle_gens[vi]<<","; std::cerr << "]\n";
+        std::cerr << " [--dir-bias " << params.dir_id_bias << "]\n"
                   << " [--unary " << params.weights(0) << "]\n"
                   << " [--pw " << params.weights(1) << "]\n"
                   << " [--cmp " << params.weights(2) << "]\n"
@@ -117,6 +120,11 @@ ProblemSetup::formulateCli( int    argc
             return EXIT_FAILURE;
         }
     } // ... parse params
+
+    // Read desired angles
+    {
+        processing::appendAnglesFromGenerators( params.angles, angle_gens, true );
+    } //...read angles
 
     // read points
     _PointContainerT     points;
