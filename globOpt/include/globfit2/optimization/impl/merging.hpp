@@ -575,15 +575,15 @@ inline void merge( Container&        out_primitives, // [out] Container storing 
     std::cout << "compute Arity...." << std::endl;
 
     // Compute arities
-    if (did0 != did1){
+    //if (did0 != did1){
         merging::DirectionGroupArityFunctor<PrimitiveT> functor;
         processing::filterPrimitives<PrimitiveT,
                 typename Container::mapped_type::const_iterator > (out_primitives, functor);
         std::cout << "compute Arity....DONE" << std::endl;
         arity0 = functor._arities[did0];
         arity1 = functor._arities[did1];
-    }else
-        std::cout << "Same direction Id  " << std::endl;
+    //}else
+    //    std::cout << "Same direction Id  " << std::endl;
 
 
     std::cout << "remove previous instances" << std::endl;
