@@ -205,34 +205,31 @@ namespace GF2
         {
             // INNER1 (b)
             gid0 = -2; // -1 is unset, -2 is unread
-            for ( inner_const_iterator inner_it0  = containers::valueOf<_PrimitiveT>(outer_it0).begin();
-                                       inner_it0 != containers::valueOf<_PrimitiveT>(outer_it0).end();
+            for ( inner_const_iterator inner_it0  = (*outer_it0).second.begin();
+                                       inner_it0 != (*outer_it0).second.end();
                                      ++inner_it0 )
             {
                 // cache outer primitive
-                _PrimitiveT const& prim0 = containers::valueOf<_PrimitiveT>( inner_it0 );
+                _PrimitiveT const& prim0 = *inner_it0;
                 dir_gid0                 = prim0.getTag( _PrimitiveT::DIR_GID );
 
                 // cache group id of patch at first member
                 if ( gid0 == -2 )
                     gid0 = prim0.getTag( _PrimitiveT::GID ); // store gid of first member in patch
-                else if ( prim0.getTag(_PrimitiveT::GID) != gid0 )
+                else if ( (*outer_it0).first != gid0 )
                     std::cerr << "[" << __func__ << "]: " << "Not good, prims under one gid don't have same GID..." << std::endl;
 
 
                 // OUTER1 (c)
-                gid1 = -2; // -1 is unset, -2 is unread
-                for ( outer_const_iterator outer_it1  = in_lines.begin();
+                for ( outer_const_iterator outer_it1  = outer_it0;
                                            outer_it1 != in_lines.end();
                                          ++outer_it1 )
                 {
-                    if ( outer_it1 == in_lines.begin() )
-                         std::advance( outer_it1, std::distance<outer_const_iterator>( in_lines.begin(), outer_it0) );
-
+                    gid1 = -2; // -1 is unset, -2 is unread
                     // INNER1 (d)
                     for ( inner_const_iterator inner_it1  = (outer_it0 == outer_it1) ? inner_it0
-                                                                                     : containers::valueOf<_PrimitiveT>(outer_it1).begin();
-                                               inner_it1 != containers::valueOf<_PrimitiveT>(outer_it1).end();
+                                                                                     : (*outer_it1).second.begin();
+                                               inner_it1 != (*outer_it1).second.end();
                                              ++inner_it1 )
                     {
                         // cache inner primitive
@@ -242,6 +239,8 @@ namespace GF2
                         // cache group id of patch at first member
                         if ( gid1 == -2 )
                             gid1 = prim1.getTag( _PrimitiveT::GID );
+                        else if ( (*outer_it1).first != gid1 )
+                            std::cerr << "[" << __func__ << "]: " << "Not good, prims under one gid don't have same GID in inner loop..." << std::endl;
 
                         // check, if same line (don't need both copies then, since 01-01 =~= 01-01)
                         const bool same_line = ((outer_it0 == outer_it1) && (inner_it0 == inner_it1));
