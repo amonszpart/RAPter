@@ -205,7 +205,7 @@ Merging::mergeCli( int argc, char** argv )
 
 
     // dummy example of an iteration over all primitives
-    if ( 1 ) // refit produces nan-s in the lines, not sure if it's because of the merge input, or processing::fitLinearPrimitive
+    if ( 0 ) // refit produces nan-s in the lines, not sure if it's because of the merge input, or processing::fitLinearPrimitive
     {
         typedef merging::RefitFunctor<_PrimitiveT,_PointContainerT,_Scalar> RefitFunctorT;
 
@@ -530,6 +530,16 @@ inline void merge( Container&        out_primitives, // [out] Container storing 
               << " and ("    << gid1 << ","
                              << did1 << std::endl;
 
+
+    // Prepare population for refit (pop + pop1)
+    Population pop = pop0;
+    pop.insert(pop.end(), pop1.begin(), pop1.end());
+
+    if (pop.size() == 0){
+        cerr << "THERE IS SOMETHING WRONG HERE" << endl;
+        exit(-10);
+    }
+
     // When the direction id of the two primitives are differents,
     // the merging behavior is changing according to the arity of the
     // involved direction groups in which the two primitives belong:
@@ -546,6 +556,14 @@ inline void merge( Container&        out_primitives, // [out] Container storing 
     // When the direction id of the two primitives are equals, we can merge refit only the position.
     // This lead to call case b.
 
+
+    // Here are the ids that we be used to recompute the assignement after refit:
+    // points with GID=originalGid will be re-assigned to newGid.
+    // By default, we always transferts the points from l1 to l0 (see below)
+    // but this can be changed regarding the case a-b-c.
+    int originalGid = gid1;
+    int newGid      = gid0;
+
     // Compute arity when the two ids are different
     // Values are initialized with
     // int arity0 = 1;
@@ -554,31 +572,103 @@ inline void merge( Container&        out_primitives, // [out] Container storing 
     int arity0 = 1;
     int arity1 = 2;
 
+    std::cout << "compute Arity...." << std::endl;
+
+    // Compute arities
     if (did0 != did1){
         merging::DirectionGroupArityFunctor<PrimitiveT> functor;
         processing::filterPrimitives<PrimitiveT,
                 typename Container::mapped_type::const_iterator > (out_primitives, functor);
+        std::cout << "compute Arity....DONE" << std::endl;
         arity0 = functor._arities[did0];
         arity1 = functor._arities[did1];
+    }else
+        std::cout << "Same direction Id  " << std::endl;
+
+
+    std::cout << "remove previous instances" << std::endl;
+
+    // Now we can remove the two primitives from the container
+    // They we be replaced in the next part of the function, and we have the
+    // local copies l0 and l1 to get their properties
+    {
+        typename Container::mapped_type& innerContainer0 = out_primitives.at(gid0);
+        typename Container::mapped_type& innerContainer1 = out_primitives.at(gid1);
+        int uid0 = l0.getTag(PrimitiveT::USER_ID1);
+        int uid1 = l1.getTag(PrimitiveT::USER_ID1);
+
+        for(typename Container::mapped_type::iterator it = innerContainer0.begin();
+            it != innerContainer0.end(); it++)
+            if((*it).getTag(PrimitiveT::USER_ID1) == uid0){
+                innerContainer0.erase(it);
+                cout << "erase me" << endl;
+                break;
+            }
+        if (innerContainer0.size() == 0)  out_primitives.erase(gid0);
+        for(typename Container::mapped_type::iterator it = innerContainer1.begin();
+            it != innerContainer1.end(); it++)
+            if((*it).getTag(PrimitiveT::USER_ID1) == uid1){
+                innerContainer1.erase(it);
+                cout << "erase me" << endl;
+                break;
+            }
+        if (innerContainer1.size() == 0) out_primitives.erase(gid1);
     }
 
+
+    // temporary array containing generated primitives
+    std::vector<PrimitiveT> primToAdd;
 
     if (arity0 == 1 && arity1 == 1){
         // two free patches, that have no constraints on their direction
         // here the plan is
         std::cout << "Case A" << std::endl;
 
+        PrimitiveT mergedPrim;
+        processing::fitLinearPrimitive<PrimitiveT::Dim>( /* [in,out] primitives: */ mergedPrim
+                                                       , /*              points: */ points
+                                                       , /*               scale: */ scale
+                                                       , /*             indices: */ &pop
+                                                       , /*    refit iter count: */ 2);               // fit and refit twice
+
+        // by default we copy from l0
+        mergedPrim.copyTagsFrom(l0);
+        primToAdd.push_back(mergedPrim);
 
     }else  if (arity0 != 1 && arity1 != 1){
         // two constrained patches, we need to generate new primitives.
-        std::cout << "Case C" << std::endl;
+        std::cout << "Case C: " << arity0 << " - " << arity1 << std::endl;
+
+        // refit l0 position with the new population
+        PrimitiveT mergedPrim;
+        processing::fitLinearPrimitive<PrimitiveT::Dim>( /* [in,out] primitives: */ mergedPrim
+                                                       , /*              points: */ points
+                                                       , /*               scale: */ scale
+                                                       , /*             indices: */ &pop
+                                                       , /*    refit iter count: */ 2                 // fit and refit twice
+                                                       , /*    start from input: */ &l0
+                                                       , /* refit position only: */ true
+                                                       , /*               debug: */ false  );
+
+        mergedPrim.copyTagsFrom(l0);
+        primToAdd.push_back(mergedPrim);
+
+        // refit l1 position with the new population, and associate it to the same group id than l0
+        processing::fitLinearPrimitive<PrimitiveT::Dim>( /* [in,out] primitives: */ mergedPrim
+                                                       , /*              points: */ points
+                                                       , /*               scale: */ scale
+                                                       , /*             indices: */ &pop
+                                                       , /*    refit iter count: */ 2                 // fit and refit twice
+                                                       , /*    start from input: */ &l1
+                                                       , /* refit position only: */ true
+                                                       , /*               debug: */ false  );
+        mergedPrim.copyTagsFrom(l1);
+        mergedPrim.setTag(PrimitiveT::GID, l0.getTag(PrimitiveT::GID) );
+        primToAdd.push_back(mergedPrim);
+
     }else {
         // one patch is free, the other constrained.
         std::cout << "Case B" << std::endl;
-
-        // prepare population for refit
-        Population pop = pop0;
-        pop.insert(pop.end(), pop1.begin(), pop1.end());
 
         // refit
         PrimitiveT mergedPrim;
@@ -594,48 +684,30 @@ inline void merge( Container&        out_primitives, // [out] Container storing 
 
         mergedPrim.copyTagsFrom(*sourcePrim);
 
-        // remove previous primitives
-        typename Container::mapped_type innerContainer0 = out_primitives.at(gid0);
-        typename Container::mapped_type innerContainer1 = out_primitives.at(gid1);
-        int uid0 = l0.getTag(PrimitiveT::USER_ID1);
-        int uid1 = l1.getTag(PrimitiveT::USER_ID1);
-
-        for(typename Container::mapped_type::iterator it = innerContainer0.begin();
-            it != innerContainer0.end(); it++)
-            if((*it).getTag(PrimitiveT::USER_ID1) == uid0){
-                innerContainer0.erase(it);
-                cout << "erase me" << endl;
-                break;
-            }
-        if (innerContainer0.size() == out_primitives.erase(gid0));
-        for(typename Container::mapped_type::iterator it = innerContainer1.begin();
-            it != innerContainer1.end(); it++)
-            if((*it).getTag(PrimitiveT::USER_ID1) == uid1){
-                innerContainer1.erase(it);
-                cout << "erase me" << endl;
-                break;
-            }
-        if (innerContainer1.size() == out_primitives.erase(gid1));
-
         // add new primitive
-        containers::add<PrimitiveT>( out_primitives, mergedPrim.getTag(PrimitiveT::GID ), mergedPrim );
+        primToAdd.push_back(mergedPrim);
 
-        // recompute assignment
-        int originalGid = gid1;
-        int newGid      = gid0;
+        // this is a constrained fit so we may need to invert the arity transfer direction
         if (arity0 == 1){
             originalGid = gid0;
             newGid      = gid1;
         }
+    }
 
-        typedef typename PointCloud::value_type PointT;
-        for ( size_t pid = 0; pid != points.size(); ++pid )
-        {
-            if ( points[pid].getTag( PointT::GID ) == originalGid){
-                points[pid].setTag(  PointT::GID, newGid );
-            }
+    // add generated primitives
+    for(typename std::vector<PrimitiveT>::const_iterator it = primToAdd.begin(); it != primToAdd.end(); it++){
+        containers::add<PrimitiveT>( out_primitives, (*it).getTag(PrimitiveT::GID ), (*it) );
+        std::cout<< "Add (" << (*it).getTag(PrimitiveT::GID )
+                 << ","     << (*it).getTag(PrimitiveT::DIR_GID ) << ")" << std::endl;
+    }
+
+    // Recompute assignement, from originalGid to newGid
+    typedef typename PointCloud::value_type PointT;
+    for ( size_t pid = 0; pid != points.size(); ++pid )
+    {
+        if ( points[pid].getTag( PointT::GID ) == originalGid){
+            points[pid].setTag(  PointT::GID, newGid );
         }
-
     }
 
     // for now, do nothing except: the two primitives are kept
@@ -744,6 +816,14 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
         }
     }
 
+    // debug
+    cout << "[in]:  " << primitives.size() << endl;
+    for ( outer_const_iterator outer_it  = primitives.begin();
+          (outer_it != primitives.end());
+          ++outer_it )
+        for(auto innerIt = (*outer_it).second.begin(); innerIt != (*outer_it).second.end(); innerIt ++)
+            cout << (*innerIt).getTag(_PrimitiveT::GID ) << " - "
+                 << (*innerIt).getTag(_PrimitiveT::DIR_GID ) << endl;
 
     // Here are two first loops to iterate over the map entries, and for each of them over the
     // linear array containing primitives (we call them ref. primitive in the following).
@@ -847,31 +927,16 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
                         std::cout << " NO" << std::endl;
                 }
             }
-
-            // if we reach that case, we know that this primitive will not been visited anymore,
-            // so it can be add to the out_primitive container
-//            if (is0Valid){
-//                containers::add<_PrimitiveT>( out_primitives, gid0, prim0 );
-
-//                std::cout << "store remaining (" << prim0.getTag(_PrimitiveT::GID )     << ","
-//                          << prim0.getTag(_PrimitiveT::DIR_GID ) << ")t" << std::endl;
-//            }
         }
     }
-
-    cout << "[in]:  " << primitives.size() << endl;
-    for ( outer_const_iterator outer_it  = primitives.begin();
-          (outer_it != primitives.end());
-          ++outer_it )
-        //std::cout << (*outer_it).second.size() << std::endl;
-        cout << (*outer_it).second.at(0).getTag(_PrimitiveT::GID ) << " - " << (*outer_it).second.at(0).getTag(_PrimitiveT::DIR_GID ) << endl;
 
     cout << "[out]: " << out_primitives.size() << endl;
     for ( outer_const_iterator outer_it  = out_primitives.begin();
           (outer_it != out_primitives.end()) ;
           ++outer_it )
-        //std::cout << (*outer_it).second.size() << std::endl;
-        cout << (*outer_it).second.at(0).getTag(_PrimitiveT::GID ) << " - " << (*outer_it).second.at(0).getTag(_PrimitiveT::DIR_GID ) << endl;
+        for(auto innerIt = (*outer_it).second.begin(); innerIt != (*outer_it).second.end(); innerIt ++)
+            cout << (*innerIt).getTag(_PrimitiveT::GID ) << " - "
+                 << (*innerIt).getTag(_PrimitiveT::DIR_GID ) << endl;
 
 
     // debug
