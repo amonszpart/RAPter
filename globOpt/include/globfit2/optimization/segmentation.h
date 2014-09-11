@@ -1,6 +1,10 @@
 #ifndef GF2_SEGMENTATION_H
 #define GF2_SEGMENTATION_H
 
+#include <utility> // pair
+#include <vector>
+#include "Eigen/Dense"
+
 namespace GF2 {
 
 namespace segmentation {

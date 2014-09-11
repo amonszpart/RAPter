@@ -80,7 +80,6 @@ class Solver
 #include "globfit2/optimization/candidateGenerator.h"
 #include "globfit2/optimization/energyFunctors.h"     // PointLineDistanceFunctor,
 #include "globfit2/optimization/problemSetup.h"       // everyPatchNeedsDirection()
-#include "globfit2/optimization/segmentation.h"       // orientPoints, patchify
 
 namespace GF2
 {
@@ -644,10 +643,12 @@ int
 Solver::datafit( int    argc
                , char** argv )
 {
+    int                     err             = EXIT_SUCCESS;
     Scalar                  scale           = 0.05f;
     std::string             cloud_path      = "cloud.ply",
-                            primitives_path = "candidates.csv";
-    Scalar                  angle_gen       = M_PI_2;
+                            primitives_path = "candidates.csv",
+                            associations_path = "";
+    std::vector<Scalar>     angle_gens      = { Scalar(90.) };
     bool                    verbose         = false;
 
     // parse params
@@ -656,20 +657,29 @@ Solver::datafit( int    argc
         valid_input &= pcl::console::parse_argument( argc, argv, "--scale"     , scale          ) >= 0;
         valid_input &= pcl::console::parse_argument( argc, argv, "--cloud"     , cloud_path     ) >= 0;
         valid_input &= pcl::console::parse_argument( argc, argv, "--primitives", primitives_path) >= 0;
-        pcl::console::parse_argument( argc, argv, "--angle-gen", angle_gen );
+        pcl::console::parse_x_arguments( argc, argv, "--angle-gens", angle_gens );
         if ( pcl::console::find_switch(argc,argv,"-v") || pcl::console::find_switch(argc,argv,"--verbose") )
             verbose = true;
+
+        if (    (pcl::console::parse_argument( argc, argv, "-a", associations_path) < 0)
+             && (pcl::console::parse_argument( argc, argv, "--assoc", associations_path) < 0)
+             && (!boost::filesystem::exists(associations_path)) )
+        {
+            std::cerr << "[" << __func__ << "]: " << "-a or --assoc is compulsory" << std::endl;
+            valid_input = false;
+        }
 
         std::cerr << "[" << __func__ << "]: " << "Usage:\t gurobi_opt --gfit\n"
                   << "\t--scale " << scale << "\n"
                   << "\t--cloud " << cloud_path << "\n"
                   << "\t--primitives " << primitives_path << "\n"
-                  << "\t[--angle-gen " << angle_gen << "\n"
-                  << std::endl;
+                  << "\t--a,--assoc " << associations_path << "\n"
+                  << "\t[--angle-gens "; for(size_t i=0;i!=angle_gens.size();++i)std::cerr<<angle_gens[i]<<",";std::cerr<< "]\n";
+        std::cerr << std::endl;
 
         if ( !valid_input || pcl::console::find_switch(argc,argv,"--help") || pcl::console::find_switch(argc,argv,"-h") )
         {
-            std::cerr << "[" << __func__ << "]: " << "--scale, --cloud and --candidates are compulsory" << std::endl;
+            std::cerr << "[" << __func__ << "]: " << "--scale, --cloud and --primitives are compulsory" << std::endl;
             return EXIT_FAILURE;
         }
     } // ... parse params
@@ -678,290 +688,267 @@ Solver::datafit( int    argc
     {
         if ( verbose ) std::cout << "[" << __func__ << "]: " << "reading cloud from " << cloud_path << "...";
         io::readPoints<PointPrimitiveT>( points, cloud_path );
+        std::vector<std::pair<int,int> > points_primitives;
+        io::readAssociations( points_primitives, associations_path, NULL );
+        for ( size_t i = 0; i != points.size(); ++i )
+        {
+            // store association in point
+            points[i].setTag( PointPrimitiveT::GID, points_primitives[i].first );
+        }
         if ( verbose ) std::cout << "reading cloud ok\n";
     } //...read points
 
     // read primitives
+    typedef std::map<int, typename PrimitiveContainerT::value_type> PrimitiveMapT;
     PrimitiveContainerT prims;
+    PrimitiveMapT       patches;
     {
         if ( verbose ) std::cout << "[" << __func__ << "]: " << "reading primitives from " << primitives_path << "...";
-        io::readPrimitives<PrimitiveT, typename PrimitiveContainerT::value_type>( prims, primitives_path );
+        io::readPrimitives<PrimitiveT, typename PrimitiveContainerT::value_type>( prims, primitives_path, &patches );
         if ( verbose ) std::cout << "reading primitives ok\n";
     } //...read primitives
 
     // Read desired angles
-    std::vector<Scalar> angles = { Scalar(0) };
+    std::vector<Scalar> angles;
     {
-        for ( Scalar angle = angle_gen; angle < M_PI; angle+= angle_gen )
-            angles.push_back( angle );
-        angles.push_back( M_PI );
-        std::cout << "Desired angles: {";
-        for ( size_t vi=0;vi!=angles.size();++vi)
-            std::cout << angles[vi] << ((vi==angles.size()-1) ? "" : ", ");
-        std::cout << "}\n";
+        processing::appendAnglesFromGenerators( angles, angle_gens, true );
     } // ... read angles
 
 #if 0
     // WORK
     {
-        const int Dim = 2; // 2: nx,ny, 3: +nz
+        typedef double                         OptScalar;
+        typedef qcqpcpp::BonminOpt<OptScalar> OptProblemT;
+        OptProblemT problem;
+
+        const int Dims = 2; // 2: nx,ny, 3: +nz
         typedef typename PrimitiveContainerT::value_type::value_type PrimitiveT;        // LinePrimitive or PlanePrimitive
         typedef typename PointContainerT::value_type                 PointPrimitiveT;   // PointPrimitive to store oriented points
-        bool gurobi_log = false;
+        typedef          std::pair<int,int>                          IntPair;
+        typedef          std::map<IntPair, std::vector<int> >        PrimsVarsT;
 
         std::vector<std::pair<std::string,Scalar> >     starting_values;    // [var_id] = < var_name, x0 >
-        std::vector< std::vector<std::pair<int,int> > > points_primitives;  // each point is associated to a few { <lid,lid1>_0, <lid,lid1>_1 ... } primitives
-        std::map< std::pair<int,int>, int >             prims_vars;         // < <lid,lid1>, var_id >, associates primitives to variables
+        PrimsVarsT                                      prims_vars;         // < <lid,lid1>, var_id >, associates primitives to variables
+
         char                                            name[255];          // variable name
-        const Eigen::Matrix<Scalar,3,1> origin( Eigen::Matrix<Scalar,3,1>::Zero() ); // to calculate d
+        const Eigen::Matrix<Scalar,3,1>                 origin( Eigen::Matrix<Scalar,3,1>::Zero() ); // to calculate d
 
-        // add costs
+        typedef typename PrimitiveMapT::mapped_type InnerType;
+
+        // add variables
         {
-            for ( size_t lid = 0; lid != prims.size(); ++lid )
+            int lid = 0;
+            for ( PrimitiveMapT::const_iterator gid_it = patches.begin(); gid_it != patches.end(); ++gid_it, ++lid )
             {
-                for ( size_t lid1 = 0; lid1 != prims[lid].size(); ++lid1 )
+                int lid1 = 0;
+                for ( InnerType::const_iterator dir_it  = containers::valueOf<PrimitiveT>(gid_it).begin();
+                                                dir_it != containers::valueOf<PrimitiveT>(gid_it).end();
+                                              ++dir_it, ++lid1 )
                 {
-                    // add var
-                    const int gid     = prims[lid][lid1].getTag( PrimitiveT::GID     ); //lid;
-                    const int dir_gid = prims[lid][lid1].getTag( PrimitiveT::DIR_GID ); //lid1;
+                    PrimitiveT const& prim = *dir_it;
 
-                    Eigen::Matrix<Scalar,3,1> normal = prims[lid][lid1].template normal<Scalar>();
+                    const int gid     = prim.getTag( PrimitiveT::GID     ); //lid;
+                    const int dir_gid = prim.getTag( PrimitiveT::DIR_GID ); //lid1;
+
+                    Eigen::Matrix<Scalar,3,1> normal = prim.template normal<Scalar>();
                     std::cout << "line_" << gid << "_" << dir_gid << ".n = " << normal.transpose() << std::endl;
-                    vars[lid].emplace_back( std::vector<GRBVar>() );
 
                     sprintf( name, "nx_%d_%d", gid, dir_gid );
-                    //vars[lid].back().emplace_back( model.addVar(-GRB_INFINITY, GRB_INFINITY, normal(0), GRB_CONTINUOUS, name) );
-                    vars[lid].back().emplace_back( model.addVar(-GRB_INFINITY, GRB_INFINITY, 0.0, GRB_CONTINUOUS, name) );
+                    prims_vars[ IntPair(lid,lid1) ].push_back( problem.addVariable(OptProblemT::BOUND::RANGE, -problem.getINF(), problem.getINF(), OptProblemT::VAR_TYPE::CONTINUOUS, OptProblemT::LINEAR, name) );
+                    //vars[lid].back().emplace_back( model.addVar(-GRB_INFINITY, GRB_INFINITY, 0.0, GRB_CONTINUOUS, name) );
                     starting_values.push_back( std::pair<std::string,Scalar>(name,normal(0)) );
 
-
                     sprintf( name, "ny_%d_%d", gid, dir_gid );
-                    vars[lid].back().emplace_back( model.addVar(-GRB_INFINITY, GRB_INFINITY, 0.0, GRB_CONTINUOUS, name) );
+                    prims_vars[ IntPair(lid,lid1) ].push_back( problem.addVariable(OptProblemT::BOUND::RANGE, -problem.getINF(), problem.getINF(), OptProblemT::VAR_TYPE::CONTINUOUS, OptProblemT::LINEAR, name) );
+                    //vars[lid].back().emplace_back( model.addVar(-GRB_INFINITY, GRB_INFINITY, 0.0, GRB_CONTINUOUS, name) );
                     starting_values.push_back( std::pair<std::string,Scalar>(name,normal(1)) );
-                    //vars[lid].back().emplace_back( model.addVar(-GRB_INFINITY, GRB_INFINITY, normal(1), GRB_CONTINUOUS, name) );
 
-                    if ( Dim > 2 )
+                    if ( Dims > 2 )
                     {
                         sprintf( name, "nz_%d_%d", gid, dir_gid );
-                        //vars[lid].back().emplace_back( model.addVar(-GRB_INFINITY, GRB_INFINITY, normal(2), GRB_CONTINUOUS, name) );
-                        vars[lid].back().emplace_back( model.addVar(-GRB_INFINITY, GRB_INFINITY, 0.0, GRB_CONTINUOUS, name) );
+                        //vars[lid].back().emplace_back( model.addVar(-GRB_INFINITY, GRB_INFINITY, 0.0, GRB_CONTINUOUS, name) );
+                        prims_vars[ IntPair(lid,lid1) ].push_back( problem.addVariable(OptProblemT::BOUND::RANGE, -problem.getINF(), problem.getINF(), OptProblemT::VAR_TYPE::CONTINUOUS, OptProblemT::LINEAR, name) );
                         starting_values.push_back( std::pair<std::string,Scalar>(name,normal(2)) );
                     }
 
                     sprintf( name, "d_%d_%d", gid, dir_gid );
-                    Scalar d = Scalar(-1) * prims[lid][lid1].point3Distance(origin);
+                    Scalar d = Scalar(-1.) * prim.getDistance( origin );
                     std::cout << "line_" << gid << "_" << dir_gid << ".d = " << d << std::endl;
-                    // vars[lid].back().emplace_back( model.addVar(-GRB_INFINITY, GRB_INFINITY, lines[lid][lid1].point3Distance(origin), GRB_CONTINUOUS, name) );
-                    vars[lid].back().emplace_back( model.addVar(-GRB_INFINITY, GRB_INFINITY, 0.0, GRB_CONTINUOUS, name) );
+                    // vars[lid].back().emplace_back( model.addVar(-GRB_INFINITY, GRB_INFINITY, 0.0, GRB_CONTINUOUS, name) );
+                    prims_vars[ IntPair(lid,lid1) ].push_back( problem.addVariable(OptProblemT::BOUND::RANGE, -problem.getINF(), problem.getINF(), OptProblemT::VAR_TYPE::CONTINUOUS, OptProblemT::LINEAR, name) );
                     starting_values.push_back( std::pair<std::string,Scalar>(name,d) );
                 }
             }
+        }
 
-            // |normal|^2 = 1
-            {
-                char cname[64];
-                for ( size_t lid = 0; lid != prims.size(); ++lid )
-                {
-                    for ( size_t lid1 = 0; lid1 != prims[lid].size(); ++lid1 )
-                    {
-                        GRBQuadExpr norm_constraint;
-                        for ( int d = 0; d != Dim; ++d )
-                            norm_constraint.addTerm( Scalar(1), vars[lid][lid1][d], vars[lid][lid1][d] );
-
-                        sprintf( cname, "%lu_%lu_norm_ge", lid, lid1 );
-                        model.addQConstr( norm_constraint, GRB_EQUAL, 1, cname );
-                    }
-                }
-            }
-            model.update();
-
-            /// cost -> objective
-            // assignments
-
-            if ( points_primitives.size() )
-                std::cerr << "[" << __func__ << "]: " << "warning, points_primitives not empty" << std::endl;
-
-            // parse input associations instead of currently detecting point->primitive assocs
-            {
-                int max_group_id = -1;
-                for ( size_t pid = 0; pid != points.size(); ++pid )
-                    max_group_id = std::max( max_group_id, points[pid].getTag(PointPrimitiveT::GID) );
-                std::cout << "[" << __func__ << "]: " << "max_group_id: " << max_group_id << std::endl;
-                if ( max_group_id > 0 )
-                {
-                    points_primitives.resize( points.size() );
-                    for ( size_t pid = 0; pid != points.size(); ++pid )
-                    {
-                        // assume linear...TODO: 2d
-                        int tag = points[pid].getTag(PointPrimitiveT::GID);
-                        if ( tag >= 0 )
-                            points_primitives[pid].push_back( std::pair<int,int>(0,tag) );
-                    }
-                }
-            }
-
-            if ( !points_primitives.size() )
-            {
-                points_primitives.resize( points.size() );
-                for ( size_t lid = 0; lid != prims.size(); ++lid )
-                {
-                    for ( size_t lid1 = 0; lid1 != prims[lid].size(); ++lid1 )
-                    {
-                        Scalar dist = Scalar(0);
-                        for ( size_t pid = 0; pid != points.size(); ++pid )
-                        {
-                            // if within scale, add point constraint to line
-                            dist = PointPrimitiveDistanceFunctorT::eval<Scalar>( points[pid], prims[lid][lid1] );
-                            if ( dist < scale )
-                            {
-                                points_primitives[pid].push_back( std::pair<int,int>(lid,lid1) );
-                                if ( lid1 == 2 && points_primitives[pid].size() > 1 )
-                                {
-                                    std::cout<<"[" << __func__ << "]: " << "oooo, points_primitives["<<pid<<"]:";
-                                    for ( size_t vi = 0; vi!= points_primitives[pid].size(); ++vi )
-                                        std::cout << "<" << points_primitives[pid][vi].first
-                                                  << "," << points_primitives[pid][vi].second
-                                                  << ">; ";
-                                    std::cout << "\n";
-
-                                }
-                            }
-                        } // ... for points
-                    } // ... for lines
-                } // ... for lines
-            } // ... if points_primitives.empty()
-
-            // add term
-            Scalar coeff = Scalar(0);
-            for ( size_t pid = 0; pid != points.size(); ++pid )
-            {
-                // skip, if ambiguous assignment
-                if ( points_primitives[pid].size() != 1 )
-                    continue;
-
-                const int lid  = points_primitives[pid][0].first;
-                const int lid1 = points_primitives[pid][0].second;
-
-                // debug
-                std::cout << "[" << __func__ << "]: " << "adding pid " << pid << " -> " << "lines[" << lid << "][" << lid1 << "]" << std::endl;
-
-                // x,y,z
-                for ( int dim = 0; dim != Dim; ++dim )
-                {
-                    // p_x^2 . n_x^2
-                    coeff = ((typename PointPrimitiveT::VectorType)points[pid])(dim);
-                    coeff *= coeff;
-                    objectiveQExpr.addTerm( coeff, vars[lid][lid1][dim], vars[lid][lid1][dim] );
-                    if ( gurobi_log ) std::cout << "added qterm(pid: " << pid << "): "
-                                                << coeff << " * "
-                                                << vars[lid][lid1][dim].get(GRB_StringAttr_VarName) << " * "
-                                                << vars[lid][lid1][dim].get(GRB_StringAttr_VarName)
-                                                << std::endl;
-
-                    // 2 . p_x . n_x . d
-                    coeff = Scalar(2) * ((typename PointPrimitiveT::VectorType)points[pid])(dim);
-                    objectiveQExpr.addTerm( coeff, vars[lid][lid1][dim], vars[lid][lid1].back() ); // back == d
-                    if ( gurobi_log ) std::cout << "added qterm(pid: " << pid << "): "
-                                                << coeff << " * "
-                                                << vars[lid][lid1][dim].get(GRB_StringAttr_VarName) << " * "
-                                                << vars[lid][lid1].back().get(GRB_StringAttr_VarName)
-                                                << std::endl;
-                }
-
-                // d^2
-                coeff = Scalar(1);
-                objectiveQExpr.addTerm( coeff, vars[lid][lid1].back(), vars[lid][lid1].back() );
-                if ( gurobi_log ) std::cout << "added qterm(pid: " << pid << "): "
-                                            << coeff << " * "
-                                            << vars[lid][lid1].back().get(GRB_StringAttr_VarName) << " * "
-                                            << vars[lid][lid1].back().get(GRB_StringAttr_VarName)
-                                            << std::endl;
-
-                // 2 . px . py . nx . ny
-                coeff = Scalar(2) * ((typename PointPrimitiveT::VectorType)points[pid])(0) * ((typename PointPrimitiveT::VectorType)points[pid])(1);
-                objectiveQExpr.addTerm( coeff, vars[lid][lid1][0], vars[lid][lid1][1] );
-                if ( gurobi_log ) std::cout << "added qterm(pid: " << pid << "): "
-                                            << coeff << " * "
-                                            << vars[lid][lid1][0].get(GRB_StringAttr_VarName) << " * "
-                                            << vars[lid][lid1][1].get(GRB_StringAttr_VarName)
-                                            << std::endl;
-
-            } // for points
-            model.update();
-
-            // set objective
-            model.setObjective( objectiveQExpr, GRB_MINIMIZE );
-            model.update();
-        } //...add costs
-
-
-        // dump
+        // add constraints: |normal|^2 = 1
         {
-            // dump x0 (starting values)
+            int lid = 0;
+            for ( PrimitiveMapT::const_iterator gid_it = patches.begin(); gid_it != patches.end(); ++gid_it, ++lid )
             {
-                std::string f_start_path = params.store_path + "/" + "starting_values.m";
-                ofstream f_start( f_start_path );
-                f_start << "x0 = [ ...\n";
-                for ( size_t i = 0; i != starting_values.size(); ++i )
+                int lid1 = 0;
+                for ( InnerType::const_iterator dir_it  = containers::valueOf<PrimitiveT>(gid_it).begin();
+                                                dir_it != containers::valueOf<PrimitiveT>(gid_it).end();
+                                              ++dir_it, ++lid1 )
                 {
-                    f_start << "    " << starting_values[i].second << ",      % " << starting_values[i].first << "\n";
-                }
-                f_start << "];";
-                f_start.close();
-                std::cout << "[" << __func__ << "]: " << "wrote to " << f_start_path << std::endl;
-            } //...dump x0
+                    // sparse quadratic matrix
+                    OptProblemT::SparseMatrix norm_constraint( problem.getVarCount(), problem.getVarCount() );
 
-            // dump associations
+                    // 1 * nx * nx + 1 * ny * ny + 1 *  nz * nz
+                    for ( int dim = 0; dim != Dims; ++dim )
+                        norm_constraint.insert( prims_vars[IntPair(lid,lid1)][dim]
+                                              , prims_vars[IntPair(lid,lid1)][dim] ) = Scalar( 1. );
+
+                    // add constraint instance
+                    problem.addConstraint  ( OptProblemT::BOUND::EQUAL, /* >= 1 */ Scalar(1.), /* <= 1 */ Scalar(1.), /* linear constraint coeffs: */ NULL );
+                    // add quadratic coefficients
+                    problem.addQConstraints( norm_constraint );
+                }
+            }
+        }
+
+        /// cost -> objective: minimize \sum_n \sum_p ((n_j . p_i) + d)^2  where point p_i is assigned to line with normal n_j
+        if ( Dims == 3 ) throw new std::runtime_error("datafit unimplemented for 3D");
+
+        {
+            // assignments
+            GidPidVectorMap populations;
+            processing::getPopulations( populations, points );
+
+            // for each line
+            Scalar coeff = Scalar(0);
+            int    lid   = 0;
+            for ( PrimitiveMapT::const_iterator gid_it = patches.begin(); gid_it != patches.end(); ++gid_it, ++lid )
             {
-                // reverse map for sorted output
-                std::vector< std::vector< std::vector<int> > > primitives_points( prims.size() );
-                for ( size_t pid = 0; pid != points_primitives.size(); ++pid )
+                int lid1 = 0;
+                int gid  = -2; // -1 is unset, -2 is unread
+                for ( InnerType::const_iterator dir_it  = containers::valueOf<PrimitiveT>(gid_it).begin();
+                                                dir_it != containers::valueOf<PrimitiveT>(gid_it).end();
+                                              ++dir_it, ++lid1 )
                 {
-                    if ( points_primitives[pid].size() == 1 )
-                    {
-                        const int lid  = points_primitives[pid][0].first;
-                        const int lid1 = points_primitives[pid][0].second;
-                        if ( primitives_points[lid].size() <= lid1 )
-                            primitives_points[ lid ].resize( lid1 + 1 );
-                        primitives_points[ lid ][ lid1 ].push_back( pid );
-                        std::cout << "added " << "primitives_points[ "<<lid<<" ][ "<<lid1<<" ].back(): " << primitives_points[ lid ][ lid1 ].back() << std::endl;
-                    }
-                    else
-                    {
-                        std::cout << "skipping pid " << pid << ", since: ";
-                        std::cout<<"points_primitives["<<pid<<"]:";
-                        for(size_t vi=0;vi!=points_primitives[pid].size();++vi)std::cout<<points_primitives[pid][vi].first<<","
-                                                                                       << ";" << points_primitives[pid][vi].second << ";  ";
-                        std::cout << "\n";
-                    }
-                }
+                    if ( gid < -1 )
+                        gid = dir_it->getTag( PrimitiveT::GID );
 
-                // dump associations
-                std::string f_assoc_path = params.store_path + "/" + "points_primitives.csv";
-                if ( !boost::filesystem::exists(f_assoc_path) )
+                    // for each assigned point
+                    for ( size_t pid_id = 0; pid_id != populations[gid].size(); ++pid_id )
+                    {
+                        const int pid = populations[gid][pid_id];
+
+                        // skip, if ambiguous assignment
+                        //if ( points_primitives[pid].size() != 1 )
+                        //    continue;
+
+                        // debug
+                        if ( verbose ) std::cout << "[" << __func__ << "]: " << "adding pid " << pid << " -> " << "lines[" << lid << "][" << lid1 << "]" << std::endl;
+
+                        // for each dimension: x,y,z
+                        for ( int dim = 0; dim != Dims; ++dim )
+                        {
+                            // (p_x)^2 . (n_x)^2
+                            coeff = points[pid].pos()( dim );                                                                                             // (p_x)
+                            coeff *= coeff;                                                                                                               // (p_x)^2
+                            problem.addQObjective( prims_vars[IntPair(lid,lid1)][dim], prims_vars[IntPair(lid,lid1)][dim], coeff );                       // (p_x)^2 . (n_x)^2
+
+                            // debug
+                            if ( verbose ) std::cout << "added qterm(pid: " << pid << "): "
+                                                        << coeff << " * "
+                                                        << problem.getVarName( prims_vars[IntPair(lid,lid1)][dim] ) << " * "
+                                                        << problem.getVarName( prims_vars[IntPair(lid,lid1)][dim] )
+                                                        << std::endl;
+
+                            // 2 . p_x . n_x . d
+                            coeff = Scalar(2.) * points[pid].pos()( dim );                                                                                // 2 . p_x
+                            problem.addQObjective( /* n_x: */ prims_vars[IntPair(lid,lid1)][dim], /* d: */ prims_vars[IntPair(lid,lid1)][Dims], coeff );  // 2 . p_x . n_x . d
+
+                            // debbug
+                            if ( verbose ) std::cout << "added qterm(pid: " << pid << "): "
+                                                        << coeff << " * "
+                                                        << problem.getVarName( prims_vars[IntPair(lid,lid1)][dim] ) << " * "
+                                                        << problem.getVarName( prims_vars[IntPair(lid,lid1)][Dims] )
+                                                        << std::endl;
+                        }
+
+                        // d^2
+                        coeff = Scalar(1);
+                        problem.addQObjective( /* d: */ prims_vars[IntPair(lid,lid1)][Dims], /* d: */ prims_vars[IntPair(lid,lid1)][Dims], coeff );
+
+                        // debug
+                        if ( verbose ) std::cout << "added qterm(pid: " << pid << "): "
+                                                    << coeff << " * "
+                                                    << problem.getVarName( prims_vars[IntPair(lid,lid1)][Dims] ) << " * "
+                                                    << problem.getVarName( prims_vars[IntPair(lid,lid1)][Dims] )
+                                                    << std::endl;
+
+#                       warning "[solver.h][datafit]TODO: derive this for pz,nz (Dims==3)"
+                        // 2 . px . py . nx . ny
+                        coeff = Scalar(2.) * points[pid].pos()(0) * points[pid].pos()(1);
+                        problem.addQObjective( prims_vars[IntPair(lid,lid1)][0], prims_vars[IntPair(lid,lid1)][1], coeff );
+
+                        // debug
+                        if ( verbose ) std::cout << "added qterm(pid: " << pid << "): "
+                                                    << coeff << " * "
+                                                    << problem.getVarName( prims_vars[IntPair(lid,lid1)][0] ) << " * "
+                                                    << problem.getVarName( prims_vars[IntPair(lid,lid1)][1] )
+                                                    << std::endl;
+                    } // for points
+                } //...for directions
+            } //...for patches
+        } //...add objective
+
+        // starting point
+        {
+            if ( starting_values.size() != problem.getVarCount() )
+            {
+                std::cerr << "[" << __func__ << "]: " << "starting_values.size() " << starting_values.size() << " != " << problem.getVarCount() << " problem.getVarCount()" << std::endl;
+                return EXIT_FAILURE;
+            }
+
+            OptProblemT::SparseMatrix x0( problem.getVarCount(), 1 );
+            for ( size_t i = 0; i != starting_values.size(); ++i )
+            {
+                x0.insert( i, 0 ) = starting_values[i].second;
+            }
+            problem.setStartingPoint( x0 );
+        } //...starting values
+
+        // save
+        {
+            problem.write( "./datafit_problem" );
+        }
+
+        // solve
+        {
+            OptProblemT::ReturnType r = problem.getOkCode();
+
+            if ( problem.getOkCode() == r )
+            {
+                if ( verbose ) { std::cout << "[" << __func__ << "]: " << "calling problem optimize...\n"; fflush(stdout); }
+                r = problem.update();
+                if ( verbose ) { std::cout << "[" << __func__ << "]: " << "finished problem optimize...\n"; fflush(stdout); }
+            }
+
+            // optimize
+            std::vector<OptScalar> x_out;
+            if ( r == problem.getOkCode() )
+            {
+                // log
+                if ( verbose ) { std::cout << "[" << __func__ << "]: " << "calling problem optimize...\n"; fflush(stdout); }
+
+                // work
+                r = problem.optimize( &x_out, OptProblemT::OBJ_SENSE::MINIMIZE );
+
+                // check output
+                if ( r != problem.getOkCode() )
                 {
-                    ofstream f_assoc( f_assoc_path );
-                    f_assoc << "# point_id,primitive_pos_id,primitive_dir_id" << std::endl;
-                    for ( size_t lid = 0; lid != primitives_points.size(); ++lid )
-                        for ( size_t lid1 = 0; lid1 != primitives_points[lid].size(); ++lid1 )
-                            for ( size_t pid_id = 0; pid_id != primitives_points[lid][lid1].size(); ++pid_id )
-                            {
-                                f_assoc << primitives_points[lid][lid1][pid_id]
-                                           << "," << lid
-                                           << "," << lid1 << std::endl;
-                            }
-                    f_assoc.close();
-                    std::cout << "[" << __func__ << "]: " << "wrote to " << f_assoc_path << std::endl;
+                    std::cerr << "[" << __func__ << "]: " << "ooo...optimize didn't work with code " << r << std::endl; fflush(stderr);
+                    err = r;
                 }
-                else
-                {
-                    std::cout << "[" << __func__ << "]: " << "did NOT write to " << f_assoc_path << ", since already exists" << std::endl;
-                } //...if assoc_path exists
-            } //...dump assoc
-        } //...dump
+            } //...optimize
+        }
+
     } //...work
 #endif
-    return 0;
+    return err;
 } // ...Solver::datafit()
 
 //! \brief              Prints energy of solution in \p x using \p weights.

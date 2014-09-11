@@ -8,6 +8,10 @@
 #include "globfit2/optimization/merging.h"
 #include "globfit2/io/io.h"
 
+int segment3D( int argc, char** argv );
+int segment2D( int argc, char** argv );
+int subsample( int argc, char** argv );
+
 int main( int argc, char *argv[] )
 {
     if ( (argc == 2) &&
@@ -36,13 +40,11 @@ int main( int argc, char *argv[] )
 #endif
     else if ( pcl::console::find_switch(argc,argv,"--segment") )
     {
-        return GF2::Segmentation::segmentCli<
-                    GF2::Solver::PrimitiveT
-                    , GF2::Solver::PrimitiveContainerT
-                    , GF2::Solver::PointPrimitiveT
-                    , GF2::Solver::PointContainerT
-                    , GF2::Solver::PrimitiveT::Scalar>
-                ( argc, argv );
+       return segment2D( argc, argv );
+    }
+    else if ( pcl::console::find_switch(argc,argv,"--segment3D") )
+    {
+        return segment3D( argc, argv );
     }
     else if ( pcl::console::find_switch(argc,argv,"--generate") )
     {
@@ -69,6 +71,10 @@ int main( int argc, char *argv[] )
         std::cerr << "[" << __func__ << "]: " << "the show option has been moved to a separate executable, please use thatt one" << std::endl;
         return 1;
         //return GF2::Solver::show( argc, argv );
+    }
+    else if ( pcl::console::find_switch(argc,argv,"--subsample") )
+    {
+        return subsample( argc, argv );
     }
 
     return 1;
