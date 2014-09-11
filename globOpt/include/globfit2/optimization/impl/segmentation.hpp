@@ -480,9 +480,12 @@ Segmentation::segmentCli( int    argc
     }
 
     // Save point GID tags
+    std::string parent_path = boost::filesystem::path( cloud_path ).parent_path().string();
+    if ( parent_path.empty() ) parent_path = ".";
+
     if ( EXIT_SUCCESS == err )
     {
-        std::string assoc_path = boost::filesystem::path( cloud_path ).parent_path().string() + "/" + "points_primitives.csv";
+        std::string assoc_path = parent_path + "/" + "points_primitives.csv";
 
         util::saveBackup( assoc_path );
         err = io::writeAssociations<_PointPrimitiveT>( points, assoc_path );
@@ -495,7 +498,7 @@ Segmentation::segmentCli( int    argc
     // save primitives
     if ( EXIT_SUCCESS == err )
     {
-        std::string candidates_path = boost::filesystem::path( cloud_path ).parent_path().string() + "/" + "patches.csv";
+        std::string candidates_path = parent_path + "/" + "patches.csv";
 
         util::saveBackup( candidates_path );
         err = io::savePrimitives<_PrimitiveT,typename _PrimitiveContainerT::value_type::const_iterator>( /* what: */ initial_primitives, /* where_to: */ candidates_path );
