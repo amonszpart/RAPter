@@ -4,6 +4,7 @@
 #include <Eigen/Dense>
 #include "globfit2/primitives/primitive.h"
 //#include "pcltools/util.hpp"
+#include "globfit2/processing/util.hpp" // pca
 
 #ifdef GF2_USE_PCL
 #   include "pcl/ModelCoefficients.h"
@@ -67,79 +68,97 @@ namespace GF2
             //! \param[in] point    Point to calculate distance from.
             //! \return             Distance from point to plane.
             inline Scalar
-            getDistance( Eigen::Matrix<Scalar,3,1> const& point )
+            getDistance( Eigen::Matrix<Scalar,3,1> const& point ) const
             {
+                // n . x + d = 0
                 return this->dir().dot(point) + this->_coeffs(3);
             }
 
-            //! \brief                          Calculates the length of the plane based on the points in \p cloud, masked by \p indices and the distance from point to plane \p threshold.
-            //!
-            //!                                 The method calculates the inliers and selects the most far away point from #pos() in both directions.
-            //! \tparam     _PointT             Type of endpoints returned in \p minMax. Concept: _PointContainerT::element_type::PointType == pcl::PointXYZRGB.
-            //! \tparam     _PointContainerPtrT Type to store the points to select inliers from. Concept: pcl::PointCloud< _PointT >::Ptr.
-            //! \param[out] minMax              Output container holding the four endpoints.
-            //! \param[in]  cloud               Point container to look for inlier points in.
-            //! \param[in]  threshold           A point in \p cloud is an inlier, if it is closer than this threshold. Usually the "scale".
-            //! \param[in]  indices             Optional input to specify subset of points by indices.
-            //! \return                         EXIT_SUCCESS
-            //! \todo                           Detach from PCL.
-            template <typename _PointT, typename _PointContainerPtrT>
-            int
-            getExtent( std::vector<_PointT>        & minMax
-                       , _PointContainerPtrT         cloud
-                       , const double                threshold = 0.01
-                       , std::vector<int>     const* indices   = NULL ) const
+            template <typename _Scalar>
+            inline Eigen::Matrix<_Scalar,3,1>
+            projectPoint( Eigen::Matrix<_Scalar,3,1> const& point ) const
             {
+                return point - (this->getDistance(point) * this->dir() );
+            } // projectPoint
+
+            /*! \brief                          Calculates the length of the plane based on the points in \p cloud, masked by \p indices and the distance from point to plane \p threshold.
+             *
+             *                                  The method calculates the inliers and selects the most far away point from #pos() in both directions.
+             *  \tparam     _PointT             Point wrapper stored in _PointContainerT.
+             *  \tparam     _PointContainerT    Type to store the points to select inliers from. Concept: std::vector<\ref GF2::PointPrimitive>. Depr: pcl::PointCloud< _PointT >::Ptr.
+             *  \tparam     _IndicesContainerT  Concept: std::vector<int>.
+             *  \param[out] minMax              Output container holding the four endpoints.
+             *  \param[in]  cloud               Point container to look for inlier points in.
+             *  \param[in]  threshold           A point in \p cloud is an inlier, if it is closer than this threshold. Usually the "scale".
+             *  \param[in]  indices             Optional input to specify subset of points by indices.
+             *  \return                         EXIT_SUCCESS
+             */
+            template <class _IndicesContainerT, typename _PointPrimitiveT, typename _Scalar, typename _PointContainerT>
+            int
+            getExtent( std::vector<Eigen::Matrix<_Scalar,3,1> >      & minMax
+                     , _PointContainerT                         const& cloud
+                     , double                                   const  threshold   = 0.01
+                     , _IndicesContainerT                       const* indices_arg = NULL ) const
+            {
+                typedef Eigen::Matrix<_Scalar,3,1> Position;
+
 #ifdef GF2_USE_PCL
-                pcl::PointIndices::Ptr                inliers( new pcl::PointIndices() );
-                typename pcl::PointCloud<_PointT>::Ptr on_plane_cloud( new pcl::PointCloud<_PointT>() );
+                std::vector<int> inliers;
                 {
-                    pcl::SampleConsensusModelPlane<_PointT> sacplane( cloud );
-                    if ( indices )
-                        sacplane.setIndices( *indices );
-                    sacplane.selectWithinDistance(          coeffs(), threshold, inliers->indices      );
-                    sacplane.projectPoints       ( inliers->indices ,  coeffs(), *on_plane_cloud, false );
+                    inliers.reserve( cloud.size() );
+                    const int stop_at = indices_arg ? indices_arg->size() : cloud.size();
+                    for ( int i = 0; i != stop_at; ++i )
+                    {
+                        const int pid = indices_arg ? (*indices_arg)[i] : i;
+                        if ( this->getDistance( cloud[pid].template pos() ) < threshold )
+                            inliers.push_back( pid );
+                    }
                 }
 
-                if ( !on_plane_cloud->size() )
+                // check size
+                if ( !inliers.size() ) return EXIT_FAILURE;
+
+                // project cloud
+                _PointContainerT on_plane_cloud;
+                on_plane_cloud.reserve( inliers.size() );
+                for ( int pid_id = 0; pid_id != inliers.size(); ++pid_id )
                 {
-                    return EXIT_FAILURE;
+                    const int pid = inliers[ pid_id ];
+                    on_plane_cloud.push_back( _PointPrimitiveT(this->projectPoint(cloud[pid].template pos()), cloud[pid].template dir()) );
                 }
 
-                Eigen::Matrix<float,4,4> frame; // 3 major vectors as columns, and the fourth is the centroid
+                Eigen::Matrix<_Scalar,4,4> frame; // 3 major vectors as columns, and the fourth is the centroid
                 {
-                    smartgeometry::PCA( frame, on_plane_cloud, NULL );
+                    processing::PCA<_IndicesContainerT>( frame, on_plane_cloud, /* indices: */ NULL ); // no indices needed, already full cloud
 
                     // get the unit axis that is most perpendicular to the 3rd dimension of the frame
-                    std::pair<Eigen::Vector3f,float> dim3 = { Eigen::Vector3f::Zero(), FLT_MAX };
+                    std::pair<Position,_Scalar> dim3( Position::Zero(), _Scalar(FLT_MAX) );
                     {
-                        float tmp;
-                        if ( (tmp=std::abs(frame.col(2).head<3>().dot( Eigen::Vector3f::UnitX() ))) < dim3.second ) { dim3.first = Eigen::Vector3f::UnitX(); dim3.second = tmp; }
-                        if ( (tmp=std::abs(frame.col(2).head<3>().dot( Eigen::Vector3f::UnitY() ))) < dim3.second ) { dim3.first = Eigen::Vector3f::UnitY(); dim3.second = tmp; }
-                        if ( (tmp=std::abs(frame.col(2).head<3>().dot( Eigen::Vector3f::UnitZ() ))) < dim3.second ) { dim3.first = Eigen::Vector3f::UnitZ(); dim3.second = tmp; }
+                        _Scalar tmp;
+                        if ( (tmp=std::abs(frame.col(2).template head<3>().dot( Position::UnitX() ))) < dim3.second ) { dim3.first = Position::UnitX(); dim3.second = tmp; }
+                        if ( (tmp=std::abs(frame.col(2).template head<3>().dot( Position::UnitY() ))) < dim3.second ) { dim3.first = Position::UnitY(); dim3.second = tmp; }
+                        if ( (tmp=std::abs(frame.col(2).template head<3>().dot( Position::UnitZ() ))) < dim3.second ) { dim3.first = Position::UnitZ(); dim3.second = tmp; }
                     }
-                    frame.col(0).head<3>() = frame.col(2).head<3>().cross( dim3.first ).normalized();
-                    frame.col(1).head<3>() = frame.col(2).head<3>().cross( frame.col(0).head<3>() ).normalized();
+                    frame.col(0).template head<3>() = frame.col(2).template head<3>().template cross( dim3.first                      ).template normalized();
+                    frame.col(1).template head<3>() = frame.col(2).template head<3>().template cross( frame.col(0).template head<3>() ).template normalized();
                 }
 
-                typename pcl::PointCloud<_PointT>::Ptr local_cloud = NULL;
-                smartgeometry::cloud2Local<_PointT>( local_cloud, frame, on_plane_cloud, pcl::PointIndices::ConstPtr() );
+                _PointContainerT local_cloud;
+                processing::cloud2Local<_PointPrimitiveT,_IndicesContainerT>( local_cloud, frame, on_plane_cloud, /* indices: */ NULL ); // no indices needed, it's already a full cloud
 
-                _PointT min_pt, max_pt;
-                pcl::getMinMax3D( *local_cloud, min_pt, max_pt );
+                _PointPrimitiveT min_pt, max_pt;
+                processing::getMinMax3D<_IndicesContainerT>( local_cloud, min_pt, max_pt, /* indices: */ NULL );
 
                 minMax.resize( 4 );
-                minMax[0] = minMax[1] = min_pt;
-                minMax[1].y = max_pt.y;
-                minMax[2] = minMax[3] = max_pt;
-                minMax[3].y = min_pt.y;
+                minMax[0]    = minMax[1] = min_pt.template pos();
+                minMax[1](1)             = max_pt.template pos()(1);
+                minMax[2]    = minMax[3] = max_pt.template pos();
+                minMax[3](1)             = min_pt.template pos()(1);
 
                 for ( int d = 0; d != 4; ++d )
                 {
                     // to world
-                    Eigen::Matrix<float,4,1> pnt = frame * minMax[d].getVector4fMap();
-                    // copy
-                    minMax[d].x = pnt(0); minMax[d].y = pnt(1); minMax[d].z = pnt(2);
+                    minMax[d] = (frame * (Eigen::Matrix<_Scalar,4,1>() << minMax[d], _Scalar(1)).finished()).template head<3>();
                 }
 
                 return EXIT_SUCCESS;
@@ -223,27 +242,49 @@ namespace GF2
                 return EXIT_SUCCESS;
             }
 
-            template <class PointsPtrT, class PointT = typename PointsPtrT::element_type::PointType, class Scalar = float> static inline int
-            draw( PlanePrimitive const& plane
-                  , PointsPtrT cloud
-                  , Scalar radius
-                  , std::vector<int> const* indices
-                  , pcl::visualization::PCLVisualizer::Ptr v
-                  , std::string plane_name
-                  , double r, double g, double b
-                  , int viewport_id = 0
+            /*! \brief Draws plane.
+             * \tparam  _PointPrimitiveT   Concept: \ref GF2::PointPrimitive.
+             * \tparam _PointContainerT   Concept: std::vector< _PointPrimitiveT >.
+             * \tparam _IndicesContainerT Concept: std::vector<int>.
+             */
+            template <class _PointPrimitiveT, class _Scalar, class _PointContainerT, class _IndicesContainerT> static inline int
+            draw( PlanePrimitive                        const& plane
+                , _PointContainerT                      const& cloud
+                , _Scalar                               const  radius
+                , _IndicesContainerT                    const* indices
+                , pcl::visualization::PCLVisualizer::Ptr       v
+                , std::string                           const& plane_name
+                , double                                const  r
+                , double                                const  g
+                , double                                const  b
+                , int                                   const  viewport_id = 0
+                , _Scalar                               const  stretch = _Scalar( 1. )
                 )
             {
-                std::vector<PointT> minMax;
-                int err = plane.getExtent( minMax
-                                          , cloud
-                                          , radius
-                                          , indices
-                                          , /* no_pca: */ true );
-                if ( EXIT_SUCCESS != err )
+                int err     = EXIT_SUCCESS;
+                if ( stretch != _Scalar(1.) )
+                    std::cerr << "[" << __func__ << "]: " << "WARNING, Stretch for planes is unimplemented!!!" << std::endl;
+
+                typedef Eigen::Matrix<_Scalar,3,1> Position;
+
+                std::vector<Position> minMax;
+                int      it          = 0;
+                int      max_it      = 10;
+                _Scalar  tmp_radius  = radius;
+                do
                 {
+                    err = plane.getExtent<_IndicesContainerT, _PointPrimitiveT>( minMax
+                                                                               , cloud
+                                                                               , tmp_radius
+                                                                               , indices   );
+                    tmp_radius *= 2.f;
+                } while ( (minMax.size() < 2) && (++it < max_it) );
+
+                // if error or couldn't find a scale that was big enough to find "inliers"
+                if ( (EXIT_SUCCESS != err) || (it >= max_it) )
+                {
+                    std::cerr << "[" << __func__ << "]: " << "plane.getExtent exceeded max radius increase iteration count...drawing unit " << plane.toString() << std::endl;
                     v->addPlane( *plane.modelCoefficients(), plane_name, 0 );
-                    return err;
                 }
                 else
                 {
@@ -251,56 +292,15 @@ namespace GF2
                     for ( int i = 0; i != minMax.size(); ++i )
                     {
                         pcl::PointXYZ pnt;
-                        pnt.x = minMax[i].x; pnt.x = minMax[i].y; pnt.y = minMax[i].z;
+                        pnt.x = minMax[i](0); pnt.y = minMax[i](1); pnt.z = minMax[i](2);
                         ps.push_back( pnt );
                     }
                     err += draw( ps, v, plane_name, r, g, b, viewport_id );
                 }
 
                 return err;
-            }
-
-#endif
-
-            // ____________________DEPRECATED____________________
-            //! \deprecated Decides, if two planes are different up to a position and and an angle threshold.
-            static bool
-            different( PlanePrimitive const& me, PlanePrimitive const& other, Scalar pos_diff, Scalar ang_diff )
-            {
-                if ( fabs(me()(3)-other()(3)) > pos_diff ) return true;
-
-                Scalar angle = acos( me.dir().dot(other.dir()) ); if ( angle != angle ) angle = static_cast<Scalar>(0);
-                return ( angle > ang_diff );
-            }
-#if 0
-            static inline Scalar
-            point4Distance( Eigen::Matrix<Scalar,4,1> const& point, Eigen::Matrix<Scalar,-1,1> const& plane )
-            {
-                return plane.template head<3>().dot(point.template head<3>()) + plane(3);
-            }
-            static inline Scalar
-            point3Distance( Eigen::Matrix<Scalar,3,1> const& point, Eigen::Matrix<Scalar,-1,1> const& plane )
-            {
-                return plane.template head<3>().dot(point.template head<3>()) + plane(3);
-            }
-            inline Scalar point3Distance(            Eigen::Matrix<Scalar,3,1>   const  point ) const { return point3Distance( point, _coeffs); }
-            inline Scalar point4Distance(            Eigen::Matrix<Scalar,4,1>   const  point ) const { return point4Distance( point, _coeffs); }
-
-            // this does not work
-            inline Eigen::Matrix<Scalar,6,1>
-            toLineCoeffsAtZ( Scalar z );
-
-            inline bool
-            intersectWithPlane( Eigen::Matrix<Scalar,-1,1>      & line
-                              , Eigen::Matrix<Scalar,4,1>  const& plane
-                              , double                            angular_tolerance ) const;
-
-            inline static bool
-            intersectWithPlane( Eigen::Matrix<Scalar,-1,1>       & line
-                                , Eigen::Matrix<Scalar,4,1> const& plane_a
-                                , Eigen::Matrix<Scalar,4,1> const& plane_b
-                                , double                           angular_tolerance );
-#endif
+            } //...draw()
+#endif //...GF2_USE_PCL
 
     }; //...class PlanePrimitive
 } //...ns GF2

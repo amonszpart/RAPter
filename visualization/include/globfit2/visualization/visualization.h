@@ -37,6 +37,11 @@ namespace vis {
 
 
 } //...ns vis
-} //...ns GF2    
+} //...ns GF2
+
+#ifndef GF2_INC_VISUALIZATION_HPP
+#   define GF2_INC_VISUALIZATION_HPP
+#   include "globfit2/visualization/impl/visualization.hpp"
+#endif // GF2_INC_VISUALIZATION_HPP
 
 #endif // GF2_VISUALIZATION_H

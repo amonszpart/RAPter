@@ -7,11 +7,11 @@
 
 int main(int argc, char *argv[])
 {
-    if ( pcl::console::find_switch("--show") )
+    if ( pcl::console::find_switch(argc,argv,"--show") )
     {
         return GF2::vis::showCli<GF2::LinePrimitive2>( argc, argv );
     }
-    else if ( pcl::console::find_switch("--show3D") )
+    else if ( pcl::console::find_switch(argc,argv,"--show3D") )
     {
         return GF2::vis::showCli<GF2::PlanePrimitive>( argc, argv );
     }

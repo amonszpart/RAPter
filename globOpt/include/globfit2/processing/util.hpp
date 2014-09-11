@@ -4,6 +4,7 @@
 #include <map>
 #include <set>
 #include <vector>
+#include <algorithm>
 #include "pcl/search/kdtree.h"
 #include "globfit2/util/containers.hpp" // add()
 
@@ -278,6 +279,17 @@ namespace GF2 {
                 }                
                 cov /= sumW;
 
+                // debug
+                {
+                    Position centroid2( Position::Zero() );
+                    centroid2 = getCentroid( cloud, p_indices );
+                    std::cout << "centroids: " << centroid.transpose() << " vs. " << centroid2.transpose() << std::endl;
+
+                    Eigen::Matrix<Scalar,3,3> cov2( Eigen::Matrix<Scalar,3,3>::Zero() );
+                    computeCovarianceMatrix( cov2, cloud, centroid, p_indices, &weights );
+                    std::cout << "[" << __func__ << "]: " << "cov:\n " << cov2 << "\ncov2:\n" << cov2 << std::endl;
+                }
+
                 // solve for neighbourhood biggest eigen value
                 Eigen::SelfAdjointEigenSolver< Eigen::Matrix<Scalar, 3, 3> > es;
                 es.compute( cov );
@@ -329,16 +341,16 @@ namespace GF2 {
             return EXIT_SUCCESS;
         } // ... fitline
         
-        /**
-     * @brief getNeighbourhoodIndices   Get's a list of neighbours for each point in pointcloud/indices_arg, indices untested
-     * @param[out] neighbour_indices    List of list of neighbour indices. One list for each point in cloud.
-     * @param[in ] cloud                3D point cloud.
-     * @param[in ] indices_arg          Optional, if given, selects point from cloud (untested).
-     * @param[out] p_distances          Optional, neighbourhood squared distances arranged as neighbour_indices.
-     * @param[in ] K                    Maximum number of neighbours
-     * @param[in ] radius               Optional, maximum radius to look for K neighbours in
-     * @param[in ] soft_radius          Return K neighbours even if some outside radius
-     */
+        /*!
+         * @brief                           Get's a list of neighbours for each point in pointcloud/indices_arg, indices untested
+         * @param[out] neighbour_indices    List of list of neighbour indices. One list for each point in cloud.
+         * @param[in ] cloud                3D point cloud.
+         * @param[in ] indices_arg          Optional, if given, selects point from cloud (untested).
+         * @param[out] p_distances          Optional, neighbourhood squared distances arranged as neighbour_indices.
+         * @param[in ] K                    Maximum number of neighbours
+         * @param[in ] radius               Optional, maximum radius to look for K neighbours in
+         * @param[in ] soft_radius          Return K neighbours even if some outside radius
+         */
         template <typename MyPointT>
         inline int
         getNeighbourhoodIndices( std::vector<std::vector<int> >                            & neighbour_indices
@@ -406,25 +418,243 @@ namespace GF2 {
             return EXIT_SUCCESS;
         }
 
-        template < class _Scalar
-                 , class _PointContainerT
-                 , class _IndicesContainerT >
-        inline Eigen::Matrix<_Scalar,3,1> getCentroid( _PointContainerT const& points, _IndicesContainerT const& indices )
+        /*! \brief Returns the minimum and maximum coordinates in \p points.
+         * \tparam _IndicesContainerT Concept: std::vector<int>.
+         * \tparam _PointContainerT   Concept: std::vector< _PointPrimitiveT >.
+         * \tparam _PointPrimitiveT   Concept: \ref GF2::PointPrimitive.
+         */
+        template <class _IndicesContainerT,  class _PointContainerT, class _PointPrimitiveT>
+        inline int getMinMax3D( _PointContainerT const& points, _PointPrimitiveT &min_pt, _PointPrimitiveT &max_pt, _IndicesContainerT *indices = NULL )
         {
-            Eigen::Matrix<_Scalar,3,1> centroid( Eigen::Matrix<_Scalar,3,1>::Zero() );
-            for ( int pid_id = 0; pid_id != indices.size(); ++pid_id )
+            typedef typename _PointPrimitiveT::Scalar            Scalar;
+            typedef typename Eigen::Matrix<Scalar,3,1>           Position;
+            typedef Eigen::Map< const Eigen::Array<Scalar,3,1> > Array3ConstMap;
+
+            Eigen::Array<Scalar,3,1> min_p, max_p;
+
+            if ( indices )
             {
-                centroid += points[ indices[pid_id] ].template pos();
+                for ( size_t pid_id = 0; pid_id < (*indices).size(); ++pid_id )
+                {
+                    Array3ConstMap pt( points[ (*indices)[pid_id] ].template pos().data() );
+                    min_p = min_p.min( pt );
+                    max_p = max_p.max( pt );
+                } //...for points
+            }
+            else //...if indices
+            {
+                for ( size_t pid = 0; pid < points.size (); ++pid )
+                {
+                    Array3ConstMap pt( points[ pid ].template pos().data() );
+                    min_p = min_p.min( pt );
+                    max_p = max_p.max( pt );
+                } //...for points
+            } //...if indices
+
+            min_pt = _PointPrimitiveT( (Position)min_p );
+            max_pt = _PointPrimitiveT( (Position)max_p );
+
+            return EXIT_SUCCESS;
+        } //...getMinMax3D()
+
+        template < class _Scalar
+                 , class _IndicesContainerT
+                 , class _PointContainerT
+                 >
+        inline Eigen::Matrix<_Scalar,3,1> getCentroid( _PointContainerT const& points, _IndicesContainerT const* indices = NULL )
+        {
+            const int N = indices ? indices->size() : points.size();
+
+            Eigen::Matrix<_Scalar,3,1> centroid( Eigen::Matrix<_Scalar,3,1>::Zero() );
+            for ( int pid_id = 0; pid_id != N; ++pid_id )
+            {
+                const unsigned int pid = indices ? (*indices)[pid_id] : pid_id;
+                centroid += points[ pid ].template pos();
             }
 
-            if ( indices.size() )
-                centroid /= _Scalar( indices.size() );
+            if ( N )
+                centroid /= _Scalar( N );
             else
-                std::cout << "empty..." << std::endl;
+                std::cout << "[" << __func__ << "]: " << "empty..." << std::endl;
+
             return centroid;
         }
+
+        /*! \brief Computes [weighted] covariance matrix of [indexed] pointcloud.
+         *  \tparam _Scalar             Floating point precision.
+         *  \tparam _PointContainerT    PointCloud. Concept: std::vector<\ref GF2::PointPrimitive>.
+         *  \tparam _Position           3D position. Concept: Eigen::Vector<_Scalar,3,1>.
+         *  \tparam _IndicesContainerT  Contains indices to entries in points. Concept: std::vector< int >.
+         *  \tparam _WeightsContainerT  Contains scalar weights to use for fitting. Concept: std::vector<_Scalar>.
+         *  \param[out] cov             Covariance matrix output.
+         *  \param[in]  points          Pointcloud input.
+         *  \param[in]  centroid        Precomputed centroid of cloud.
+         *  \param[in]  indices         Pointer to index vector of pointcloud. Full cloud is used, if left NULL.
+         *  \param[in]  weights         Optional weight matrix for weighted covariance matrix computation. Uniform weights are used, if left NULL.
+         *  \return EXIT_SUCCESS;
+         */
+        template <class _WeightsContainerT, class _IndicesContainerT, typename _Scalar, class _PointContainerT, typename _Position >
+        inline int computeCovarianceMatrix( Eigen::Matrix<_Scalar,3,3> &cov
+                                          , _PointContainerT      const& points
+                                          , _Position             const& centroid
+                                          , _IndicesContainerT    const* indices   = NULL
+                                          , _WeightsContainerT    const* weights   = NULL )
+        {
+            const int N = indices ? indices->size() : points.size();
+
+            cov.setZero();
+            _Scalar sumW( 0. );
+            for ( size_t point_id = 0; point_id != N; ++point_id )
+            {
+                const unsigned int pid = indices ? (*indices)[point_id] : point_id;
+                _Position pos = points[ pid ].template pos() - centroid; // eigen expression template
+
+                if ( weights )
+                {
+                    cov   += pos * pos.transpose() * (*weights)[ point_id ];
+                    sumW  +=                         (*weights)[ point_id ];
+                }
+                else
+                {
+                    cov   += pos * pos.transpose();
+                }
+
+                if ( weights && (sumW > _Scalar(0.)) )
+                    cov /= sumW;
+            } //...for all points
+
+            return EXIT_SUCCESS;
+        } //...computeCovarianceMatrix
+
+        namespace pca
+        {
+
+            template <typename PairT>
+            struct SortFunctor {
+                    bool operator()( PairT const& a, PairT const& b ) { return a.first > b.first; }
+            }; // > means biggest first
+        }
+
+        /*! \brief Computes a column-wise 3D frame and a centroid in a 4,4 matrix.
+         *  \tparam Scalar Floating point precision type.
+         *  \tparam PointContainerT Concept: std::vector< \ref GF2::PointPrimitive >.
+         */
+        template <class _IndicesContainerT, typename Scalar, class _PointContainerT> inline int
+        PCA( Eigen::Matrix<Scalar,4,4> & frame,
+             _PointContainerT     const& points,
+             _IndicesContainerT        * indices = NULL )
+
+        {
+            Eigen::Matrix<Scalar,3,1> centroid = processing::getCentroid<Scalar>( points, indices );
+            Eigen::Matrix<Scalar,3,3> covariance;
+            processing::computeCovarianceMatrix< /* _WeightsContainerT> */ std::vector<int>, _IndicesContainerT >( covariance, points, centroid, /* indices: */ indices, /* weights: */ NULL );
+
+            // eigen decomposition
+            Eigen::SelfAdjointEigenSolver<Eigen::Matrix<Scalar,3,3> > eigen_solver( covariance, Eigen::ComputeEigenvectors );
+            // sort decreasing
+            Eigen::Matrix<Scalar,3,3> eigen_vectors = eigen_solver.eigenvectors();
+
+            typedef std::pair<Scalar,Eigen::Matrix<Scalar,3,1> > PairT;
+
+            std::vector<PairT> sorted( 3 );
+            sorted[0] = PairT( eigen_solver.eigenvalues()(0), eigen_vectors.col(0) );
+            sorted[1] = PairT( eigen_solver.eigenvalues()(1), eigen_vectors.col(1) );
+            sorted[2] = PairT( eigen_solver.eigenvalues()(2), eigen_vectors.col(2) );
+            std::sort( sorted.begin(), sorted.end(), pca::SortFunctor<PairT>() );
+
+            // orthogonalize
+            eigen_vectors.col(2) = eigen_vectors.col(0).cross( eigen_vectors.col(1) );
+
+            // debug
+            if ( eigen_vectors(0,0) != eigen_vectors(0,0)
+                 || eigen_vectors(1,1) != eigen_vectors(1,1)
+                 || eigen_vectors(2,2) != eigen_vectors(2,2) )
+            {
+                std::cerr << "nan eigen matrix" << std::endl;
+                return EXIT_FAILURE;
+            }
+
+            frame = Eigen::Matrix<Scalar,4,4>::Identity();
+            frame.template block<3,1>(0,0) = sorted[0].second; // biggest first
+            frame.template block<3,1>(0,1) = sorted[1].second;
+            frame.template block<3,1>(0,2) = sorted[2].second;
+            frame.template block<3,1>(0,3) = centroid.template head<3>();
+
+            return EXIT_SUCCESS;
+        }
+
+        /*! \brief Transform pointcloud by multiplying every point by the \p transform.
+         * \tparam _PointContainerT Concept: std::vector< \ref GF2::PointPrimitive>.
+         * \tparam _Scalar Floating point type.
+         * \tparam _IndicesContainerT std::vector<int>.
+         * \param[out] points   Transformed pointcloud output.
+         * \param[in] transform Transformation to apply. Contains rotatin vectors in first 3 columns, and translation in the fourth.
+         * \param[in] in_points Cloud input.
+         * \param[in] indices   Point indices optional input.
+         * \return EXIT_SUCCESS.
+         */
+        template <class _IndicesContainerT, class _PointPrimitiveT, typename _Scalar, class _PointContainerT> inline int
+        transformPointCloud( _PointContainerT                 &points
+                           , Eigen::Matrix<_Scalar,4,4> const &transform
+                           , _PointContainerT           const &in_points
+                           , _IndicesContainerT         const *indices)
+
+        {
+            // reserve space
+            points.reserve( in_points.size() );
+
+            // branch based on indices parameter
+            if ( indices )
+            {
+                // transform all points in indices
+                for ( size_t pid_id = 0; pid_id != indices->size(); ++pid_id )
+                {
+                    Eigen::Matrix<_Scalar, 4, 1> pt; pt << in_points[ (*indices)[pid_id] ].template pos(), _Scalar(1.);
+                    points.push_back( _PointPrimitiveT((transform * pt).template head<3>(), in_points[(*indices)[pid_id]].template dir()) );
+                }
+            }
+            else
+            {
+                // transform all points
+                for ( size_t pid = 0; pid != points.size(); ++pid )
+                {
+                    Eigen::Matrix<_Scalar, 4, 1> pt; pt << in_points[ pid ].template pos(), _Scalar(1.);
+                    points.push_back( _PointPrimitiveT((transform * pt).template head<3>(), in_points[pid].template dir()) );
+                }
+            }
+
+            return EXIT_SUCCESS;
+        } //...transformPointCloud()
+
+        /*! \brief Transform pointcloud from it's frame to a local unit frame.
+         * \tparam _PointContainerT Concept: std::vector< \ref GF2::PointPrimitive>.
+         * \tparam _Scalar Floating point type.
+         * \tparam _IndicesContainerT std::vector<int>.
+         * \param[out] points   Transformed pointcloud output.
+         * \param[in] frame     Frame that the current cloud lives in. The transformation applied will be the inverse of this frame. Contains rotatin vectors in first 3 columns, and translation in the fourth.
+         * \param[in] in_points Cloud input.
+         * \param[in] indices   Point indices optional input.
+         * \return EXIT_SUCCESS.
+         */
+        template <class _PointPrimitiveT, class _IndicesContainerT, class _PointContainerT, typename _Scalar> inline int
+        cloud2Local( _PointContainerT                 &points
+                   , Eigen::Matrix<_Scalar,4,4> const &frame
+                   , _PointContainerT           const &in_points
+                   , _IndicesContainerT         const *indices   = NULL )
+        {
+            Eigen::Matrix<_Scalar,4,4> transform( Eigen::Matrix<_Scalar,4,4>::Identity() );
+            // invert  frame
+            transform.template block<3,3>(0,0) = frame.template block<3,3>(0,0).transpose();
+            transform.template block<3,1>(0,3) = _Scalar(-1.) * (transform.template block<3,3>(0,0) * frame.template block<3,1>(0,3));
+
+            // apply to all points
+            processing::transformPointCloud<_IndicesContainerT, _PointPrimitiveT>( points, transform, in_points, indices );
+
+            return EXIT_SUCCESS;
+        } //...cloud2Local()
 
     } //...ns processing
 } //...ns GF2
 
 #endif // GF2_PROC_UTIL_HPP
+
