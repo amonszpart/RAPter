@@ -10,6 +10,7 @@
 
 int segment3D( int argc, char** argv );
 int segment2D( int argc, char** argv );
+int subsample( int argc, char** argv );
 
 int main( int argc, char *argv[] )
 {
@@ -70,6 +71,10 @@ int main( int argc, char *argv[] )
         std::cerr << "[" << __func__ << "]: " << "the show option has been moved to a separate executable, please use thatt one" << std::endl;
         return 1;
         //return GF2::Solver::show( argc, argv );
+    }
+    else if ( pcl::console::find_switch(argc,argv,"--subsample") )
+    {
+        return subsample( argc, argv );
     }
 
     return 1;
