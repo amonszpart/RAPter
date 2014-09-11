@@ -39,9 +39,9 @@ else
 	poplimit=5
 fi
 
-anglegens="90";
+anglegens="36,90";
 
-visdefparam="--use-tags --no-clusters" #"--use-tags --no-clusters" #--ids 
+visdefparam="--use-tags --no-clusters --ids" #"--use-tags --no-clusters" #--ids 
 
 echo "angle-limit: $anglelimit"
 echo "scale: $scale"
@@ -84,7 +84,6 @@ my_exec "$executable --segment --angle-limit $anglelimit --scale $scale --angle-
 
 input="patches.csv";
 assoc="points_primitives.csv";
-
 
 # show segment output
 # my_exec "../globOptVis --show --scale $scale --use-tags --ids --pop-limit $poplimit -p patches.csv -a $assoc --title "Segment output"&"
