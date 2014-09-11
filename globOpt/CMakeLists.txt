@@ -214,6 +214,7 @@ SET( GLOBOPT_H_LIST
 
 SET( GLOBOPT_SRC_LIST
     src/qp_main.cpp
+    src/segment3D.cpp
     #src/optimization/candidateGenerator.cpp # cached compilation
     #src/optimization/qp/visualizer.cpp     # cached compilation
 )

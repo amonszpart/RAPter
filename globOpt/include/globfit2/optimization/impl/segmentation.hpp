@@ -5,15 +5,22 @@
 #include "globfit2/my_types.h"                  // PCLPointAllocator
 #include <vector>
 
+#include "boost/filesystem.hpp"
+
 #if GF2_USE_PCL
 #   include "pcl/point_types.h"
 #   include <pcl/point_cloud.h>
+#   include "pcl/console/parse.h"
 #endif
 
 #include "pcltools/util.hpp"
 
 #include "globfit2/util/containers.hpp" // add( map, gid, primitive), add( vector, gid, primitive )
 #include "globfit2/parameters.h"        // CandidateGeneratorParams
+#include "globfit2/processing/util.hpp" // getNeighbourIndices
+#include "globfit2/util/diskUtil.hpp"   // saveBackup
+#include "globfit2/io/io.h"             // readPoints
+#include "globfit2/optimization/patchDistanceFunctors.h" // RepresentativeSqrPatchPatchDistanceFunctorT
 
 namespace GF2 {
 
