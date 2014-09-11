@@ -3,7 +3,7 @@
 
 #include <Eigen/Dense>
 #include "globfit2/primitives/primitive.h"
-#include "pcltools/util.hpp"
+//#include "pcltools/util.hpp"
 
 #ifdef GF2_USE_PCL
 #   include "pcl/ModelCoefficients.h"
