@@ -414,7 +414,7 @@ namespace GF2 {
             Eigen::Matrix<_Scalar,3,1> centroid( Eigen::Matrix<_Scalar,3,1>::Zero() );
             for ( int pid_id = 0; pid_id != indices.size(); ++pid_id )
             {
-                centroid += points[ pid_id ].template pos();
+                centroid += points[ indices[pid_id] ].template pos();
             }
 
             if ( indices.size() )
