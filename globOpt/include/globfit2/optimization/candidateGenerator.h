@@ -314,9 +314,7 @@ namespace GF2
                             {
                                 cand0.setTag(_PrimitiveT::CHOSEN, prim0.getTag(_PrimitiveT::CHOSEN) ); // keep chosen lines chosen
                             }
-                            std::cout << "adding " << cand0.getTag( _PrimitiveT::GID ) << ", " << cand0.getTag( _PrimitiveT::DIR_GID ) << ", " << cand0.getTag( _PrimitiveT::CHOSEN )
-                                      << " from prims " << prim0.getTag( _PrimitiveT::GID ) << ", " << prim0.getTag( _PrimitiveT::DIR_GID ) << ",  "<< prim0.getTag( _PrimitiveT::CHOSEN )
-                                      << " and " << prim1.getTag( _PrimitiveT::GID ) << ", " << prim1.getTag( _PrimitiveT::DIR_GID ) << ",  "<< prim1.getTag( _PrimitiveT::CHOSEN ) << std::endl;
+
                             // insert
                             int check = containers::add( out_lines, gid0, cand0 ).getTag( _PrimitiveT::GID );
                             ++nlines;
