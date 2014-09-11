@@ -938,7 +938,7 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
 
     typedef typename _PrimitiveContainerT::mapped_type::iterator inner_iterator;
 
-    auto cmp_primitive = [](_PrimitiveT& l0, _PrimitiveT& l1)
+    auto cmp_primitive = [](_PrimitiveT const& l0, _PrimitiveT const& l1)
     {
         if (l0.getTag(_PrimitiveT::GID ) == l1.getTag(_PrimitiveT::GID ))
             return l0.getTag(_PrimitiveT::DIR_GID ) < l1.getTag(_PrimitiveT::DIR_GID );

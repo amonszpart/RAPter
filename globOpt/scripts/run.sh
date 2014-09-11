@@ -42,12 +42,31 @@ fi
 anglegens="36,90";
 dirbias="0";
 
-visdefparam="--use-tags --ids --no-clusters" #"--use-tags --no-clusters" #--ids 
+visdefparam="--use-tags --no-clusters --ids" #"--use-tags --no-clusters" #--ids 
 
 echo "angle-limit: $anglelimit"
 echo "scale: $scale"
 echo "pw: $pw"
 echo "pop-limit: $poplimit"
+
+# save run.log arguments to "run.log"
+function save_args() {
+	logfile="run.log"
+	args=("$@") 
+	# get number of elements 
+	ELEMENTS=${#args[@]} 
+
+	echo -n "[$(date +%D\ %T)] " >> $logfile
+	# echo each element in array  
+	# for loop 
+	for (( i=0;i<$ELEMENTS;i++)); do 
+	    echo -n "${args[${i}]} " >> $logfile
+	done
+	# endline
+	echo -e -n "\n" >> $logfile
+}
+# call it
+save_args $0 $@
 
 # show command before run
 # stop script when the command fails
@@ -55,10 +74,10 @@ function my_exec() {
 	echo "__________________________________________________________";
 	echo -e "\n\n[CALLING] $1";
 	eval $1;
-  if [ "$?" -ne "0" ]; then
-    echo "Error detected ($?). ABORT."
-    exit 1
-  fi
+  	if [ "$?" -ne "0" ]; then
+	    echo "Error detected ($?). ABORT."
+	    exit 1
+  	fi
 }
 
 function energies() {
@@ -77,7 +96,6 @@ my_exec "$executable --segment --angle-limit $anglelimit --scale $scale --angle-
 
 input="patches.csv";
 assoc="points_primitives.csv";
-
 
 # show segment output
 # my_exec "../globOptVis --show --scale $scale --use-tags --ids --pop-limit $poplimit -p patches.csv -a $assoc --title "Segment output"&"

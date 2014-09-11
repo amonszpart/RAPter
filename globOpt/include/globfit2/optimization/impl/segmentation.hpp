@@ -234,7 +234,7 @@ Segmentation::regionGrow( _PointContainerT                       & points
     for ( int pid = 0; pid != points.size(); ++pid )
     {
         //const int pid = point_ids_arg ? (*point_ids_arg)[ pid_id ] : pid_id;
-        if ( points[pid].template dir().norm() != _Scalar(1) )
+        if ( std::abs(_Scalar(1)-points[pid].template dir().norm()) > _Scalar(1.e-2) )
             std::cerr << "unoriented point at pid " << pid << "? " << points[pid].template dir().transpose() << ", norm: " << points[pid].template dir().norm() << std::endl;
         starting_cands.push_back( pid );
     }

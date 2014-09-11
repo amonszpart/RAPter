@@ -233,6 +233,7 @@ namespace GF2
                 {
                     //std::cerr << "[" << __func__ << "]: " << "line.getExtent exceeded max radius increase iteration count...not drawing " << line.toString() << std::endl;
                     std::cerr << "[" << __func__ << "]: " << "line.getExtent exceeded max radius increase iteration count...drawing unit " << line.toString() << std::endl;
+                    minMax.resize(2);
                     minMax[0] = line.pos();
                     minMax[1] = line.pos() + line.dir() / 10.;
                     //return err;
