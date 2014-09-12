@@ -39,7 +39,8 @@ else
 	poplimit=5
 fi
 
-anglegens="36,90";
+anglegens="90";
+nbExtraIter=2
 
 visdefparam="--use-tags --no-clusters --ids" #"--use-tags --no-clusters" #--ids 
 
@@ -105,28 +106,41 @@ my_exec "../globOptVis --show --scale $scale --pop-limit $poplimit -p primitives
 # Merge adjacent candidates with same dir id. OUT: primitives_merged_it0.csv, points_primitives_it0.csv
 my_exec "$executable --merge --scale $scale --adopt 0 --prims primitives_it0.bonmin.csv -a $assoc --angle-gens $anglegens"
 
-input="primitives_merged_it0.csv";
-assoc="points_primitives_it0.csv";
-
 # Show output of first merge.
-my_exec "../globOptVis --show --scale $scale --pop-limit $poplimit -p $input -a $assoc --title \"Merged 1st iteration output\" $visdefparam  &"
+my_exec "../globOptVis --show --scale $scale --pop-limit $poplimit -p primitives_merged_it0.csv -a $assoc --title \"Merged 1st iteration output\" $visdefparam  &"
 
-# Generate candidates from output of first. OUT: candidates_it1.csv
-my_exec "$executable --generate -sc $scale -al 1 -ald 1 --small-mode 2 --patch-pop-limit $poplimit --angle-gens $anglegens -p $input --assoc $assoc"
+for c in $(seq 1 $nbExtraIter)
+do
+	  echo "__________________________________________________________";
+    echo "Start iteration $c"
+    
+    prevId=`expr $c - 1`;
+    nextId=`expr $c + 1`;
 
-# Show candidates:
-# my_exec "../globOptVis --show --scale $scale -a points_primitives.csv --ids -p candidates_it0.csv --pop-limit $poplimit &"
-# Formulate optimization problem. OUT: "problem" directory
-my_exec "$executable --formulate --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --constr-mode 0 --dir-bias 1 --patch-pop-limit $poplimit --angle-gens $anglegens --candidates candidates_it1.csv -a $assoc"
+    input="primitives_merged_it$prevId.csv";
+    assoc="points_primitives_it$prevId.csv";
 
-# Solve optimization problem. OUT: primitives_it1.bonmin.csv
-my_exec "$executable --solver bonmin -v --problem problem --time -1 --angle-gens $anglegens --candidates candidates_it1.csv"
+    # Generate candidates from output of first. OUT: candidates_it$c.csv
+    my_exec "$executable --generate -sc $scale -al 1 -ald 1 --small-mode 2 --patch-pop-limit $poplimit --angle-gens $anglegens -p $input --assoc $assoc"
+
+    # Show candidates:
+    # my_exec "../globOptVis --show --scale $scale -a $assoc --ids -p candidates_it$c.csv --pop-limit $poplimit &"
+    # Formulate optimization problem. OUT: "problem" directory
+    my_exec "$executable --formulate --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --constr-mode 0 --dir-bias 1 --patch-pop-limit $poplimit --angle-gens $anglegens --candidates candidates_it$c.csv -a $assoc"
+
+    # Solve optimization problem. OUT: primitives_it$c.bonmin.csv
+    my_exec "$executable --solver bonmin -v --problem problem --time -1 --angle-gens $anglegens --candidates candidates_it$c.csv"
+
+    # Show output of first iteration.
+    my_exec "../globOptVis --show --scale $scale --pop-limit $poplimit -p primitives_it$c.bonmin.csv -a $assoc --title \"$nextId nd iteration output\" $visdefparam &"
 
 
-# Merge adjacent candidates with same dir id. OUT: primitives_merged_it1.csv, points_primitives_it1.csv
-my_exec "$executable --merge --scale $scale --adopt 0 --angle-gens $anglegens --prims primitives_it1.bonmin.csv -a $assoc"
+    # Merge adjacent candidates with same dir id. OUT: primitives_merged_it$c.csv, points_primitives_it$c.csv
+    my_exec "$executable --merge --scale $scale --adopt 0 --angle-gens $anglegens --prims primitives_it$c.bonmin.csv -a $assoc"
 
 
-# Show output of second iteration.
-my_exec "../globOptVis --show --scale $scale --pop-limit 0 --angle-gens $anglegens --prims primitives_merged_it1.csv -a points_primitives_it1.csv --title \"Merged 2nd iteration output\" $visdefparam &"
+    # Show output of second iteration.
+    my_exec "../globOptVis --show --scale $scale --pop-limit 0 --angle-gens $anglegens --prims primitives_merged_it$c.csv -a points_primitives_it$c.csv --title \"Merged $nextId nd iteration output\" $visdefparam &"
+
+done
 
