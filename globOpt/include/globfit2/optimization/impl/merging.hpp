@@ -631,7 +631,7 @@ inline void merge( Container&        out_primitives, // [out] Container storing 
         mergedPrim.copyTagsFrom(l0);
         primToAdd.push_back(mergedPrim);
 
-    }else  if (arity0 != 1 && arity1 != 1){
+    }else /* if (arity0 != 1 && arity1 != 1)*/{
         // two constrained patches, we need to generate new primitives.
         std::cout << "Case C: " << arity0 << " - " << arity1 << std::endl;
 
@@ -650,7 +650,7 @@ inline void merge( Container&        out_primitives, // [out] Container storing 
         mergedPrim.setTag(PrimitiveT::GID, l0.getTag(PrimitiveT::GID) );
         primToAdd.push_back(mergedPrim);
 
-    }else {
+    }/*else {
         // one patch is free, the other constrained.
         std::cout << "Case B" << std::endl;
 
@@ -666,7 +666,7 @@ inline void merge( Container&        out_primitives, // [out] Container storing 
             originalGid = gid0;
             newGid      = gid1;
         }
-    }
+    }*/
 
     // add generated primitives
     for(typename std::vector<PrimitiveT>::const_iterator it = primToAdd.begin(); it != primToAdd.end(); it++){
@@ -725,6 +725,15 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
                                    int> // linear index in the array associated to the key
                       GidLid;
 
+
+
+    // Store the primitives that have been matched and must be ignored
+    // First  (key)   = candidate,
+    // Second (value) = reference.
+    typedef std::set< GidLid > IgnoreListT;
+    IgnoreListT ignoreList;
+
+
     int err = EXIT_SUCCESS;
 
     // Populations
@@ -741,14 +750,14 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
     {
         // for all patches
         for ( outer_const_iterator outer_it  = primitives.begin();
-                                  (outer_it != primitives.end())  && (EXIT_SUCCESS == err);
+                                  (outer_it != primitives.end()); // we now handle error
                                  ++outer_it )
         {
             int gid  = -2; // (-1 is "unset")
             int lid = 0; // linear index of primitive in container (to keep track)
             // for all directions
             for ( _inner_const_iterator inner_it  = containers::valueOf<_PrimitiveT>(outer_it).begin();
-                                       (inner_it != containers::valueOf<_PrimitiveT>(outer_it).end()) && (EXIT_SUCCESS == err);
+                                       (inner_it != containers::valueOf<_PrimitiveT>(outer_it).end());// we now handle error
                                       ++inner_it, ++lid )
             {
                 // save patch gid
@@ -772,7 +781,10 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
                     std::cerr << "Issue when computing extent of ("
                               << primitives.at(gid).at(lid).getTag(_PrimitiveT::GID )     << ","
                               << primitives.at(gid).at(lid).getTag(_PrimitiveT::DIR_GID ) << ")"
-                              << std::endl;
+                              << std::endl
+                              << "Ignored later... " << std::endl;
+
+                    ignoreList.insert(GidLid (gid, lid));
                 }
             } //...for primitives
         } //...for patches
@@ -782,12 +794,6 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
 
 
 
-
-    // Store the primitives that have been matched
-    // First  (key)   = candidate,
-    // Second (value) = reference.
-    typedef std::set< GidLid > AliasesT;
-    AliasesT aliases;
 
     typedef typename GidLidExtremaT::const_iterator GidIt;
     typedef typename LidExtremaT::const_iterator    PrimIt;
@@ -821,10 +827,10 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
     // For each couple ref/candidate, we check if we can merge. If yes, we do it and then invalidate
     // both the ref and the candidate to prevent to merge them with other primitives. Indeed, the
     // merging process can potentially remove the primitives, or at least change their properties.
-    // Primitives are invalidated by storing them as key in the aliases structure.
+    // Primitives are invalidated by storing them as key in the ignoreList structure.
     //
-    // After processing, the aliases set contains for any candidate described by a GidLid:
-    //   aliases [candGidLid];
+    // After processing, the ignoreList contains any candidate described by a GidLid gl:
+    //   ignoreList [gl];
     //
     // The output buffer is initialized with the input. All merging operations will remove
     // old primitives and replace them by merged one.
@@ -844,7 +850,7 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
             GidLid refGidLid (gid0, lid0);
 
             // check if this primitives has not been merged previously
-            if (aliases.find(refGidLid) != aliases.end()) continue;
+            if (ignoreList.find(refGidLid) != ignoreList.end()) continue;
 
             // reference primitive
             const _PrimitiveT& prim0 = primitives.at(gid0).at(lid0);
@@ -881,7 +887,7 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
                     // bool is1Valid,
                     // calling continue is sufficient to jump to the next primitive after and merge,
                     // plus here check that a previous merge has not been recorded
-                    if (aliases.find(candGidLid) != aliases.end()) continue;
+                    if (ignoreList.find(candGidLid) != ignoreList.end()) continue;
 
                     const _PrimitiveT& prim1 = primitives.at(gid1).at(lid1);
 
@@ -895,8 +901,8 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
                         //std::cout << " YES" << std::endl;
 
                         // record this to detect unmerged primitives later and invalidate both primitives
-                        aliases.insert(candGidLid);
-                        aliases.insert(refGidLid);
+                        ignoreList.insert(candGidLid);
+                        ignoreList.insert(refGidLid);
 
                         merge( out_primitives,     // [out] Container storing merged primitives
                                prim0,              // [in]  First primitive (can be invalidated during the call)
@@ -917,6 +923,11 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
         }
     }
 
+    typedef typename _PrimitiveContainerT::mapped_type::iterator inner_iterator;
+
+    // we can now remove primitives that are not assigned to any points
+    processing::eraseNonAssignedPrimitives<_PrimitiveT, inner_iterator>(out_primitives, points);
+
 //    cout << "[out]: " << out_primitives.size() << endl;
 //    for ( outer_const_iterator outer_it  = out_primitives.begin();
 //          (outer_it != out_primitives.end()) ;
@@ -936,7 +947,6 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
     typename _PrimitiveContainerT::iterator outer_itIn  =     primitives.begin();
     typename _PrimitiveContainerT::iterator outer_itOut = out_primitives.begin();
 
-    typedef typename _PrimitiveContainerT::mapped_type::iterator inner_iterator;
 
     auto cmp_primitive = [](_PrimitiveT const& l0, _PrimitiveT const& l1)
     {
