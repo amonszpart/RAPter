@@ -8,6 +8,7 @@
 #include <QSettings>
 #include <QXmlStreamReader>
 #include <QTextStream>
+#include <QDir>
 
 #include "mergedialog.h"
 
@@ -352,12 +353,29 @@ void MainWindow::on_actionSave_all_triggered()
                 tr("Select output folder"),
                 defaultPath);
 
+    QStringList st;
+    st << "primitives.csv"
+       << "points_primitives.csv"
+       << "cloud.ply";
+
 
     if (! path.isNull()){
-        writePrimitives (path+QString("/primitives.csv"));
-        writeAssignement(path+QString("/points_primitives.csv"));
-        writeSamples    (path+QString("/cloud.ply"));
+        // check if files exists
+        QDir dirPath(path);
+        bool override = dirPath.entryList(st).size() != 0;
+        if (override && QMessageBox::question(this,
+                                              "Existing directory",
+                                              "Existing files will be overwritten. Proceed anyway? ",
+                                              QMessageBox::Save,
+                                              QMessageBox::Cancel)
+                == QMessageBox::Cancel)
+            return;
 
+        dirPath.mkdir("gt");
+
+        writePrimitives (path+QString("/gt/primitives.csv"));
+        writeAssignement(path+QString("/gt/points_primitives.csv"));
+        writeSamples    (path+QString("/cloud.ply"));
 
         settings.setValue("Path/allPath", path);
     }
