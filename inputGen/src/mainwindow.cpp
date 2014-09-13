@@ -322,6 +322,9 @@ void MainWindow::on_actionLoad_Project_triggered()
                             primNode = primNode.nextSibling();
                         }
                     }
+                    else if (e.tagName().compare(QString("samplers")) == 0){
+                        _samplerDoc->loadSamples(e);
+                    }
                 }
                 n = n.nextSibling();
             }
@@ -558,15 +561,15 @@ MainWindow::writeProject(QString path, QString projectName){
         });
     }
 
-    // Write samples
-    {
-
-    }
+    // Write samplers
+    QDomElement rootSamplers = doc.createElement( "samplers" );
+    root.appendChild( rootSamplers );
+    _samplerDoc->saveSamples(doc, rootSamplers);
 
     // Write displacement
-    {
-
-    }
+    QDomElement rootDisplacement = doc.createElement( "displacements" );
+    root.appendChild( rootDisplacement );
+    _displacementDoc->savekernels(doc, rootDisplacement);
 
     QTextStream ts( &file );
     ts << doc.toString();
