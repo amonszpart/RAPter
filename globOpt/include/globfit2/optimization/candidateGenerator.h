@@ -198,6 +198,15 @@ namespace GF2
         // So, 00 - 00, 00 - 01, 00 - 02, ..., 01 - 01, 01 - 02, 01 - 03, ... , 10 - 10, 10 - 11, 10 - 12, ..., 20 - 20, 20 - 21,  ... (ab - cd), etc.
         // for a = 0 {   for b = 0 {   for c = a {   for d = b {   ...   } } } }
 
+        // copy input to output (to keep chosen tags)
+        for ( outer_const_iterator outer_it0  = in_lines.begin(); outer_it0 != in_lines.end(); ++outer_it0 )
+        {
+            for ( inner_const_iterator inner_it0  = (*outer_it0).second.begin(); inner_it0 != (*outer_it0).second.end(); ++inner_it0 )
+            {
+                containers::add( out_lines, inner_it0->getTag( _PrimitiveT::GID ), *inner_it0 );
+            }
+        }
+
         // OUTER0 (a)
         for ( outer_const_iterator outer_it0  = in_lines.begin();
                                    outer_it0 != in_lines.end();
@@ -227,7 +236,7 @@ namespace GF2
                 {
                     gid1 = -2; // -1 is unset, -2 is unread
                     // INNER1 (d)
-                    for ( inner_const_iterator inner_it1  = (outer_it0 == outer_it1) ? inner_it0
+                    for ( inner_const_iterator inner_it1  = (outer_it0 == outer_it1) ? ++inner_const_iterator( inner_it0 )
                                                                                      : (*outer_it1).second.begin();
                                                inner_it1 != (*outer_it1).second.end();
                                              ++inner_it1 )
@@ -244,6 +253,8 @@ namespace GF2
 
                         // check, if same line (don't need both copies then, since 01-01 =~= 01-01)
                         const bool same_line = ((outer_it0 == outer_it1) && (inner_it0 == inner_it1));
+                        if (same_line)
+                            std::cerr << "[" << __func__ << "]: " << "SAME LINE, should not happen" << std::endl;
 
                         bool add0 = same_line, // add0: new primitive at location of prim0, with direction from prim1. We need to keep a copy, so true if same_line.
                              add1 = false;     // add1: new primitive at location of prim1, with direction from prim0
@@ -303,6 +314,7 @@ namespace GF2
                             {
                                 cand0.setTag(_PrimitiveT::CHOSEN, prim0.getTag(_PrimitiveT::CHOSEN) ); // keep chosen lines chosen
                             }
+
                             // insert
                             int check = containers::add( out_lines, gid0, cand0 ).getTag( _PrimitiveT::GID );
                             ++nlines;

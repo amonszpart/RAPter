@@ -27,32 +27,28 @@ template < class _PrimitiveContainerT
 ProblemSetup::formulateCli( int    argc
                           , char** argv )
 {
-    bool verbose = true;
+    bool verbose = false;
     typedef          MyPointPrimitiveDistanceFunctor               _PointPrimitiveDistanceFunctor;
     typedef typename _PointPrimitiveT::Scalar                      Scalar;
 
     GF2::ProblemSetupParams<Scalar> params;
 
-    //Scalar                    scale            = 0.05f;
-    std::string               cloud_path       = "cloud.ply",
-                              candidates_path  = "candidates.csv",
-                              assoc_path       = "points_primitives.csv";
-    //std::vector<Scalar>       angles           = {0, M_PI_2, M_PI };   // TODO: param
-    //params.angles = {0, M_PI_2, M_PI };
-    //Eigen::Matrix<Scalar,3,1> weights;           weights << 1, 5, 1;   // --unary 1 --pw 5 --cmplx 1
-    std::vector<Scalar>       angle_gens       = { M_PI_2 };
-    int                       srand_val        = 123456;
-    std::string               cost_string      = "sqrt";
-    std::string               problem_rel_path = "problem";
+    std::string               cloud_path         = "cloud.ply",
+                              candidates_path    = "candidates.csv",
+                              assoc_path         = "points_primitives.csv";
+    std::vector<Scalar>       angle_gens         = { 90. };
+    int                       srand_val          = 123456;
+    std::string               cost_string        = "sqrt";
+    std::string               problem_rel_path   = "problem";
     std::string               data_cost_mode_str = "assoc";
-    //DATA_COST_MODE data_cost_mode = ASSOC_BASED;
-    std::string               constr_mode_str = "hybrid";
-    //CONSTR_MODE constr_mode = PATCH_WISE;
-    //int                       patch_pop_limit = 10;
+    std::string               constr_mode_str    = "hybrid";
+    bool                      calc_energy        = false; // instead of writing the problem, calculate the energy of selecting all input lines.
 
     // parse params
     {
         bool valid_input = true;
+        verbose = pcl::console::find_switch( argc, argv, "--verbose") || pcl::console::find_switch( argc, argv, "-v" );
+
         valid_input &= pcl::console::parse_argument( argc, argv, "--scale"     , params.scale   ) >= 0;
         // cloud
         pcl::console::parse_argument( argc, argv, "--cloud"     , cloud_path     );
@@ -85,7 +81,7 @@ ProblemSetup::formulateCli( int    argc
         // constr_mode
         {
             pcl::console::parse_argument( argc, argv, "--constr-mode", constr_mode_str );
-            std::cout << "parsed constr_mode_str: " << constr_mode_str << std::endl;
+            if ( verbose ) std::cout << "parsed constr_mode_str: " << constr_mode_str << std::endl;
             /**/ if ( !constr_mode_str.compare( "patch"  ) ) params.constr_mode = ProblemSetupParams<Scalar>::PATCH_WISE; // default
             else if ( !constr_mode_str.compare( "point"  ) ) params.constr_mode = ProblemSetupParams<Scalar>::POINT_WISE; // banded
             else if ( !constr_mode_str.compare( "hybrid" ) ) params.constr_mode = ProblemSetupParams<Scalar>::HYBRID; // hybrid
@@ -97,33 +93,41 @@ ProblemSetup::formulateCli( int    argc
             pcl::console::parse_argument( argc, argv, "--patch-pop-limit", params.patch_population_limit );
         }
 
-        std::cerr << "[" << __func__ << "]: " << "Usage:\t gurobi_opt --formulate\n"
-                  << " --scale " << params.scale << "\n"
-                  << " --cloud " << cloud_path << "\n"
-                  << " --candidates " << candidates_path << "\n"
-                  << " -a,--assoc " << assoc_path << "\n"
-                  << " [--angle-gens "; for(size_t vi=0;vi!=angle_gens.size();++vi)std::cerr<<angle_gens[vi]<<","; std::cerr << "]\n";
-        std::cerr << " [--dir-bias " << params.dir_id_bias << "]\n"
-                  << " [--unary " << params.weights(0) << "]\n"
-                  << " [--pw " << params.weights(1) << "]\n"
-                  << " [--cmp " << params.weights(2) << "]\n"
-                  << " [--cost-fn *" << cost_string << "* (cexp | sqrt)" << "]\n"
-                  << " [--data-mode *" << (int)params.data_cost_mode << "* (assoc | band | instance) ]\n"
-                  << " [--constr-mode *" << (int)params.constr_mode << "* (patch | point | hybrid ) ]\n"
-                  << " [--srand " << srand_val << "]\n"
-                  << " [--rod " << problem_rel_path << "]\t\tRelative output path of the output matrix files\n"
-                  << " [--patch-pop-limit " << params.patch_population_limit << "]\n"
-                  << std::endl;
+        // energy
+        {
+            calc_energy = pcl::console::find_switch( argc, argv, "--energy" );
+        }
 
-        if ( !valid_input || pcl::console::find_switch(argc,argv,"--help") || pcl::console::find_switch(argc,argv,"-h") ) {
+
+        if ( !valid_input || pcl::console::find_switch(argc,argv,"--help") || pcl::console::find_switch(argc,argv,"-h") || verbose )
+        {
             std::cerr << "[" << __func__ << "]: " << "--scale, --cloud and --candidates are compulsory" << std::endl;
-            return EXIT_FAILURE;
+            std::cerr << "[" << __func__ << "]: " << "Usage:\t gurobi_opt --formulate\n"
+                      << " --scale " << params.scale << "\n"
+                      << " --cloud " << cloud_path << "\n"
+                      << " --candidates " << candidates_path << "\n"
+                      << " -a,--assoc " << assoc_path << "\n"
+                      << " [--energy " << (calc_energy?"yes":"no") << "]\n"
+                      << " [--angle-gens "; for(size_t vi=0;vi!=angle_gens.size();++vi)std::cerr<<angle_gens[vi]<<","; std::cerr << "]\n";
+            std::cerr << " [--dir-bias " << params.dir_id_bias << "]\n"
+                      << " [--unary " << params.weights(0) << "]\n"
+                      << " [--pw " << params.weights(1) << "]\n"
+                      << " [--cmp " << params.weights(2) << "]\n"
+                      << " [--cost-fn *" << cost_string << "* (cexp | sqrt)" << "]\n"
+                      << " [--data-mode *" << (int)params.data_cost_mode << "* (assoc | band | instance) ]\n"
+                      << " [--constr-mode *" << (int)params.constr_mode << "* (patch | point | hybrid ) ]\n"
+                      << " [--srand " << srand_val << "]\n"
+                      << " [--rod " << problem_rel_path << "]\t\tRelative output path of the output matrix files\n"
+                      << " [--patch-pop-limit " << params.patch_population_limit << "]\n"
+                      << std::endl;
+            if ( !verbose )
+                return EXIT_FAILURE;
         }
     } // ... parse params
 
     // Read desired angles
     {
-        processing::appendAnglesFromGenerators( params.angles, angle_gens, true );
+        processing::appendAnglesFromGenerators( params.angles, angle_gens, verbose );
     } //...read angles
 
     // read points
@@ -179,16 +183,35 @@ ProblemSetup::formulateCli( int    argc
                                                        , primPrimDistFunctor
                                                        , params.patch_population_limit
                                                        , params.dir_id_bias
-                                                       , verbose );
+                                                       , !calc_energy && verbose );
 
     // dump. default output: ./problem/*.csv; change by --rod
     if ( EXIT_SUCCESS == err )
     {
-        std::string parent_path = boost::filesystem::path(candidates_path).parent_path().string();
-        if ( !parent_path.empty() )     parent_path += "/";
-        else                            parent_path =  ".";
-        std::string problem_path = parent_path + "/" + problem_rel_path;
-        problem.write( problem_path );
+        if ( !calc_energy )
+        {
+            std::string parent_path = boost::filesystem::path(candidates_path).parent_path().string();
+            if ( !parent_path.empty() )     parent_path += "/";
+            else                            parent_path =  ".";
+            std::string problem_path = parent_path + "/" + problem_rel_path;
+            problem.write( problem_path );
+        }
+        else
+        {
+            problemSetup::OptProblemT::VectorX x( problem.getVarCount(), 1 );
+            x.setOnes();
+            Scalar dataPlusCmplx = (x.transpose() * problem.getLinObjectivesMatrix()).coeff(0);
+            Scalar complexityC   = x.sum() * params.weights(2);
+            Scalar dataC         = dataPlusCmplx - complexityC;
+            Scalar pairwiseC     = (x.transpose() * problem.getQuadraticObjectivesMatrix() * x );
+            std::cout << "E = " << dataC + pairwiseC + complexityC << " = "
+                      << dataC << " (data) + " << pairwiseC << "(pw) + " << complexityC << " (cmplx)"
+                      << " = "
+                      << params.weights(0) << " * " << dataC / params.weights(0)
+                      << " + " << params.weights(1) << " * " << pairwiseC / params.weights(1)
+                      << " + " << params.weights(2) << " * " << complexityC / params.weights(2)
+                      << std::endl;
+        }
     } //...dump
 
     // cleanup
@@ -269,7 +292,7 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
                 break;
             case ProblemSetupParams<_Scalar>::CONSTR_MODE::HYBRID:
                 err = problemSetup::largePatchesNeedDirectionConstraint<_PointPrimitiveDistanceFunctor, _PrimitiveT, _PointPrimitiveT>
-                        ( problem, prims, points, lids_varids, weights, scale, patch_pop_limit );
+                        ( problem, prims, points, lids_varids, weights, scale, patch_pop_limit, verbose );
                 break;
         } //...switch constr_mode
 
@@ -505,7 +528,8 @@ namespace problemSetup {
                                        , _AssocT              const& lids_varids
                                        , _WeightsT            const& /*weights*/
                                        , _Scalar              const  scale
-                                       , int                  const  pop_limit )
+                                       , int                  const  pop_limit
+                                       , bool                 const  verbose )
     {
         typedef typename _AssocT::key_type      IntPair;        // <lid,lid1> pair to retrieve the linear index of a variable in the problem using lids_varids
         typedef typename _OptProblemT::Scalar   ProblemScalar;  // Scalar in OptProblem, usually has to be double because of the implementation
@@ -595,7 +619,7 @@ namespace problemSetup {
             }
         } //... for each point
 
-        std::cout << "[" << __func__ << "]: " << "added "  << stats.first << " large and " << stats.second << " small patch constraint lines" << std::endl;
+        if ( verbose ) std::cout << "[" << __func__ << "]: " << "added "  << stats.first << " large and " << stats.second << " small patch constraint lines" << std::endl;
 
         return err;
     } // ...everyPatchNeedsDirectionConstraint

@@ -79,7 +79,8 @@ namespace GF2
                                            , _AssocT              const& lids_varids
                                            , _WeightsT            const& /*weights*/
                                            , _Scalar              const  scale
-                                           , int                  const  pop_limit );
+                                           , int                  const  pop_limit
+                                           , bool                 const  verbose = false );
 
         //! \brief Adds unary costs to problem based on scale wide band assocation.
         //! \tparam _AssocT     Associates a primitive identified by <lid,lid1> with a variable id in the problem. Default: std::map< std::pair<int,int>, int >

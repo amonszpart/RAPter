@@ -2,7 +2,7 @@
 #define __GF2_PLANEPRIMITIVE_H__
 
 #include <Eigen/Dense>
-#include "primitives/primitive.h"
+#include "globfit2/primitives/primitive.h"
 #include "pcltools/util.hpp"
 
 #ifdef GF2_USE_PCL
@@ -17,13 +17,34 @@ namespace GF2
     //! \brief   Class to wrap a plane with. Implements #pos() and #dir() functions, and a constructor taking a position and a direction.
     //!
     //!          Stores 3D normal at the first three coeffs, and distance from origin at the fourth coordinate.
-    class PlanePrimitive : public ::GF2::Primitive<4>
+    class PlanePrimitive : public ::GF2::Primitive<4>, public ::GF2::Taggable
     {
+            typedef ::GF2::Primitive<4> ParentT;
         public:
+            //! \brief Defines the tags (ids) that this primitive can manage using setTag and getTag functions.
+            enum TAGS {
+                GID        = 0  //!< group id             - which group this primitive is supposed to explain
+                , DIR_GID  = 1  //!< direction group id   - which group this primitive got it's direction from
+                , CHOSEN   = 2  //!< an additional flag to store, if this is part of a solution.
+                , USER_ID1 = 10 //!< additional flag to store processing attributes (values only in the generation scope)
+                , USER_ID2 = 11 //!< additional flag to store processing attributes (values only in the generation scope)
+                , USER_ID3 = 12 //!< additional flag to store processing attributes (values only in the generation scope)
+                , USER_ID4 = 13 //!< additional flag to store processing attributes (values only in the generation scope)
+                , USER_ID5 = 14 //!< additional flag to store processing attributes (values only in the generation scope)
+            };//...TAGS
+
             //! \brief Inherited constructor from Primitive.
-            using ::GF2::Primitive<4>::Primitive;
+            // using ::GF2::Primitive<4>::Primitive;
 
             // ____________________CONSTRUCT____________________
+
+            PlanePrimitive() : ParentT() {}
+
+            //! \brief Constructor that takes raw data in Eigen format as input.
+            PlanePrimitive( Eigen::Matrix<Scalar,Dim,1> coeffs ) : ParentT( coeffs ) {}
+
+            //! \brief Constructor that takes raw data in std::vector format as input.
+            PlanePrimitive( std::vector<Scalar> const& coeffs ) : ParentT( coeffs ) {}
 
             //! \brief           Creates PlanePrimitive from point on plane and direction.
             //! \param[in] p0    Point on plane.
