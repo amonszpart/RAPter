@@ -9,6 +9,7 @@
 #include <QXmlStreamReader>
 #include <QTextStream>
 #include <QDir>
+#include <QtXml>
 
 #include "mergedialog.h"
 
@@ -235,6 +236,102 @@ void MainWindow::on_actionLoad_SVG_triggered()
     emit currentProjectUpdated();
 
 }
+
+
+void MainWindow::on_actionLoad_Project_triggered()
+{
+    using InputGen::Application::Scalar;
+
+    QSettings settings;
+    QString defaultPath = settings.value("Path/prjOpen").toString();
+
+    QString path =
+    QFileDialog::getOpenFileName(this,
+                                 tr("Load project file"),
+                                 defaultPath,
+                                 "InputGen project (*.prj)");
+
+    // can be replaced by a new project to handle multi-view
+    _project->clear();
+
+    if (! path.isNull()){
+        QFile input(path);
+        if (input.open(QIODevice::ReadOnly)) {
+            settings.setValue("Path/prjOpen", path);
+
+            QDomDocument doc("mydocument");
+            if (!doc.setContent(&input)) {
+                input.close();
+                return;
+            }
+            input.close();
+
+            // print out the element names of all elements that are direct children
+            // of the outermost element.
+            QDomElement docElem = doc.documentElement();
+
+            QDomNode n = docElem.firstChild();
+            while(!n.isNull()) {
+                QDomElement e = n.toElement(); // try to convert the node to an element.
+                if(!e.isNull()) {
+                    if (e.tagName().compare(QString("primitives")) == 0){
+                        cout << "Loading primitives ..." << endl;
+
+                        QDomNode primNode = e.firstChild();
+                        while(! primNode.isNull()){
+                            QDomElement primElement = primNode.toElement(); // try to convert the node to an element.
+                            if(!primElement.isNull() && primElement.tagName().compare(QString("primitive")) == 0) {
+                                // create a new primitive
+                                Primitive line (Primitive::LINE_2D,
+                                                primElement.attribute("uid").toInt(),
+                                                primElement.attribute("did").toInt());
+
+                                QStringList coordLists = primElement.attribute("pos").split(' ');
+                                if (coordLists.size() == 3){
+                                    line.setCoord(Primitive::vec(coordLists.at(0).toDouble(),
+                                                                 coordLists.at(1).toDouble(),
+                                                                 coordLists.at(2).toDouble()));
+                                } else{
+                                    std::cerr << "Unexpected error while reading primitive position" << endl;
+                                    continue;
+                                }
+
+                                coordLists = primElement.attribute("dir").split(' ');
+                                if (coordLists.size() == 3){
+                                    line.setNormal(Primitive::vec(coordLists.at(0).toDouble(),
+                                                                  coordLists.at(1).toDouble(),
+                                                                  coordLists.at(2).toDouble()));
+                                } else{
+                                    std::cerr << "Unexpected error while reading primitive direction" << endl;
+                                    continue;
+                                }
+
+                                coordLists = primElement.attribute("dim").split(' ');
+                                if (coordLists.size() == 2){
+                                    line.setDim(Primitive::vec2(coordLists.at(0).toDouble(),
+                                                                coordLists.at(1).toDouble()));
+                                } else{
+                                    std::cerr << "Unexpected error while reading primitive dimension" << endl;
+                                    continue;
+                                }
+
+                                _project->primitives.push_back(line);
+                            }else
+                                std::cerr << "Unsupported primitive type" << endl;
+
+                            primNode = primNode.nextSibling();
+                        }
+                    }
+                }
+                n = n.nextSibling();
+            }
+        }
+    }
+    emit currentProjectUpdated();
+}
+
+
+
 void MainWindow::on_actionMerge_primitives_triggered()
 {
     if (_project == NULL)
@@ -373,6 +470,9 @@ void MainWindow::on_actionSave_all_triggered()
 
         dirPath.mkdir("gt");
 
+        QString projectName = dirPath.dirName();
+
+        writeProject    (path+QString("/gt/")+projectName+QString(".prj"), projectName);
         writePrimitives (path+QString("/gt/primitives.csv"));
         writeAssignement(path+QString("/gt/points_primitives.csv"));
         writeSamples    (path+QString("/cloud.ply"));
@@ -396,20 +496,82 @@ void MainWindow::writePrimitives(QString path){
         QTextStream out(&outfile);
 
         out << "#Describes primitives of the scene" << endl;
-        out << "#x,y,z,nx,ny,nz,primitiveId,orientationId" << endl;
+        out << "#x,y,z,nx,ny,nz,primitiveId,orientationId,used" << endl;
 
         for(InputGen::Application::Project::PrimitiveContainer::const_iterator it = _project->primitives.begin();
             it != _project->primitives.end(); it++){
             out << (*it).coord()(0)  << ","
                 << (*it).coord()(1)  << ","
                 << (*it).coord()(2)  << ","
-                << (*it).normal()(2) << ","
+                << (*it).normal()(0) << ","
+                << (*it).normal()(1) << ","
                 << (*it).normal()(2) << ","
                 << (*it).uid()       << ","
-                << (*it).did()       << endl;
+                << (*it).did()       << ","
+                << "1"               << endl; //1 means used
         }
         outfile.close();
     }
+}
+
+void
+MainWindow::writeProject(QString path, QString projectName){
+    if (_project == NULL)
+        return;
+
+    QFile file( path );
+    if( !file.open( QIODevice::WriteOnly ) )
+        return;
+
+    QDomDocument doc (projectName);
+
+    QDomElement root = doc.createElement( "scene" );
+    root.setAttribute( "name", projectName);
+    doc.appendChild( root );
+
+    // Write primitives
+    {
+        QDomElement rootPrimitives = doc.createElement( "primitives" );
+        root.appendChild( rootPrimitives );
+
+
+        std::for_each(_project->primitives.begin(),
+                      _project->primitives.end(),
+                      [&doc, &rootPrimitives] (typename Project::PrimitiveContainer::const_reference p)
+        {
+            QDomElement primElement = doc.createElement( "primitive" );
+            primElement.setAttribute( "pos",
+                                      QString::number(p.coord()(0)) + QString(" ") +
+                                      QString::number(p.coord()(1)) + QString(" ") +
+                                      QString::number(p.coord()(2)));
+            primElement.setAttribute( "dir",
+                                      QString::number(p.normal()(0)) + QString(" ") +
+                                      QString::number(p.normal()(1)) + QString(" ") +
+                                      QString::number(p.normal()(2)));
+            primElement.setAttribute( "dim",
+                                      QString::number(p.dim()(0)) + QString(" ") +
+                                      QString::number(p.dim()(1)));
+            primElement.setAttribute( "uid", QString::number(p.uid()) );
+            primElement.setAttribute( "did", QString::number(p.did()) );
+
+            rootPrimitives.appendChild( primElement );
+        });
+    }
+
+    // Write samples
+    {
+
+    }
+
+    // Write displacement
+    {
+
+    }
+
+    QTextStream ts( &file );
+    ts << doc.toString();
+
+    file.close();
 }
 
 void MainWindow::writeAssignement(QString path){
@@ -478,4 +640,3 @@ void MainWindow::writeSamples(QString path){
         outfile.close();
     }
 }
-
