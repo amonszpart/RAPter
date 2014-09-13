@@ -325,6 +325,9 @@ void MainWindow::on_actionLoad_Project_triggered()
                     else if (e.tagName().compare(QString("samplers")) == 0){
                         _samplerDoc->loadSamples(e);
                     }
+                    else if (e.tagName().compare(QString("displacements")) == 0){
+                        _displacementDoc->loadkernels(e);
+                    }
                 }
                 n = n.nextSibling();
             }

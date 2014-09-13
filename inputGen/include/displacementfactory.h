@@ -20,6 +20,7 @@ public:
 
     void setProject(InputGen::Application::Project* p);
 
+    void loadkernels(QDomElement& root);
     void savekernels(QDomDocument& doc, QDomElement& root) const;
 
 signals:

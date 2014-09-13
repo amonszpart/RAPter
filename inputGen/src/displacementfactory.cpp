@@ -36,6 +36,51 @@ DisplacementFactory::setProject(InputGen::Application::Project *p){
 }
 
 void
+DisplacementFactory::loadkernels(QDomElement &root)
+{
+    // here the idea is to set the interface up, and then trigger the functions updating the project
+    std::cout << "Loading displacement kernels" << std::endl;
+    QDomNode displacementNode = root.firstChild();
+    while(! displacementNode.isNull()){
+        QDomElement kernelElement = displacementNode.toElement(); // try to convert the node to an element.
+        if(!kernelElement.isNull() && kernelElement.tagName().compare(QString("kernel")) == 0) {
+            int kernelId = kernelElement.attribute("typeId").toInt();
+            bool enabled = kernelElement.attribute("enabled").toInt();
+            ui->_displacementLayerAddCombo->setCurrentIndex(kernelId);
+
+            switch(kernelId){
+            case::InputGen::DISPLACEMENT_KERNEL_TYPE::DISPLACEMENT_BIAS:
+            {
+                ui->_displacementParamBiasValue->setValue(kernelElement.attribute("bias").toDouble());
+                break;
+            }
+            case::InputGen::DISPLACEMENT_KERNEL_TYPE::DISPLACEMENT_RANDOM_UNIFORM:
+            {
+                ui->_displacementParamRandomUniformMinValue->setValue(kernelElement.attribute("distributionMin").toDouble());
+                ui->_displacementParamRandomUniformMaxValue->setValue(kernelElement.attribute("distributionMax").toDouble());
+                break;
+            }
+            case::InputGen::DISPLACEMENT_KERNEL_TYPE::DISPLACEMENT_RANDOM_NORMAL:
+            {
+                ui->_displacementParamRandomNormalMeanValue->setValue(kernelElement.attribute("distributionMean").toDouble());
+                ui->_displacementParamRandomNormalStddevValue->setValue(kernelElement.attribute("distributionStdDev").toDouble());
+                break;
+            }
+            default:
+                std::cerr << "Invalid kernel type " << kernelId << std::endl;
+            };
+
+            // trigger kernel creation
+            addLayerTriggerred();
+            // enable/disable
+            ui->_displacementLayerTable->item( ui->_displacementLayerTable->currentRow(), 1)->setCheckState(
+                        enabled ? Qt::Checked : Qt::Unchecked);
+        }
+        displacementNode = displacementNode.nextSibling();
+    }
+}
+
+void
 DisplacementFactory::savekernels(QDomDocument &doc, QDomElement &root) const
 {
     typedef InputGen::Application::Scalar S;
