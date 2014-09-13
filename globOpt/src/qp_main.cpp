@@ -62,7 +62,7 @@ int main( int argc, char *argv[] )
     {
         return GF2::Solver::datafit( argc, argv );
     }
-    else if ( pcl::console::find_switch(argc,argv,"--merge") )
+    else if ( pcl::console::find_switch(argc,argv,"--merge") || pcl::console::find_switch(argc,argv,"--merge3D") )
     {
         return GF2::Merging::mergeCli<GF2::Solver::PrimitiveContainerT, GF2::Solver::PointContainerT, GF2::Solver::Scalar>( argc, argv );
     }
