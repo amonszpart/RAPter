@@ -38,7 +38,70 @@ DisplacementFactory::setProject(InputGen::Application::Project *p){
 void
 DisplacementFactory::savekernels(QDomDocument &doc, QDomElement &root) const
 {
+    typedef InputGen::Application::Scalar S;
+    typedef InputGen::Application::Project::SampleContainer    SC;
+    typedef InputGen::Application::Project::PrimitiveContainer PC;
 
+    if (_project != NULL){
+        for (unsigned int i = 0; i != _project->nbDisplacementLayers(); i++)
+        {
+            InputGen::Application::Project::DisplacementKernel* kernel = _project->displacementKernel(i);
+
+            QDomElement kernelElement = doc.createElement( "kernel" );
+            kernelElement.setAttribute("typeId", int( kernel->type ));
+            kernelElement.setAttribute("enabled", int( _project->isDisplacementLayerEnabled(i) ) );
+
+            switch(kernel->type){
+            case::InputGen::DISPLACEMENT_KERNEL_TYPE::DISPLACEMENT_BIAS:
+            {
+
+                InputGen::BiasDisplacementKernel<S,SC,PC>* lkernel =
+                        dynamic_cast<InputGen::BiasDisplacementKernel<S,SC,PC>*> (kernel);
+                if(lkernel == NULL) {
+                    std::cerr << "This should nerver happen... "
+                              << __FILE__ << " "
+                              << __LINE__ << std::endl;
+                    break;
+                }
+
+                kernelElement.setAttribute("bias", QString::number( lkernel->bias ));
+                break;
+            }
+            case::InputGen::DISPLACEMENT_KERNEL_TYPE::DISPLACEMENT_RANDOM_UNIFORM:
+            {
+                InputGen::UniformRandomDisplacementKernel<S,SC,PC>* lkernel =
+                        dynamic_cast<InputGen::UniformRandomDisplacementKernel<S,SC,PC>*> (kernel);
+                if(lkernel == NULL) {
+                    std::cerr << "This should nerver happen... "
+                              << __FILE__ << " "
+                              << __LINE__ << std::endl;
+                    break;
+                }
+
+                kernelElement.setAttribute("distributionMin", QString::number( lkernel->distributionMin() ));
+                kernelElement.setAttribute("distributionMax", QString::number( lkernel->distributionMax() ));
+                break;
+            }
+            case::InputGen::DISPLACEMENT_KERNEL_TYPE::DISPLACEMENT_RANDOM_NORMAL:
+            {
+                InputGen::NormalRandomDisplacementKernel<S,SC,PC>* lkernel =
+                        dynamic_cast<InputGen::NormalRandomDisplacementKernel<S,SC,PC>*> (kernel);
+                if(lkernel == NULL) {
+                    std::cerr << "This should nerver happen... "
+                              << __FILE__ << " "
+                              << __LINE__ << std::endl;
+                    break;
+                }
+
+                kernelElement.setAttribute("distributionMean", QString::number( lkernel->distributionMean() ));
+                kernelElement.setAttribute("distributionStdDev", QString::number( lkernel->distributionStdDev() ));
+                break;
+            }
+            }
+
+            root.appendChild(kernelElement);
+        }
+    }
 }
 
 
