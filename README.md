@@ -1,8 +1,11 @@
 globOpt
 =======
 
-globOpt
-
+globOpt provides a set of tools to generate, segment, approximate, and visualize 2D and 3D point clouds with ground truth. It also comes with a set of quantitative and qualitative tests to evaluate the approximation results regarding the ground truth.
+The different modules are:
+* inputGen: to generate 2D point clouds and ground truth abstraction from svg files. It provides different samplers to convert svg primitives to point clouds and stackable noise kernels (bias, random noise with uniform and normal distribution).
+* visualization: based on PCL viewer, support both 2D and 3D point clouds and inter-primitive relations.
+* globOpt: the core of the project, a new approach to approximate scenes with primitives supported by global relations.
 
 ##Dependencies
 * 3rd Party:
