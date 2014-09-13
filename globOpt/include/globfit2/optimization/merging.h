@@ -51,14 +51,16 @@ class Merging
                  , class    _PrimitiveContainerT
                  , class    _PointContainerT
                  , typename _Scalar
-                 , class    _PatchPatchDistanceFunctorT >
+                 , class    _PatchPatchDistanceFunctorT
+                 , class    _PrimitiveDecideMergeFunctorT >
         static inline int mergeSameDirGids( _PrimitiveContainerT      & out_primitives
                                           , _PointContainerT          & points
                                           , _PrimitiveContainerT /*const&*/ primitives
                                           , _Scalar              const  scale
                                           , _Scalar              const  spatial_threshold
                                           , _Scalar              const  parallel_limit
-                                          , _PatchPatchDistanceFunctorT const& patchPatchDistFunct );
+                                          , _PatchPatchDistanceFunctorT const& patchPatchDistFunct
+                                          , _PrimitiveDecideMergeFunctorT const& primitiveDecideMergeFunct );
 
 
 }; //...class Merging
