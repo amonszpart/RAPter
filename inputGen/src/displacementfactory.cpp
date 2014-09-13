@@ -36,6 +36,13 @@ DisplacementFactory::setProject(InputGen::Application::Project *p){
 }
 
 void
+DisplacementFactory::savekernels(QDomDocument &doc, QDomElement &root) const
+{
+
+}
+
+
+void
 DisplacementFactory::addLayerTriggerred(){
     std::cout << "addLayerTriggerred" << std::endl;
 

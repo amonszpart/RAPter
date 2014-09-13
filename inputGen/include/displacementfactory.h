@@ -2,6 +2,7 @@
 #define DISPLACEMENTFACTORY_H
 
 #include <QDockWidget>
+#include <QtXml>
 
 #include "project.h"
 
@@ -18,6 +19,8 @@ public:
     ~DisplacementFactory();
 
     void setProject(InputGen::Application::Project* p);
+
+    void savekernels(QDomDocument& doc, QDomElement& root) const;
 
 signals:
     void projectUpdated();
