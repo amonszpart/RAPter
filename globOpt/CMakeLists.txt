@@ -15,6 +15,9 @@ SET( PATH_BONMIN_DIR "${THIRD_PARTY_DIR}/CoinBonmin-stable/build/")
 
 SET( PATH_GUROBI_DIR "${THIRD_PARTY_DIR}/gurobi562/linux64/"
         CACHE FILEPATH "Folder containing libgurobixx.so and libgurobi_c++.a, usually \"{GUROBI_INSTALL_DIR}/gurobi562/linux64/\".")
+
+SET( PATH_LIBFBI_ROOT "${THIRD_PARTY_DIR}/libfbi/")
+
 SET( PATH_QCQPCPP_ROOT "${WORKSPACE_DIR}/QCQPcpp/"
         CACHE FILEPATH "Root directory of QCQPcpp library containing the \"include\" directory.")
 SET( PATH_PCLTOOLS_ROOT "${WORKSPACE_DIR}/geometry-tools/PCLTools/"
@@ -154,6 +157,9 @@ INCLUDE_DIRECTORIES( ${PATH_QCQPCPP_ROOT}/include )
 
 # libPCLTools
 INCLUDE_DIRECTORIES( ${PATH_PCLTOOLS_ROOT}/include )
+
+# libfbi
+INCLUDE_DIRECTORIES( ${PATH_LIBFBI_ROOT}/include )
 
 # vis
 IF(1)
