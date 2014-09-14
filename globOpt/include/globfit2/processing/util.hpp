@@ -630,8 +630,12 @@ namespace GF2 {
         }
 
         /*! \brief Computes a column-wise 3D frame and a centroid in a 4,4 matrix.
-         *  \tparam Scalar          Floating point precision type.
-         *  \tparam PointContainerT Concept: std::vector< \ref GF2::PointPrimitive >.
+         *  \tparam _IndicesContainerT  Concept: std::vector<int>.
+         *  \tparam Scalar              Floating point precision type. Concept: float.
+         *  \tparam _PointContainerT    Concept: std::vector< \ref GF2::PointPrimitive >.
+         *  \param[out] frame           Output 4x4 matrix, where the first 3 columns are the three axis of the local frame, and the 4th column is the centroid.
+         *  \param[in]  points          Input pointcloud to perform PCA on.
+         *  \param[in]  indices         Optional indices input to address points in the pointcloud.
          */
         template <class _IndicesContainerT, typename Scalar, class _PointContainerT> inline int
         PCA( Eigen::Matrix<Scalar,4,4> & frame,
@@ -641,7 +645,7 @@ namespace GF2 {
         {
             Eigen::Matrix<Scalar,3,1> centroid = processing::getCentroid<Scalar>( points, indices );
             Eigen::Matrix<Scalar,3,3> covariance;
-            processing::computeCovarianceMatrix< /* _WeightsContainerT> */ std::vector<int>, _IndicesContainerT >( covariance, points, centroid, /* indices: */ indices, /* weights: */ NULL );
+            processing::computeCovarianceMatrix< /* _WeightsContainerT */ std::vector<int>, _IndicesContainerT >( covariance, points, centroid, /* indices: */ indices, /* weights: */ NULL );
 
             // eigen decomposition
             Eigen::SelfAdjointEigenSolver<Eigen::Matrix<Scalar,3,3> > eigen_solver( covariance, Eigen::ComputeEigenvectors );
