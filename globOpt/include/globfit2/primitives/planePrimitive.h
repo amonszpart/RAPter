@@ -262,8 +262,8 @@ namespace GF2
                 )
             {
                 int err     = EXIT_SUCCESS;
-                if ( stretch != _Scalar(1.) )
-                    std::cerr << "[" << __func__ << "]: " << "WARNING, Stretch for planes is unimplemented!!!" << std::endl;
+                //if ( stretch != _Scalar(1.) )
+                //    std::cerr << "[" << __func__ << "]: " << "WARNING, Stretch for planes is unimplemented!!!" << std::endl;
 
                 typedef Eigen::Matrix<_Scalar,3,1> Position;
 
