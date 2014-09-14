@@ -75,6 +75,13 @@ class BiasDisplacementKernel(DisplacementKernel):
 
         self.bias  = bias
 
+    # The PDF of this function is a Dirac pic. 
+    def getPDF(self, xarray):
+        print "Warning: Bias PDF is an infinite Dirac that will not been displayed"
+        def myfunc(x): return 0.
+        vfunc = vectorize(myfunc)
+        return vfunc(xarray)
+
 """Factory to generate displacement kernels from its typeId
     \param paramArray Array generated when parsing the xml file
 """
