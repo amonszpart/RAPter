@@ -85,14 +85,64 @@ struct DecideMergeLineFunctor {
 };
 
 
+
+
 struct DecideMergePlaneFunctor {
+private:
+    template <class _PlaneT, class _PointContainerT, typename _Scalar>
+    inline bool directionnalEval(
+              _PointContainerT const& extrema0
+            , _PlaneT const& p0
+            , _PointContainerT const& extrema1
+            , _PlaneT const& p1
+            , _Scalar scale) const {
+        typedef typename _PointContainerT::value_type PointT;
+
+        // We use the following algorithm:
+        // 1. Compute p0 local frame, where y is p0 normal direction.
+        // 2. Express the two planes extrema in the local frame of p0.
+        // 3. Check if p1 extrema y coordinate are all included in [-scale,scale]
+        // 4. Check if at least one extrema is included in the finite plane p0 (according to its extrema)
+
+        // \todo
+
+
+        // 1. Compute p0 local frame
+        //  - build a local copy p0local centered in 0 and oriented with updirection=y
+        //  - compute the rotation between p0 and p0local
+        _PlaneT p0local (PointT::Zero(), PointT(_Scalar(0.), _Scalar(1.), _Scalar(0.)));
+        Eigen::Quaternion<_Scalar> q;
+        q.FromTwoVectors(p0.dir(), p0local.dir());
+
+        // 2. Express the two planes extrema in the local frame of p0 (extremas of p0 will
+        // be computed later if required
+        // We use a lambda expression to first translate and then rotate the extremas
+        auto transform = [&p0local, &q] (PointT& p) { p = q*(p-p0local.pos()); };
+        _PointContainerT extrema1local = extrema1;
+        std::for_each(extrema1local.begin(), extrema1local.end(), transform);
+
+        // 3. Check if p1 extrema y coordinate are all included in [-scale,scale]
+        auto inScaleBound = [&scale] (PointT& p){ return std::abs(p(1)) > scale; };
+        typename _PointContainerT::iterator it = std::find_if(extrema1local.begin(), extrema1local.end(), inScaleBound);
+        if (it != extrema1local.end()) return false;
+
+        // 4. Check if at least one extrema is included in the finite plane p0 (according to its extrema)
+        _PointContainerT extrema0local = extrema0;
+        std::for_each(extrema0local.begin(), extrema0local.end(), transform);
+        // \todo
+
+
+        return false;
+    }
+
+public:
     template <class _PlaneT, class _PointContainerT, typename _Scalar>
     inline bool eval(
-              _PointContainerT const& /*extrema0*/
+              _PointContainerT const& extrema0
             , _PlaneT const& p0
-            , _PointContainerT const& /*extrema1*/
+            , _PointContainerT const& extrema1
             , _PlaneT const& p1
-            , _Scalar /*scale*/) const {
+            , _Scalar scale) const {
         typedef typename _PointContainerT::value_type PointT;
 
         //    std::cout << "testing (" << p0.getTag(_LineT::GID )     << ","
@@ -105,18 +155,8 @@ struct DecideMergePlaneFunctor {
             p0.getTag(_PlaneT::GID )     == p1.getTag(_PlaneT::GID ) )
             return false;
 
-        // We use the following algorithm:
-        // 1. Compute p0 local frame
-        // 2. Express the two planes in the frame of p0, where y is the normal direction.
-        // 3. Check if p1 extrema y coordinate are all included in [-scale,scale]
-        // 4. Check if at least one extrema is included in the finite plane p0 (according to its extrema)
-
-        // \todo
-
-
-        // 1. Compute p0 local frame
-        // We build a local copy of the plane
-
+        return directionnalEval(extrema0, p0, extrema1, p1, scale) ||
+               directionnalEval(extrema1, p1, extrema0, p0, scale);
 
         return false;
     }
