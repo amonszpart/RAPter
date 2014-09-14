@@ -85,7 +85,7 @@ namespace GF2
     {
 #if 1
         typedef typename PrimitiveContainerT::value_type::value_type PrimitiveT;
-        typedef typename PointContainerT::value_type PointT;
+        typedef typename PointContainerT::value_type PointPrimitiveT;
 
         std::cout << "[" << __func__ << "]: " << "scale: " << scale
                   << std::endl;
@@ -93,7 +93,7 @@ namespace GF2
         // calc groups
         int max_group_id = 0, nlines = 0;
         for ( size_t pid = 0; pid != points.size(); ++pid )
-            max_group_id = std::max( max_group_id, points[pid].getTag(PointT::GID) );
+            max_group_id = std::max( max_group_id, points[pid].getTag(PointPrimitiveT::GID) );
         for ( size_t lid = 0; lid != primitives.size(); ++lid )
             for ( size_t lid1 = 0; lid1 != primitives[lid].size(); ++lid1 )
             {
@@ -122,9 +122,9 @@ namespace GF2
                 pnt.x = ((Eigen::Matrix<_Scalar,3,1> )points[pid])(0); // convert PointPrimitive to Eigen::Matrix, and get (0)
                 pnt.y = ((Eigen::Matrix<_Scalar,3,1> )points[pid])(1);
                 pnt.z = ((Eigen::Matrix<_Scalar,3,1> )points[pid])(2);
-                pnt.r = colours[ points[pid].getTag(PointT::GID) ](0);
-                pnt.g = colours[ points[pid].getTag(PointT::GID) ](1);
-                pnt.b = colours[ points[pid].getTag(PointT::GID) ](2);
+                pnt.r = colours[ points[pid].getTag(PointPrimitiveT::GID) ](0);
+                pnt.g = colours[ points[pid].getTag(PointPrimitiveT::GID) ](1);
+                pnt.b = colours[ points[pid].getTag(PointPrimitiveT::GID) ](2);
                 cloud->push_back( pnt );
             }
         }
@@ -135,7 +135,7 @@ namespace GF2
             {
                 char pname[255],ptext[255];
                 sprintf( pname, "p%d", pid );
-                sprintf( ptext, "%d", points[pid].getTag(PointT::GID) );
+                sprintf( ptext, "%d", points[pid].getTag(PointPrimitiveT::GID) );
                 vptr->addText3D( ptext, cloud->at(pid), 0.005, cloud->at(pid).r/255.f, cloud->at(pid).g/255.f, cloud->at(pid).b/255.f, pname, 0 );
             }
         }
@@ -171,22 +171,22 @@ namespace GF2
                 if ( use_tags )
                 {
                     for ( int pid = 0; pid != points.size(); ++pid )
-                        if ( points[pid].getTag(PointT::GID) == gid )
+                        if ( points[pid].getTag(PointPrimitiveT::GID) == gid )
                             indices.push_back( pid );
                     if ( use_tags == 1 ) // mode2 means no ellipses
                         drawEllipse( vptr, cloud, indices, scale, gid, prim_colour );
 
                 } //...if use_tags
-                PrimitiveT::template draw<PointT>( primitives[lid][lid1]
-                                                 , &points //cloud
-                                                 , /*   threshold: */ scale * _Scalar(10)
-                                                 , /*     indices: */ use_tags ? &indices : NULL
-                                                 , /*      viewer: */ vptr
-                                                 , /*   unique_id: */ line_name
-                                                 , /*      colour: */ prim_colour(0), prim_colour(1), prim_colour(2)
-                                                 , /* viewport_id: */ 0
-                                                 , /*     stretch: */ _Scalar(1.2)
-                                                 );
+                PrimitiveT::template draw<PointPrimitiveT>( /*   primitive: */ primitives[lid][lid1]
+                                                          , /*      points: */ points
+                                                          , /*   threshold: */ scale * _Scalar(10)
+                                                          , /*     indices: */ use_tags ? &indices : NULL
+                                                          , /*      viewer: */ vptr
+                                                          , /*   unique_id: */ line_name
+                                                          , /*      colour: */ prim_colour(0), prim_colour(1), prim_colour(2)
+                                                          , /* viewport_id: */ 0
+                                                          , /*     stretch: */ _Scalar(1.2)
+                                                          );
                 vptr->setShapeRenderingProperties( pcl::visualization::PCL_VISUALIZER_LINE_WIDTH, 2.0, line_name, 0 );
 
                 // add line size

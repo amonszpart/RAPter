@@ -41,6 +41,7 @@ fi
 
 anglegens="90";
 nbExtraIter=2
+dirbias="0";
 
 visdefparam="--use-tags --no-clusters --ids" #"--use-tags --no-clusters" #--ids 
 
@@ -80,6 +81,17 @@ function my_exec() {
   	fi
 }
 
+function energies() {
+	echo "First it energy"
+	my_exec "$executable --formulate --candidates primitives_it0.bonmin.csv -a points_primitives.csv --energy --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $anglegens"
+	echo "First merged energy"
+	my_exec "$executable --formulate --candidates primitives_merged_it0.csv -a points_primitives_it0.csv --energy --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $anglegens"
+	echo "Second it energy"
+	my_exec "$executable --formulate --candidates primitives_it1.bonmin.csv -a points_primitives_it0.csv --energy --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $anglegens"
+	echo "Second merge energy"
+	my_exec "$executable --formulate --candidates primitives_merged_it1.csv -a points_primitives_it1.csv --energy --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $anglegens"
+}
+
 # Segmentation. OUTPUT: patches.csv, points_primitives.csv
 my_exec "$executable --segment --angle-limit $anglelimit --scale $scale --angle-gens $anglegens"
 
@@ -96,7 +108,7 @@ my_exec "$executable --generate -sc $scale -al $anglelimit -ald 1 --patch-pop-li
 
 
 # Formulate optimization problem. OUT: "problem" directory
-my_exec "$executable --formulate --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --dir-bias 1 --patch-pop-limit $poplimit --angle-gens $anglegens --candidates candidates_it0.csv -a $assoc"
+my_exec "$executable --formulate --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $anglegens --candidates candidates_it0.csv -a $assoc"
 # Solve optimization problem. OUT: primitives_it0.bonmin.csv
 my_exec "$executable --solver bonmin --problem problem -v --time -1 --candidates candidates_it0.csv"
 
@@ -126,14 +138,13 @@ do
     # Show candidates:
     # my_exec "../globOptVis --show --scale $scale -a $assoc --ids -p candidates_it$c.csv --pop-limit $poplimit &"
     # Formulate optimization problem. OUT: "problem" directory
-    my_exec "$executable --formulate --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --constr-mode 0 --dir-bias 1 --patch-pop-limit $poplimit --angle-gens $anglegens --candidates candidates_it$c.csv -a $assoc"
+    my_exec "$executable --formulate --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --constr-mode 0 --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $anglegens --candidates candidates_it$c.csv -a $assoc"
 
     # Solve optimization problem. OUT: primitives_it$c.bonmin.csv
     my_exec "$executable --solver bonmin -v --problem problem --time -1 --angle-gens $anglegens --candidates candidates_it$c.csv"
 
     # Show output of first iteration.
     my_exec "../globOptVis --show --scale $scale --pop-limit $poplimit -p primitives_it$c.bonmin.csv -a $assoc --title \"$nextId nd iteration output\" $visdefparam &"
-
 
     # Merge adjacent candidates with same dir id. OUT: primitives_merged_it$c.csv, points_primitives_it$c.csv
     my_exec "$executable --merge --scale $scale --adopt 0 --angle-gens $anglegens --prims primitives_it$c.bonmin.csv -a $assoc"
@@ -144,3 +155,4 @@ do
 
 done
 
+energies

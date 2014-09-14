@@ -37,6 +37,15 @@ namespace GF2
             //! \brief          Creates PointPrimitive from point position and direction.
             //! \param[in] p0   Point position.
             //! \param[in] dir  Point orientation.
+            PointPrimitive( Eigen::Matrix<Scalar,3,1> const& p0 )
+            {
+                _coeffs.head   <3>( ) = p0;
+                _coeffs.segment<3>(3) = Scalar(-1.) * Eigen::Matrix<Scalar,3,1>::Ones();
+            }
+
+            //! \brief          Creates PointPrimitive from point position and direction.
+            //! \param[in] p0   Point position.
+            //! \param[in] dir  Point orientation.
             PointPrimitive( Eigen::Matrix<Scalar,3,1> const& p0, Eigen::Matrix<Scalar,3,1> const& dir )
             {
                 _coeffs.head   <3>( ) = p0;
