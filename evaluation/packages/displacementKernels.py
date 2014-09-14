@@ -3,7 +3,8 @@ This module defines an interface to read and use InputGen projects
 
 See C++ InputGen project for more details on Projects
 """
-from decimal import Decimal
+from numpy import vectorize
+import math
 
 
 class DisplacementKernel(object):
@@ -29,32 +30,42 @@ class DisplacementKernel(object):
 class UniformRandomDisplacementKernel(DisplacementKernel):
     """Python representation of the C++ class UniformRandomDisplacementKernel
     """
-    def __init__(self, rangeMin, rangeMax, enabled):
-        super(UniformRandomDisplacementKernel, self).__init__("Random (Uniform)", 0, enabled)
-
-        self.rangeMin = rangeMin
-        self.rangeMax = rangeMax
-
     def __init__(self, paramList, enabled):
         super(UniformRandomDisplacementKernel, self).__init__("Random (Uniform)", 0, enabled)
 
         self.rangeMin = paramList[0]
         self.rangeMax = paramList[1]
+    
+    def getPDF(self, xarray):
+        rangeMin = self.rangeMin
+        rangeMax = self.rangeMax
+        pdfvalue = 1. / (rangeMax - rangeMin)
+        def myfunc(x):
+            if (x<rangeMin) or (x>rangeMax):
+                return 0.
+            else:
+                return pdfvalue
+        vfunc = vectorize(myfunc)
+        return vfunc(xarray)
 
 class NormalRandomDisplacementKernel(DisplacementKernel):
     """Python representation of the C++ class NormalRandomDisplacementKernel
     """
-    def __init__(self, mean, stdev, enabled):
-        super(NormalRandomDisplacementKernel, self).__init__("Random (Normal)", 1, enabled)         
-
-        self.mean  = mean
-        self.stdev = stdev
-
     def __init__(self, paramList, enabled):
         super(NormalRandomDisplacementKernel, self).__init__("Random (Normal)", 1, enabled)         
 
-        self.mean  = paramList[0]
-        self.stdev = paramList[1]
+        self.stdev = paramList[0]
+        self.mean  = paramList[1]
+    
+    def getPDF(self, xarray):
+        mean  = self.mean
+        stdev = self.stdev
+
+        #http://www.cplusplus.com/reference/random/normal_distribution/
+        def myfunc(x):
+            return 1./(stdev* math.sqrt(2.*math.pi)) * math.exp(-pow((x-mean),2)/(2.*stdev*stdev))
+        vfunc = vectorize(myfunc)
+        return vfunc(xarray)
 
 class BiasDisplacementKernel(DisplacementKernel):
     """Python representation of the C++ class BiasDisplacementKernel
@@ -63,6 +74,13 @@ class BiasDisplacementKernel(DisplacementKernel):
         super(BiasDisplacementKernel, self).__init__("Bias", 2, enabled)         
 
         self.bias  = bias
+
+    # The PDF of this function is a Dirac pic. 
+    def getPDF(self, xarray):
+        print "Warning: Bias PDF is an infinite Dirac that will not been displayed"
+        def myfunc(x): return 0.
+        vfunc = vectorize(myfunc)
+        return vfunc(xarray)
 
 """Factory to generate displacement kernels from its typeId
     \param paramArray Array generated when parsing the xml file
