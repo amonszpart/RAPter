@@ -8,6 +8,8 @@
 #include "pcl/search/kdtree.h"
 #include "globfit2/util/containers.hpp" // add()
 
+// #include "pcl/common/common.h" //debug: getminmax3D
+
 /*!   \brief GlobOpt main namespace. */
 namespace GF2 {
 
@@ -577,6 +579,32 @@ namespace GF2 {
             return EXIT_SUCCESS;
         }
 
+        /*! \brief Columnwise min for vectors. The Eigen implementation, that PCL calls successfully did not seem to work. Possibly an alignment issue.
+         *  \tparam        Scalar Floating point precision. Concept: float.
+         *  \tparam        Dim    Vector dimensionality. Concept: 3.
+         *  \param[in,out] a      Input and output vector. Some of its values might change, if the corresponding values in b are smaller.
+         *  \param[in]     b      Input vector to compare \p a to.
+         */
+        template <typename Scalar, int Dim> inline void
+        colwiseMin( Eigen::Matrix<Scalar,Dim,1> & a, Eigen::Matrix<Scalar,Dim,1> const& b )
+        {
+            for ( int d = 0; d != Dim; ++d )
+                a(d) = std::min( a(d), b(d) );
+        } //...colwiseMin()
+
+        /*! \brief Columnwise max for vectors. The Eigen implementation, that PCL calls successfully did not seem to work. Possibly an alignment issue.
+         *  \tparam        Scalar Floating point precision. Concept: float.
+         *  \tparam        Dim    Vector dimensionality. Concept: 3.
+         *  \param[in,out] a      Input and output vector. Some of its values might change, if the corresponding values in b are bigger.
+         *  \param[in]     b      Input vector to compare \p a to.
+         */
+        template <typename Scalar, int Dim> inline void
+        colwiseMax( Eigen::Matrix<Scalar,Dim,1> & a, Eigen::Matrix<Scalar,Dim,1> const& b )
+        {
+            for ( int d = 0; d != Dim; ++d )
+                a(d) = std::max( a(d), b(d) );
+        } //...colwiseMax()
+
         /*! \brief Returns the minimum and maximum coordinates in \p points.
          * \tparam _IndicesContainerT Concept: std::vector<int>.
          * \tparam _PointContainerT   Concept: std::vector< _PointPrimitiveT >.
@@ -591,32 +619,57 @@ namespace GF2 {
         {
             typedef typename _PointPrimitiveT::Scalar            Scalar;
             typedef typename Eigen::Matrix<Scalar,3,1>           Position;
-            typedef Eigen::Map< const Eigen::Array<Scalar,3,1> > Array3ConstMap;
+            typedef Eigen::Map< const Eigen::Array<Scalar,3,1>, Eigen::Aligned> Array3ConstMap;
 
-            Eigen::Array<Scalar,3,1> min_p, max_p;
+            //Eigen::Array<Scalar,3,1> min_p, max_p;
+            Position min_p, max_p;
+            min_p.setConstant(  std::numeric_limits<Scalar>::max() );
+            max_p.setConstant( -std::numeric_limits<Scalar>::max() );
 
             if ( indices )
             {
                 for ( size_t pid_id = 0; pid_id < (*indices).size(); ++pid_id )
                 {
-                    Array3ConstMap pt( points[ (*indices)[pid_id] ].template pos().data() );
-                    min_p = min_p.min( pt );
-                    max_p = max_p.max( pt );
+                    // Array3ConstMap pt( points[ (*indices)[pid_id] ].template pos().data() );
+                    Position const& pos = points[ (*indices)[pid_id] ].template pos();
+                    // min_p = min_p.min( pt );
+                    colwiseMin( min_p, pos );
+                    // max_p = max_p.max( pt );
+                    colwiseMax( max_p, pos );
                 } //...for points
             }
             else //...if indices
             {
-                for ( size_t pid = 0; pid < points.size (); ++pid )
+                for ( size_t pid = 0; pid != points.size (); ++pid )
                 {
-                    Array3ConstMap pt( points[ pid ].template pos().data() );
-                    min_p = min_p.min( pt );
-                    max_p = max_p.max( pt );
+                    // Array3ConstMap pt( points[ pid ].template pos().data() );
+                    Position const& pos = points[ pid ].template pos();
+                    // min_p = min_p.min( pt ); // did not give correct results
+                    colwiseMin( min_p, pos );
+                    // max_p = max_p.max( pt ); // did not give correct results
+                    colwiseMax( max_p, pos );
                 } //...for points
             } //...if indices
 
+            // output
             min_pt = _PointPrimitiveT( (Position)min_p );
             max_pt = _PointPrimitiveT( (Position)max_p );
 
+#if 0
+            // debug
+            {
+                pcl::PointCloud<pcl::PointXYZ> c;
+                for ( int pid = 0; pid != points.size(); ++pid )
+                {
+                    c.push_back( pcl::PointXYZ() );
+                    c.back().getVector3fMap() = points[pid].template pos();
+                    std::cout << "back[" << pid << "]: " << c.back().getVector3fMap().transpose() << std::endl;
+                }
+                Eigen::Vector4f pclMinPt, pclMaxPt;
+                pcl::getMinMax3D( c, pclMinPt, pclMaxPt );
+                std::cout << "pcl minmax3d: " << pclMinPt.transpose() << std::endl << ", max: " << pclMaxPt.transpose() << std::endl;
+            }
+#endif
             return EXIT_SUCCESS;
         } //...getMinMax3D()
 
