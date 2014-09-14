@@ -9,25 +9,8 @@
 #   include "pcl/point_cloud.h"
 #endif
 
-namespace am
-{
-
-#if GF2_USE_PCL
-    typedef pcl::PointXYZRGB MyPoint;
-    typedef pcl::PointCloud<MyPoint> MyCloud;
-#endif
-    typedef Eigen::Matrix<float,6,1> Vector6f;
-    typedef std::vector<int> MaskType;
-}
-
 namespace GF2
 {
-    typedef Eigen::Matrix<float,6,1> EigenLine;
-    typedef Eigen::Matrix<float,4,1> EigenPlane;
-
-    typedef std::set<int>            SelectionType;
-    typedef am::MaskType             MaskType;
-
     template<typename Scalar, int Dim> inline Scalar
     angleInRad( Eigen::Matrix<Scalar,Dim,1> const& v1, Eigen::Matrix<Scalar,Dim,1> const& v2 )
     {
