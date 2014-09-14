@@ -1,6 +1,8 @@
 #ifndef MERGINGFUNCTORS_H
 #define MERGINGFUNCTORS_H
 
+#include <Eigen/Geometry>
+
 namespace GF2 {
 struct DecideMergeLineFunctor {
     template <class _LineT, class _PointContainerT, typename _Scalar>
@@ -87,13 +89,34 @@ struct DecideMergePlaneFunctor {
     template <class _PlaneT, class _PointContainerT, typename _Scalar>
     inline bool eval(
               _PointContainerT const& /*extrema0*/
-            , _PlaneT const& /*p0*/
+            , _PlaneT const& p0
             , _PointContainerT const& /*extrema1*/
-            , _PlaneT const& /*p1*/
+            , _PlaneT const& p1
             , _Scalar /*scale*/) const {
         typedef typename _PointContainerT::value_type PointT;
 
-        std::cerr<< "Not implemented yet" << std::endl;
+        //    std::cout << "testing (" << p0.getTag(_LineT::GID )     << ","
+        //                             << p0.getTag(_LineT::DIR_GID ) << ")"
+        //              << " vs. ("    << p1.getTag(_LineT::GID ) << ","
+        //                             << p1.getTag(_LineT::DIR_GID ) << ")\t" << std::endl;
+
+        // we don't merge when both group id and direction id are identical
+        if (p0.getTag(_PlaneT::DIR_GID ) == p1.getTag(_PlaneT::DIR_GID ) &&
+            p0.getTag(_PlaneT::GID )     == p1.getTag(_PlaneT::GID ) )
+            return false;
+
+        // We use the following algorithm:
+        // 1. Compute p0 local frame
+        // 2. Express the two planes in the frame of p0, where y is the normal direction.
+        // 3. Check if p1 extrema y coordinate are all included in [-scale,scale]
+        // 4. Check if at least one extrema is included in the finite plane p0 (according to its extrema)
+
+        // \todo
+
+
+        // 1. Compute p0 local frame
+        // We build a local copy of the plane
+
 
         return false;
     }
