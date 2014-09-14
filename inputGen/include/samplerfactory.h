@@ -2,6 +2,8 @@
 #define SAMPLERFACTORY_H
 
 #include <QDockWidget>
+#include <QtXml>
+
 #include "sampler.h"
 #include "types.h"
 #include "typesGL.h"
@@ -24,6 +26,9 @@ public:
         _project = p;
         if (updateSamples) updateSampler();
     }
+
+    void saveSamples(QDomDocument& doc, QDomElement& root) const;
+    void loadSamples(QDomElement& root);
 
 public slots:
     void updateSampler();

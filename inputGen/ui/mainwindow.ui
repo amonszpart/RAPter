@@ -26,7 +26,7 @@
      <x>0</x>
      <y>0</y>
      <width>732</width>
-     <height>27</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -43,8 +43,16 @@
      <addaction name="actionSave_assignement"/>
      <addaction name="actionSave_primitives"/>
     </widget>
-    <addaction name="actionLoad_SVG"/>
+    <widget class="QMenu" name="menuImport">
+     <property name="title">
+      <string>Import</string>
+     </property>
+     <addaction name="actionLoad_SVG"/>
+    </widget>
     <addaction name="menuSave"/>
+    <addaction name="actionLoad_Project"/>
+    <addaction name="separator"/>
+    <addaction name="menuImport"/>
    </widget>
    <widget class="QMenu" name="menuAnalyze">
     <property name="title">
@@ -79,10 +87,10 @@
   </widget>
   <action name="actionLoad_SVG">
    <property name="text">
-    <string>Load SVG</string>
+    <string>SVG</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+O</string>
+    <string>Ctrl+I</string>
    </property>
   </action>
   <action name="actionSave_points">
@@ -104,6 +112,9 @@
    <property name="text">
     <string>Save all</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
   </action>
   <action name="actionMerge_primitives">
    <property name="text">
@@ -114,6 +125,14 @@
    </property>
    <property name="toolTip">
     <string>Merge primitives according global constraints</string>
+   </property>
+  </action>
+  <action name="actionLoad_Project">
+   <property name="text">
+    <string>Load Project</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
    </property>
   </action>
  </widget>

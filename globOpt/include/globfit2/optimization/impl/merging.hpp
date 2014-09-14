@@ -1,7 +1,11 @@
 #ifndef GF2_MERGING_HPP
 #define GF2_MERGING_HPP
 
+#include "pcl/console/parse.h"
+
 #include "globfit2/optimization/merging.h"
+#include "globfit2/optimization/mergingFunctors.h"
+#include "globfit2/optimization/energyFunctors.h"
 
 #include "globfit2/parameters.h"
 #include "globfit2/visualization/visualization.h"
@@ -102,6 +106,7 @@ Merging::mergeCli( int argc, char** argv )
     // parse params
     {
         bool valid_input = true;
+        params.is3D = pcl::console::find_switch(argc,argv,"--merge3D");
 
         valid_input &= pcl::console::parse_argument( argc, argv, "--scale", params.scale ) >= 0;
         valid_input &= pcl::console::parse_argument( argc, argv, "--prims", prims_path   ) >= 0;
@@ -192,16 +197,32 @@ Merging::mergeCli( int argc, char** argv )
     PrimitiveMapT out_prims,
             *in  = &prims_map_copy,
             *out = &out_prims;
+
+    //some test here, nothing really worked.
+    // The idea was to try to generate the right functor to merge either lines or planes
+    //auto decideMergeFunct = params.is3D ? DecideMergePlaneFunctor() : DecideMergeLineFunctor();
+    //auto decideMergeFunct = *(params.is3D ? ((void*)(&(DecideMergePlaneFunctor))) : ((void*)(&(DecideMergeLineFunctor()))));
+    //
+    // nico: This is ugly, but I didn't find a nice way to handle that (something like lazy type evaluation)
+    if (params.is3D){
     while(
           mergeSameDirGids<_PrimitiveT, _PointPrimitiveT, typename PrimitiveMapT::mapped_type::const_iterator>
-          ( *out, points, *in, params.scale, params.spatial_threshold_mult * params.scale, params.parallel_limit, patchPatchDistFunct ))
+          ( *out, points, *in, params.scale, params.spatial_threshold_mult * params.scale, params.parallel_limit, patchPatchDistFunct, DecideMergePlaneFunctor() ))
     {
         PrimitiveMapT* tmp = out;
         out = in;
         in  = tmp;
     }
-
-
+    }else {// 2D
+        while(
+              mergeSameDirGids<_PrimitiveT, _PointPrimitiveT, typename PrimitiveMapT::mapped_type::const_iterator>
+              ( *out, points, *in, params.scale, params.spatial_threshold_mult * params.scale, params.parallel_limit, patchPatchDistFunct, DecideMergeLineFunctor() ))
+        {
+            PrimitiveMapT* tmp = out;
+            out = in;
+            in  = tmp;
+        }
+    }
 
 
     // dummy example of an iteration over all primitives
@@ -416,97 +437,6 @@ int Merging::adoptPoints( _PointContainerT          & points
 
     return err;
 } //...adoptPoints()
-
-/*! \brief Decides, if two patches are adjacent and have the same direction. Used in \ref erging::mergeSameDirGids().
- *
- */
-//template <typename _Scalar>
-//inline bool decide_merge( _Scalar min_dist, _Scalar threshold, _Scalar angle, _Scalar parallel_limit )
-//{
-//    return (min_dist < threshold) && (angle < parallel_limit);
-//} //...decide_merge
-
-template <class _PrimitiveT, typename _Scalar>
-//inline _Scalar segmentDistance(
-inline bool decide_merge(
-        std::vector<Eigen::Matrix<_Scalar,3,1> > const& extrema0
-        , _PrimitiveT const& l0
-        , std::vector<Eigen::Matrix<_Scalar,3,1> > const& extrema1
-        , _PrimitiveT const& l1
-        , _Scalar scale
-        , _Scalar sameDot)
-{
-
-//    std::cout << "testing (" << l0.getTag(_PrimitiveT::GID )     << ","
-//                             << l0.getTag(_PrimitiveT::DIR_GID ) << ")"
-//              << " vs. ("    << l1.getTag(_PrimitiveT::GID ) << ","
-//                             << l1.getTag(_PrimitiveT::DIR_GID ) << ")\t" << std::endl;
-
-    // we don't merge when both group id and direction id are identical
-    if (l0.getTag(_PrimitiveT::DIR_GID ) == l1.getTag(_PrimitiveT::DIR_GID ) &&
-        l0.getTag(_PrimitiveT::GID ) == l1.getTag(_PrimitiveT::GID ) )
-        return false;
-
-
-    // We have two lines l0 and l1, respectively defined by
-    // l0a-l0b and l1a-l1b
-    //  A. Check if both lines have the same direction id. If not,
-    //      1. We project l0a and l0b to l1 (orthogonally to l1), and compute the norm of l0a-proj(l0a,l1) and l0b-proj(l0b,l1)
-    //      2. Compute the other way
-    //      3. Check if the two lines are almost aligned (all norms are smaller than the scale parameters)
-    //  B. If one way is correct, project second line end points to the first one
-    //     and check at least one end point is projected the segment
-    const Eigen::Matrix<_Scalar,3,1> & l0a = extrema0[0];
-    const Eigen::Matrix<_Scalar,3,1> & l0b = extrema0[1];
-    const Eigen::Matrix<_Scalar,3,1> & l1a = extrema1[0];
-    const Eigen::Matrix<_Scalar,3,1> & l1b = extrema1[1];
-
-    const Eigen::Matrix<_Scalar,3,1> n0 = l0.template normal<_Scalar>();
-
-    //const _Scalar sqScale = scale*scale;
-    //const _Scalar l0SqLengthAndScale = (l0b-l0a).squaredNorm() + scale*scale;
-
-    // check if they have the same tag
-    //bool sameTag = l0.getTag(_PrimitiveT::DIR_GID ) == l1.getTag(_PrimitiveT::DIR_GID );
-
-    // check if l1 is aligned to l0
-    if ( /*sameTag ||*/ // exactly aligned
-         ( std::abs(n0.dot(l1a-l0a)) <= scale && // check l1a-proj(l1a,l0) <= scale
-           std::abs(n0.dot(l1b-l0a)) <= scale)){  // check l1b-proj(l1b,l0) <= scale
-
-        // check if at least one l1 endpoint is projected onto l0
-        const Eigen::Matrix<_Scalar,3,1> l0dir = (l0b - l0a).normalized();
-        const _Scalar dl0  = (l0b - l0a).norm() + scale;
-        const _Scalar dl1a = l0dir.dot(l1a-l0a);
-        const _Scalar dl1b = l0dir.dot(l1b-l0a);
-
-        if ((dl1a >= -scale && dl1a <= dl0) ||
-            (dl1b >= -scale && dl1b <= dl0))
-                return true;
-    }
-
-    const Eigen::Matrix<_Scalar,3,1> n1 = l1.template normal<_Scalar>();
-
-    // check if l0 is aligned to l1
-    if ( /*sameTag ||*/
-         ( std::abs(n1.dot(l0a-l1a)) <= scale &&  // check l0a-proj(l0a,l0) <= scale
-           std::abs(n1.dot(l0b-l1a)) <= scale )){ // check l0b-proj(l0b,l0) <= scale
-
-        // check if at least one l0 endpoint is projected onto l1
-        const Eigen::Matrix<_Scalar,3,1> l1dir = (l1b - l1a).normalized();
-        const _Scalar dl1  = (l1b - l1a).norm() + scale;
-        const _Scalar dl0a = l1dir.dot(l0a-l1a);
-        const _Scalar dl0b = l1dir.dot(l0b-l1a);
-
-        if ((dl0a >= -scale && dl0a <= dl1) ||
-            (dl0b >= -scale && dl0b <= dl1))
-                return true;
-    }
-
-    return false;
-}
-
-
 template <class Container,
           class PrimitiveT,
           class Population,
@@ -631,7 +561,7 @@ inline void merge( Container&        out_primitives, // [out] Container storing 
         mergedPrim.copyTagsFrom(l0);
         primToAdd.push_back(mergedPrim);
 
-    }else  if (arity0 != 1 && arity1 != 1){
+    }else /* if (arity0 != 1 && arity1 != 1)*/{
         // two constrained patches, we need to generate new primitives.
         std::cout << "Case C: " << arity0 << " - " << arity1 << std::endl;
 
@@ -650,7 +580,7 @@ inline void merge( Container&        out_primitives, // [out] Container storing 
         mergedPrim.setTag(PrimitiveT::GID, l0.getTag(PrimitiveT::GID) );
         primToAdd.push_back(mergedPrim);
 
-    }else {
+    }/*else {
         // one patch is free, the other constrained.
         std::cout << "Case B" << std::endl;
 
@@ -666,7 +596,7 @@ inline void merge( Container&        out_primitives, // [out] Container storing 
             originalGid = gid0;
             newGid      = gid1;
         }
-    }
+    }*/
 
     // add generated primitives
     for(typename std::vector<PrimitiveT>::const_iterator it = primToAdd.begin(); it != primToAdd.end(); it++){
@@ -708,14 +638,16 @@ template < class    _PrimitiveT
          , class    _PrimitiveContainerT
          , class    _PointContainerT
          , typename _Scalar
-         , class    _PatchPatchDistanceFunctorT>
+         , class    _PatchPatchDistanceFunctorT
+         , class    _PrimitiveDecideMergeFunctorT >
 int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
                              , _PointContainerT                 & points
                              , _PrimitiveContainerT        /*const&*/ primitives
                              , _Scalar                     const  scale
                              , _Scalar                     const  spatial_threshold
                              , _Scalar                     const  parallel_limit
-                             , _PatchPatchDistanceFunctorT const& patchPatchDistFunct )
+                             , _PatchPatchDistanceFunctorT const& patchPatchDistFunct
+                             , _PrimitiveDecideMergeFunctorT const& primitiveDecideMergeFunct  )
 {
     typedef typename _PrimitiveContainerT::const_iterator      outer_const_iterator;
     typedef           std::vector<Eigen::Matrix<_Scalar,3,1> > ExtremaT;
@@ -724,6 +656,15 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
     typedef           std::pair  < int, // map key
                                    int> // linear index in the array associated to the key
                       GidLid;
+
+
+
+    // Store the primitives that have been matched and must be ignored
+    // First  (key)   = candidate,
+    // Second (value) = reference.
+    typedef std::set< GidLid > IgnoreListT;
+    IgnoreListT ignoreList;
+
 
     int err = EXIT_SUCCESS;
 
@@ -741,14 +682,14 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
     {
         // for all patches
         for ( outer_const_iterator outer_it  = primitives.begin();
-                                  (outer_it != primitives.end())  && (EXIT_SUCCESS == err);
+                                  (outer_it != primitives.end()); // we now handle error
                                  ++outer_it )
         {
             int gid  = -2; // (-1 is "unset")
             int lid = 0; // linear index of primitive in container (to keep track)
             // for all directions
             for ( _inner_const_iterator inner_it  = containers::valueOf<_PrimitiveT>(outer_it).begin();
-                                       (inner_it != containers::valueOf<_PrimitiveT>(outer_it).end()) && (EXIT_SUCCESS == err);
+                                       (inner_it != containers::valueOf<_PrimitiveT>(outer_it).end());// we now handle error
                                       ++inner_it, ++lid )
             {
                 // save patch gid
@@ -772,7 +713,10 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
                     std::cerr << "Issue when computing extent of ("
                               << primitives.at(gid).at(lid).getTag(_PrimitiveT::GID )     << ","
                               << primitives.at(gid).at(lid).getTag(_PrimitiveT::DIR_GID ) << ")"
-                              << std::endl;
+                              << std::endl
+                              << "Ignored later... " << std::endl;
+
+                    ignoreList.insert(GidLid (gid, lid));
                 }
             } //...for primitives
         } //...for patches
@@ -782,12 +726,6 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
 
 
 
-
-    // Store the primitives that have been matched
-    // First  (key)   = candidate,
-    // Second (value) = reference.
-    typedef std::set< GidLid > AliasesT;
-    AliasesT aliases;
 
     typedef typename GidLidExtremaT::const_iterator GidIt;
     typedef typename LidExtremaT::const_iterator    PrimIt;
@@ -821,10 +759,10 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
     // For each couple ref/candidate, we check if we can merge. If yes, we do it and then invalidate
     // both the ref and the candidate to prevent to merge them with other primitives. Indeed, the
     // merging process can potentially remove the primitives, or at least change their properties.
-    // Primitives are invalidated by storing them as key in the aliases structure.
+    // Primitives are invalidated by storing them as key in the ignoreList structure.
     //
-    // After processing, the aliases set contains for any candidate described by a GidLid:
-    //   aliases [candGidLid];
+    // After processing, the ignoreList contains any candidate described by a GidLid gl:
+    //   ignoreList [gl];
     //
     // The output buffer is initialized with the input. All merging operations will remove
     // old primitives and replace them by merged one.
@@ -844,7 +782,7 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
             GidLid refGidLid (gid0, lid0);
 
             // check if this primitives has not been merged previously
-            if (aliases.find(refGidLid) != aliases.end()) continue;
+            if (ignoreList.find(refGidLid) != ignoreList.end()) continue;
 
             // reference primitive
             const _PrimitiveT& prim0 = primitives.at(gid0).at(lid0);
@@ -881,22 +819,21 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
                     // bool is1Valid,
                     // calling continue is sufficient to jump to the next primitive after and merge,
                     // plus here check that a previous merge has not been recorded
-                    if (aliases.find(candGidLid) != aliases.end()) continue;
+                    if (ignoreList.find(candGidLid) != ignoreList.end()) continue;
 
                     const _PrimitiveT& prim1 = primitives.at(gid1).at(lid1);
 
-                    if (decide_merge( prim_it->second,  // extrema 0
-                                      prim0,            // prim 0
-                                      prim_it1->second, // extrema 1
-                                      prim1,            // prim 1
-                                      scale,
-                                      parallel_limit))
+                    if (primitiveDecideMergeFunct.eval( prim_it->second,  // extrema 0
+                                                  prim0,            // prim 0
+                                                  prim_it1->second, // extrema 1
+                                                  prim1,            // prim 1
+                                                  scale))
                     {
                         //std::cout << " YES" << std::endl;
 
                         // record this to detect unmerged primitives later and invalidate both primitives
-                        aliases.insert(candGidLid);
-                        aliases.insert(refGidLid);
+                        ignoreList.insert(candGidLid);
+                        ignoreList.insert(refGidLid);
 
                         merge( out_primitives,     // [out] Container storing merged primitives
                                prim0,              // [in]  First primitive (can be invalidated during the call)
@@ -917,6 +854,11 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
         }
     }
 
+    typedef typename _PrimitiveContainerT::mapped_type::iterator inner_iterator;
+
+    // we can now remove primitives that are not assigned to any points
+    processing::eraseNonAssignedPrimitives<_PrimitiveT, inner_iterator>(out_primitives, points);
+
 //    cout << "[out]: " << out_primitives.size() << endl;
 //    for ( outer_const_iterator outer_it  = out_primitives.begin();
 //          (outer_it != out_primitives.end()) ;
@@ -936,7 +878,6 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
     typename _PrimitiveContainerT::iterator outer_itIn  =     primitives.begin();
     typename _PrimitiveContainerT::iterator outer_itOut = out_primitives.begin();
 
-    typedef typename _PrimitiveContainerT::mapped_type::iterator inner_iterator;
 
     auto cmp_primitive = [](_PrimitiveT const& l0, _PrimitiveT const& l1)
     {

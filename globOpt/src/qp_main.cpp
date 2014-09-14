@@ -5,12 +5,12 @@
 #include "optimization/qp/solver.h"
 #include "globfit2/optimization/problemSetup.h"
 
-#include "globfit2/optimization/merging.h"
 #include "globfit2/io/io.h"
 
 int segment3D( int argc, char** argv );
 int segment2D( int argc, char** argv );
 int subsample( int argc, char** argv );
+int merge    ( int argc, char** argv );
 
 int main( int argc, char *argv[] )
 {
@@ -26,6 +26,7 @@ int main( int argc, char *argv[] )
                   << "\t--formulate\n"
                   << "\t--solver mosek|bonmin|gurobi\n"
                   << "\t--merge\n"
+                  << "\t--merge3D\n"
                   << "\t--gfit\n"
                   << "\t--show\n"
                   << std::endl;
@@ -62,9 +63,9 @@ int main( int argc, char *argv[] )
     {
         return GF2::Solver::datafit( argc, argv );
     }
-    else if ( pcl::console::find_switch(argc,argv,"--merge") )
+    else if ( pcl::console::find_switch(argc,argv,"--merge") || pcl::console::find_switch(argc,argv,"--merge3D") )
     {
-        return GF2::Merging::mergeCli<GF2::Solver::PrimitiveContainerT, GF2::Solver::PointContainerT, GF2::Solver::Scalar>( argc, argv );
+        return merge(argc, argv);
     }
     else if ( pcl::console::find_switch(argc,argv,"--show") )
     {

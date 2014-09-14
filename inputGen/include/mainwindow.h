@@ -23,10 +23,13 @@ private slots:
 
     void on_actionMerge_primitives_triggered();
 
+    void on_actionLoad_Project_triggered();
+
 private:
     void writeSamples(QString path);
     void writePrimitives(QString path);
     void writeAssignement(QString path);
+    void writeProject(QString path, QString projectName);
 
 signals:
     void currentProjectUpdated();

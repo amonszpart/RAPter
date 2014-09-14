@@ -251,6 +251,96 @@ namespace GF2 {
 
             return ret;
         } //...TransformPrimitivesMap
+
+        /*! \brief Evaluate a functor to each primitive to test if it have to be destroyed
+         *  \tparam _PrimitiveT          Primitive wrapper class. Concept: LinePrimitive2.
+         *  \tparam _inner_iterator      Iterates over the mapped_value of _PrimitiveContainerT. Concept: std::vector<int>::iterator.
+         *  \tparam _PrimitiveContainerT Stores all lines of a patch under it's GID key. Concept: std::map< int, std::vector<_PrimitiveT> >.
+         *  \tparam _FunctorT            Has a bool eval(_PrimitiveT &) function to be called for each primitive.
+         *  \param[in,out] prims         The primitives to transform.
+         *  \param[in] functor           An instance of the functor that should be called for each primitive.
+         *  \return                      Number of erased primitives
+         */
+        template < class _PrimitiveT
+                 , typename _inner_iterator
+                 , class _FunctorT
+                 , class _PrimitiveContainerT
+                 >
+        int erasePrimitives( _PrimitiveContainerT  & primitives
+                            , _FunctorT            & functor
+                            )
+        {
+            typedef typename _PrimitiveContainerT::iterator outer_iterator;
+
+            int ret = 0;
+
+            // for all patches
+            for ( outer_iterator outer_it  = primitives.begin();
+                                 outer_it != primitives.end();
+                                       /* do nothing */ )
+            {
+                for ( _inner_iterator inner_it  = containers::valueOf<_PrimitiveT>(outer_it).begin();
+                                            inner_it != containers::valueOf<_PrimitiveT>(outer_it).end();
+                                          /* Do nothing */)
+                {
+                    // apply functor to primitive
+                    if( functor.eval( *inner_it ) ){
+                        ++ret;
+                        inner_it = containers::valueOf<_PrimitiveT>(outer_it).erase(inner_it);
+                    }else{
+                        ++inner_it ;
+                    }
+                } //...inner loop (for each direction in patch)
+
+                if(containers::valueOf<_PrimitiveT>(outer_it).size() == 0){
+                    outer_it = primitives.erase(outer_it);
+                }else
+                    ++outer_it;
+
+            } //...outer loop (for each patch)
+
+            return ret;
+        } //...TransformPrimitivesMap
+
+        /*!
+         * \brief Discard primitives not assigned to any point
+         * Internally, use #erasePrimitives with nested functor
+         *  \tparam _PrimitiveT          Primitive wrapper class. Concept: LinePrimitive2.
+         *  \tparam _inner_iterator      Iterates over the mapped_value of _PrimitiveContainerT. Concept: std::vector<int>::iterator.
+         *  \tparam _PointContainerT     Stores all points. Concept: GF2::PointPrimitive
+         *  \tparam _PrimitiveContainerT Stores all lines of a patch under it's GID key. Concept: std::map< int, std::vector<_PrimitiveT> >.
+         *  \param[in,out] prims         The primitives to transform.
+         *  \param[in] functor           An instance of the functor that should be called for each primitive.
+         *  \return                      Number of erased primitives
+         */
+        template < class _PrimitiveT
+                 , typename _inner_iterator
+                 , class _PointContainerT
+                 , class _PrimitiveContainerT
+                 >
+        int eraseNonAssignedPrimitives( _PrimitiveContainerT   & primitives,
+                                         _PointContainerT const & points) {
+            // In a first run over all points, collect all used GID
+
+            typedef typename _PointContainerT::value_type PointT;
+
+            struct {
+                std::set<int> gids;
+
+                //! Return true when the id cannot be found in the set -> induce destruction
+                inline
+                bool eval(const _PrimitiveT& p) const{
+                    return gids.find( p.getTag(_PrimitiveT::GID) ) == gids.end();
+                }
+            } nestedFunctor;
+
+            for(typename _PointContainerT::const_iterator it  = points.begin();
+                                                          it != points.end();
+                                                        ++it)
+                nestedFunctor.gids.insert((*it).getTag(PointT::GID));
+
+            return erasePrimitives<_PrimitiveT, _inner_iterator>(primitives, nestedFunctor);
+        }
         
         
         /**

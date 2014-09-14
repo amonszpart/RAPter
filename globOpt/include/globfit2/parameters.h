@@ -230,6 +230,8 @@ namespace GF2 {
         /*! \brief Multiplied by scale decides, whether two patches are adjacent (have two extrema closer than spatial_threshold_mult * scale).
          *         Used in \ref Merging::mergeSameDirGids(). */
         _Scalar spatial_threshold_mult = _Scalar( 2.5 );
+
+        bool is3D;
     };
 
 }

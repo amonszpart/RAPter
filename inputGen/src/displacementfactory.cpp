@@ -36,6 +36,121 @@ DisplacementFactory::setProject(InputGen::Application::Project *p){
 }
 
 void
+DisplacementFactory::loadkernels(QDomElement &root)
+{
+    // here the idea is to set the interface up, and then trigger the functions updating the project
+    std::cout << "Loading displacement kernels" << std::endl;
+    QDomNode displacementNode = root.firstChild();
+    while(! displacementNode.isNull()){
+        QDomElement kernelElement = displacementNode.toElement(); // try to convert the node to an element.
+        if(!kernelElement.isNull() && kernelElement.tagName().compare(QString("kernel")) == 0) {
+            int kernelId = kernelElement.attribute("typeId").toInt();
+            bool enabled = kernelElement.attribute("enabled").toInt();
+            ui->_displacementLayerAddCombo->setCurrentIndex(kernelId);
+
+            switch(kernelId){
+            case::InputGen::DISPLACEMENT_KERNEL_TYPE::DISPLACEMENT_BIAS:
+            {
+                ui->_displacementParamBiasValue->setValue(kernelElement.attribute("bias").toDouble());
+                break;
+            }
+            case::InputGen::DISPLACEMENT_KERNEL_TYPE::DISPLACEMENT_RANDOM_UNIFORM:
+            {
+                ui->_displacementParamRandomUniformMinValue->setValue(kernelElement.attribute("distributionMin").toDouble());
+                ui->_displacementParamRandomUniformMaxValue->setValue(kernelElement.attribute("distributionMax").toDouble());
+                break;
+            }
+            case::InputGen::DISPLACEMENT_KERNEL_TYPE::DISPLACEMENT_RANDOM_NORMAL:
+            {
+                ui->_displacementParamRandomNormalMeanValue->setValue(kernelElement.attribute("distributionMean").toDouble());
+                ui->_displacementParamRandomNormalStddevValue->setValue(kernelElement.attribute("distributionStdDev").toDouble());
+                break;
+            }
+            default:
+                std::cerr << "Invalid kernel type " << kernelId << std::endl;
+            };
+
+            // trigger kernel creation
+            addLayerTriggerred();
+            // enable/disable
+            ui->_displacementLayerTable->item( ui->_displacementLayerTable->currentRow(), 1)->setCheckState(
+                        enabled ? Qt::Checked : Qt::Unchecked);
+        }
+        displacementNode = displacementNode.nextSibling();
+    }
+}
+
+void
+DisplacementFactory::savekernels(QDomDocument &doc, QDomElement &root) const
+{
+    typedef InputGen::Application::Scalar S;
+    typedef InputGen::Application::Project::SampleContainer    SC;
+    typedef InputGen::Application::Project::PrimitiveContainer PC;
+
+    if (_project != NULL){
+        for (unsigned int i = 0; i != _project->nbDisplacementLayers(); i++)
+        {
+            InputGen::Application::Project::DisplacementKernel* kernel = _project->displacementKernel(i);
+
+            QDomElement kernelElement = doc.createElement( "kernel" );
+            kernelElement.setAttribute("typeId", int( kernel->type ));
+            kernelElement.setAttribute("enabled", int( _project->isDisplacementLayerEnabled(i) ) );
+
+            switch(kernel->type){
+            case::InputGen::DISPLACEMENT_KERNEL_TYPE::DISPLACEMENT_BIAS:
+            {
+
+                InputGen::BiasDisplacementKernel<S,SC,PC>* lkernel =
+                        dynamic_cast<InputGen::BiasDisplacementKernel<S,SC,PC>*> (kernel);
+                if(lkernel == NULL) {
+                    std::cerr << "This should nerver happen... "
+                              << __FILE__ << " "
+                              << __LINE__ << std::endl;
+                    break;
+                }
+
+                kernelElement.setAttribute("bias", QString::number( lkernel->bias ));
+                break;
+            }
+            case::InputGen::DISPLACEMENT_KERNEL_TYPE::DISPLACEMENT_RANDOM_UNIFORM:
+            {
+                InputGen::UniformRandomDisplacementKernel<S,SC,PC>* lkernel =
+                        dynamic_cast<InputGen::UniformRandomDisplacementKernel<S,SC,PC>*> (kernel);
+                if(lkernel == NULL) {
+                    std::cerr << "This should nerver happen... "
+                              << __FILE__ << " "
+                              << __LINE__ << std::endl;
+                    break;
+                }
+
+                kernelElement.setAttribute("distributionMin", QString::number( lkernel->distributionMin() ));
+                kernelElement.setAttribute("distributionMax", QString::number( lkernel->distributionMax() ));
+                break;
+            }
+            case::InputGen::DISPLACEMENT_KERNEL_TYPE::DISPLACEMENT_RANDOM_NORMAL:
+            {
+                InputGen::NormalRandomDisplacementKernel<S,SC,PC>* lkernel =
+                        dynamic_cast<InputGen::NormalRandomDisplacementKernel<S,SC,PC>*> (kernel);
+                if(lkernel == NULL) {
+                    std::cerr << "This should nerver happen... "
+                              << __FILE__ << " "
+                              << __LINE__ << std::endl;
+                    break;
+                }
+
+                kernelElement.setAttribute("distributionMean", QString::number( lkernel->distributionMean() ));
+                kernelElement.setAttribute("distributionStdDev", QString::number( lkernel->distributionStdDev() ));
+                break;
+            }
+            }
+
+            root.appendChild(kernelElement);
+        }
+    }
+}
+
+
+void
 DisplacementFactory::addLayerTriggerred(){
     std::cout << "addLayerTriggerred" << std::endl;
 
