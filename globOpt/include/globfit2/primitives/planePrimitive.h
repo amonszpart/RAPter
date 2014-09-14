@@ -70,6 +70,7 @@ namespace GF2
             inline Scalar
             getDistance( Eigen::Matrix<Scalar,3,1> const& point ) const
             {
+                // verified, this works well:
                 // n . x + d = 0
                 return this->dir().dot(point) + this->_coeffs(3);
             }
@@ -78,6 +79,7 @@ namespace GF2
             inline Eigen::Matrix<_Scalar,3,1>
             projectPoint( Eigen::Matrix<_Scalar,3,1> const& point ) const
             {
+                // verified, this works well:
                 return point - (this->getDistance(point) * this->dir() );
             } // projectPoint
 
@@ -103,6 +105,7 @@ namespace GF2
                 typedef Eigen::Matrix<_Scalar,3,1> Position;
 
 #ifdef GF2_USE_PCL
+
                 std::vector<int> inliers;
                 {
                     inliers.reserve( cloud.size() );
@@ -113,6 +116,8 @@ namespace GF2
                         if ( this->getDistance( cloud[pid].template pos() ) < threshold )
                             inliers.push_back( pid );
                     }
+
+                    //std::cout << "[" << __func__ << "]: " << "indices.size(): " << stop_at << " / " << cloud.size() << std::endl;
                 }
 
                 // check size
@@ -126,10 +131,42 @@ namespace GF2
                     const int pid = inliers[ pid_id ];
                     on_plane_cloud.push_back( _PointPrimitiveT(this->projectPoint(cloud[pid].template pos()), cloud[pid].template dir()) );
                 }
+#if 0
+                // debug
+                {
+                    pcl::PointCloud<pcl::PointXYZRGB>::Ptr c ( new pcl::PointCloud<pcl::PointXYZRGB>() );
+                    pcl::visualization::PCLVisualizer::Ptr vptr( new pcl::visualization::PCLVisualizer("on_plane_cloud") );
+                    vptr->setBackgroundColor( .5, .6, .6 );
+                    for ( int pid = 0; pid != on_plane_cloud.size(); ++pid )
+                    {
+                        pcl::PointXYZRGB pnt;
+                        pnt.getVector3fMap() = on_plane_cloud[pid].template pos();
+                        pnt.r = 255; pnt.g = 0; pnt.b = 0;
+                        c->push_back( pnt );
+                    }
+                    vptr->addPointCloud( c, "onplane");
+
+                    pcl::PointCloud<pcl::PointXYZRGB>::Ptr c1 ( new pcl::PointCloud<pcl::PointXYZRGB>() );
+                    for ( int pid_id = 0; pid_id != inliers.size(); ++pid_id )
+                    {
+                        pcl::PointXYZRGB pnt;
+                        pnt.getVector3fMap() = cloud[ inliers[pid_id] ].template pos();
+                        pnt.r = 0; pnt.g = 0; pnt.b = 255;
+                        c1->push_back( pnt );
+                    }
+                    vptr->addPointCloud( c1, "origcloud" );
+
+                    char plane_name[255];
+                    sprintf( plane_name, "plane%03d", 0 );
+                    vptr->addPlane( *(this->modelCoefficients()), plane_name, 0 );
+                    vptr->spin();
+                }
+#endif
 
                 Eigen::Matrix<_Scalar,4,4> frame; // 3 major vectors as columns, and the fourth is the centroid
                 {
                     processing::PCA<_IndicesContainerT>( frame, on_plane_cloud, /* indices: */ NULL ); // no indices needed, already full cloud
+//                    std::cout << "frame: " << frame << std::endl;
 
                     // get the unit axis that is most perpendicular to the 3rd dimension of the frame
                     std::pair<Position,_Scalar> dim3( Position::Zero(), _Scalar(FLT_MAX) );
@@ -142,23 +179,34 @@ namespace GF2
                     frame.col(0).template head<3>() = frame.col(2).template head<3>().template cross( dim3.first                      ).template normalized();
                     frame.col(1).template head<3>() = frame.col(2).template head<3>().template cross( frame.col(0).template head<3>() ).template normalized();
                 }
+//                std::cout << "frame2: " << frame << std::endl;
 
                 _PointContainerT local_cloud;
                 processing::cloud2Local<_PointPrimitiveT,_IndicesContainerT>( local_cloud, frame, on_plane_cloud, /* indices: */ NULL ); // no indices needed, it's already a full cloud
+//                for ( int pid = 0; pid != local_cloud.size(); ++pid )
+//                {
+//                    std::cout << "on_plane_cloud[" << pid << "]: " << on_plane_cloud[pid].toString() << std::endl;
+//                    std::cout << "local_cloud[" << pid << "]: " << local_cloud[pid].toString() << std::endl;
+//                }
 
                 _PointPrimitiveT min_pt, max_pt;
-                processing::getMinMax3D<_IndicesContainerT>( local_cloud, min_pt, max_pt, /* indices: */ NULL );
+                processing::getMinMax3D<_IndicesContainerT>( min_pt, max_pt, local_cloud, /* indices: */ NULL );
+//                std::cout << "min_pt: " << min_pt.toString()
+//                          << ", max_pt: " << max_pt.toString() << std::endl;
 
                 minMax.resize( 4 );
                 minMax[0]    = minMax[1] = min_pt.template pos();
                 minMax[1](1)             = max_pt.template pos()(1);
                 minMax[2]    = minMax[3] = max_pt.template pos();
                 minMax[3](1)             = min_pt.template pos()(1);
+//                for ( int d = 0; d != minMax.size(); ++d )
+//                std::cout << "minMax[" << d << "]: " << minMax[d].transpose() << std::endl;
 
                 for ( int d = 0; d != 4; ++d )
                 {
                     // to world
                     minMax[d] = (frame * (Eigen::Matrix<_Scalar,4,1>() << minMax[d], _Scalar(1)).finished()).template head<3>();
+//                    std::cout << "minMax2[" << d << "]: " << minMax[d].transpose() << std::endl;
                 }
 
                 return EXIT_SUCCESS;

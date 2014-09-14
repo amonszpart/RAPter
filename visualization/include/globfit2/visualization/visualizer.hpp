@@ -91,18 +91,18 @@ namespace GF2
                   << std::endl;
 
         // calc groups
-        int max_group_id = 0, nlines = 0;
+        int max_group_id = 0, nPrimitives = 0;
         for ( size_t pid = 0; pid != points.size(); ++pid )
             max_group_id = std::max( max_group_id, points[pid].getTag(PointPrimitiveT::GID) );
         for ( size_t lid = 0; lid != primitives.size(); ++lid )
             for ( size_t lid1 = 0; lid1 != primitives[lid].size(); ++lid1 )
             {
                 max_group_id = std::max( max_group_id, primitives[lid][lid1].getTag(PrimitiveT::GID) );
-                ++nlines;
+                ++nPrimitives;
             }
         std::cout << "[" << __func__ << "]: "
                   << "points: " << points.size()
-                  << ", lines: " << nlines
+                  << ", primitives: " << nPrimitives
                   << ", max_group_id: " << max_group_id
                   << ", pop-limit: " << pop_limit
                   << std::endl;
@@ -179,7 +179,7 @@ namespace GF2
                 } //...if use_tags
                 PrimitiveT::template draw<PointPrimitiveT>( /*   primitive: */ primitives[lid][lid1]
                                                           , /*      points: */ points
-                                                          , /*   threshold: */ scale * _Scalar(10)
+                                                          , /*   threshold: */ scale
                                                           , /*     indices: */ use_tags ? &indices : NULL
                                                           , /*      viewer: */ vptr
                                                           , /*   unique_id: */ line_name
