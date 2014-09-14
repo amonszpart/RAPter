@@ -581,9 +581,13 @@ namespace GF2 {
          * \tparam _IndicesContainerT Concept: std::vector<int>.
          * \tparam _PointContainerT   Concept: std::vector< _PointPrimitiveT >.
          * \tparam _PointPrimitiveT   Concept: \ref GF2::PointPrimitive.
+         * \param[out] min_pt         Output minimum point of pointcloud.
+         * \param[out] max_pt         Output maximum point of pointcloud.
+         * \param[in] points          Input pointcloud.
+         * \param[in] indices         Pointer to indices matrix, containing point ids pointing to points in \p points pointcloud.
          */
         template <class _IndicesContainerT,  class _PointContainerT, class _PointPrimitiveT>
-        inline int getMinMax3D( _PointContainerT const& points, _PointPrimitiveT &min_pt, _PointPrimitiveT &max_pt, _IndicesContainerT *indices = NULL )
+        inline int getMinMax3D( _PointPrimitiveT &min_pt, _PointPrimitiveT &max_pt, _PointContainerT const& points, _IndicesContainerT *indices = NULL )
         {
             typedef typename _PointPrimitiveT::Scalar            Scalar;
             typedef typename Eigen::Matrix<Scalar,3,1>           Position;
@@ -616,10 +620,6 @@ namespace GF2 {
             return EXIT_SUCCESS;
         } //...getMinMax3D()
 
-
-
-
-
         namespace pca
         {
 
@@ -630,7 +630,7 @@ namespace GF2 {
         }
 
         /*! \brief Computes a column-wise 3D frame and a centroid in a 4,4 matrix.
-         *  \tparam Scalar Floating point precision type.
+         *  \tparam Scalar          Floating point precision type.
          *  \tparam PointContainerT Concept: std::vector< \ref GF2::PointPrimitive >.
          */
         template <class _IndicesContainerT, typename Scalar, class _PointContainerT> inline int
@@ -710,7 +710,7 @@ namespace GF2 {
             else
             {
                 // transform all points
-                for ( size_t pid = 0; pid != points.size(); ++pid )
+                for ( size_t pid = 0; pid != in_points.size(); ++pid )
                 {
                     Eigen::Matrix<_Scalar, 4, 1> pt; pt << in_points[ pid ].template pos(), _Scalar(1.);
                     points.push_back( _PointPrimitiveT((transform * pt).template head<3>(), in_points[pid].template dir()) );
