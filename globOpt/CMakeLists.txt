@@ -202,12 +202,15 @@ SET( GLOBOPT_HPP_LIST
 
 SET( GLOBOPT_H_LIST
     #include/params.h
+    include/globfit2/util/parse.h
     include/globfit2/parameters.h
     include/globfit2/my_types.h
+    include/globfit2/globOpt_types.h
     include/globfit2/primitives/linePrimitive.h
     include/globfit2/primitives/primitive.h
     include/globfit2/primitives/linePrimitive2.h
     include/globfit2/primitives/pointPrimitive.h
+    include/globfit2/primitives/planePrimitive.h
     include/globfit2/optimization/patchDistanceFunctors.h
     include/globfit2/optimization/energyFunctors.h
     include/globfit2/optimization/candidateGenerator.h
@@ -221,9 +224,13 @@ SET( GLOBOPT_H_LIST
 
 SET( GLOBOPT_SRC_LIST
     src/qp_main.cpp
-    src/segment3D.cpp
     src/subsample.cpp
+    src/segment3D.cpp
+    src/generate.cpp
+    src/problemSetup.cpp
+    src/solve.cpp
     src/merge.cpp
+    src/datafit.cpp
     #src/optimization/candidateGenerator.cpp # cached compilation
     #src/optimization/qp/visualizer.cpp     # cached compilation
 )

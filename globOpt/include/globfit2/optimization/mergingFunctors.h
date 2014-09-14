@@ -38,7 +38,7 @@ struct DecideMergeLineFunctor {
         const PointT & l1a = extrema1[0];
         const PointT & l1b = extrema1[1];
 
-        const PointT n0 = l0.template normal<_Scalar>();
+        const PointT n0 = l0.template normal<_Scalar>(); //Aron: I don't get this line, a Point is a PointPrimitiveT, and the normal is an Eigen::Matrix<Scalar,3,1>...
 
         //const _Scalar sqScale = scale*scale;
         //const _Scalar l0SqLengthAndScale = (l0b-l0a).squaredNorm() + scale*scale;

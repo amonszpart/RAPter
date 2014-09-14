@@ -11,9 +11,12 @@
 #include "globfit2/primitives/pointPrimitive.h"
 #include "globfit2/primitives/linePrimitive2.h" // remove, if typedef is moved
 #include "qcqpcpp/io/io.h"                      // read/writeSparseMatrix
+#include "globfit2/globOpt_types.h" // _2d::PrimitiveT, etc.
 
 namespace GF2 {
 
+/*! \brief Not used.
+ */
 struct SolverParams
 {
         int n_points = 50;
@@ -22,30 +25,44 @@ struct SolverParams
 class Solver
 {
     public:
-        typedef float                                       Scalar;
+        //typedef GF2::Scalar                                 Scalar;             // in globOpt_types.h
         typedef Eigen::Matrix<Scalar,3,1>                   Vector;
-        typedef LinePrimitive2                              PrimitiveT;
-        typedef PointPrimitive                              PointPrimitiveT;
-        typedef std::vector<std::vector<PrimitiveT> >       PrimitiveContainerT;
-        typedef std::vector<PointPrimitiveT>                PointContainerT;
+        //typedef LinePrimitive2                              PrimitiveT;
+        //typedef PointPrimitive                              PointPrimitiveT;
+        //typedef std::vector<std::vector<PrimitiveT> >       PrimitiveContainerT;
+        //typedef std::vector<PointPrimitiveT>                PointContainerT;
         typedef Eigen::SparseMatrix<Scalar,Eigen::RowMajor> SparseMatrix;
 
         //static inline int show       ( int argc, char** argv );
 #if WITH_SAMPLE_INPUT
         static inline int sampleInput( int argc, char** argv );
 #endif // WITH_SAMPLE_INPUT
+        template < class    _PrimitiveContainerT
+                 , class    _PointContainerT
+                 , typename _Scalar
+                 , class    _PointPrimitiveT
+                 , class    _PrimitiveT
+                 >
         static inline int generateCli   ( int argc, char** argv );
         //static inline int formulate  ( int argc, char** argv );
+        template < class _PrimitiveContainerT
+                 , class _InnerPrimitiveContainerT
+                 , class _PrimitiveT
+                 >
         static inline int solve      ( int argc, char** argv );
+        template < class _PrimitiveContainerT
+                 , class _InnerPrimitiveContainerT
+                 , class _PrimitiveT
+                 >
         static inline int datafit    ( int argc, char** argv );
 
         //static inline int run        ( std::string img_path, Scalar const scale, std::vector<Scalar> const& angles, int argc, char** argv ) __attribute__ ((deprecated));
 
-        static inline Eigen::Matrix<Scalar,3,1> checkSolution( std::vector<Scalar>       const& x
-                                                             , SparseMatrix              const& qo
-                                                             , SparseMatrix              const& Qo
-                                                             , SparseMatrix              const& A
-                                                             , Eigen::Matrix<Scalar,3,1> const& weights );
+        static inline Eigen::Matrix<GF2::Scalar,3,1> checkSolution( std::vector<Scalar>       const& x
+                                                                  , SparseMatrix              const& qo
+                                                                  , SparseMatrix              const& Qo
+                                                                  , SparseMatrix              const& A
+                                                                  , Eigen::Matrix<Scalar,3,1> const& weights );
 }; // ... cls Solver
 } // ... ns gf2
 
@@ -150,25 +167,26 @@ Solver::sampleInput( int argc, char** argv )
 //! \param argc             Contains --cloud cloud.ply, and --scale scale.
 //! \param argv             Contains --cloud cloud.ply, and --scale scale.
 //! \return                 EXIT_SUCCESS.
+template < class    _PrimitiveContainerT
+         , class    _PointContainerT
+         , typename _Scalar
+         , class    _PointPrimitiveT
+         , class    _PrimitiveT
+         >
 int
 Solver::generateCli( int    argc
                    , char** argv )
 {
-    typedef typename PointContainerT::value_type PointPrimitiveT;
+    typedef typename _PrimitiveContainerT::value_type InnerPrimitiveContainerT;
+    //typedef typename PointContainerT::value_type PointPrimitiveT;
     int err = EXIT_SUCCESS;
 
     CandidateGeneratorParams<Scalar> generatorParams;
     std::string                 cloud_path              = "./cloud.ply";
     std::vector<Scalar>         angle_gens              = { Scalar(90.) };
     std::string                 mode_string             = "representative_sqr";
-    std::vector<std::string>    mode_opts               = { "representative_sqr"
-#if GF2_WITH_FULL_LINKAGE
-                                                            "full_min", "full_max", "squared_min", "representative_min",
-#endif // GF2_WITH_FULL_LINKAGE
-                                                          };
-    //std::string                 patch_refit_mode_string = "avg_dir";
-    //std::vector<std::string>    patch_refit_mode_opts   = { "spatial", "avg_dir" };
-    std::string                 input_prims_path         = "patches.csv";
+    std::vector<std::string>    mode_opts               = { "representative_sqr" };
+    std::string                 input_prims_path        = "patches.csv";
     std::string                 associations_path       = "points_primitives.csv";
 
     // parse input
@@ -248,12 +266,6 @@ Solver::generateCli( int    argc
                 std::cerr << "|" << mode_opts[m];
             std::cerr << "]\n";
 
-            // patch refit mode (spatial, avg_dir)
-//            std::cerr << "\t [--patch-refit *" << generatorParams.printRefitMode() << "*\t";
-//            for ( size_t m = 0; m != patch_refit_mode_opts.size(); ++m )
-//                std::cerr << "|" << patch_refit_mode_opts[m];
-//            std::cerr << "]\n";
-
             std::cerr << "\t [-al,--angle-limit " << generatorParams.angle_limit << "]\n";
             std::cerr << "\t [-ald,--angle-limit-div " << generatorParams.angle_limit_div << "]\n";
             std::cerr << "\t [--patch-dist-limit " << generatorParams.patch_dist_limit_mult << "]\n";
@@ -288,7 +300,7 @@ Solver::generateCli( int    argc
     PointContainerT points;
     if ( EXIT_SUCCESS == err )
     {
-        err = io::readPoints<PointPrimitiveT>( points, cloud_path );
+        err = io::readPoints<_PointPrimitiveT>( points, cloud_path );
         if ( err != EXIT_SUCCESS )  std::cerr << "[" << __func__ << "]: " << "readPoints returned error " << err << std::endl;
     } //...read points
 
@@ -301,12 +313,12 @@ Solver::generateCli( int    argc
     }
 
     // read primitives
-    typedef std::map<int, typename PrimitiveContainerT::value_type> PrimitiveMapT;
-    PrimitiveContainerT initial_primitives;
+    typedef std::map<int, InnerPrimitiveContainerT> PrimitiveMapT;
+    _PrimitiveContainerT initial_primitives;
     PrimitiveMapT patches;
     {
         std::cout << "[" << __func__ << "]: " << "reading primitives from " << input_prims_path << "...";
-        io::readPrimitives<PrimitiveT, typename PrimitiveContainerT::value_type>( initial_primitives, input_prims_path, &patches );
+        io::readPrimitives<_PrimitiveT, InnerPrimitiveContainerT>( initial_primitives, input_prims_path, &patches );
         std::cout << "reading primitives ok (#: " << initial_primitives.size() << ")\n";
     } //...read primitives
 
@@ -318,7 +330,7 @@ Solver::generateCli( int    argc
     PrimitiveMapT primitives;
     if ( EXIT_SUCCESS == err )
     {
-        err = CandidateGenerator::generate< MyPrimitivePrimitiveAngleFunctor, MyPointPrimitiveDistanceFunctor, PrimitiveT >
+        err = CandidateGenerator::generate< MyPrimitivePrimitiveAngleFunctor, MyPointPrimitiveDistanceFunctor, _PrimitiveT >
                                           ( primitives, patches/*initial_primitives*/, points, generatorParams.scale, generatorParams.angles, generatorParams );
 
         if ( err != EXIT_SUCCESS ) std::cerr << "[" << __func__ << "]: " << "generate exited with error! Code: " << err << std::endl;
@@ -353,7 +365,7 @@ Solver::generateCli( int    argc
         }
 
         util::saveBackup( output_prims_path );
-        err = io::savePrimitives<PrimitiveT,typename PrimitiveContainerT::value_type::const_iterator>( /* what: */ primitives, /* where_to: */ output_prims_path );
+        err = io::savePrimitives<_PrimitiveT,typename InnerPrimitiveContainerT::const_iterator>( /* what: */ primitives, /* where_to: */ output_prims_path );
 
         if ( err != EXIT_SUCCESS )  std::cerr << "[" << __func__ << "]: " << "saveBackup or savePrimitive exited with error! Code: " << err << std::endl;
         else                        std::cout << "[" << __func__ << "]: " << "wrote to " << output_prims_path << std::endl;
@@ -366,10 +378,15 @@ Solver::generateCli( int    argc
 //! \param argc Number of command line arguments.
 //! \param argv Vector of command line arguments.
 //! \return     Exit code. 0 == EXIT_SUCCESS.
+template <class _PrimitiveContainerT
+         , class _InnerPrimitiveContainerT
+         , class _PrimitiveT
+         >
 int
 Solver::solve( int    argc
              , char** argv )
 {
+
     int                                   err           = EXIT_SUCCESS;
 
     bool                                  verbose       = false;
@@ -487,7 +504,7 @@ Solver::solve( int    argc
         err += p_problem->read( project_path );
         if ( EXIT_SUCCESS != err )
             std::cerr << "[" << __func__ << "]: " << "Could not read problem, exiting" << std::endl;
-    } //...problem.read()
+    } //...problem.read()PrimitiveT
 
     // problem.parametrize()
     {
@@ -587,23 +604,23 @@ Solver::solve( int    argc
             if ( pcl::console::parse_argument( argc, argv, "--candidates", candidates_path ) >= 0 )
             {
                 // read primitives
-                PrimitiveContainerT prims;
+                _PrimitiveContainerT prims;
                 {
                     if ( verbose ) std::cout << "[" << __func__ << "]: " << "reading primitives from " << candidates_path << "...";
-                    io::readPrimitives<PrimitiveT, typename PrimitiveContainerT::value_type>( prims, candidates_path );
+                    io::readPrimitives<_PrimitiveT, _InnerPrimitiveContainerT>( prims, candidates_path );
                     if ( verbose ) std::cout << "reading primitives ok\n";
                 } //...read primitives
 
                 // save selected primitives
-                PrimitiveContainerT out_prims( 1 );
+                _PrimitiveContainerT out_prims( 1 );
                 int prim_id = 0;
                 for ( size_t l = 0; l != prims.size(); ++l )
                     for ( size_t l1 = 0; l1 != prims[l].size(); ++l1, ++prim_id )
                     {
                         if ( int(round(x_out[prim_id])) > 0 )
                         {
-                            std::cout << "saving " << prims[l][l1].getTag(PrimitiveT::GID) << ", " << prims[l][l1].getTag(PrimitiveT::DIR_GID) << ", X: " << x_out[prim_id] << "\t, ";
-                            prims[l][l1].setTag( PrimitiveT::CHOSEN, 1 );
+                            std::cout << "saving " << prims[l][l1].getTag(_PrimitiveT::GID) << ", " << prims[l][l1].getTag(_PrimitiveT::DIR_GID) << ", X: " << x_out[prim_id] << "\t, ";
+                            prims[l][l1].setTag( _PrimitiveT::CHOSEN, 1 );
                             out_prims.back().push_back( prims[l][l1] );
                         }
                     } // ... for l1
@@ -623,7 +640,7 @@ Solver::solve( int    argc
                 }
 
                 util::saveBackup    ( out_prim_path );
-                io::savePrimitives<PrimitiveT, PrimitiveContainerT::value_type::const_iterator>( out_prims, out_prim_path, /* verbose: */ true );
+                io::savePrimitives<_PrimitiveT, typename _InnerPrimitiveContainerT::const_iterator>( out_prims, out_prim_path, /* verbose: */ true );
             } // if --candidates
             else
             {
@@ -639,6 +656,10 @@ Solver::solve( int    argc
 }
 
 //! \brief Unfinished function. Supposed to do GlobFit.
+template < class _PrimitiveContainerT
+         , class _InnerPrimitiveContainerT
+         , class _PrimitiveT
+>
 int
 Solver::datafit( int    argc
                , char** argv )
@@ -699,12 +720,12 @@ Solver::datafit( int    argc
     } //...read points
 
     // read primitives
-    typedef std::map<int, typename PrimitiveContainerT::value_type> PrimitiveMapT;
-    PrimitiveContainerT prims;
+    typedef std::map<int, _InnerPrimitiveContainerT> PrimitiveMapT;
+    _PrimitiveContainerT prims;
     PrimitiveMapT       patches;
     {
         if ( verbose ) std::cout << "[" << __func__ << "]: " << "reading primitives from " << primitives_path << "...";
-        io::readPrimitives<PrimitiveT, typename PrimitiveContainerT::value_type>( prims, primitives_path, &patches );
+        io::readPrimitives<_PrimitiveT, _InnerPrimitiveContainerT>( prims, primitives_path, &patches );
         if ( verbose ) std::cout << "reading primitives ok\n";
     } //...read primitives
 
@@ -954,7 +975,7 @@ Solver::datafit( int    argc
 //! \brief              Prints energy of solution in \p x using \p weights.
 //! \param[in] x        A solution to calculate the energy of.
 //! \param[in] weights  Problem weights used earlier. \todo Dump to disk together with solution.
-Eigen::Matrix<Solver::Scalar,3,1>
+Eigen::Matrix<GF2::Scalar,3,1>
 Solver::checkSolution( std::vector<Scalar> const& x
                      , Solver::SparseMatrix const& linObj
                      , Solver::SparseMatrix const& Qo

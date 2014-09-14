@@ -1,42 +1,40 @@
-#include "globfit2/optimization/segmentation.h"
-
 #include "globfit2/optimization/segmentation.h" // segmentCli, orientPoints, patchify
-#include "globfit2/primitives/pointPrimitive.h"
-#include "globfit2/primitives/planePrimitive.h" // segment3D
-#include "globfit2/primitives/linePrimitive2.h" // segment2D
 
-int segment3D( int argc, char** argv )
+#include "globfit2/globOpt_types.h" // _2d::, _3d::, Scalar, PointPrimitiveT, PointContainerT
+#include "globfit2/util/parse.h" // console::
+
+int segment( int argc, char**argv )
 {
-    typedef GF2::PlanePrimitive              PrimitiveT;
-    typedef std::vector< PrimitiveT >        InnerContainerT;
-    typedef std::vector< InnerContainerT >   PrimitiveContainerT; // TODO: map
-    typedef GF2::PointPrimitive              PointPrimitiveT;
-    typedef std::vector< PointPrimitiveT >   PointContainerT;
-    typedef PrimitiveT::Scalar               Scalar;
+    if ( GF2::console::find_switch(argc,argv,"--segment3D") )
+    {
+//    typedef GF2::PlanePrimitive              PrimitiveT;
+//    typedef std::vector< PrimitiveT >        InnerContainerT;
+//    typedef std::vector< InnerContainerT >   PrimitiveContainerT; // TODO: map
+//    typedef GF2::PointPrimitive              PointPrimitiveT;
+//    typedef std::vector< PointPrimitiveT >   PointContainerT;
+//    typedef PrimitiveT::Scalar               Scalar;
 
-    return GF2::Segmentation::segmentCli<
-                PrimitiveT
-                , PrimitiveContainerT
-                , PointPrimitiveT
-                , PointContainerT
-                , Scalar>
-            ( argc, argv );
-}
+        return GF2::Segmentation::segmentCli< GF2::_3d::PrimitiveT
+                                            , GF2::_3d::PrimitiveContainerT
+                                            , GF2::PointPrimitiveT
+                                            , GF2::PointContainerT
+                                            , GF2::Scalar>
+                                            ( argc, argv );
+    }
+    else
+    {
 
-int segment2D( int argc, char** argv )
-{
-    typedef GF2::LinePrimitive2              PrimitiveT;
-    typedef std::vector< PrimitiveT >        InnerContainerT;
-    typedef std::vector< InnerContainerT > PrimitiveContainerT; // TODO: map
-    typedef GF2::PointPrimitive              PointPrimitiveT;
-    typedef std::vector< PointPrimitiveT >   PointContainerT;
-    typedef PrimitiveT::Scalar               Scalar;
-
-    return GF2::Segmentation::segmentCli<
-                PrimitiveT
-                , PrimitiveContainerT
-                , PointPrimitiveT
-                , PointContainerT
-                , Scalar>
-            ( argc, argv );
-}
+//    typedef GF2::LinePrimitive2              PrimitiveT;
+//    typedef std::vector< PrimitiveT >        InnerContainerT;
+//    typedef std::vector< InnerContainerT > PrimitiveContainerT; // TODO: map
+//    typedef GF2::PointPrimitive              PointPrimitiveT;
+//    typedef std::vector< PointPrimitiveT >   PointContainerT;
+//    typedef PrimitiveT::Scalar               Scalar;
+        return GF2::Segmentation::segmentCli< GF2::_2d::PrimitiveT
+                                            , GF2::_2d::PrimitiveContainerT
+                                            , GF2::PointPrimitiveT
+                                            , GF2::PointContainerT
+                                            , GF2::Scalar>
+                                            ( argc, argv );
+    } //...find_switch
+} //...segment()

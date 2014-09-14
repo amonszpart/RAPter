@@ -6,6 +6,7 @@
 #include <set>
 
 #include "qcqpcpp/optProblem.h"  // OptProblem
+#include "globfit2/parameters.h" // ProblemSetupParams
 
 namespace GF2
 {

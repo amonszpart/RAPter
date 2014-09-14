@@ -95,7 +95,7 @@ namespace GF2
              *  \param[in]  indices             Optional input to specify subset of points by indices.
              *  \return                         EXIT_SUCCESS
              */
-            template <class _IndicesContainerT, typename _PointPrimitiveT, typename _Scalar, typename _PointContainerT>
+            template <typename _PointPrimitiveT, class _IndicesContainerT, typename _Scalar, typename _PointContainerT>
             int
             getExtent( std::vector<Eigen::Matrix<_Scalar,3,1> >      & minMax
                      , _PointContainerT                         const& cloud
@@ -321,7 +321,7 @@ namespace GF2
                 _Scalar  tmp_radius  = radius;
                 do
                 {
-                    err = plane.getExtent<_IndicesContainerT, _PointPrimitiveT>( minMax
+                    err = plane.getExtent<_PointPrimitiveT>( minMax
                                                                                , cloud
                                                                                , tmp_radius
                                                                                , indices   );

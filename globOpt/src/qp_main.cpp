@@ -1,79 +1,77 @@
 #include <iostream>
 
-#include <pcl/console/parse.h>
+//#include <pcl/console/parse.h>
+#include "globfit2/util/parse.h"
 
-#include "optimization/qp/solver.h"
-#include "globfit2/optimization/problemSetup.h"
+//#include "optimization/qp/solver.h"
+//#include "globfit2/optimization/problemSetup.h"
 
-#include "globfit2/io/io.h"
 
-int segment3D( int argc, char** argv );
-int segment2D( int argc, char** argv );
-int subsample( int argc, char** argv );
-int merge    ( int argc, char** argv );
+int segment  ( int argc, char** argv ); // segment3D.cpp //TODO: rename
+int subsample( int argc, char** argv ); // subsample.cpp
+int merge    ( int argc, char** argv ); // merge.cpp
+int generate ( int argc, char** argv ); // generate.cpp
+int formulate( int argc, char** argv ); // problemSetup.cpp
+int solve    ( int argc, char** argv ); // solve.cpp
+int datafit  ( int argc, char** argv ); // datafit.cpp
 
 int main( int argc, char *argv[] )
 {
     if ( (argc == 2) &&
-         (   (pcl::console::find_switch(argc,argv,"--help"))
-          || (pcl::console::find_switch(argc,argv,"-h"    ))
+         (   (GF2::console::find_switch(argc,argv,"--help"))
+          || (GF2::console::find_switch(argc,argv,"-h"    ))
          )
        )
     {
         std::cout << "[Usage]:\n"
-                  << "\t--sample-input\n"
                   << "\t--generate\n"
+                  << "\t--generate3D\n"
                   << "\t--formulate\n"
+                  << "\t--formulate3D\n"
                   << "\t--solver mosek|bonmin|gurobi\n"
+                  << "\t--solver3D mosek|bonmin|gurobi\n"
                   << "\t--merge\n"
                   << "\t--merge3D\n"
-                  << "\t--gfit\n"
-                  << "\t--show\n"
+                  << "\t--datafit\n"
+                  //<< "\t--show\n"
                   << std::endl;
 
         return EXIT_SUCCESS;
     }
-#if GF2_WITH_SAMPLE_INPUT
-    else if ( pcl::console::find_switch(argc,argv,"--sample-input") )
+    else if ( GF2::console::find_switch(argc,argv,"--segment") || GF2::console::find_switch(argc,argv,"--segment3D") )
     {
-        return GF2::Solver::sampleInput( argc, argv );
+       return segment( argc, argv );
     }
-#endif
-    else if ( pcl::console::find_switch(argc,argv,"--segment") )
+    else if ( GF2::console::find_switch(argc,argv,"--generate") || GF2::console::find_switch(argc,argv,"--generate3D") )
     {
-       return segment2D( argc, argv );
+        return generate(argc,argv);
     }
-    else if ( pcl::console::find_switch(argc,argv,"--segment3D") )
+    else if ( GF2::console::find_switch(argc,argv,"--formulate") || GF2::console::find_switch(argc,argv,"--formulate3D"))
     {
-        return segment3D( argc, argv );
+        return formulate( argc, argv );
+        //return GF2::ProblemSetup::formulateCli<GF2::Solver::PrimitiveContainerT, GF2::Solver::PointContainerT>( argc, argv );
     }
-    else if ( pcl::console::find_switch(argc,argv,"--generate") )
+    else if ( GF2::console::find_switch(argc,argv,"--solver") || GF2::console::find_switch(argc,argv,"--solver3D") ) // Note: "solver", not "solve" :-S
     {
-        return GF2::Solver::generateCli( argc, argv );
+        return solve( argc, argv );
+        //return GF2::Solver::solve( argc, argv );
     }
-    else if ( pcl::console::find_switch(argc,argv,"--formulate") )
+    else if ( GF2::console::find_switch(argc,argv,"--datafit") || GF2::console::find_switch(argc,argv,"--datafit3D") )
     {
-        return GF2::ProblemSetup::formulateCli<GF2::Solver::PrimitiveContainerT, GF2::Solver::PointContainerT>( argc, argv );
+        return datafit( argc, argv );
+        //return GF2::Solver::datafit( argc, argv );
     }
-    else if ( pcl::console::find_switch(argc,argv,"--solver") )
-    {
-        return GF2::Solver::solve( argc, argv );
-    }
-    else if ( pcl::console::find_switch(argc,argv,"--gfit") )
-    {
-        return GF2::Solver::datafit( argc, argv );
-    }
-    else if ( pcl::console::find_switch(argc,argv,"--merge") || pcl::console::find_switch(argc,argv,"--merge3D") )
+    else if ( GF2::console::find_switch(argc,argv,"--merge") || GF2::console::find_switch(argc,argv,"--merge3D") )
     {
         return merge(argc, argv);
     }
-    else if ( pcl::console::find_switch(argc,argv,"--show") )
+    else if ( GF2::console::find_switch(argc,argv,"--show") )
     {
         std::cerr << "[" << __func__ << "]: " << "the show option has been moved to a separate executable, please use thatt one" << std::endl;
         return 1;
         //return GF2::Solver::show( argc, argv );
     }
-    else if ( pcl::console::find_switch(argc,argv,"--subsample") )
+    else if ( GF2::console::find_switch(argc,argv,"--subsample") )
     {
         return subsample( argc, argv );
     }

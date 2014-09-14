@@ -22,7 +22,7 @@ namespace GF2
             }; //...enum TAGS
 
             // ____________________CONSTRUCTORS____________________
-#if __cplusplus > 199711L
+#if 0 //__cplusplus > 199711L
             //! \brief Inherited constructors from parent class.
             using ::GF2::Primitive<Dim>::Primitive;
 #else
