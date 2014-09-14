@@ -1,8 +1,11 @@
 #ifndef GF2_MERGING_HPP
 #define GF2_MERGING_HPP
 
+#include "pcl/console/parse.h"
+
 #include "globfit2/optimization/merging.h"
 #include "globfit2/optimization/mergingFunctors.h"
+#include "globfit2/optimization/energyFunctors.h"
 
 #include "globfit2/parameters.h"
 #include "globfit2/visualization/visualization.h"
