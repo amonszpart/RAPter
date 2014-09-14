@@ -26,13 +26,21 @@ int subsample( int argc, char** argv )
         valid_input = false;
     }
 
-    Position sceneSize; sceneSize << 10, 10, 10, 1;
+    float scene_size = 1.f;
+    if ( pcl::console::parse_argument( argc, argv, "--scene-size", scene_size) < 0 )
+    {
+        std::cerr << "[" << __func__ << "]: " << "\"--scene-size 1\" assumed to normalize scene to" << std::endl;
+    }
+
+    Position sceneSize; sceneSize << scene_size, scene_size, scene_size, 1;
 
     if ( !valid_input || (pcl::console::find_switch(argc,argv,"-h")) || (pcl::console::find_switch(argc,argv,"--help")) )
     {
         std::cout << "[" << __func__ << "]: " << "Usage: " << argv[0] << "--subsample\n"
                   << "\t--cloud " << cloud_path << "\n"
-                  << "\t--N " << N << "\n";
+                  << "\t--N " << N
+                  << "\t--scene-size " << scene_size
+                  << "\n";
 
         return EXIT_FAILURE;
     }
@@ -48,12 +56,15 @@ int subsample( int argc, char** argv )
     pcl::getMinMax3D( cloud, min_pt, max_pt );
     std::cout << "min: " << min_pt.transpose() << ", max: " << max_pt.transpose() << std::endl;
     Position div = (max_pt - min_pt);
-    div(0) = sceneSize(0) / div(0);
-    div(1) = sceneSize(1) / div(1);
-    if ( div(2) > 0.f )
-        div(2) = sceneSize(2) / div(2);
+    if ( scene_size > 0.f )
+    {
+        div(0) = sceneSize(0) / div(0);
+        div(1) = sceneSize(1) / div(1);
+        if ( div(2) > 0.f )
+            div(2) = sceneSize(2) / div(2);
+    }
 
-#if 0
+#if 1
     float chance = N / (float)cloud.size();
     for ( size_t pid = 0; pid != cloud.size(); ++pid )
     {
