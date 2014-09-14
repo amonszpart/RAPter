@@ -144,6 +144,75 @@ namespace GF2 {
             return ret;
         } //...TransformPrimitivesMap
 
+        template < class _Scalar
+                 , class _IndicesContainerT
+                 , class _PointContainerT
+                 >
+        inline Eigen::Matrix<_Scalar,3,1> getCentroid( _PointContainerT const& points, _IndicesContainerT const* indices = NULL )
+        {
+            const int N = indices ? indices->size() : points.size();
+
+            Eigen::Matrix<_Scalar,3,1> centroid( Eigen::Matrix<_Scalar,3,1>::Zero() );
+            for ( int pid_id = 0; pid_id != N; ++pid_id )
+            {
+                const unsigned int pid = indices ? (*indices)[pid_id] : pid_id;
+                centroid += points[ pid ].template pos();
+            }
+
+            if ( N )
+                centroid /= _Scalar( N );
+            else
+                std::cout << "[" << __func__ << "]: " << "empty..." << std::endl;
+
+            return centroid;
+        }
+
+        /*! \brief Computes [weighted] covariance matrix of [indexed] pointcloud.
+         *  \tparam _Scalar             Floating point precision.
+         *  \tparam _PointContainerT    PointCloud. Concept: std::vector<\ref GF2::PointPrimitive>.
+         *  \tparam _Position           3D position. Concept: Eigen::Vector<_Scalar,3,1>.
+         *  \tparam _IndicesContainerT  Contains indices to entries in points. Concept: std::vector< int >.
+         *  \tparam _WeightsContainerT  Contains scalar weights to use for fitting. Concept: std::vector<_Scalar>.
+         *  \param[out] cov             Covariance matrix output.
+         *  \param[in]  points          Pointcloud input.
+         *  \param[in]  centroid        Precomputed centroid of cloud.
+         *  \param[in]  indices         Pointer to index vector of pointcloud. Full cloud is used, if left NULL.
+         *  \param[in]  weights         Optional weight matrix for weighted covariance matrix computation. Uniform weights are used, if left NULL.
+         *  \return EXIT_SUCCESS;
+         */
+        template <class _WeightsContainerT, class _IndicesContainerT, typename _Scalar, class _PointContainerT, typename _Position >
+        inline int computeCovarianceMatrix( Eigen::Matrix<_Scalar,3,3> &cov
+                                          , _PointContainerT      const& points
+                                          , _Position             const& centroid
+                                          , _IndicesContainerT    const* indices   = NULL
+                                          , _WeightsContainerT    const* weights   = NULL )
+        {
+            const int N = indices ? indices->size() : points.size();
+
+            cov.setZero();
+            _Scalar sumW( 0. );
+            for ( size_t point_id = 0; point_id != N; ++point_id )
+            {
+                const unsigned int pid = indices ? (*indices)[point_id] : point_id;
+                _Position pos = points[ pid ].template pos() - centroid; // eigen expression template
+
+                if ( weights )
+                {
+                    cov   += pos * pos.transpose() * (*weights)[ point_id ];
+                    sumW  +=                         (*weights)[ point_id ];
+                }
+                else
+                {
+                    cov   += pos * pos.transpose();
+                }
+
+                if ( weights && (sumW > _Scalar(0.)) )
+                    cov /= sumW;
+            } //...for all points
+
+            return EXIT_SUCCESS;
+        } //...computeCovarianceMatrix
+
         /*! \brief Applies a functor to each primitive.
          *  \tparam _PrimitiveT          Primitive wrapper class. Concept: LinePrimitive2.
          *  \tparam _inner_iterator      Iterates over the mapped_value of _PrimitiveContainerT. Concept: std::vector<int>::iterator.
@@ -282,7 +351,7 @@ namespace GF2 {
                 // debug
                 {
                     Position centroid2( Position::Zero() );
-                    centroid2 = getCentroid( cloud, p_indices );
+                    centroid2 = processing::getCentroid<Scalar>( cloud, p_indices );
                     std::cout << "centroids: " << centroid.transpose() << " vs. " << centroid2.transpose() << std::endl;
 
                     Eigen::Matrix<Scalar,3,3> cov2( Eigen::Matrix<Scalar,3,3>::Zero() );
@@ -457,74 +526,9 @@ namespace GF2 {
             return EXIT_SUCCESS;
         } //...getMinMax3D()
 
-        template < class _Scalar
-                 , class _IndicesContainerT
-                 , class _PointContainerT
-                 >
-        inline Eigen::Matrix<_Scalar,3,1> getCentroid( _PointContainerT const& points, _IndicesContainerT const* indices = NULL )
-        {
-            const int N = indices ? indices->size() : points.size();
 
-            Eigen::Matrix<_Scalar,3,1> centroid( Eigen::Matrix<_Scalar,3,1>::Zero() );
-            for ( int pid_id = 0; pid_id != N; ++pid_id )
-            {
-                const unsigned int pid = indices ? (*indices)[pid_id] : pid_id;
-                centroid += points[ pid ].template pos();
-            }
 
-            if ( N )
-                centroid /= _Scalar( N );
-            else
-                std::cout << "[" << __func__ << "]: " << "empty..." << std::endl;
 
-            return centroid;
-        }
-
-        /*! \brief Computes [weighted] covariance matrix of [indexed] pointcloud.
-         *  \tparam _Scalar             Floating point precision.
-         *  \tparam _PointContainerT    PointCloud. Concept: std::vector<\ref GF2::PointPrimitive>.
-         *  \tparam _Position           3D position. Concept: Eigen::Vector<_Scalar,3,1>.
-         *  \tparam _IndicesContainerT  Contains indices to entries in points. Concept: std::vector< int >.
-         *  \tparam _WeightsContainerT  Contains scalar weights to use for fitting. Concept: std::vector<_Scalar>.
-         *  \param[out] cov             Covariance matrix output.
-         *  \param[in]  points          Pointcloud input.
-         *  \param[in]  centroid        Precomputed centroid of cloud.
-         *  \param[in]  indices         Pointer to index vector of pointcloud. Full cloud is used, if left NULL.
-         *  \param[in]  weights         Optional weight matrix for weighted covariance matrix computation. Uniform weights are used, if left NULL.
-         *  \return EXIT_SUCCESS;
-         */
-        template <class _WeightsContainerT, class _IndicesContainerT, typename _Scalar, class _PointContainerT, typename _Position >
-        inline int computeCovarianceMatrix( Eigen::Matrix<_Scalar,3,3> &cov
-                                          , _PointContainerT      const& points
-                                          , _Position             const& centroid
-                                          , _IndicesContainerT    const* indices   = NULL
-                                          , _WeightsContainerT    const* weights   = NULL )
-        {
-            const int N = indices ? indices->size() : points.size();
-
-            cov.setZero();
-            _Scalar sumW( 0. );
-            for ( size_t point_id = 0; point_id != N; ++point_id )
-            {
-                const unsigned int pid = indices ? (*indices)[point_id] : point_id;
-                _Position pos = points[ pid ].template pos() - centroid; // eigen expression template
-
-                if ( weights )
-                {
-                    cov   += pos * pos.transpose() * (*weights)[ point_id ];
-                    sumW  +=                         (*weights)[ point_id ];
-                }
-                else
-                {
-                    cov   += pos * pos.transpose();
-                }
-
-                if ( weights && (sumW > _Scalar(0.)) )
-                    cov /= sumW;
-            } //...for all points
-
-            return EXIT_SUCCESS;
-        } //...computeCovarianceMatrix
 
         namespace pca
         {

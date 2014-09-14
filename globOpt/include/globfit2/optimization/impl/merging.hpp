@@ -636,7 +636,7 @@ inline void merge( Container&        out_primitives, // [out] Container storing 
         std::cout << "Case C: " << arity0 << " - " << arity1 << std::endl;
 
         // Compute population centroid.
-        auto centroid = processing::getCentroid<Scalar>(points, pop);
+        auto centroid = processing::getCentroid<Scalar>(points, &pop);
 
         // Copy from l0
         PrimitiveT mergedPrim (centroid, l0.dir());
@@ -657,7 +657,7 @@ inline void merge( Container&        out_primitives, // [out] Container storing 
         PrimitiveT *sourcePrim = arity0 != 1 ? & l0 : & l1;
 
         // refit position
-        PrimitiveT mergedPrim (processing::getCentroid<Scalar>(points, pop), sourcePrim->dir());
+        PrimitiveT mergedPrim (processing::getCentroid<Scalar>(points, &pop), sourcePrim->dir());
         mergedPrim.copyTagsFrom(*sourcePrim);
         primToAdd.push_back(mergedPrim);
 
@@ -764,7 +764,7 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
 
                 err = inner_it->template getExtent<_PointPrimitiveT>
                                                            ( extrema[gid][lid]
-                                                           , &points
+                                                           , points
                                                            , scale
                                                            , populations[gid].size() ? &(populations[gid]) : NULL );
 
