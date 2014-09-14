@@ -7,12 +7,12 @@
 //#include "globfit2/optimization/problemSetup.h"
 
 
-int segment  ( int argc, char** argv ); // segment3D.cpp //TODO: rename
 int subsample( int argc, char** argv ); // subsample.cpp
-int merge    ( int argc, char** argv ); // merge.cpp
+int segment  ( int argc, char** argv ); // segment.cpp
 int generate ( int argc, char** argv ); // generate.cpp
 int formulate( int argc, char** argv ); // problemSetup.cpp
 int solve    ( int argc, char** argv ); // solve.cpp
+int merge    ( int argc, char** argv ); // merge.cpp
 int datafit  ( int argc, char** argv ); // datafit.cpp
 
 int main( int argc, char *argv[] )

@@ -225,7 +225,7 @@ SET( GLOBOPT_H_LIST
 SET( GLOBOPT_SRC_LIST
     src/qp_main.cpp
     src/subsample.cpp
-    src/segment3D.cpp
+    src/segment.cpp
     src/generate.cpp
     src/problemSetup.cpp
     src/solve.cpp
