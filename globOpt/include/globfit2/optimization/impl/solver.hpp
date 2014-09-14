@@ -1,78 +1,9 @@
-#ifndef __GF2_SOLVER_H__
-#define __GF2_SOLVER_H__
-
-//////////////
-/// Solver
-//////////////
-
-#ifdef GF2_USE_GUROBI
-#   include "optimization/qp/gurobiOpt.h"
-#endif
-#include "globfit2/primitives/pointPrimitive.h"
-#include "globfit2/primitives/linePrimitive2.h" // remove, if typedef is moved
-#include "qcqpcpp/io/io.h"                      // read/writeSparseMatrix
-#include "globfit2/globOpt_types.h" // _2d::PrimitiveT, etc.
-
-namespace GF2 {
-
-/*! \brief Not used.
- */
-struct SolverParams
-{
-        int n_points = 50;
-}; // ... struct SolverParams
-
-class Solver
-{
-    public:
-        //typedef GF2::Scalar                                 Scalar;             // in globOpt_types.h
-        typedef Eigen::Matrix<Scalar,3,1>                   Vector;
-        //typedef LinePrimitive2                              PrimitiveT;
-        //typedef PointPrimitive                              PointPrimitiveT;
-        //typedef std::vector<std::vector<PrimitiveT> >       PrimitiveContainerT;
-        //typedef std::vector<PointPrimitiveT>                PointContainerT;
-        typedef Eigen::SparseMatrix<Scalar,Eigen::RowMajor> SparseMatrix;
-
-        //static inline int show       ( int argc, char** argv );
-#if WITH_SAMPLE_INPUT
-        static inline int sampleInput( int argc, char** argv );
-#endif // WITH_SAMPLE_INPUT
-        template < class    _PrimitiveContainerT
-                 , class    _PointContainerT
-                 , typename _Scalar
-                 , class    _PointPrimitiveT
-                 , class    _PrimitiveT
-                 >
-        static inline int generateCli   ( int argc, char** argv );
-        //static inline int formulate  ( int argc, char** argv );
-        template < class _PrimitiveContainerT
-                 , class _InnerPrimitiveContainerT
-                 , class _PrimitiveT
-                 >
-        static inline int solve      ( int argc, char** argv );
-        template < class _PrimitiveContainerT
-                 , class _InnerPrimitiveContainerT
-                 , class _PrimitiveT
-                 >
-        static inline int datafit    ( int argc, char** argv );
-
-        //static inline int run        ( std::string img_path, Scalar const scale, std::vector<Scalar> const& angles, int argc, char** argv ) __attribute__ ((deprecated));
-
-        static inline Eigen::Matrix<GF2::Scalar,3,1> checkSolution( std::vector<Scalar>       const& x
-                                                                  , SparseMatrix              const& qo
-                                                                  , SparseMatrix              const& Qo
-                                                                  , SparseMatrix              const& A
-                                                                  , Eigen::Matrix<Scalar,3,1> const& weights );
-}; // ... cls Solver
-} // ... ns gf2
-
-
-//__________________________________HPP__________________________________________________
+#ifndef GF2_SOLVER_HPP
+#define GF2_SOLVER_HPP
 
 #include "Eigen/Sparse"
 
 #ifdef GF2_USE_PCL
-//#   include <pcl/visualization/pcl_visualizer.h>
 #   include <pcl/console/parse.h>
 #endif // GF2_USE_PCL
 
@@ -86,82 +17,16 @@ class Solver
 //#   include "qcqpcpp/gurobiOptProblem.h"
 #endif
 
-#include "globfit2/util/diskUtil.hpp"
+#include "globfit2/util/diskUtil.hpp"                 // saveBAckup
 #include "globfit2/util/util.hpp"                     // timestamp2Str
 
-#include "globfit2/primitives/pointPrimitive.h"
-#include "globfit2/primitives/linePrimitive2.h"
-
 #include "globfit2/io/io.h"
-#include "globfit2/ground_truth/gtCreator.h"
-#include "globfit2/optimization/candidateGenerator.h"
+#include "globfit2/optimization/candidateGenerator.h" // generate()
 #include "globfit2/optimization/energyFunctors.h"     // PointLineDistanceFunctor,
 #include "globfit2/optimization/problemSetup.h"       // everyPatchNeedsDirection()
 
 namespace GF2
 {
-
-#if GF2_WITH_SAMPLE_INPUT
-/**! \brief      Step 0. Takes an image, and samples it to a pointcloud. Saves points to img_path.parent_path/cloud.ply.
-*    \param argc Number of CLI arguments.
-*    \param argv Vector of CLI arguments.
-*    \return     EXIT_SUCCESS.
-*/
-int
-Solver::sampleInput( int argc, char** argv )
-{
-    std::string img_path;
-    bool valid_input = true;
-    if ( (pcl::console::parse_argument(argc, argv, "--img"       , img_path  ) < 0) )
-    {
-        std::cerr << "[" << __func__ << "]: " << "--img is compulsory" << std::endl;
-        valid_input = false;
-    }
-
-    int         n_points    = 200;
-    float       scene_size  = 1.f,
-                noise       = 0.015f,
-                filter_size = 0.0075f;
-    std::string out_dir = ".";
-    pcl::console::parse_argument(argc, argv, "-N"           , n_points   );
-    pcl::console::parse_argument(argc, argv, "--out_dir"    , out_dir    );
-    pcl::console::parse_argument(argc, argv, "--scene-size" , scene_size );
-    pcl::console::parse_argument(argc, argv, "--noise"      , noise      );
-    pcl::console::parse_argument(argc, argv, "--filter-cell", filter_size);
-    {
-         std::cerr << "[" << __func__ << "]: " << "Usage:\t gurobi_opt --sample-input"
-                   << " --img "          << img_path
-                   << " [-N "            << n_points << "]"
-                   << " [--out_dir "     << out_dir << "]"
-                   << " [--scene-size "  << scene_size << "]"
-                   << " [--noise "       << noise << "]"
-                   << " [--filter-cell " << filter_size << "]"
-                   << std::endl;
-
-         if ( !valid_input )
-             return EXIT_FAILURE;
-    }
-
-    // sample image
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud( new pcl::PointCloud<pcl::PointXYZRGB>() );
-    GTCreator::sampleImage( cloud, img_path, n_points, noise, scene_size, filter_size, /* sensor_origin: */ NULL );
-
-    // create output directory
-    std::string img_name = boost::filesystem::path( img_path ).filename().stem().string();
-    std::stringstream ss;
-    ss << out_dir << "/" << img_name << "_noise_" << noise;
-    std::string out_path = ss.str();
-    if ( !boost::filesystem::exists(out_path) )
-        boost::filesystem::create_directory( out_path );
-
-    std::string cloud_path = out_path + "/cloud.ply";
-    util::saveBackup( cloud_path );
-    pcl::io::savePLYFileASCII( cloud_path, *cloud );
-    std::cout << "[" << __func__ << "]: " << "saved " << cloud_path << std::endl;
-
-    return EXIT_SUCCESS;
-} // ...Solver::sampleInput()
-#endif // GF2_WITH_SAMPLE_INPUT
 
 //! \brief                  Step 1. Generates primitives from a cloud. Reads "cloud.ply" and saves "candidates.csv".
 //! \param argc             Contains --cloud cloud.ply, and --scale scale.
@@ -972,7 +837,7 @@ Solver::datafit( int    argc
     return err;
 } // ...Solver::datafit()
 
-//! \brief              Prints energy of solution in \p x using \p weights.
+//! \brief              Prints energy of solution in \p x using \p weights. Unused for now.
 //! \param[in] x        A solution to calculate the energy of.
 //! \param[in] weights  Problem weights used earlier. \todo Dump to disk together with solution.
 Eigen::Matrix<GF2::Scalar,3,1>
@@ -1020,8 +885,8 @@ Solver::checkSolution( std::vector<Scalar> const& x
                                                                   << std::endl;
 
     return energy;
-}
+} //...checkSolution
 
 } // ... ns GF2
 
-#endif // __GF2_SOLVER_H__
+#endif // GF2_SOLVER_HPP

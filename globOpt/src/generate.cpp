@@ -1,7 +1,7 @@
 #include "globfit2/globOpt_types.h" // _2d, _3d namespaces
 #include "globfit2/util/parse.h" // GF2::console
 
-#include "optimization/qp/solver.h" // todo: move generate to generate.h
+#include "globfit2/optimization/solver.h" // todo: move generate to generate.h
 
 int generate( int argc, char** argv )
 {

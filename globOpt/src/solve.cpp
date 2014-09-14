@@ -1,7 +1,7 @@
 #include "globfit2/globOpt_types.h" // _2d, _3d namespaces
 #include "globfit2/util/parse.h" // GF2::console
 
-#include "optimization/qp/solver.h"
+#include "globfit2/optimization/solver.h"
 
 int solve( int argc, char** argv )
 {

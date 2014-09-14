@@ -191,6 +191,8 @@ INCLUDE_DIRECTORIES( include
 )
 
 SET( GLOBOPT_HPP_LIST
+    include/globfit2/optimization/impl/segmentation.hpp
+    include/globfit2/optimization/impl/solver.hpp
     include/globfit2/optimization/impl/problemSetup.hpp
     include/globfit2/optimization/impl/merging.hpp
     include/globfit2/util/diskUtil.hpp
@@ -219,7 +221,7 @@ SET( GLOBOPT_H_LIST
     include/globfit2/optimization/mergingFunctors.h
     include/optimization/qp/gurobiOpt.h
     include/optimization/qp/MyGRBCallback.h
-    include/optimization/qp/solver.h
+    include/globfit2/optimization/solver.h
 )
 
 SET( GLOBOPT_SRC_LIST
