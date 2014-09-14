@@ -29,12 +29,6 @@ class DisplacementKernel(object):
 class UniformRandomDisplacementKernel(DisplacementKernel):
     """Python representation of the C++ class UniformRandomDisplacementKernel
     """
-    def __init__(self, rangeMin, rangeMax, enabled):
-        super(UniformRandomDisplacementKernel, self).__init__("Random (Uniform)", 0, enabled)
-
-        self.rangeMin = rangeMin
-        self.rangeMax = rangeMax
-
     def __init__(self, paramList, enabled):
         super(UniformRandomDisplacementKernel, self).__init__("Random (Uniform)", 0, enabled)
 
@@ -44,12 +38,6 @@ class UniformRandomDisplacementKernel(DisplacementKernel):
 class NormalRandomDisplacementKernel(DisplacementKernel):
     """Python representation of the C++ class NormalRandomDisplacementKernel
     """
-    def __init__(self, mean, stdev, enabled):
-        super(NormalRandomDisplacementKernel, self).__init__("Random (Normal)", 1, enabled)         
-
-        self.mean  = mean
-        self.stdev = stdev
-
     def __init__(self, paramList, enabled):
         super(NormalRandomDisplacementKernel, self).__init__("Random (Normal)", 1, enabled)         
 
