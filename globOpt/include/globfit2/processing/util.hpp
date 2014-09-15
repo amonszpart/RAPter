@@ -454,7 +454,10 @@ namespace GF2 {
                 // solve for neighbourhood biggest eigen value
                 Eigen::SelfAdjointEigenSolver< Eigen::Matrix<Scalar, 3, 3> > es;
                 es.compute( cov );
-
+#if 1 // create
+                // create primitive
+                primitive = PrimitiveT( centroid, es.eigenvalues(), es.eigenvectors() );
+#else
                 if ( rows == 6 ) // line -> dir ==
                 {
                     // get eigen vector for biggest eigen value
@@ -475,6 +478,7 @@ namespace GF2 {
                 }
                 else
                     std::cerr << "[" << __func__ << "]: " << "lines(rows==6) or planes(rows==4), not rows == " << rows << std::endl;
+#endif //create
 
 #if DEBUG_FITLINE
                 for ( int d = 0; d < 6; ++d )

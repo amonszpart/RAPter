@@ -26,11 +26,6 @@ namespace GF2
 
             typedef ParentT::Scalar Scalar;
 
-#if 0 // __cplusplus > 199711L
-            //! \brief Inheriting contructor.
-            using ::GF2::LinePrimitive::LinePrimitive;
-            //LinePrimitive2() : ParentT() {}
-#else
             LinePrimitive2() : ParentT() {}
 
             //! \brief Constructor that takes raw data in Eigen format as input.
@@ -40,7 +35,9 @@ namespace GF2
             LinePrimitive2( std::vector<Scalar> const& coeffs ) : ParentT( coeffs ) {}
 
             LinePrimitive2( Eigen::Matrix<Scalar,3,1> const& p0, Eigen::Matrix<Scalar,3,1> const& dir ) : ParentT( p0, dir ) {}
-#endif
+
+            LinePrimitive2( Eigen::Matrix<Scalar,3,1> const& centroid, Eigen::Matrix<Scalar,3,1> const& eigen_values, Eigen::Matrix<Scalar, 3, 3> const& eigen_vectors )
+                : ParentT( centroid, eigen_values, eigen_vectors ) {}
 
     }; //... class LinePrimitive2
 

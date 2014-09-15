@@ -27,10 +27,6 @@ namespace GF2
             typedef ParentT::Scalar Scalar;
 
             // ____________________CONSTRUCT____________________
-#if 0 //__cplusplus > 199711L
-            //! \brief Inherited constructor from Primitive.
-            using ::GF2::Primitive<6>::Primitive;
-#else
             LinePrimitive() : ParentT() {}
 
             //! \brief Constructor that takes raw data in Eigen format as input.
@@ -38,7 +34,7 @@ namespace GF2
 
             //! \brief Constructor that takes raw data in std::vector format as input.
             LinePrimitive( std::vector<Scalar> const& coeffs ) : ParentT( coeffs ) {}
-#endif
+
             //! \brief          Creates LinePrimitive from point on line and direction.
             //! \warning        NOT endpoints, use #fromEndPoints for that!
             //! \param[in] p0   Point on line.
@@ -49,11 +45,23 @@ namespace GF2
                 _coeffs.segment<3>(3) = dir.normalized();
             }
 
+            LinePrimitive( Eigen::Matrix<Scalar,3,1> const& centroid, Eigen::Matrix<Scalar,3,1> const& eigen_values, Eigen::Matrix<Scalar, 3, 3> const& eigen_vectors )
+            {
+                // get eigen vector for biggest eigen value
+                const int max_eig_val_id = std::distance( eigen_values.data(), std::max_element( eigen_values.data(), eigen_values.data()+3 ) );
+
+                // set position
+                _coeffs.template head<3>() = centroid;
+                // set direction
+                _coeffs.template segment<3>(3) = eigen_vectors.col(max_eig_val_id).normalized();
+            }
+
             static inline LinePrimitive
             fromEndPoints(  Eigen::Matrix<Scalar,3,1> p0, Eigen::Matrix<Scalar,3,1> p1 )
             {
                 return LinePrimitive( p0, (p1-p0).normalized() );
             }
+
 
             // ____________________VIRTUALS____________________
             //! \brief  Compulsory virtual overload of position getter. The position of the line is the location stored at the first three coordinates of #_coeffs.
