@@ -1,17 +1,9 @@
 #ifndef __GF2_SOLVER_H__
 #define __GF2_SOLVER_H__
 
-//////////////
-/// Solver
-//////////////
-
-#ifdef GF2_USE_GUROBI
-#   include "optimization/qp/gurobiOpt.h"
-#endif
-//#include "globfit2/primitives/pointPrimitive.h"
-//#include "globfit2/primitives/linePrimitive2.h" // remove, if typedef is moved
-#include "qcqpcpp/io/io.h"                      // read/writeSparseMatrix
-#include "globfit2/globOpt_types.h" // _2d::PrimitiveT, etc.
+//#include "qcqpcpp/io/io.h"                      // read/writeSparseMatrix
+#include "Eigen/Sparse"                           // Eigen::SparseMatrix (solve)
+#include "globfit2/globOpt_types.h"               // GF2::Scalar (solve)
 
 namespace GF2 {
 

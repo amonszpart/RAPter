@@ -1,31 +1,27 @@
 #ifndef __GF2_CANDIDATEGENERATOR_H__
 #define __GF2_CANDIDATEGENERATOR_H__
 
-#include <opencv2/core/core.hpp>        // Mat
-#include <opencv2/highgui/highgui.hpp>  // imread
-#include <opencv2/imgproc/imgproc.hpp>  // cvtColor
-
-#if GF2_USE_PCL
-#   include "pcl/common/intersections.h"   // lineWithLineIntersection
-#   include "pcl/kdtree/kdtree.h"          // nearestneighboursearch
-#   include "globfit2/processing/util.hpp"            // addGaussianNoise, fitLinearPrimitive
-#endif // GF2_USE_PCL
-
-#include "globfit2/optimization/patchDistanceFunctors.h" // FullLinkagePointPatchDistanceFunctor
-#include "globfit2/parameters.h"        // CandidateGeneratorParams
+#include "globfit2/parameters.h"                         // CandidateGeneratorParams
 
 namespace GF2
 {
-
-
-    // generate
-    /// (1) patchify
-    //// (1.1) propose
-    //// (1.2) agglomerative
-    /// (2)
     class CandidateGenerator
     {
         public:
+             /*! \brief                  Step 1. Generates primitives from a cloud. Reads "cloud.ply" and saves "candidates.csv".
+              *  \param argc             Contains --cloud cloud.ply, and --scale scale.
+              *  \param argv             Contains --cloud cloud.ply, and --scale scale.
+              *  \return                 EXIT_SUCCESS.
+              */
+            template < class    _PrimitiveContainerT
+                     , class    _PointContainerT
+                     , typename _Scalar
+                     , class    _PointPrimitiveT
+                     , class    _PrimitiveT
+                     >
+            static inline int
+            generateCli( int argc, char** argv );
+
             /*! \brief Main functionality to generate lines from points.
              *
              *  \tparam _PointPrimitiveDistanceFunctorT Concept: \ref MyPointPrimitiveDistanceFunctor.
@@ -39,41 +35,24 @@ namespace GF2
                       , typename    Scalar
                       >
             static inline int
-            generate( PrimitiveContainerT                     &  out_lines
+            generate( PrimitiveContainerT                   &  out_lines
                     , PrimitiveContainerT              const&  in_lines
                     , PointContainerT                  const&  points // non-const to be able to add group tags
                     , Scalar                           const   scale
                     , std::vector<Scalar>              const&  angles
                     , CandidateGeneratorParams<Scalar> const&  params );
-#if GF2_WITH_SAMPLE_INPUT
-            //! \brief image_2_2DCloud
-            template <  class       PointAllocatorFunctorT
-                      , class       PointContainerT>
-            static inline int
-            image_2_2DCloud( PointContainerT         & cloud
-                             , std::string             img_path
-                             , int                     N_samples
-                             , float const             Z
-                             , float const             scale );
 
-            //! \brief image_2_2DCloud
-            template <  class PointAllocatorFunctorT
-                      , class PointContainerT>
-            static inline int
-            image_2_2DCloud( PointContainerT         & cloud
-                           , cv::Mat         const & img
-                           , int   const             N_samples
-                           , float const             Z
-                           , float const             scale );
-#endif // GF2_WITH_SAMPLE_INPUT
     }; //...class CandidateGenerator
 } // ...ns::GF2
 
 //_____________________________________________________________________________________________________________________
 // HPP
-#include "globfit2/my_types.h"          //  PCLPointAllocator
-#include "globfit2/processing/util.hpp" // calcPopulations()
-#include "globfit2/optimization/segmentation.h" // patchify()
+#include "globfit2/my_types.h"                      // PCLPointAllocator
+#include "globfit2/util/util.hpp"                   // parseIteration()
+#include "globfit2/processing/util.hpp"             // calcPopulations()
+#include "globfit2/optimization/energyFunctors.h"   // MyPointPrimitiveDistanceFunctor
+#include "globfit2/io/io.h"                         // readPrimities,savePrimitives,etc.
+#include "globfit2/util/diskUtil.hpp"               // saveBackup
 
 namespace GF2
 {
@@ -365,161 +344,217 @@ namespace GF2
         return EXIT_SUCCESS;
     } // ...CandidateGenerator::generate()
 
-#if 0
-    int addPrimitivesToSmallPatches()
+    //! \brief                  Step 1. Generates primitives from a cloud. Reads "cloud.ply" and saves "candidates.csv".
+    //! \param argc             Contains --cloud cloud.ply, and --scale scale.
+    //! \param argv             Contains --cloud cloud.ply, and --scale scale.
+    //! \return                 EXIT_SUCCESS.
+    template < class    _PrimitiveContainerT
+             , class    _PointContainerT
+             , typename _Scalar
+             , class    _PointPrimitiveT
+             , class    _PrimitiveT
+             >
+    int
+    CandidateGenerator::generateCli( int    argc
+                                   , char** argv )
     {
-        // preprocess: add dummy primitives to small clusters so that they can receive others
-        if ( params.small_mode == CandidateGeneratorParams<_Scalar>::SmallPatchesMode::RECEIVE_ALL )
+        typedef typename _PrimitiveContainerT::value_type InnerPrimitiveContainerT;
+        //typedef typename PointContainerT::value_type PointPrimitiveT;
+        int err = EXIT_SUCCESS;
+
+        CandidateGeneratorParams<Scalar> generatorParams;
+        std::string                 cloud_path              = "./cloud.ply";
+        std::vector<Scalar>         angle_gens              = { Scalar(90.) };
+        std::string                 mode_string             = "representative_sqr";
+        std::vector<std::string>    mode_opts               = { "representative_sqr" };
+        std::string                 input_prims_path        = "patches.csv";
+        std::string                 associations_path       = "points_primitives.csv";
+
+        // parse input
+        if ( err == EXIT_SUCCESS )
         {
-            std::set<int> orphan_gids, orphan_pids;
-            getOrphanGids<_PrimitiveT, inner_const_iterator>( orphan_gids, points, in_lines, _PointPrimitiveT::GID, &orphan_pids );
+            bool valid_input = true;
 
-            // debug
-            std::cout << "orphan_gids: ";
-            for ( auto it = orphan_gids.begin(); it != orphan_gids.end(); ++it )
+            // cloud
+            if ( (pcl::console::parse_argument( argc, argv, "--cloud", cloud_path) < 0)
+                 && !boost::filesystem::exists( cloud_path ) )
             {
-                std::cout << *it << ", ";
+                std::cerr << "[" << __func__ << "]: " << "--cloud does not exist: " << cloud_path << std::endl;
+                valid_input = false;
             }
-            std::cout << std::endl;
 
-            // for all points
-            std::map< int, std::set<int> > copied;
-            std::set<int>::const_iterator pid_it_end = orphan_pids.end();
-            for ( std::set<int>::const_iterator pid_it = orphan_pids.begin(); pid_it != pid_it_end; ++pid_it )
+            // scale
+            if ( (pcl::console::parse_argument( argc, argv, "--scale", generatorParams.scale) < 0) && (pcl::console::parse_argument( argc, argv, "-sc", generatorParams.scale) < 0) )
             {
-                const int gid = points[*pid_it].getTag( _PointPrimitiveT::GID );
-
-                // get all adopters
-                NearbyPrimitivesFunctor<_PointPrimitiveDistanceFunctorT, _PrimitiveT, _PointPrimitiveT, _Scalar> functor( points[*pid_it], params.scale );
-                processing::filterPrimitives<_PrimitiveT, inner_const_iterator>( in_lines, functor );
-
-                // debug
-                std::cout << "[" << __func__ << "]: " << "point" << *pid_it << "(" << gid << ") has the following adopters: ";
-                for ( std::vector<std::pair<int,int> >::const_iterator it = functor._gidLids.begin(); it != functor._gidLids.end(); ++it )
-                {
-                    _PrimitiveT const& prim( in_lines.at(it->first).at(it->second) );
-                    const int dir_gid = prim.getTag(_PrimitiveT::DIR_GID);
-                    if ( copied[gid].find( dir_gid ) == copied[gid].end() )
-                    {
-                        // create candidate
-                        _PrimitiveT cand( /* pos: */ processing::getCentroid<_Scalar>(points,populations[gid]) // todo: cache centroids
-                                          , /* dir: */ prim.template dir() );
-                        // add group ids
-                        cand.setTag( _PrimitiveT::GID    , gid     ); // from point patch
-                        cand.setTag( _PrimitiveT::DIR_GID, dir_gid ); // from explaining primitive
-                        // add to candidates
-                        containers::add( out_lines, gid, cand );
-                        // remember patch-direction combination
-                        copied[gid].insert( dir_gid );
-                        ++nlines;
-
-                        // debug
-                        std::cout << "!" << prim.getTag(_PrimitiveT::GID) << "," << prim.getTag(_PrimitiveT::DIR_GID) << "!; ";
-                    }
-                    else
-                        std::cout << "(" << prim.getTag(_PrimitiveT::GID) << "," << prim.getTag(_PrimitiveT::DIR_GID) << "); ";
-                }
-                std::cout << std::endl;
-
-
+                std::cerr << "[" << __func__ << "]: " << "--scale is compulsory" << std::endl;
+                valid_input = false;
             }
-        }
-    }
-#endif
 
-#if GF2_WITH_SAMPLE_INPUT
-    /**
-     * @brief GlobFit2::image_2_2DCloud Randomly samples a 2D gray image with 3D points at black pixels to create a 3D cloud.
-     * @param cloud
-     * @param img_path
-     * @param N_samples
-     * @param Z
-     * @return EXIT_SUCCESS/EXIT_FAILURE
-    */
-    template <  class PointAllocatorFunctorT
-              , class PointContainerT> int
-    CandidateGenerator::image_2_2DCloud( PointContainerT              &cloud
-                                         , std::string                 img_path
-                                         , int                         N_samples
-                                         , const float                 Z
-                                         , const float scale )
-    {
-        return image_2_2DCloud( cloud, cv::imread(img_path,cv::IMREAD_UNCHANGED), N_samples, Z, scale );
-    } // ...CandidateGenerator::image_2_2DCloud()
+            if (    (pcl::console::parse_argument( argc, argv, "-p", input_prims_path) < 0)
+                 && (pcl::console::parse_argument( argc, argv, "--prims", input_prims_path) < 0)
+                 && (!boost::filesystem::exists(input_prims_path)) )
+            {
+                std::cerr << "[" << __func__ << "]: " << "-p or --prims is compulsory" << std::endl;
+                valid_input = false;
+            }
 
-    template <  class PointAllocatorFunctorT
-              , class PointContainerT> int
-    CandidateGenerator::image_2_2DCloud( PointContainerT                &cloud
-                                         , cv::Mat                const & img
-                                         , const int                      N_samples
-                                         , const float                    Z
-                                         , const float                    scale )
-    {
-        typedef typename PointContainerT::PointType PointT;
-        //   const float scale = 1.f;
+            if (    (pcl::console::parse_argument( argc, argv, "-a", associations_path) < 0)
+                 && (pcl::console::parse_argument( argc, argv, "--assoc", associations_path) < 0)
+                 && (!boost::filesystem::exists(associations_path)) )
+            {
+                std::cerr << "[" << __func__ << "]: " << "-a or --assoc is compulsory" << std::endl;
+                valid_input = false;
+            }
 
-//        if ( !cloud )
-//            cloud = pcl::PointCloud<MyPoint>::Ptr( new pcl::PointCloud<MyPoint>() );
-        cloud.reserve( N_samples );
+            pcl::console::parse_argument( argc, argv, "--angle-limit", generatorParams.angle_limit );
+            pcl::console::parse_argument( argc, argv, "-al", generatorParams.angle_limit );
+            pcl::console::parse_argument( argc, argv, "--angle-limit-div", generatorParams.angle_limit_div );
+            pcl::console::parse_argument( argc, argv, "-ald", generatorParams.angle_limit_div );
+            pcl::console::parse_argument( argc, argv, "--patch-dist-limit", generatorParams.patch_dist_limit_mult ); // gets multiplied by scale
+            pcl::console::parse_x_arguments( argc, argv, "--angle-gens", angle_gens );
+            pcl::console::parse_argument( argc, argv, "--patch-pop-limit", generatorParams.patch_population_limit );
 
-        cv::Mat gray;
-        if ( img.channels() > 1 )   cv::cvtColor( img, gray, cv::COLOR_RGB2GRAY );
-        else                        gray = img;
+            // patchDistMode
+            pcl::console::parse_argument( argc, argv, "--mode", mode_string );
+            generatorParams.parsePatchDistMode( mode_string );
+            // refit
+            if ( pcl::console::find_switch( argc, argv, "--patch-refit" ) )
+            {
+                std::cerr << "[" << __func__ << "]: " << "--patch-refit option has been DEPRECATED. exiting." << std::endl;
+                return EXIT_FAILURE;
+            }
+            //pcl::console::parse_argument( argc, argv, "--patch-refit", patch_refit_mode_string );
+            //generatorParams.parseRefitMode( patch_refit_mode_string );
 
-        cv::threshold( gray, gray, 200., 255., cv::THRESH_BINARY );
-        cv::Mat sampled( gray.clone() ); sampled.setTo(0);
+            // small_mode
+            {
+                int small_mode = 0;
+                pcl::console::parse_argument( argc, argv, "--small-mode", small_mode );
+                generatorParams.small_mode = static_cast<CandidateGeneratorParams<Scalar>::SmallPatchesMode>( small_mode );
+            }
 
-        int   pix_count = gray.cols * gray.rows - cv::countNonZero( gray );
-        float prob      = N_samples  / (float)pix_count;
-        while ( cloud.size() < static_cast<size_t>(N_samples) )
+            // print usage
+            {
+                std::cerr << "[" << __func__ << "]: " << "Usage:\t " << argv[0] << " --generate \n";
+                std::cerr << "\t --cloud " << cloud_path << "\n";
+                std::cerr << "\t -sc,--scale " << generatorParams.scale << "\n";
+                std::cerr << "\t -p,--prims" << input_prims_path << "\n";
+                std::cerr << "\t -a,--assoc" << associations_path << "\n";
+
+                // linkage mode (full_min, full_max, squared_min, repr_min)
+                std::cerr << "\t [--mode *" << generatorParams.printPatchDistMode() << "*\t";
+                for ( size_t m = 0; m != mode_opts.size(); ++m )
+                    std::cerr << "|" << mode_opts[m];
+                std::cerr << "]\n";
+
+                std::cerr << "\t [-al,--angle-limit " << generatorParams.angle_limit << "]\n";
+                std::cerr << "\t [-ald,--angle-limit-div " << generatorParams.angle_limit_div << "]\n";
+                std::cerr << "\t [--patch-dist-limit " << generatorParams.patch_dist_limit_mult << "]\n";
+                std::cerr << "\t [--angle-gens "; for(size_t vi=0;vi!=angle_gens.size();++vi)std::cerr<<angle_gens[vi]<<","; std::cerr << "]\n";
+                std::cerr << "\t [--patch-pop-limit " << generatorParams.patch_population_limit << "]\n";
+                std::cerr << "\t [--small-mode " << generatorParams.small_mode << "\t | 0: IGNORE, 1: RECEIVE_SIMILAR, 2: RECEIVE_ALL]\n";
+                std::cerr << std::endl;
+
+                if ( !valid_input || pcl::console::find_switch(argc,argv,"--help") || pcl::console::find_switch(argc,argv,"-h") )
+                    return EXIT_FAILURE;
+            }
+
+            if ( boost::filesystem::is_directory(cloud_path) )
+            {
+                cloud_path += "/cloud.ply";
+            }
+
+            if ( !boost::filesystem::exists(cloud_path) )
+            {
+                std::cerr << "[" << __func__ << "]: " << "cloud file does not exist! " << cloud_path << std::endl;
+                return EXIT_FAILURE;
+            }
+        } // ... parse input
+
+        // Read desired angles
+        if ( EXIT_SUCCESS == err )
         {
-            pix_count = gray.cols * gray.rows - cv::countNonZero( gray );
-            prob      = (N_samples - cloud.size())  / (float)pix_count;
+            processing::appendAnglesFromGenerators( generatorParams.angles, angle_gens, true );
+        } //...read angles
 
-            for ( int y = 0; (y < gray.rows) && (cloud.size() != (size_t)N_samples); ++y  )
-            {
-                for ( int x = 0; (x < gray.cols) && (cloud.size() != (size_t)N_samples); ++x )
-                {
-//                    float depth = (Eigen::Vector3f() << x, (gray.rows-y), 0).finished().norm();
-//                    if ( RANDF() > depth / scale / sqrt(2.f) ) continue;
+        // Read points
+        PointContainerT points;
+        if ( EXIT_SUCCESS == err )
+        {
+            err = io::readPoints<_PointPrimitiveT>( points, cloud_path );
+            if ( err != EXIT_SUCCESS )  std::cerr << "[" << __func__ << "]: " << "readPoints returned error " << err << std::endl;
+        } //...read points
 
-                    if ( (gray.at<uchar>(y,x) < 255) && (rand()/static_cast<double>(RAND_MAX) < prob) && (sampled.at<uchar>(y,x) == 0) )
-                    {
-                        //std::cout << "cv::sum( gray(cv::Range(y-1,y+1), cv::Range(x-1, x+1))): " << cv::sum( sampled(cv::Range(std::max(0,y-1),std::min(gray.rows,y+1)),
-                        //                                                                                             cv::Range(std::max(0,x-1),std::min(gray.cols,x+1))) )[0] << std::endl;
-                        if ( cv::sum( sampled(cv::Range(std::max(0,y-1),std::min(gray.rows,y+1)),
-                                              cv::Range(std::max(0,x-1),std::min(gray.cols,x+1))) )[0] >= 3 ) continue;
-
-//                        MyPoint pnt;
-//                        pnt.x = x             / (float)gray.cols * scale;
-//                        pnt.y = (gray.rows-y) / (float)gray.rows * scale;
-//                        pnt.z = Z;
-
-//                        am::util::pcl::setPointColor( pnt, 1, 0, 0 );
-//                        cloud.push_back( pnt );
-
-
-                        cloud.push_back( PointAllocatorFunctorT::template create<PointT>(
-                                             (Eigen::Matrix<float,3,1>() <<
-                                              x             / (float)gray.cols * scale,
-                                              (gray.rows-y) / (float)gray.rows * scale,
-                                              Z
-                                              ).finished()
-                                             )
-                                         );
-
-                        sampled.at<uchar>(y,x) = 1;
-                    }
-                }
-            }
+        std::vector<std::pair<int,int> > points_primitives;
+        io::readAssociations( points_primitives, associations_path, NULL );
+        for ( size_t i = 0; i != points.size(); ++i )
+        {
+            // store association in point
+            points[i].setTag( PointPrimitiveT::GID, points_primitives[i].first );
         }
 
-        cv::imshow( "img", gray );
-        cv::waitKey( 20 );
+        // read primitives
+        typedef std::map<int, InnerPrimitiveContainerT> PrimitiveMapT;
+        _PrimitiveContainerT initial_primitives;
+        PrimitiveMapT patches;
+        {
+            std::cout << "[" << __func__ << "]: " << "reading primitives from " << input_prims_path << "...";
+            io::readPrimitives<_PrimitiveT, InnerPrimitiveContainerT>( initial_primitives, input_prims_path, &patches );
+            std::cout << "reading primitives ok (#: " << initial_primitives.size() << ")\n";
+        } //...read primitives
 
-        return EXIT_SUCCESS;
-    } // ...CandidateGenerator::image_2_2DCloud()
-#endif // GF2_WITH_SAMPLE_INPUT
+        //_____________________WORK_______________________
+        //_______________________________________________
+
+        // Generate
+        //PrimitiveContainerT primitives;
+        PrimitiveMapT primitives;
+        if ( EXIT_SUCCESS == err )
+        {
+            err = CandidateGenerator::generate< MyPrimitivePrimitiveAngleFunctor, MyPointPrimitiveDistanceFunctor, _PrimitiveT >
+                                              ( primitives, patches, points, generatorParams.scale, generatorParams.angles, generatorParams );
+
+            if ( err != EXIT_SUCCESS ) std::cerr << "[" << __func__ << "]: " << "generate exited with error! Code: " << err << std::endl;
+        } //...generate
+
+    #if 0 // these shouldn't change here
+        // Save point GID tags
+        if ( EXIT_SUCCESS == err )
+        {
+            std::string assoc_path = boost::filesystem::path( cloud_path ).parent_path().string() + "/" + "points_primitives.csv";
+
+            util::saveBackup( assoc_path );
+            err = io::writeAssociations<PointPrimitiveT>( points, assoc_path );
+
+            if ( err != EXIT_SUCCESS )  std::cerr << "[" << __func__ << "]: " << "saveBackup or writeAssociations exited with error! Code: " << err << std::endl;
+            else                        std::cout << "[" << __func__ << "]: " << "wrote to " << assoc_path << std::endl;
+
+        } //...save Associations
+    #endif
+
+        // save primitives
+        std::string o_path = boost::filesystem::path( cloud_path ).parent_path().string() + "/";
+        if ( EXIT_SUCCESS == err )
+        {
+            std::string output_prims_path( o_path + "candidates.csv" );
+            {
+                int iteration = 0;
+                iteration = util::parseIteration( input_prims_path ) + 1;
+                std::stringstream ss;
+                ss << o_path << "candidates_it" << iteration << ".csv";
+                output_prims_path = ss.str();
+            }
+
+            util::saveBackup( output_prims_path );
+            err = io::savePrimitives<_PrimitiveT,typename InnerPrimitiveContainerT::const_iterator>( /* what: */ primitives, /* where_to: */ output_prims_path );
+
+            if ( err != EXIT_SUCCESS )  std::cerr << "[" << __func__ << "]: " << "saveBackup or savePrimitive exited with error! Code: " << err << std::endl;
+            else                        std::cout << "[" << __func__ << "]: " << "wrote to " << output_prims_path << std::endl;
+        } //...save primitives
+
+        return err;
+    } // ...CandidateGenerator::generateCli()
+
 } // ... ns GF2
 
 

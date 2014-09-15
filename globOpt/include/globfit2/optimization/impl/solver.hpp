@@ -15,19 +15,20 @@
 #endif
 #ifdef GF2_WITH_GUROBI
 //#   include "qcqpcpp/gurobiOptProblem.h"
+//#   include "optimization/qp/gurobiOpt.h"
 #endif
 
 #include "globfit2/util/diskUtil.hpp"                 // saveBAckup
 #include "globfit2/util/util.hpp"                     // timestamp2Str
 
 #include "globfit2/io/io.h"
-#include "globfit2/optimization/candidateGenerator.h" // generate()
-#include "globfit2/optimization/energyFunctors.h"     // PointLineDistanceFunctor,
+//#include "globfit2/optimization/candidateGenerator.h" // generate()
+//#include "globfit2/optimization/energyFunctors.h"     // PointLineDistanceFunctor,
 #include "globfit2/optimization/problemSetup.h"       // everyPatchNeedsDirection()
 
 namespace GF2
 {
-
+#if 0
 //! \brief                  Step 1. Generates primitives from a cloud. Reads "cloud.ply" and saves "candidates.csv".
 //! \param argc             Contains --cloud cloud.ply, and --scale scale.
 //! \param argv             Contains --cloud cloud.ply, and --scale scale.
@@ -238,6 +239,7 @@ Solver::generateCli( int    argc
 
     return err;
 } // ...Solver::generate()
+#endif
 
 //! \brief      Step 3. Reads a formulated problem from path and runs qcqpcpp::OptProblem::optimize() on it.
 //! \param argc Number of command line arguments.
