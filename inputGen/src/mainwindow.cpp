@@ -491,6 +491,8 @@ void MainWindow::writePrimitives(QString path){
     if (_project == NULL)
         return;
 
+    using InputGen::Application::Scalar;
+
     QFile outfile(path);
     if (outfile.open(QIODevice::WriteOnly |
                    QIODevice::Truncate  |
@@ -506,14 +508,19 @@ void MainWindow::writePrimitives(QString path){
 
         for(InputGen::Application::Project::PrimitiveContainer::const_iterator it = _project->primitives.begin();
             it != _project->primitives.end(); it++){
-            out << (*it).coord()(0)  << ","
-                << (*it).coord()(1)  << ","
-                << (*it).coord()(2)  << ","
-                << (*it).normal()(0) << ","
-                << (*it).normal()(1) << ","
-                << (*it).normal()(2) << ","
-                << (*it).uid()       << ","
-                << (*it).did()       << ","
+            const InputGen::Application::Primitive::vec& coord  = (*it).coord();
+            const InputGen::Application::Primitive::vec& normal = (*it).normal();
+            out /*<< (*it).coord()(0)     << ","
+                << (*it).coord()(1)     << ","
+                << (*it).coord()(2)     << ","*/
+                << coord(0)             << ","
+                << Scalar(1.)-coord(1)  << ","
+                << coord(2)             << ","
+                <<  normal(0)           << ","
+                << -normal(1)           << ","
+                <<  normal(2)           << ","
+                << (*it).uid()          << ","
+                << (*it).did()          << ","
                 << "1"               << endl; //1 means used
         }
         outfile.close();

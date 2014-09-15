@@ -64,7 +64,7 @@ namespace GF2
 
             //! \brief  Returns the normal, that is stored at the first three coordinates of the internal storage.
             //! \return The plane normal as a 3D Eigen::Vector Map.
-            inline Eigen::Map<const Eigen::Matrix<Scalar,3,1> > normal() const { return Eigen::Map<const Eigen::Matrix<Scalar,3,1>>(_coeffs.data()); }
+            inline Eigen::Matrix<Scalar,4,1>::ConstFixedSegmentReturnType<3>::Type normal() const { return _coeffs.head<3>(); }
 
             //! \brief              Returns point to plane distance.
             //! \param[in] point    Point to calculate distance from.
