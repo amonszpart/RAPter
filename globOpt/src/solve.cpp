@@ -5,7 +5,7 @@
 
 int solve( int argc, char** argv )
 {
-    if ( GF2::console::find_switch(argc,argv,"--solve3D") )
+    if ( GF2::console::find_switch(argc,argv,"--solver3D") )
     {
         return GF2::Solver::solve< GF2::_3d::PrimitiveContainerT
                                  , GF2::_3d::InnerPrimitiveContainerT
