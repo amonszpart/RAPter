@@ -17,39 +17,23 @@ struct SolverParams
 class Solver
 {
     public:
-        //typedef GF2::Scalar                                 Scalar;             // in globOpt_types.h
-        typedef Eigen::Matrix<Scalar,3,1>                   Vector;
-        //typedef LinePrimitive2                              PrimitiveT;
-        //typedef PointPrimitive                              PointPrimitiveT;
-        //typedef std::vector<std::vector<PrimitiveT> >       PrimitiveContainerT;
-        //typedef std::vector<PointPrimitiveT>                PointContainerT;
+        //typedef Eigen::Matrix<Scalar,3,1>                   Vector;
         typedef Eigen::SparseMatrix<Scalar,Eigen::RowMajor> SparseMatrix;
 
-        //static inline int show       ( int argc, char** argv );
-#if WITH_SAMPLE_INPUT
-        static inline int sampleInput( int argc, char** argv );
-#endif // WITH_SAMPLE_INPUT
-        template < class    _PrimitiveContainerT
-                 , class    _PointContainerT
-                 , typename _Scalar
-                 , class    _PointPrimitiveT
-                 , class    _PrimitiveT
-                 >
-        static inline int generateCli   ( int argc, char** argv );
-        //static inline int formulate  ( int argc, char** argv );
         template < class _PrimitiveContainerT
                  , class _InnerPrimitiveContainerT
                  , class _PrimitiveT
                  >
         static inline int solve      ( int argc, char** argv );
+
+        /*! \brief Globfit planned. \todo: move to datafit.h. */
         template < class _PrimitiveContainerT
                  , class _InnerPrimitiveContainerT
                  , class _PrimitiveT
                  >
         static inline int datafit    ( int argc, char** argv );
 
-        //static inline int run        ( std::string img_path, Scalar const scale, std::vector<Scalar> const& angles, int argc, char** argv ) __attribute__ ((deprecated));
-
+        /*! \brief Unused for now. */
         static inline Eigen::Matrix<GF2::Scalar,3,1> checkSolution( std::vector<Scalar>       const& x
                                                                   , SparseMatrix              const& qo
                                                                   , SparseMatrix              const& Qo
