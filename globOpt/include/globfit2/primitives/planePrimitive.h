@@ -34,6 +34,8 @@ namespace GF2
                 , USER_ID5 = 14 //!< additional flag to store processing attributes (values only in the generation scope)
             };//...TAGS
 
+            typedef ParentT::Scalar Scalar;
+
             //! \brief Inherited constructor from Primitive.
             // using ::GF2::Primitive<4>::Primitive;
 
@@ -62,8 +64,7 @@ namespace GF2
 
             //! \brief  Returns the normal, that is stored at the first three coordinates of the internal storage.
             //! \return The plane normal as a 3D Eigen::Vector Map.
-            template <typename Scalar>
-            inline Eigen::Map<const Eigen::Matrix<Scalar,3,1> > const normal() const { return _coeffs.data(); }
+            inline Eigen::Map<const Eigen::Matrix<Scalar,3,1> > normal() const { return Eigen::Map<const Eigen::Matrix<Scalar,3,1>>(_coeffs.data()); }
 
             //! \brief              Returns point to plane distance.
             //! \param[in] point    Point to calculate distance from.
@@ -76,9 +77,8 @@ namespace GF2
                 return this->dir().dot(point) + this->_coeffs(3);
             }
 
-            template <typename _Scalar>
-            inline Eigen::Matrix<_Scalar,3,1>
-            projectPoint( Eigen::Matrix<_Scalar,3,1> const& point ) const
+            inline Eigen::Matrix<Scalar,3,1>
+            projectPoint( Eigen::Matrix<Scalar,3,1> const& point ) const
             {
                 // verified, this works well:
                 return point - (this->getDistance(point) * this->dir() );
@@ -96,14 +96,14 @@ namespace GF2
              *  \param[in]  indices             Optional input to specify subset of points by indices.
              *  \return                         EXIT_SUCCESS
              */
-            template <typename _PointPrimitiveT, class _IndicesContainerT, typename _Scalar, typename _PointContainerT>
+            template <typename _PointPrimitiveT, class _IndicesContainerT, typename _PointContainerT>
             int
-            getExtent( std::vector<Eigen::Matrix<_Scalar,3,1> >      & minMax
+            getExtent( std::vector<Eigen::Matrix<Scalar,3,1> >      & minMax
                      , _PointContainerT                         const& cloud
                      , double                                   const  threshold   = 0.01
                      , _IndicesContainerT                       const* indices_arg = NULL ) const
             {
-                typedef Eigen::Matrix<_Scalar,3,1> Position;
+                typedef Eigen::Matrix<Scalar,3,1> Position;
 
 #ifdef GF2_USE_PCL
 
@@ -164,21 +164,21 @@ namespace GF2
                 }
 #endif
 
-                Eigen::Matrix<_Scalar,4,4> frame; // 3 major vectors as columns, and the fourth is the centroid
+                Eigen::Matrix<Scalar,4,4> frame; // 3 major vectors as columns, and the fourth is the centroid
                 {
                     processing::PCA<_IndicesContainerT>( frame, on_plane_cloud, /* indices: */ NULL ); // no indices needed, already full cloud
 //                    std::cout << "frame: " << frame << std::endl;
 
                     // get the unit axis that is most perpendicular to the 3rd dimension of the frame
-                    std::pair<Position,_Scalar> dim3( Position::Zero(), _Scalar(FLT_MAX) );
+                    std::pair<Position,Scalar> dim3( Position::Zero(), Scalar(FLT_MAX) );
                     {
-                        _Scalar tmp;
+                        Scalar tmp;
                         if ( (tmp=std::abs(frame.col(2).template head<3>().dot( Position::UnitX() ))) < dim3.second ) { dim3.first = Position::UnitX(); dim3.second = tmp; }
                         if ( (tmp=std::abs(frame.col(2).template head<3>().dot( Position::UnitY() ))) < dim3.second ) { dim3.first = Position::UnitY(); dim3.second = tmp; }
                         if ( (tmp=std::abs(frame.col(2).template head<3>().dot( Position::UnitZ() ))) < dim3.second ) { dim3.first = Position::UnitZ(); dim3.second = tmp; }
                     }
-                    frame.col(0).template head<3>() = frame.col(2).template head<3>().template cross( dim3.first                      ).template normalized();
-                    frame.col(1).template head<3>() = frame.col(2).template head<3>().template cross( frame.col(0).template head<3>() ).template normalized();
+                    frame.col(0).head<3>() = frame.col(2).head<3>().cross( dim3.first             ).normalized();
+                    frame.col(1).head<3>() = frame.col(2).head<3>().cross( frame.col(0).head<3>() ).normalized();
                 }
 //                std::cout << "frame2: " << frame << std::endl;
 
@@ -206,7 +206,7 @@ namespace GF2
                 for ( int d = 0; d != 4; ++d )
                 {
                     // to world
-                    minMax[d] = (frame * (Eigen::Matrix<_Scalar,4,1>() << minMax[d], _Scalar(1)).finished()).template head<3>();
+                    minMax[d] = (frame * (Eigen::Matrix<Scalar,4,1>() << minMax[d], Scalar(1)).finished()).template head<3>();
 //                    std::cout << "minMax2[" << d << "]: " << minMax[d].transpose() << std::endl;
                 }
 
@@ -296,10 +296,10 @@ namespace GF2
              * \tparam _PointContainerT   Concept: std::vector< _PointPrimitiveT >.
              * \tparam _IndicesContainerT Concept: std::vector<int>.
              */
-            template <class _PointPrimitiveT, class _Scalar, class _PointContainerT, class _IndicesContainerT> static inline int
+            template <class _PointPrimitiveT, class _PointContainerT, class _IndicesContainerT> static inline int
             draw( PlanePrimitive                        const& plane
                 , _PointContainerT                      const& cloud
-                , _Scalar                               const  radius
+                , Scalar                                const  radius
                 , _IndicesContainerT                    const* indices
                 , pcl::visualization::PCLVisualizer::Ptr       v
                 , std::string                           const& plane_name
@@ -307,19 +307,19 @@ namespace GF2
                 , double                                const  g
                 , double                                const  b
                 , int                                   const  viewport_id = 0
-                , _Scalar                               const  stretch = _Scalar( 1. )
+                , Scalar                                const  stretch = Scalar( 1. )
                 )
             {
                 int err     = EXIT_SUCCESS;
-                //if ( stretch != _Scalar(1.) )
+                //if ( stretch != Scalar(1.) )
                 //    std::cerr << "[" << __func__ << "]: " << "WARNING, Stretch for planes is unimplemented!!!" << std::endl;
 
-                typedef Eigen::Matrix<_Scalar,3,1> Position;
+                typedef Eigen::Matrix<Scalar,3,1> Position;
 
                 std::vector<Position> minMax;
                 int      it          = 0;
                 int      max_it      = 10;
-                _Scalar  tmp_radius  = radius;
+                Scalar  tmp_radius  = radius;
                 do
                 {
                     err = plane.getExtent<_PointPrimitiveT>( minMax
@@ -366,7 +366,7 @@ namespace GF2
     PlanePrimitive::PlanePrimitive( Eigen::Matrix<Scalar, 3, 1> pnt, Eigen::Matrix<Scalar, 3, 1> normal )
     {
         _coeffs.template segment<3>(0) = normal.normalized();
-        _coeffs                    (3) = static_cast<Scalar>(-1) * _coeffs.template head<3>().dot( pnt.template head<3>() ); // distance
+        _coeffs                    (3) = Scalar(-1) * _coeffs.template head<3>().dot( pnt.template head<3>() ); // distance
     }
 
 #   ifdef GF2_USE_PCL

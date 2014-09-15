@@ -24,6 +24,8 @@ namespace GF2
     {
             typedef ::GF2::Primitive<6> ParentT;
         public:
+            typedef ParentT::Scalar Scalar;
+
             // ____________________CONSTRUCT____________________
 #if 0 //__cplusplus > 199711L
             //! \brief Inherited constructor from Primitive.
@@ -65,7 +67,7 @@ namespace GF2
             //! \tparam Scalar          Scalar type to use for calculations. Concept: float.
             //! \param[in] plane_normal Normal of plane, that needs to contain the normal of the line, that this function returns.
             //! \return                 Normal of the line lying in the plane specified by \p plane_normal.
-            template <typename Scalar> inline Eigen::Matrix<Scalar,3,1>
+            inline Eigen::Matrix<Scalar,3,1>
             normal( Eigen::Matrix<Scalar,3,1> plane_normal = (Eigen::Matrix<Scalar,3,1>() << 0.,0.,1.).finished() ) const
             {
                 Eigen::Matrix<Scalar,3,1> perp  = plane_normal * dir().dot( plane_normal );
@@ -94,14 +96,14 @@ namespace GF2
             //! \param[in]  threshold           A point in \p cloud is an inlier, if it is closer than this threshold. Usually the "scale".
             //! \param[in]  indices             Optional input to specify subset of points by indices.
             //! \return                         EXIT_SUCCESS
-            template <typename _PointT, typename _Scalar, typename _PointContainerT>
+            template <typename _PointT, typename _PointContainerT>
             int
-            getExtent( std::vector<Eigen::Matrix<_Scalar,3,1> >      & minMax
+            getExtent( std::vector<Eigen::Matrix<Scalar,3,1> >      & minMax
                      , _PointContainerT                         const& cloud
                      , double                                   const  threshold   = 0.01
                      , std::vector<int>                         const* indices_arg = NULL ) const
             {
-                typedef Eigen::Matrix<_Scalar,3,1> Position;
+                typedef Eigen::Matrix<Scalar,3,1> Position;
 
                 // select inliers
                 std::vector<int> inliers;
@@ -127,7 +129,7 @@ namespace GF2
 
 
                 // select min-max inliier from projected cloud
-                _Scalar min_dist = 0.f, max_dist = 0.f;
+                Scalar min_dist = 0.f, max_dist = 0.f;
                 int     min_id   = 0  , max_id   = 0;
                 Position    p0       = on_line_cloud[0];
                 Position    line_dir = this->dir();
@@ -157,17 +159,16 @@ namespace GF2
                 return EXIT_SUCCESS;
             } //...draw()
 
-            template <typename _Scalar>
-            inline Eigen::Matrix<_Scalar,3,1>
-            projectPoint( Eigen::Matrix<_Scalar,3,1> const& point ) const
+            inline Eigen::Matrix<Scalar,3,1>
+            projectPoint( Eigen::Matrix<Scalar,3,1> const& point ) const
             {
-                Eigen::Matrix<_Scalar,4,1> line_pt ; line_pt  << this->pos(), 0;
-                Eigen::Matrix<_Scalar,4,1> line_dir; line_dir << this->dir(), 0;
-                Eigen::Matrix<_Scalar,4,1> pt      ; pt       << point, 0;
+                Eigen::Matrix<Scalar,4,1> line_pt ; line_pt  << this->pos(), 0;
+                Eigen::Matrix<Scalar,4,1> line_dir; line_dir << this->dir(), 0;
+                Eigen::Matrix<Scalar,4,1> pt      ; pt       << point, 0;
 
-                _Scalar k = (pt.dot (line_dir) - line_pt.dot (line_dir)) / line_dir.dot (line_dir);
+                Scalar k = (pt.dot (line_dir) - line_pt.dot (line_dir)) / line_dir.dot (line_dir);
 
-                Eigen::Matrix<_Scalar,4,1> pp = line_pt + k * line_dir;
+                Eigen::Matrix<Scalar,4,1> pp = line_pt + k * line_dir;
                 return pp.template head<3>();
             } // projectPoint
 
@@ -202,11 +203,11 @@ namespace GF2
              *  \tparam _IndicesContainerT Concept: std::vector<int>.
              *  \param  stretch     Multiplies the final length with this number, so that the line is a bit longer than the distance between its extrema.
              */
-            template <class _PointPrimitiveT, class _Scalar, class _PointContainerT>
+            template <class _PointPrimitiveT, class _PointContainerT>
             static inline int
             draw( LinePrimitive                    const& line
                 , _PointContainerT                 const& cloud
-                , _Scalar                          const  radius
+                , Scalar                           const  radius
                 , std::vector<int>                 const* indices
                 , pcl::visualization::PCLVisualizer::Ptr  v
                 , std::string                      const  plane_name
@@ -214,17 +215,17 @@ namespace GF2
                 , double                           const  g
                 , double                           const  b
                 , int                              const  viewport_id = 0
-                , _Scalar                          const  stretch     = _Scalar( 1. )
+                , Scalar                          const  stretch     = Scalar( 1. )
                 )
             {
-                typedef Eigen::Matrix<_Scalar,3,1> Position;
+                typedef Eigen::Matrix<Scalar,3,1> Position;
 
                 int err     = EXIT_SUCCESS;
 
                 std::vector< Position > minMax;
                 int      it          = 0;
                 int      max_it      = 10;
-                _Scalar  tmp_radius  = radius;
+                Scalar  tmp_radius  = radius;
                 do
                 {
                     err = line.getExtent<_PointPrimitiveT>( minMax
@@ -249,7 +250,7 @@ namespace GF2
                 Position const& p0 = minMax[0];
                 Position const& p1 = minMax[1];
                 Position diff = p1 - p0;
-                _Scalar half_stretch = _Scalar(1) + (stretch-_Scalar(1)) / _Scalar(2.);
+                Scalar half_stretch = Scalar(1) + (stretch-Scalar(1)) / Scalar(2.);
                 Position p1_final  = p0 + diff * half_stretch;
                 Position p0_final  = p1 - diff * half_stretch;
 

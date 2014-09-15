@@ -38,8 +38,6 @@ struct DecideMergeLineFunctor {
         const PointT & l1a = extrema1[0];
         const PointT & l1b = extrema1[1];
 
-        const PointT n0 = l0.template normal<_Scalar>(); //Aron: I don't get this line, a Point is a PointPrimitiveT, and the normal is an Eigen::Matrix<Scalar,3,1>...
-
         //const _Scalar sqScale = scale*scale;
         //const _Scalar l0SqLengthAndScale = (l0b-l0a).squaredNorm() + scale*scale;
 
@@ -48,8 +46,8 @@ struct DecideMergeLineFunctor {
 
         // check if l1 is aligned to l0
         if ( /*sameTag ||*/ // exactly aligned
-             ( std::abs(n0.dot(l1a-l0a)) <= scale && // check l1a-proj(l1a,l0) <= scale
-               std::abs(n0.dot(l1b-l0a)) <= scale)){  // check l1b-proj(l1b,l0) <= scale
+             ( std::abs(l0.template normal().dot(l1a-l0a)) <= scale && // check l1a-proj(l1a,l0) <= scale
+               std::abs(l0.template normal().dot(l1b-l0a)) <= scale)){  // check l1b-proj(l1b,l0) <= scale
 
             // check if at least one l1 endpoint is projected onto l0
             const PointT l0dir = (l0b - l0a).normalized();
@@ -62,12 +60,10 @@ struct DecideMergeLineFunctor {
                 return true;
         }
 
-        const PointT n1 = l1.template normal<_Scalar>();
-
         // check if l0 is aligned to l1
         if ( /*sameTag ||*/
-             ( std::abs(n1.dot(l0a-l1a)) <= scale &&  // check l0a-proj(l0a,l0) <= scale
-               std::abs(n1.dot(l0b-l1a)) <= scale )){ // check l0b-proj(l0b,l0) <= scale
+             ( std::abs(l1.template normal().dot(l0a-l1a)) <= scale &&  // check l0a-proj(l0a,l0) <= scale
+               std::abs(l1.template normal().dot(l0b-l1a)) <= scale )){ // check l0b-proj(l0b,l0) <= scale
 
             // check if at least one l0 endpoint is projected onto l1
             const PointT l1dir = (l1b - l1a).normalized();

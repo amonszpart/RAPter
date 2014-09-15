@@ -116,7 +116,7 @@ namespace GF2
                 {
                     if ( mask && !(*mask)[i] ) continue;
 
-                    std::vector<float> coeffsVector = lines[i].coeffsVector();
+                    std::vector<Scalar> coeffsVector = lines[i].coeffsVector();
                     for ( size_t d = 0; d != coeffsVector.size(); ++d )
                         f << coeffsVector[d] << ((d == coeffsVector.size()-1) ? "" : ", "); // << ((d!=coeffsVector.size()-1)?", ":"");
                     if ( lines_clusters ) f << ", " << (*lines_clusters)[i];
@@ -146,7 +146,7 @@ namespace GF2
                 std::string line;
                 while ( getline(f, line) )
                 {
-                    std::vector<float> floats;
+                    std::vector<Scalar> floats;
                     std::istringstream iss( line );
                     std::string        tmp_str;
                     while ( std::getline(iss, tmp_str, ',') )

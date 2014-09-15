@@ -7,11 +7,9 @@
 namespace GF2
 {
     //! \brief Wrapper class for oriented 3D points.
-    //! \todo Add Scalar template parameter.
-    //! \tparam _Scalar Internal data type. Concept: float.
     class PointPrimitive : public ::GF2::Primitive<6>, public ::GF2::Taggable
     {
-            typedef ::GF2::Primitive<6> ParentT;
+        typedef ::GF2::Primitive<6> ParentT;
         public:
             //! \brief custom tags for taggable
             enum TAGS {
@@ -20,6 +18,8 @@ namespace GF2
                 , LID   //!< \brief Primitive ID \warning Currently UNUSED, GID is used instead.
                 , LID0  //!< \brief Primitive ID \warning Currently UNUSED, GID is used instead.
             }; //...enum TAGS
+
+            typedef ParentT::Scalar Scalar;
 
             // ____________________CONSTRUCTORS____________________
 #if 0 //__cplusplus > 199711L
@@ -88,10 +88,10 @@ namespace GF2
             // ____________________GETTERS____________________
             //! \brief  Additional convenience getter to convert oriented point to 3D point.
             //! \return The position of the point as a 3D Eigen::Vector.
-            /*explicit*/ operator Eigen::Matrix<Scalar,3,1>() const { return this->pos(); }
+            /*explicit*/ inline operator Eigen::Matrix<Scalar,3,1>() const { return this->pos(); }
             //! \brief  Additional convenience const getter to convert oriented point to 3D point.
             //! \return The position of the point as a 3D Eigen::Vector.
-            /*explicit*/ operator Eigen::Matrix<Scalar,3,1>()       { return this->pos(); }
+            /*explicit*/ inline operator Eigen::Matrix<Scalar,3,1>()       { return this->pos(); }
 
             // ____________________STATICS____________________
             //! \brief                      Convenience conversion of an STL container of this class' objects to another container using the provided allocator functor and the push_back() function of \p cloud.

@@ -23,6 +23,9 @@ namespace GF2
                 , USER_ID5 = 14 //!< additional flag to store processing attributes (values only in the generation scope)
             };//...TAGS
 
+
+            typedef ParentT::Scalar Scalar;
+
 #if 0 // __cplusplus > 199711L
             //! \brief Inheriting contructor.
             using ::GF2::LinePrimitive::LinePrimitive;
