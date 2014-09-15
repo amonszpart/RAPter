@@ -276,6 +276,10 @@ namespace GF2
 
                         Eigen::Matrix<_Scalar,3,1> dir0 = prim1.dir(),
                                                    dir1 = prim0.dir();
+                        if ( closest_angle_id != 0 )
+                            continue;
+                        std::cout << "adding parallel" << std::endl;
+
                         if ( (closest_angle >= _Scalar(0)) && (closest_angle < M_PI) )
                         {
                             dir0 = Eigen::AngleAxisf(-closest_angle, Eigen::Matrix<_Scalar,3,1>::UnitZ() ) * dir0;
@@ -291,6 +295,7 @@ namespace GF2
                             cand0.setTag( _PrimitiveT::DIR_GID, prim1.getTag(_PrimitiveT::DIR_GID) ); // recently changed this from GID
                             if ( same_line )
                             {
+                                std::cout << "this should not hit ever" << __FILE__ << ":" << __LINE__<< std::endl;
                                 cand0.setTag(_PrimitiveT::CHOSEN, prim0.getTag(_PrimitiveT::CHOSEN) ); // keep chosen lines chosen
                             }
 
@@ -469,6 +474,11 @@ namespace GF2
                 std::cerr << "[" << __func__ << "]: " << "cloud file does not exist! " << cloud_path << std::endl;
                 return EXIT_FAILURE;
             }
+            if ( !boost::filesystem::exists(associations_path) )
+            {
+                std::cerr << "[" << __func__ << "]: " << "point - primitive association file does not exist! " << associations_path << std::endl;
+                return EXIT_FAILURE;
+            }
         } // ... parse input
 
         // Read desired angles
@@ -517,23 +527,10 @@ namespace GF2
             if ( err != EXIT_SUCCESS ) std::cerr << "[" << __func__ << "]: " << "generate exited with error! Code: " << err << std::endl;
         } //...generate
 
-    #if 0 // these shouldn't change here
-        // Save point GID tags
-        if ( EXIT_SUCCESS == err )
-        {
-            std::string assoc_path = boost::filesystem::path( cloud_path ).parent_path().string() + "/" + "points_primitives.csv";
-
-            util::saveBackup( assoc_path );
-            err = io::writeAssociations<PointPrimitiveT>( points, assoc_path );
-
-            if ( err != EXIT_SUCCESS )  std::cerr << "[" << __func__ << "]: " << "saveBackup or writeAssociations exited with error! Code: " << err << std::endl;
-            else                        std::cout << "[" << __func__ << "]: " << "wrote to " << assoc_path << std::endl;
-
-        } //...save Associations
-    #endif
-
         // save primitives
-        std::string o_path = boost::filesystem::path( cloud_path ).parent_path().string() + "/";
+        std::string o_path = boost::filesystem::path( cloud_path ).parent_path().string();
+        if ( o_path.empty() ) o_path  = "./";
+        else                  o_path += "/";
         if ( EXIT_SUCCESS == err )
         {
             std::string output_prims_path( o_path + "candidates.csv" );
