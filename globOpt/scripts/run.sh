@@ -42,8 +42,9 @@ fi
 anglegens="90";
 nbExtraIter=2
 dirbias="0";
+flag3D="";#="3D";
 
-visdefparam="--use-tags --no-clusters --ids" #"--use-tags --no-clusters" #--ids 
+visdefparam="--use-tags --no-clusters" #"--use-tags --no-clusters" #--ids
 
 echo "angle-limit: $anglelimit"
 echo "scale: $scale"
@@ -83,17 +84,17 @@ function my_exec() {
 
 function energies() {
 	echo "First it energy"
-	my_exec "$executable --formulate --candidates primitives_it0.bonmin.csv -a points_primitives.csv --energy --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $anglegens"
+        my_exec "$executable --formulate$flag3D --candidates primitives_it0.bonmin.csv -a points_primitives.csv --energy --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $anglegens"
 	echo "First merged energy"
-	my_exec "$executable --formulate --candidates primitives_merged_it0.csv -a points_primitives_it0.csv --energy --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $anglegens"
+        my_exec "$executable --formulate$flag3D --candidates primitives_merged_it0.csv -a points_primitives_it0.csv --energy --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $anglegens"
 	echo "Second it energy"
-	my_exec "$executable --formulate --candidates primitives_it1.bonmin.csv -a points_primitives_it0.csv --energy --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $anglegens"
+        my_exec "$executable --formulate$flag3D --candidates primitives_it1.bonmin.csv -a points_primitives_it0.csv --energy --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $anglegens"
 	echo "Second merge energy"
-	my_exec "$executable --formulate --candidates primitives_merged_it1.csv -a points_primitives_it1.csv --energy --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $anglegens"
+        my_exec "$executable --formulate$flag3D --candidates primitives_merged_it1.csv -a points_primitives_it1.csv --energy --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $anglegens"
 }
 
 # Segmentation. OUTPUT: patches.csv, points_primitives.csv
-my_exec "$executable --segment --angle-limit $anglelimit --scale $scale --angle-gens $anglegens"
+my_exec "$executable --segment$flag3D --angle-limit $anglelimit --scale $scale --angle-gens $anglegens"
 
 input="patches.csv";
 assoc="points_primitives.csv";
@@ -103,17 +104,21 @@ assoc="points_primitives.csv";
 # exit
 
 # Generate candidates. OUT: candidates_it0.csv
-my_exec "$executable --generate -sc $scale -al $anglelimit -ald 1 --patch-pop-limit $poplimit -p $input --assoc $assoc --angle-gens $anglegens"
-#my_exec "../globOptVis --show --scale $scale --use-tags --ids --pop-limit $poplimit -p candidates_it0.csv -a $assoc --title \"generate output\" &"
+my_exec "$executable --generate$flag3D -sc $scale -al $anglelimit -ald 1 --patch-pop-limit $poplimit -p $input --assoc $assoc --angle-gens $anglegens"
+#my_exec "../globOptVis --show3D --scale $scale --use-tags --ids --pop-limit $poplimit -p candidates_it0.csv -a $assoc --title \"generate output\" &"
 
 
 # Formulate optimization problem. OUT: "problem" directory
-my_exec "$executable --formulate --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $anglegens --candidates candidates_it0.csv -a $assoc"
+my_exec "$executable --formulate$flag3D --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $anglegens --candidates candidates_it0.csv -a $assoc"
+
 # Solve optimization problem. OUT: primitives_it0.bonmin.csv
-my_exec "$executable --solver bonmin --problem problem -v --time -1 --candidates candidates_it0.csv"
+my_exec "$executable --solver$flag3D bonmin --problem problem -v --time -1 --candidates candidates_it0.csv"
 
 # Show output of first iteration.
-my_exec "../globOptVis --show --scale $scale --pop-limit $poplimit -p primitives_it0.bonmin.csv -a $assoc --title \"1st iteration output\" $visdefparam &"
+my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p primitives_it0.bonmin.csv -a $assoc --title \"1st iteration output\" $visdefparam &"
+# !! set flag3D to "3D" and recomment these two lines to work with 3D
+#energies
+#exit
 
 # Merge adjacent candidates with same dir id. OUT: primitives_merged_it0.csv, points_primitives_it0.csv
 my_exec "$executable --merge --scale $scale --adopt 0 --prims primitives_it0.bonmin.csv -a $assoc --angle-gens $anglegens"
