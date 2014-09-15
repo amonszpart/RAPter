@@ -81,7 +81,7 @@ namespace GF2
             projectPoint( Eigen::Matrix<Scalar,3,1> const& point ) const
             {
                 // verified, this works well:
-                return point - (this->getDistance(point) * this->dir() );
+                return point - (this->getDistance(point) * this->normal() );
             } // projectPoint
 
             /*! \brief                          Calculates the length of the plane based on the points in \p cloud, masked by \p indices and the distance from point to plane \p threshold.

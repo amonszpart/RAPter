@@ -219,6 +219,7 @@ SET( GLOBOPT_H_LIST
     include/globfit2/optimization/problemSetup.h
     include/globfit2/optimization/merging.h
     include/globfit2/optimization/mergingFunctors.h
+    include/globfit2/optimization/segmentation.h
     include/optimization/qp/gurobiOpt.h
     include/optimization/qp/MyGRBCallback.h
     include/globfit2/optimization/solver.h
