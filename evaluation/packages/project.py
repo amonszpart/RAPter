@@ -7,15 +7,15 @@ See C++ InputGen project for more details on Projects
 import xml.etree.ElementTree as ET
 import displacementKernels as kernels
 
-class PyProject:
+class PyProject(object):
     """Main class of the module
     """
 
     def __init__(self, path):
         """Default constructor, taking as input a prj file."""
-        print 'Loading project ' + path.name
+        print 'Loading project ' + path
 
-        tree = ET.parse(path)
+        tree = ET.parse(file(path))
         root = tree.getroot()
 
         self.kernels = []
