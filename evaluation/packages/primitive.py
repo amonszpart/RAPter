@@ -11,14 +11,13 @@ class Primitive(object):
                  uid,
                  did,
                  pos=np.zeros(3), 
-                 normal=np.array([ 1.,  0.,  0.]).T ):
+                 normal=np.array([ 1.,  0.,  0.]) ):
         self.uid    = uid
         self.did    = did
         self.pos    = pos
         self.normal = normal
     
-    def distanceTo(self, 
-                   pos) :
+    def distanceTo(self, pos) :
         return np.dot(pos-self.pos, self.normal)
         
 def readPrimitivesFromFile(path):
@@ -30,10 +29,10 @@ def readPrimitivesFromFile(path):
         if line[0] != '#':
             seqline = line.split(',')
             
-            pos    = np.array([float(seqline[0]), float(seqline[1]), float(seqline[2])]).T
-            normal = np.array([float(seqline[3]), float(seqline[4]), float(seqline[5])]).T
-            uid    = seqline[6]
-            did    = seqline[7]
+            pos    = np.float32(np.array(seqline[0:3]))
+            normal = np.float32(np.array(seqline[3:6]))
+            uid    = int(seqline[6])
+            did    = int(seqline[7])
             
             primitives.append(Primitive( uid, did, pos, normal ))
 
