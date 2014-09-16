@@ -2,11 +2,9 @@
 #define GF2_VISUALIZATION_H
 
 #include <vector>
+#include "pcl/visualization/pcl_visualizer.h"
 
-#include "globfit2/primitives/linePrimitive2.h"
 #include "globfit2/primitives/pointPrimitive.h"
-#include "globfit2/primitives/planePrimitive.h"
-//#include "globfit2/visualization/visualizer.hpp" // vis::MyVisPtr
 
 namespace GF2 {
 namespace vis {

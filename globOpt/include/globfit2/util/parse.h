@@ -23,7 +23,7 @@ namespace console
     template <typename T>
     inline int parse_argument (int argc, char** argv, const char* str, T &val)
     {
-        return pcl::console::parse_argument( argc, argv, val );
+        return pcl::console::parse_argument( argc, argv, str, val );
     }
 
 //    inline int parse_argument (int argc, char** argv, const char* str, bool &val)

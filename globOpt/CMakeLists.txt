@@ -210,7 +210,7 @@ SET( GLOBOPT_H_LIST
     include/globfit2/globOpt_types.h
     include/globfit2/primitives/linePrimitive.h
     include/globfit2/primitives/primitive.h
-    include/globfit2/primitives/linePrimitive2.h
+    #include/globfit2/primitives/linePrimitive2.h
     include/globfit2/primitives/pointPrimitive.h
     include/globfit2/primitives/planePrimitive.h
     include/globfit2/optimization/patchDistanceFunctors.h
@@ -233,6 +233,7 @@ SET( GLOBOPT_SRC_LIST
     src/solve.cpp
     src/merge.cpp
     src/datafit.cpp
+    src/correspondance.cpp
     #src/optimization/candidateGenerator.cpp # cached compilation
     #src/optimization/qp/visualizer.cpp     # cached compilation
 )

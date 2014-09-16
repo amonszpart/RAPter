@@ -455,6 +455,11 @@ namespace GF2 {
                 Eigen::SelfAdjointEigenSolver< Eigen::Matrix<Scalar, 3, 3> > es;
                 es.compute( cov );
 
+
+#if 1
+                primitive = PrimitiveT( centroid, es.eigenvalues(), es.eigenvectors() );
+                //std::cout << "prim: " << primitive.toString() << std::endl;
+#else
                 if ( rows == 6 ) // line -> dir ==
                 {
                     // get eigen vector for biggest eigen value
@@ -475,6 +480,9 @@ namespace GF2 {
                 }
                 else
                     std::cerr << "[" << __func__ << "]: " << "lines(rows==6) or planes(rows==4), not rows == " << rows << std::endl;
+
+                std::cout << "prim_old: " << primitive.toString() << std::endl;
+#endif
 
 #if DEBUG_FITLINE
                 for ( int d = 0; d < 6; ++d )
