@@ -106,14 +106,18 @@ private:
         // 1. Compute p0 local frame
         //  - build a local copy p0local centered in 0 and oriented with updirection=y
         //  - compute the rotation between p0 and p0local
+        //  - compute p0 gravity center
         _PlaneT p0local (PointT::Zero(), PointT(_Scalar(0.), _Scalar(1.), _Scalar(0.)));
-        Eigen::Quaternion<_Scalar> q;
-        q.FromTwoVectors(p0.dir(), p0local.dir());
+        Eigen::Quaternion<_Scalar> q = Eigen::Quaternion<_Scalar>::FromTwoVectors(p0.normal(), p0local.normal());
+
+        PointT center (PointT::Zero());
+        std::for_each(extrema0.begin(), extrema0.end(), [&center] (const PointT& p){ center+=p; });
+        center /= _Scalar(extrema0.size());
 
         // 2. Express the two planes extrema in the local frame of p0 (extremas of p0 will
         // be computed later if required
         // We use a lambda expression to first translate and then rotate the extremas
-        auto transform = [&p0local, &q] (PointT& p) { p = q*(p-p0local.pos()); };
+        auto transform = [&center, &q] (PointT& p) { p = q*(p-center); };
         _PointContainerT extrema1local = extrema1;
         std::for_each(extrema1local.begin(), extrema1local.end(), transform);
 
@@ -127,8 +131,31 @@ private:
         std::for_each(extrema0local.begin(), extrema0local.end(), transform);
         // \todo
 
+        // The computation of the local frame direction (f1, f2) is hardcoded wrt to the
+        // order of the extrema computed in PlanePrimitive::getExtent
+        //
+        // Here we compute f1, f2, directions of the normal frame (1 coordinate shoud be = 0, we work in the plane frame)
+        // sqrhw,sqrhh are computed form the finite plane width and height (w,h) respectively as sqrhw = (w/2) ** 2
+        // center is the middle of the finite plane
+        PointT f1 = (extrema0local[1]-extrema0local[0]);
+        PointT f2 = (extrema0local[2]-extrema0local[1]);
+        _Scalar hw = f1.norm() / _Scalar(2.); f1.normalized();
+        _Scalar hh = f2.norm() / _Scalar(2.); f2.normalized();
+        //_Scalar sqrhw = w*w;
+       // _Scalar sqrhh = h*h;
+        PointT centerlocal (PointT::Zero());
+        std::for_each(extrema0local.begin(), extrema0local.end(), [&centerlocal] (PointT& p){ centerlocal+=p; });
+        centerlocal /= _Scalar(extrema0local.size());
+        // here we project p-center over the two basis axis and check the norm of the projected vector
+        // is < to the
+        auto isOutFinitePlane = [&f1, &f2, &hw, &hh, &centerlocal] (const PointT& p){
+            return  (std::abs((p-centerlocal).dot(f1)) > hw) &&
+                    (std::abs((p-centerlocal).dot(f2)) > hh);
+        };
+        it = std::find_if(extrema0local.begin(), extrema0local.end(), isOutFinitePlane);
+        if (it != extrema0local.end()) return false;
 
-        return false;
+        return true;
     }
 
 public:
