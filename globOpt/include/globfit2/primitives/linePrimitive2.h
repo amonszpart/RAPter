@@ -35,6 +35,9 @@ namespace GF2
 
             LinePrimitive2( Eigen::Matrix<Scalar,3,1> const& p0, Eigen::Matrix<Scalar,3,1> const& dir ) : ParentT( p0, dir ) {}
 
+            LinePrimitive2( Eigen::Matrix<Scalar,3,1> const& centroid, Eigen::Matrix<Scalar,3,1> const& eigen_values, Eigen::Matrix<Scalar, 3, 3> const& eigen_vectors )
+            : ParentT( centroid, eigen_values, eigen_vectors ) {}
+
             // _______________________IO_______________________
             /*! \brief Used in \ref io::readPrimitives to determine how many floats to parse from one entry.
              */
