@@ -69,7 +69,7 @@ namespace GF2
 
             // ____________________CONSOLE____________________
             //! \brief Convenience function for plotting.
-            std::string toString() const
+            inline std::string toString() const
             {
                 std::stringstream ss;
                 for ( size_t d = 0; d != _Dim; ++d )

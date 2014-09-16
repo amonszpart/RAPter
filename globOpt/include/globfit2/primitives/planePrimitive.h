@@ -66,6 +66,35 @@ namespace GF2
             //! \return The plane normal as a 3D Eigen::Vector Map.
             inline Eigen::Matrix<Scalar,4,1>::ConstFixedSegmentReturnType<3>::Type normal() const { return _coeffs.head<3>(); }
 
+            // _______________________IO_______________________
+            /*! \brief Used in \ref io::readPrimitives to determine how many floats to parse from one entry.
+             */
+            static inline int getFileEntryLength() { return 6; }
+
+            /*! \brief Output <x0,n>, location and normal for the plane to a string that does *not* have an endline at the end.
+             */
+            inline std::string toFileEntry() const
+            {
+                Eigen::Matrix<Scalar,3,1> pos = this->pos();
+                Eigen::Matrix<Scalar,3,1> nrm = this->normal();
+                char line[1024];
+                sprintf( line, "%.9f,%.9f,%.9f,%.9f,%.9f,%.9f,"
+                         , pos(0), pos(1), pos(2)
+                         , nrm(0), nrm(1), nrm(2) );
+                return std::string( line );
+            }
+
+            /*! \brief              Used in \ref io::readPrimitives to create the primitive from the read floats.
+             *  \param[in] entries  Contains <x0,n> to create the plane from.
+             */
+            static inline PlanePrimitive fromFileEntry( std::vector<Scalar> const& entries )
+            {
+                return PlanePrimitive( Eigen::Map<const Eigen::Matrix<Scalar,3,1> >( entries.data()  , 3 ),
+                                       Eigen::Map<const Eigen::Matrix<Scalar,3,1> >( entries.data()+3, 3 ) );
+            }
+
+            // ____________________GEOMETRY____________________
+
             //! \brief              Returns point to plane distance.
             //! \param[in] point    Point to calculate distance from.
             //! \return             Distance from point to plane.
@@ -98,7 +127,7 @@ namespace GF2
              */
             template <typename _PointPrimitiveT, class _IndicesContainerT, typename _PointContainerT>
             int
-            getExtent( std::vector<Eigen::Matrix<Scalar,3,1> >      & minMax
+            getExtent( std::vector<Eigen::Matrix<Scalar,3,1> >       & minMax
                      , _PointContainerT                         const& cloud
                      , double                                   const  threshold   = 0.01
                      , _IndicesContainerT                       const* indices_arg = NULL ) const
@@ -381,80 +410,6 @@ namespace GF2
     }
 #   endif // GF2_USE_PCL
 
-#if 0
-    // this does not work
-    inline Eigen::Matrix<PlanePrimitive::Scalar,6,1>
-    PlanePrimitive::toLineCoeffsAtZ( Scalar z )
-    {
-        Eigen::Matrix<Scalar,6,1> out;
-        out.segment<3>( 3 ) = normal();
-
-        Eigen::Matrix<Scalar,4,1> p0_3d; p0_3d << static_cast<Scalar>(1.f),static_cast<Scalar>(1.f),z,static_cast<Scalar>(1.f);
-        Scalar dist = p0_3d.dot( _coeffs ); // project point(1,1,z) onto the plane, [1,1,z,1] . [nx,ny,nz,d] = sum([nx,ny,nz,d])
-        out.head<3>() = p0_3d.head<3>() - dist * normal();
-        out.segment<3>(3).normalize();
-        std::cout << "[" << __func__ << "]: " << " plane: " << _coeffs.transpose() << std::endl;
-        std::cout << "[" << __func__ << "]: " << " p0 is now " << out.head<3>().transpose() << std::endl;
-        std::cout << "[" << __func__ << "]: " << " dir is now " << out.segment<3>(3).transpose() << std::endl;
-
-        return out;
-    }
-    inline bool
-    PlanePrimitive::intersectWithPlane( Eigen::Matrix<Scalar,-1,1>       & line
-                                        , Eigen::Matrix<Scalar,4,1> const& plane
-                                        , double                           angular_tolerance ) const
-    {
-        return PlanePrimitive::intersectWithPlane( line, plane, _coeffs, angular_tolerance );
-    }
-
-    inline bool
-    PlanePrimitive::intersectWithPlane( Eigen::Matrix<Scalar,-1,1>        & line
-                                        , Eigen::Matrix<Scalar,4,1> const& plane_a
-                                        , Eigen::Matrix<Scalar,4,1> const& plane_b
-                                        , double                           angular_tolerance )
-    {
-        //planes shouldn't be parallel
-        double test_cosine = plane_a.head<3>().dot(plane_b.head<3>());
-        double upper_limit = 1 + angular_tolerance;
-        double lower_limit = 1 - angular_tolerance;
-
-        if ((test_cosine < upper_limit) && (test_cosine > lower_limit))
-        {
-            std::cerr<< "[" << __func__ << "] " << "Plane A and Plane B are Parallel" << std::endl;
-            return (false);
-        }
-
-        if ((test_cosine > -upper_limit) && (test_cosine < -lower_limit))
-        {
-            std::cerr << "[" << __func__ << "] " << "Plane A and Plane B are Parallel" << std::endl;
-            return (false);
-        }
-
-        Eigen::Matrix<Scalar,4,1> line_direction = plane_a.cross3(plane_b);
-        line_direction.normalized();
-
-        //construct system of equations using lagrange multipliers with one objective function and two constraints
-        Eigen::Matrix<Scalar,-1,-1> langegrange_coefs(5,5);
-        langegrange_coefs << 2,0,0,plane_a[0],plane_b[0],  0,2,0,plane_a[1],plane_b[1],  0,0,2, plane_a[2], plane_b[2], plane_a[0], plane_a[1] , plane_a[2], 0,0, plane_b[0], plane_b[1], plane_b[2], 0,0;
-
-        Eigen::Matrix<Scalar,-1,1> b;
-        b.resize(5);
-        b << 0, 0, 0, -plane_a[3], -plane_b[3];
-
-        //solve for the lagrange Multipliers
-        Eigen::Matrix<Scalar,-1,1> x;
-        x.resize(5);
-        x = langegrange_coefs.colPivHouseholderQr().solve(b);
-
-        line.resize(6);
-        line.head<3>() = x.head<3>(); // the x[3] and x[4] are the values of the lagrange multipliers and are neglected
-        line[3] = line_direction[0];
-        line[4] = line_direction[1];
-        line[5] = line_direction[2];
-
-        return true;
-    }
-#endif
 } //...ns GF2
 
 #endif // __GF2_INC_PLANEPRIMITIVE_HPP__

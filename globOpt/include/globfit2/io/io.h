@@ -30,7 +30,7 @@ namespace GF2
         {
             typedef typename PrimitiveContainerT::const_iterator outer_const_iterator;
 
-            const int Dim = PrimitiveT::Dim;
+            //const int Dim = PrimitiveT::Dim;
             typedef typename PrimitiveT::VectorType VectorType;
 
             // out_lines
@@ -52,13 +52,16 @@ namespace GF2
                 for ( _inner_const_iterator lid_it = containers::valueOf<PrimitiveT>(gid_it).begin(); lid_it != lid_end_it; ++lid_it, ++lid1 )
                 //for ( size_t lid1 = 0; lid1 != primitives[lid].size(); ++lid1 )
                 {
-                    for ( int d = 0; d != Dim; ++d )
-                        out_file << std::setprecision(9) << ((VectorType)*lid_it)(d) << ",";
-                        //out_file << std::setprecision(9) << ((VectorType)primitives.at(lid).at(lid1))(d) << ",";
+                    //for ( int d = 0; d != Dim; ++d )
+                        //out_file << std::setprecision(9) << ((VectorType)*lid_it)(d) << ",";
+                    //out_file << std::setprecision(9) << ((VectorType)primitives.at(lid).at(lid1))(d) << ",";
 
-                        out_file << lid_it->getTag( PrimitiveT::GID ) << ",";
-                        out_file << lid_it->getTag( PrimitiveT::DIR_GID ) << ",";
-                        out_file << lid_it->getTag( PrimitiveT::CHOSEN )  << "\n";
+                    // saves primitive part
+                    out_file << (*lid_it).toFileEntry();
+                    // save taggable part (todo: merge these)
+                    out_file << lid_it->getTag( PrimitiveT::GID ) << ",";
+                    out_file << lid_it->getTag( PrimitiveT::DIR_GID ) << ",";
+                    out_file << lid_it->getTag( PrimitiveT::CHOSEN )  << "\n";
                 }
             }
             out_file.close();
@@ -81,7 +84,8 @@ namespace GF2
                                  )
         {
             typedef typename PrimitiveT::Scalar Scalar;
-            enum {                              Dim    = PrimitiveT::Dim }; // Important! This decides how many floats to read
+            //enum {                              Dim    = PrimitiveT::Dim }; // Important! This decides how many floats to read
+            const int Dim = PrimitiveT::getFileEntryLength();
             //typedef typename PrimitiveContainerT::value_type PatchT;
             typedef std::map<int, PatchT>                    PatchMap; // <GID, vector<primitives> >
 
@@ -127,7 +131,8 @@ namespace GF2
                 // insert into proper patch, if gid specified
                 if ( gid > -1 )
                 {
-                    tmp_lines[ gid ].push_back( PrimitiveT(floats) );
+                    //tmp_lines[ gid ].push_back( PrimitiveT(floats) );
+                    tmp_lines[ gid ].push_back( PrimitiveT::fromFileEntry(floats) );
                     tmp_lines[ gid ].back().setTag( PrimitiveT::GID    , gid     );
                     tmp_lines[ gid ].back().setTag( PrimitiveT::DIR_GID, dir_gid );
                     tmp_lines[ gid ].back().setTag( PrimitiveT::CHOSEN , chosen  );

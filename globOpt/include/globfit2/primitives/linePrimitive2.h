@@ -21,16 +21,10 @@ namespace GF2
                 , USER_ID3 = 12 //!< additional flag to store processing attributes (values only in the generation scope)
                 , USER_ID4 = 13 //!< additional flag to store processing attributes (values only in the generation scope)
                 , USER_ID5 = 14 //!< additional flag to store processing attributes (values only in the generation scope)
-            };//...TAGS
-
+            }; //...TAGS
 
             typedef ParentT::Scalar Scalar;
 
-#if 0 // __cplusplus > 199711L
-            //! \brief Inheriting contructor.
-            using ::GF2::LinePrimitive::LinePrimitive;
-            //LinePrimitive2() : ParentT() {}
-#else
             LinePrimitive2() : ParentT() {}
 
             //! \brief Constructor that takes raw data in Eigen format as input.
@@ -40,7 +34,39 @@ namespace GF2
             LinePrimitive2( std::vector<Scalar> const& coeffs ) : ParentT( coeffs ) {}
 
             LinePrimitive2( Eigen::Matrix<Scalar,3,1> const& p0, Eigen::Matrix<Scalar,3,1> const& dir ) : ParentT( p0, dir ) {}
-#endif
+
+            // _______________________IO_______________________
+            /*! \brief Used in \ref io::readPrimitives to determine how many floats to parse from one entry.
+             */
+            static inline int getFileEntryLength() { return 6; }
+
+            /*! \brief Output <x0,n>, location and normal for the plane to a string that does *not* have an endline at the end.
+             */
+            inline std::string toFileEntry() const
+            {
+                Eigen::Matrix<Scalar,3,1> pos = this->pos();
+                Eigen::Matrix<Scalar,3,1> nrm = this->normal();
+                char line[1024];
+                sprintf( line, "%.9f,%.9f,%.9f,%.9f,%.9f,%.9f,"
+                         , pos(0), pos(1), pos(2)
+                         , nrm(0), nrm(1), nrm(2) );
+                return std::string( line );
+            }
+
+            /*! \brief              Used in \ref io::readPrimitives to create the primitive from the read floats.
+             *  \param[in] entries  Contains <x0,n> to create the plane from.
+             */
+            static inline LinePrimitive2 fromFileEntry( std::vector<Scalar> const& entries )
+            {
+                LinePrimitive2 lp2( Eigen::Map<const Eigen::Matrix<Scalar,3,1> >( entries.data()  , 3 ),
+                                    Eigen::Map<const Eigen::Matrix<Scalar,3,1> >( entries.data()+3, 3 ).cross(Eigen::Matrix<Scalar,3,1>::UnitZ()) );
+                std::cout << "lp2.pos: " << lp2.pos().transpose() << std::endl;
+                std::cout << "lp2.dir: " << lp2.dir().transpose() << std::endl;
+                std::cout << "lp2.normal: " << lp2.normal().transpose() << std::endl;
+
+                return lp2;
+            }
+
 
     }; //... class LinePrimitive2
 

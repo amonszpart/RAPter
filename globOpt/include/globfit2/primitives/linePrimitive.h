@@ -76,6 +76,8 @@ namespace GF2
                 return par.cross( plane_normal ).normalized();
             } //...normal()
 
+            // ____________________GEOMETRY____________________
+
             //! \brief              Returns point to line distance.
             //! \param[in] point    Point to calculate distance from.
             //! \return             Distance from point to line.
@@ -138,7 +140,7 @@ namespace GF2
                 {
                     Position const& p1   = on_line_cloud[ point_id ];
                     Position        p0p1 = p1-p0;
-                    float       dist = p0p1.dot( p0 + line_dir );
+                    float           dist = p0p1.dot( p0 + line_dir );
                     if ( dist < min_dist )
                     {
                         min_dist = dist;
