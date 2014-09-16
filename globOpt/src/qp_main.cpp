@@ -14,6 +14,7 @@ int formulate( int argc, char** argv ); // problemSetup.cpp
 int solve    ( int argc, char** argv ); // solve.cpp
 int merge    ( int argc, char** argv ); // merge.cpp
 int datafit  ( int argc, char** argv ); // datafit.cpp
+int corresp  ( int argc, char** argv ); // correspondance.cpp
 
 int main( int argc, char *argv[] )
 {
@@ -33,6 +34,7 @@ int main( int argc, char *argv[] )
                   << "\t--merge\n"
                   << "\t--merge3D\n"
                   << "\t--datafit\n"
+                  << "\t--corresp\n"
                   //<< "\t--show\n"
                   << std::endl;
 
@@ -74,6 +76,10 @@ int main( int argc, char *argv[] )
     else if ( GF2::console::find_switch(argc,argv,"--subsample") )
     {
         return subsample( argc, argv );
+    }
+    else if ( GF2::console::find_switch(argc,argv,"--corresp") || GF2::console::find_switch(argc,argv,"--corresp3D") )
+    {
+        return corresp( argc, argv );
     }
 
     return 1;
