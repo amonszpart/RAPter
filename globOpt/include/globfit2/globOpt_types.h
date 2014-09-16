@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "globfit2/primitives/linePrimitive2.h"
+#include "globfit2/primitives/linePrimitive.h"
 #include "globfit2/primitives/planePrimitive.h"
 #include "globfit2/primitives/pointPrimitive.h"
 
@@ -15,7 +15,7 @@ namespace GF2
 
     namespace _2d
     {
-        typedef GF2::LinePrimitive2                   PrimitiveT;
+        typedef GF2::LinePrimitive                    PrimitiveT;
         typedef std::vector<PrimitiveT>               InnerPrimitiveContainerT;
         typedef std::vector<InnerPrimitiveContainerT> PrimitiveContainerT;
     }

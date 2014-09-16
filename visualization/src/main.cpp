@@ -2,18 +2,17 @@
 #include "pcl/console/parse.h"
 
 #include "globfit2/visualization/visualization.h"
-#include "globfit2/primitives/linePrimitive2.h"
-#include "globfit2/primitives/planePrimitive.h"
+#include "globfit2/globOpt_types.h"
 
 int main(int argc, char *argv[])
 {
     if ( pcl::console::find_switch(argc,argv,"--show") )
     {
-        return GF2::vis::showCli<GF2::LinePrimitive2>( argc, argv );
+        return GF2::vis::showCli<GF2::_2d::PrimitiveT>( argc, argv );
     }
     else if ( pcl::console::find_switch(argc,argv,"--show3D") )
     {
-        return GF2::vis::showCli<GF2::PlanePrimitive>( argc, argv );
+        return GF2::vis::showCli<GF2::_3d::PrimitiveT>( argc, argv );
     }
     else
     {

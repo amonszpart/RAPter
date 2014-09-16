@@ -5,7 +5,8 @@
 #include <memory> // shared_ptr
 
 #include <Eigen/Dense>
-#include "globfit2/primitives/primitive.h"
+#include "globfit2/primitives/primitive.h" // inherit
+#include "globfit2/primitives/taggable.h"  // inherit
 
 #ifdef GF2_USE_PCL
 #   include "pcl/point_cloud.h"
@@ -20,10 +21,22 @@ namespace GF2
     //!
     //!          Stores 3D position at the first three coeffs, and 3D direction at the second three.
     //! \warning Note, stores direction, NOT normal.
-    class LinePrimitive : public ::GF2::Primitive<2,6>
+    class LinePrimitive : public ::GF2::Primitive<2,6>, public ::GF2::Taggable
     {
             typedef ::GF2::Primitive<2,6> ParentT;
         public:
+            //! \brief Defines the tags (ids) that this primitive can manage using setTag and getTag functions.
+            enum TAGS {
+                GID        = 0  //!< group id             - which group this primitive is supposed to explain
+                , DIR_GID  = 1  //!< direction group id   - which group this primitive got it's direction from
+                , CHOSEN   = 2  //!< an additional flag to store, if this is part of a solution.
+                , USER_ID1 = 10 //!< additional flag to store processing attributes (values only in the generation scope)
+                , USER_ID2 = 11 //!< additional flag to store processing attributes (values only in the generation scope)
+                , USER_ID3 = 12 //!< additional flag to store processing attributes (values only in the generation scope)
+                , USER_ID4 = 13 //!< additional flag to store processing attributes (values only in the generation scope)
+                , USER_ID5 = 14 //!< additional flag to store processing attributes (values only in the generation scope)
+            }; //...TAGS
+
             typedef ParentT::Scalar Scalar;
 
             // ____________________CONSTRUCT____________________
@@ -81,6 +94,33 @@ namespace GF2
 
                 return par.cross( plane_normal ).normalized();
             } //...normal()
+
+            // _______________________IO_______________________
+            /*! \brief Used in \ref io::readPrimitives to determine how many floats to parse from one entry.
+             */
+            static inline int getFileEntryLength() { return 6; }
+
+            /*! \brief Output <x0,n>, location and normal for the plane to a string that does *not* have an endline at the end.
+             */
+            inline std::string toFileEntry() const
+            {
+                Eigen::Matrix<Scalar,3,1> pos = this->pos();
+                Eigen::Matrix<Scalar,3,1> nrm = this->normal();
+                char line[1024];
+                sprintf( line, "%.9f,%.9f,%.9f,%.9f,%.9f,%.9f,"
+                         , pos(0), pos(1), pos(2)
+                         , nrm(0), nrm(1), nrm(2) );
+                return std::string( line );
+            }
+
+            /*! \brief              Used in \ref io::readPrimitives to create the primitive from the read floats.
+             *  \param[in] entries  Contains <x0,n> to create the plane from.
+             */
+            static inline LinePrimitive fromFileEntry( std::vector<Scalar> const& entries )
+            {
+                return LinePrimitive( Eigen::Map<const Eigen::Matrix<Scalar,3,1> >( entries.data()  , 3 ),
+                                       Eigen::Map<const Eigen::Matrix<Scalar,3,1> >( entries.data()+3, 3 ).cross(Eigen::Matrix<Scalar,3,1>::UnitZ()) );
+            } //...fromFileEntry()
 
             // ____________________GEOMETRY____________________
 

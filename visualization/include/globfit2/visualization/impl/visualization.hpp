@@ -4,8 +4,6 @@
 #include <pcl/console/parse.h>
 
 #include <vector>
-#include "globfit2/primitives/linePrimitive2.h"
-#include "globfit2/primitives/pointPrimitive.h"
 
 #include "globfit2/io/io.h"                      // readPrimitives()
 #include "globfit2/visualization/visualizer.hpp" // GF2::Visualizer

@@ -1,6 +1,5 @@
 #include "globfit2/util/parse.h"
-
-#include "globfit2/primitives/linePrimitive2.h"
+#include "globfit2/globOpt_types.h" // _2d::, _3d::
 
 namespace correspondance
 {
@@ -45,7 +44,7 @@ int corresp( int argc, char** argv )
 {
     if ( GF2::console::find_switch(argc,argv,"--corresp") )
     {
-        return correspondance::correspCli<GF2::LinePrimitive2>(argc,argv);
+        return correspondance::correspCli<GF2::_2d::PrimitiveT>(argc,argv);
     }
 
     return EXIT_FAILURE;
