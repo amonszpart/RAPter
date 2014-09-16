@@ -5,82 +5,84 @@ See C++ InputGen project for more details on Projects
 """
 from numpy import vectorize
 import math
+import numpy as np
+from scipy import stats
 
 
-class DisplacementKernel(object):
+class DisplacementKernel(stats.rv_continuous):
     """Python representation of the C++ class AbstractDisplacementKernel
     """
-    def __init__(self, name, typeId, enabled):
-        self.name    = name
-        self.typeId  = typeId
-        self.enabled = enabled
-
+    def __init__(self, typeId = None, sname = None, enabled = None, *args, **kwargs):   
+        super(DisplacementKernel, self).__init__(*args, **kwargs)
+        
     def getName(self):
-        return self.name
+        return self._ctor_param['sname']
 
     def getType(self):
-        return self.typeId
+        return self._ctor_param['typeId']
 
     def isEnabled(self):
-        return self.enabled
+        return self._ctor_param['enabled']
+        
+    def _stats(self):
+        return 0., 0., 0., 0.
 
     def __str__(self):
-        return "%s displacement kernel (enabled=%s)" % (self.name, self.enabled)
+        return "%s displacement kernel (enabled=%s)" % (self._ctor_param['sname'], self._ctor_param['enabled'])
+        
 
 class UniformRandomDisplacementKernel(DisplacementKernel):
     """Python representation of the C++ class UniformRandomDisplacementKernel
     """
-    def __init__(self, paramList, enabled):
-        super(UniformRandomDisplacementKernel, self).__init__("Random (Uniform)", 0, enabled)
-
-        self.rangeMin = paramList[0]
-        self.rangeMax = paramList[1]
-    
-    def getPDF(self, xarray):
-        rangeMin = self.rangeMin
-        rangeMax = self.rangeMax
+    def __init__(self, paramList, enabled, *args, **kwargs):
+        super(UniformRandomDisplacementKernel, self).__init__(*args, **kwargs)        
+        self._ctor_param['paramList'] = paramList
+        self._ctor_param['sname']   = "Random (Uniform)"
+        self._ctor_param['typeId']  = 0
+        self._ctor_param['enabled'] = enabled
+        
+    def _pdf(self, x):
+        rangeMin = self._ctor_param['paramList'][0]
+        rangeMax = self._ctor_param['paramList'][1]
         pdfvalue = 1. / (rangeMax - rangeMin)
-        def myfunc(x):
-            if (x<rangeMin) or (x>rangeMax):
-                return 0.
-            else:
-                return pdfvalue
-        vfunc = vectorize(myfunc)
-        return vfunc(xarray)
+        
+        return np.where((x<rangeMin) or (x>rangeMax), 0., )
+    
 
 class NormalRandomDisplacementKernel(DisplacementKernel):
     """Python representation of the C++ class NormalRandomDisplacementKernel
     """
-    def __init__(self, paramList, enabled):
-        super(NormalRandomDisplacementKernel, self).__init__("Random (Normal)", 1, enabled)         
-
-        self.stdev = paramList[0]
-        self.mean  = paramList[1]
+    def __init__(self, paramList, enabled, *args, **kwargs):
+        super(NormalRandomDisplacementKernel, self).__init__(*args, **kwargs)         
+     
+        self._ctor_param['paramList'] = paramList
+        self._ctor_param['sname']   = "Random (Normal)"
+        self._ctor_param['typeId']  = 1
+        self._ctor_param['enabled'] = enabled
+        #self._ctor_param['momtype'] = 0
     
-    def getPDF(self, xarray):
-        mean  = self.mean
-        stdev = self.stdev
+    def _pdf(self, x):
+        mean  = self._ctor_param['paramList'][1]
+        stdev = self._ctor_param['paramList'][0]
+        
+        #print 'did you call me ?'
 
         #http://www.cplusplus.com/reference/random/normal_distribution/
-        def myfunc(x):
-            return 1./(stdev* math.sqrt(2.*math.pi)) * math.exp(-pow((x-mean),2)/(2.*stdev*stdev))
-        vfunc = vectorize(myfunc)
-        return vfunc(xarray)
+        return 1./(stdev* math.sqrt(2.*math.pi)) * np.exp(-pow((x-mean),2)/(2.*stdev*stdev))
+            
 
 class BiasDisplacementKernel(DisplacementKernel):
     """Python representation of the C++ class BiasDisplacementKernel
     """
-    def __init__(self, bias, enabled):
-        super(BiasDisplacementKernel, self).__init__("Bias", 2, enabled)         
+    def __init__(self, bias, enabled = True, *args, **kwargs):
+        super(BiasDisplacementKernel, self).__init__("Bias", 2, enabled, *args, **kwargs)         
 
         self.bias  = bias
 
     # The PDF of this function is a Dirac pic. 
-    def getPDF(self, xarray):
+    def _pdf(self, xarray):
         print "Warning: Bias PDF is an infinite Dirac that will not been displayed"
-        def myfunc(x): return 0.
-        vfunc = vectorize(myfunc)
-        return vfunc(xarray)
+        return 0
 
 """Factory to generate displacement kernels from its typeId
     \param paramArray Array generated when parsing the xml file
