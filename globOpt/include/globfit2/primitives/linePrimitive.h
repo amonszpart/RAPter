@@ -20,9 +20,9 @@ namespace GF2
     //!
     //!          Stores 3D position at the first three coeffs, and 3D direction at the second three.
     //! \warning Note, stores direction, NOT normal.
-    class LinePrimitive : public ::GF2::Primitive<6>
+    class LinePrimitive : public ::GF2::Primitive<2,6>
     {
-            typedef ::GF2::Primitive<6> ParentT;
+            typedef ::GF2::Primitive<2,6> ParentT;
         public:
             typedef ParentT::Scalar Scalar;
 

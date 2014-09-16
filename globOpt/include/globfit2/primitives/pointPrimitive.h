@@ -7,9 +7,9 @@
 namespace GF2
 {
     //! \brief Wrapper class for oriented 3D points.
-    class PointPrimitive : public ::GF2::Primitive<6>, public ::GF2::Taggable
+    class PointPrimitive : public ::GF2::Primitive<3,6>, public ::GF2::Taggable
     {
-        typedef ::GF2::Primitive<6> ParentT;
+        typedef ::GF2::Primitive<3,6> ParentT;
         public:
             //! \brief custom tags for taggable
             enum TAGS {
@@ -53,7 +53,7 @@ namespace GF2
             }
 
             //! \brief ::GF2::Primitive<Dim>::operator() are inherited convenience getters from parent class. \todo Use explicit operator VectorType() instead.
-            using ::GF2::Primitive<Dim>::operator();
+            using ParentT::operator();
 
             //! \brief Constructor functor. Used in Solver::show(), should be deprecated.
             struct Allocator

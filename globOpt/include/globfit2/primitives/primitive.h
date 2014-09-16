@@ -9,15 +9,18 @@
 
 namespace GF2
 {
-    //! \brief          Primitive wrapper base class. Requires implementation of #pos() and #dir() functions.
-    //!                 It's also good to implement constructor from default input (i.e. from point and normal for planes)
-    //! \tparam _Dim    Length of internal vector storage. Should be able to fit any primitive.
-    //! \tparam _Scalar Internal data type. Concept: float.
-    template <int _Dim, typename _Scalar = float>
+     /*! \brief                 Primitive wrapper base class. Requires implementation of #pos() and #dir() functions.
+      *                         It's also good to implement constructor from default input (i.e. from point and normal for planes)
+      *  \tparam _EmbedSpaceDim Hack to know, if the embedding space is 2D or 3D. TODO: don't use smartgeometry::fitlinearprimitve in \ref Segment::fitLocal()
+      *  \tparam _Dim           Length of internal vector storage. Should be able to fit any primitive.
+      *  \tparam _Scalar        Internal data type. Concept: float.
+      */
+    template <int _EmbedSpaceDim, int _Dim, typename _Scalar = float>
     class Primitive
     {
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+            enum { EmbedSpaceDim = _EmbedSpaceDim };
 
 
             // ____________________TYPEDEFS____________________

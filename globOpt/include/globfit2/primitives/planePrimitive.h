@@ -18,9 +18,9 @@ namespace GF2
     //! \brief   Class to wrap a plane with. Implements #pos() and #dir() functions, and a constructor taking a position and a direction.
     //!
     //!          Stores 3D normal at the first three coeffs, and distance from origin at the fourth coordinate.
-    class PlanePrimitive : public ::GF2::Primitive<4>, public ::GF2::Taggable
+    class PlanePrimitive : public ::GF2::Primitive<3,6>, public ::GF2::Taggable
     {
-            typedef ::GF2::Primitive<4> ParentT;
+            typedef ::GF2::Primitive<3,6> ParentT;
         public:
             //! \brief Defines the tags (ids) that this primitive can manage using setTag and getTag functions.
             enum TAGS {
@@ -54,17 +54,32 @@ namespace GF2
             //! \param[in] dir   Plane normal.
             PlanePrimitive( Eigen::Matrix<Scalar,3,1> pnt, Eigen::Matrix<Scalar,3,1> normal );
 
+            /*! \brief Creates plane primitive from an ordered local frame
+             */
+            PlanePrimitive( Eigen::Matrix<Scalar,3,1> const& centroid, Eigen::Matrix<Scalar,3,1> const& eigen_values, Eigen::Matrix<Scalar, 3, 3> const& eigen_vectors )
+            {
+                // get eigen vector for biggest eigen value
+                const int min_eig_val_id = std::distance( eigen_values.data(), std::min_element( eigen_values.data(), eigen_values.data()+3 ) );
+                // set position
+                _coeffs.template head<3>() = centroid;
+                // set direction
+                _coeffs.template segment<3>(3) = eigen_vectors.col(min_eig_val_id).normalized();
+            }
+
             // ____________________VIRTUALS____________________
             //! \brief  Compulsory virtual overload of position getter. The position of the plane is calculated on the fly from the formula N . x0 + d = 0.
             //! \return The position of the plane as a 3D Eigen::Vector.
-            virtual Eigen::Matrix<Scalar,3,1> pos() const { return _coeffs.head<3>() * (-1.f*_coeffs(3)); }
+            //virtual Eigen::Matrix<Scalar,3,1> pos() const { return _coeffs.head<3>() * (-1.f*_coeffs(3)); }
+            virtual Eigen::Matrix<Scalar,3,1> pos() const { return _coeffs.head<3>(); }
             //! \brief  Compulsory virtual overload of orientation getter. The orientation of the plane is the normal stored at the first three coordinates of #_coeffs.
             //! \return The normal of the plane as a 3D Eigen::Vector.
-            virtual Eigen::Matrix<Scalar,3,1> dir() const { return _coeffs.head<3>()                    ; }
+            //virtual Eigen::Matrix<Scalar,3,1> dir() const { return _coeffs.head<3>()                    ; }
+            virtual Eigen::Matrix<Scalar,3,1> dir() const { return _coeffs.segment<3>(3); }
 
             //! \brief  Returns the normal, that is stored at the first three coordinates of the internal storage.
             //! \return The plane normal as a 3D Eigen::Vector Map.
-            inline Eigen::Matrix<Scalar,4,1>::ConstFixedSegmentReturnType<3>::Type normal() const { return _coeffs.head<3>(); }
+            inline Eigen::Matrix<Scalar,Dim,1>::ConstFixedSegmentReturnType<3>::Type normal() const { return _coeffs.segment<3>(3); }
+            //virtual Eigen::Matrix<Scalar,3,1> normal() const { return _coeffs.segment<3>(3); }
 
             // _______________________IO_______________________
             /*! \brief Used in \ref io::readPrimitives to determine how many floats to parse from one entry.
@@ -89,8 +104,8 @@ namespace GF2
              */
             static inline PlanePrimitive fromFileEntry( std::vector<Scalar> const& entries )
             {
-                return PlanePrimitive( Eigen::Map<const Eigen::Matrix<Scalar,3,1> >( entries.data()  , 3 ),
-                                       Eigen::Map<const Eigen::Matrix<Scalar,3,1> >( entries.data()+3, 3 ) );
+                return PlanePrimitive( /*    pos: */ Eigen::Map<const Eigen::Matrix<Scalar,3,1> >( entries.data()  , 3 ),
+                                       /* normal: */ Eigen::Map<const Eigen::Matrix<Scalar,3,1> >( entries.data()+3, 3 ) );
             }
 
             // ____________________GEOMETRY____________________
@@ -101,15 +116,14 @@ namespace GF2
             inline Scalar
             getDistance( Eigen::Matrix<Scalar,3,1> const& point ) const
             {
-                // verified, this works well:
-                // n . x + d = 0
-                return this->dir().dot(point) + this->_coeffs(3);
+                //return this->dir().dot(point) + this->_coeffs(3);
+                return (this->pos() - point).dot( this->dir() );
             }
 
             inline Eigen::Matrix<Scalar,3,1>
             projectPoint( Eigen::Matrix<Scalar,3,1> const& point ) const
             {
-                // verified, this works well:
+                //return point - (this->getDistance(point) * this->dir() );
                 return point - (this->getDistance(point) * this->dir() );
             } // projectPoint
 
@@ -284,7 +298,7 @@ namespace GF2
 
                 // draw plane polygon
                 v->addPolygon<pcl::PointXYZ>( plane_polygon_cloud_ptr, r,g,b, plane_name, viewport_id );
-                v->setShapeRenderingProperties( pcl::visualization::PCL_VISUALIZER_OPACITY, .5, plane_name);
+                v->setShapeRenderingProperties( pcl::visualization::PCL_VISUALIZER_OPACITY, .9, plane_name);
                 v->setShapeRenderingProperties( pcl::visualization::PCL_VISUALIZER_REPRESENTATION, pcl::visualization::PCL_VISUALIZER_REPRESENTATION_SURFACE, plane_name );
 
                 // show normal
@@ -394,8 +408,10 @@ namespace GF2
     inline
     PlanePrimitive::PlanePrimitive( Eigen::Matrix<Scalar, 3, 1> pnt, Eigen::Matrix<Scalar, 3, 1> normal )
     {
-        _coeffs.template segment<3>(0) = normal.normalized();
-        _coeffs                    (3) = Scalar(-1) * _coeffs.template head<3>().dot( pnt.template head<3>() ); // distance
+        _coeffs.template head<3>() = pnt;
+        _coeffs.template segment<3>(3) = normal;
+        //_coeffs.template segment<3>(0) = normal.normalized();
+        //_coeffs                    (3) = Scalar(-1) * _coeffs.template head<3>().dot( pnt.template head<3>() ); // distance
     }
 
 #   ifdef GF2_USE_PCL
@@ -403,10 +419,15 @@ namespace GF2
     PlanePrimitive::modelCoefficients() const
     {
         pcl::ModelCoefficients::Ptr model_coeffs( new pcl::ModelCoefficients() );
-        model_coeffs->values.resize(Dim);
-        std::copy( _coeffs.data(), _coeffs.data()+Dim, model_coeffs->values.begin() );
-
-        return model_coeffs;
+       model_coeffs->values.resize(Dim);
+       // copy normal
+       std::copy( _coeffs.data()+3, _coeffs.data()+6, model_coeffs->values.begin() );
+       // calculate distance from origin
+       model_coeffs->values[3] = Scalar(-1.) * this->normal().dot( this->pos() );
+       if ( model_coeffs->values[3] != this->getDistance(Eigen::Matrix<Scalar,3,1>::Zero()) )
+           std::cout << "these should be similar: " << this->getDistance(Eigen::Matrix<Scalar,3,1>::Zero())
+                        << " , " << model_coeffs->values[3] << std::endl;
+       return model_coeffs;
     }
 #   endif // GF2_USE_PCL
 

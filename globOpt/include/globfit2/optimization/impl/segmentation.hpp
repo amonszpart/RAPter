@@ -65,9 +65,13 @@ Segmentation::orientPoints( _PointContainerT          &points
     return EXIT_SUCCESS;
 } //...Segmentation::orientPoints()
 
+/*! \brief Fits a local direction to each point and it's neighourhood.
+ *  \tparam PrimitiveContainerT Concept: vector< vector< LinePrimitive2/PlanePrimitive > >.
+ *  \tparam _PointContainerPtrT Concept: pcl::PointCloud<pcl::PointXYZRGB>::Ptr.
+ */
 template < class _PrimitiveContainerT
          , class _PointContainerPtrT> int
-Segmentation:: fitLocal( _PrimitiveContainerT        & lines
+Segmentation:: fitLocal( _PrimitiveContainerT        & primitives
                        , _PointContainerPtrT    const  cloud
                        , std::vector<int>       const* indices
                        , int                    const  K
@@ -77,9 +81,9 @@ Segmentation:: fitLocal( _PrimitiveContainerT        & lines
                        )
 {
     using std::vector;
-    typedef typename _PrimitiveContainerT::value_type         TLine;
-    typedef typename TLine::Scalar              Scalar;
-    typedef typename _PointContainerPtrT::element_type   PointsT;
+    typedef typename _PrimitiveContainerT::value_type   PrimitiveT;
+    typedef typename PrimitiveT::Scalar                 Scalar;
+    typedef typename _PointContainerPtrT::element_type  PointsT;
 
     if ( indices ) { std::cerr << __PRETTY_FUNCTION__ << "]: indices must be NULL, not implemented yet..." << std::endl; return EXIT_FAILURE; }
 
@@ -113,15 +117,53 @@ Segmentation:: fitLocal( _PrimitiveContainerT        & lines
             continue;
         }
 
-        Eigen::Matrix<Scalar,TLine::Dim,1> line;
-        int err = smartgeometry::geometry::fitLinearPrimitive<PointsT,Scalar,TLine::Dim>( /*           output: */ line
-                                                                             , /*         points: */ *cloud
-                                                                             , /*          scale: */ radius
-                                                                             , /*        indices: */ &(neighs[pid])
-                                                                             , /*    refit times: */ 2
-                                                                             , /* use input line: */ false
-                                                                             );
-        if ( err == EXIT_SUCCESS )      lines.emplace_back( TLine(line));
+        int err = EXIT_SUCCESS;
+        if ( PrimitiveT::EmbedSpaceDim == 2 ) // we are in 2D, and TLine is LinePrimitive2
+        {
+            Eigen::Matrix<Scalar,6,1> line;
+            err = smartgeometry::geometry::fitLinearPrimitive<PointsT,Scalar,6>( /*           output: */ line
+                                                                                          , /*         points: */ *cloud
+                                                                                          , /*          scale: */ radius
+                                                                                          , /*        indices: */ &(neighs[pid])
+                                                                                          , /*    refit times: */ 2
+                                                                                          , /* use input line: */ false
+                                                                                          );
+            if ( err == EXIT_SUCCESS )
+            {
+                // Create a LinePrimitive from its coeffs <x0, dir>
+                primitives.emplace_back( PrimitiveT(line) );
+            }
+        }
+        else // we are in 3D, and TLine is PlanePrimitive
+        {
+            // fitLInearPirmitive uses "rows==4" to fit a plane TODO: use processing::fitlinearprimitive instead.
+            Eigen::Matrix<Scalar,4,1> plane;
+            err = smartgeometry::geometry::fitLinearPrimitive<PointsT,Scalar,4>( /*           output: */ plane
+                                                                               , /*         points: */ *cloud
+                                                                               , /*          scale: */ radius
+                                                                               , /*        indices: */ &(neighs[pid])
+                                                                               , /*    refit times: */ 2
+                                                                               , /* use input line: */ false
+                                                                               );
+            if ( err == EXIT_SUCCESS )
+            {
+                // Create a PlanePrimitive from < n, d > format
+                // by using n, and the center point of the neighbourhood.
+                primitives.emplace_back(  PrimitiveT( /*     x0: */ (*cloud)[pid].getVector3fMap()
+                                                    , /* normal: */ plane.template head<3>() )  );
+#if 0
+                std::cout << "fit " << primitives.back().toString() << " to\n";
+                for ( int i = 0; i != neighs[pid].size(); ++i )
+                {
+                    const int pj = neighs[pid][i];
+                    std::cout << (*cloud)[pj].getVector3fMap().transpose()
+                              << ", with dist " << sqr_dists[pid][i] << " == " << sqr_dists[pid][i] << " < " << radius << std::endl;
+                }
+#endif
+            }
+        }
+
+
         if ( point_ids )
         {
             point_ids->emplace_back( pid );
@@ -129,7 +171,7 @@ Segmentation:: fitLocal( _PrimitiveContainerT        & lines
     }
     std::cout << "[" << __func__ << "]: "
               << skipped << "/" << neighs.size() << ": " << skipped / static_cast<float>(neighs.size()) * 100.f << "% of points did not produce primitives, so the primitive count is:"
-              << lines.size() << " = " << lines.size() / static_cast<float>(neighs.size()) *100.f << "%" << std::endl;
+              << primitives.size() << " = " << primitives.size() / static_cast<float>(neighs.size()) *100.f << "%" << std::endl;
 
     return EXIT_SUCCESS;
 } // ...Segment::propose()

@@ -173,7 +173,11 @@ class Segmentation
                   , int                         const  gid_tag_name              //= _PointT::GID
                   , int                         const  nn_K );
 
-        //! \brief propose      Create local fits to local neighbourhoods, these will be the point orientations.
+        /*! \brief  Fits a local direction to each point and it's neighourhood.
+         *          Create local fits to local neighbourhoods, these will be the point orientations.
+         *  \tparam PrimitiveContainerT Concept: vector< vector< LinePrimitive2/PlanePrimitive > >.
+         *  \tparam _PointContainerPtrT Concept: pcl::PointCloud<pcl::PointXYZRGB>::Ptr.
+         */
         template <  class _PrimitiveContainerT
                   , class _PointContainerPtrT>
         static inline int

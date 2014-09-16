@@ -551,11 +551,13 @@ namespace GF2 {
                                           : cloud->at( pid                 );
 
                 // calculate neighbourhood indices
-                if ( doRadiusSearch ) found_points_count = tree->radiusSearch  ( searchPoint, radius, neighbour_indices[pid], sqr_dists, /* all: */ 0 );
-                else                  found_points_count = tree->nearestKSearch( searchPoint,      K, neighbour_indices[pid], sqr_dists    );
+                if ( doRadiusSearch )
+                    found_points_count = tree->radiusSearch  ( searchPoint, radius, neighbour_indices[pid], sqr_dists, /* all: */ 0 );
+                else
+                    found_points_count = tree->nearestKSearch( searchPoint,      K, neighbour_indices[pid], sqr_dists    );
 
                 if ( (found_points_count <2 ) && (soft_radius) )
-                    found_points_count = tree->nearestKSearch( searchPoint,      K, neighbour_indices[pid], sqr_dists    );
+                    found_points_count = tree->nearestKSearch( searchPoint,      3, neighbour_indices[pid], sqr_dists    );
 
                 // output distances
                 if ( found_points_count > 0 )
