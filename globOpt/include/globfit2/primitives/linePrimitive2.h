@@ -58,11 +58,9 @@ namespace GF2
              */
             static inline LinePrimitive2 fromFileEntry( std::vector<Scalar> const& entries )
             {
-                LinePrimitive2 lp2( Eigen::Map<const Eigen::Matrix<Scalar,3,1> >( entries.data()  , 3 ),
-                                    Eigen::Map<const Eigen::Matrix<Scalar,3,1> >( entries.data()+3, 3 ).cross(Eigen::Matrix<Scalar,3,1>::UnitZ()) );
-
-                return lp2;
-            }
+                return LinePrimitive2( Eigen::Map<const Eigen::Matrix<Scalar,3,1> >( entries.data()  , 3 ),
+                                       Eigen::Map<const Eigen::Matrix<Scalar,3,1> >( entries.data()+3, 3 ).cross(Eigen::Matrix<Scalar,3,1>::UnitZ()) );
+            } //...fromFileEntry()
 
 
     }; //... class LinePrimitive2
