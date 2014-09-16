@@ -13,14 +13,14 @@ namespace GF2 {
             //! \brief Scale parameter of input.
             _Scalar scale = 0.05;
 
-            //! \brief Desired angles.
+            //! \brief Desired angles stored in radians but generated from degrees.
             std::vector<_Scalar> angles; // = { 0, M_PI_2, M_PI };
 
             //! \brief  Point-count threshold, that decides if a patch is big or small. (small: \#points < patch_pop_limit, large: \#points >= patch_pop_limit).
             //!         \n Used in \ref CandidateGenerator::generate(), \ref ProblemSetup::formulate(), \ref problemSetup::largePatchesNeedDirectionConstraint().
             //!         \n In \ref CandidateGenerator::generate() decides, when a patch can distribute its directions.
             //!         \n In \ref ProblemSetup::formulate() decides, which constraint is to be used in \ref problemSetup::largePatchesNeedDirectionConstraint().
-            int patch_population_limit = 5;
+            int patch_population_limit = -1;
 
             //! \brief Two lines are parallel, if their angle is smaller than this.
             //!        Used in \ref Merging::mergeSameDirGids() and visualization.
