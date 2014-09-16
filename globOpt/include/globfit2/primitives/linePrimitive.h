@@ -74,6 +74,39 @@ namespace GF2
                 return LinePrimitive( p0, (p1-p0).normalized() );
             }
 
+            /*! \brief Called from \ref GF2::CandidateGenerator::generate to create a new candidate from this and \p other.
+             *         Create back-rotated version of the other at this position.
+             *  \param[out] out              Created output primitive.
+             *  \param[in]  other            Primitive, who's direction we want to use to generate something at our location.
+             *  \param[in]  closest_angle_id The id of closest perfect angle between us and \p other. This we want to rotate back by.
+             *  \param[in]  angles           List of desired angles, one of its entries is referenced by closest_angle_id.
+             *  \param[in]  angle_multiplier A coefficient to multiply the angle by. Set to -1, if we want to rotate back.
+             *  \return \p out is only valid, if return true. We might decide, that there's nothing to create, in which case we return false.
+             */
+            template <class _AngleContainerT>
+            inline bool generateFrom( LinePrimitive         & out
+                                    , LinePrimitive    const& other
+                                    , int              const  closest_angle_id
+                                    , _AngleContainerT const& angles
+                                    , Scalar           const  angle_multiplier = Scalar(1.)
+                                    ) const
+            {
+                Scalar const angle = angles[ closest_angle_id ] * angle_multiplier;
+
+                out = LinePrimitive( /*  position: */ this->pos()
+                                   , /* direction: */ Eigen::AngleAxisf(angle, Eigen::Matrix<Scalar,3,1>::UnitZ())
+                                                      * other.dir()
+                                   );
+                // copy position id from self
+                out.setTag( GID, this->getTag(GID) );
+                // copy direction id from the other
+                out.setTag( DIR_GID, other.getTag(DIR_GID) );
+                // erase chosen tag - this is a new candidate
+                out.setTag( CHOSEN , -1 );
+
+                return true;
+            } //...generateFrom
+
             // ____________________VIRTUALS____________________
             //! \brief  Compulsory virtual overload of position getter. The position of the line is the location stored at the first three coordinates of #_coeffs.
             //! \return The position of the line as a 3D Eigen::Vector.

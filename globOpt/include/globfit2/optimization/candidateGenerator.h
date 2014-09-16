@@ -154,7 +154,7 @@ namespace GF2
         typedef typename _PrimitiveContainerT::mapped_type::const_iterator inner_const_iterator;
 
         if ( out_lines.size() ) std::cerr << "[" << __func__ << "]: " << "warning, out_lines not empty!" << std::endl;
-        if ( params.patch_population_limit <= 0 ) { std::cerr << "[" << __func__ << "]: " << "error, popfilter is necessary!!!" << std::endl; return EXIT_FAILURE; }
+        if ( params.patch_population_limit < 0 ) { std::cerr << "[" << __func__ << "]: " << "error, popfilter is necessary!!!" << std::endl; return EXIT_FAILURE; }
 
         // (2) Mix and Filter
         // count patch populations
@@ -182,7 +182,12 @@ namespace GF2
         {
             for ( inner_const_iterator inner_it0  = (*outer_it0).second.begin(); inner_it0 != (*outer_it0).second.end(); ++inner_it0 )
             {
+                // copy input - to keep CHOSEN tag entries, so that we can start second iteration from a selection
                 containers::add( out_lines, inner_it0->getTag( _PrimitiveT::GID ), *inner_it0 );
+                // store position-direction combination to avoid duplicates
+                copied[ inner_it0->getTag(_PrimitiveT::GID) ].insert( inner_it0->getTag(_PrimitiveT::DIR_GID) );
+                // update output count
+                ++nlines;
             }
         }
 
@@ -231,12 +236,12 @@ namespace GF2
                             std::cerr << "[" << __func__ << "]: " << "Not good, prims under one gid don't have same GID in inner loop..." << std::endl;
 
                         // check, if same line (don't need both copies then, since 01-01 =~= 01-01)
-                        const bool same_line = ((outer_it0 == outer_it1) && (inner_it0 == inner_it1));
-                        if (same_line)
-                            std::cerr << "[" << __func__ << "]: " << "SAME LINE, should not happen" << std::endl;
+                        //const bool same_line = ((outer_it0 == outer_it1) && (inner_it0 == inner_it1));
+                        //if (same_line)
+                        //    std::cerr << "[" << __func__ << "]: " << "SAME LINE, should not happen" << std::endl;
 
-                        bool add0 = same_line, // add0: new primitive at location of prim0, with direction from prim1. We need to keep a copy, so true if same_line.
-                             add1 = false;     // add1: new primitive at location of prim1, with direction from prim0
+                        bool add0 = false, // add0: new primitive at location of prim0, with direction from prim1.
+                             add1 = false; // add1: new primitive at location of prim1, with direction from prim0
 
                         // find best rotation id and value
                         int     closest_angle_id = 0;
@@ -274,25 +279,22 @@ namespace GF2
                         if ( !add0 && !add1 )
                             continue;
 
-                        Eigen::Matrix<_Scalar,3,1> dir0 = prim1.dir(),
-                                                   dir1 = prim0.dir();
-                        if ( (closest_angle >= _Scalar(0)) && (closest_angle < M_PI) )
-                        {
-                            dir0 = Eigen::AngleAxisf(-closest_angle, Eigen::Matrix<_Scalar,3,1>::UnitZ() ) * dir0;
-                            dir1 = Eigen::AngleAxisf( closest_angle, Eigen::Matrix<_Scalar,3,1>::UnitZ() ) * dir1;
-                        }
+//                        Eigen::Matrix<_Scalar,3,1> dir0 = prim1.dir(),
+//                                                   dir1 = prim0.dir();
+//                        if ( (closest_angle >= _Scalar(0)) && (closest_angle < M_PI) )
+//                        {
+//                            dir0 = Eigen::AngleAxisf(-closest_angle, Eigen::Matrix<_Scalar,3,1>::UnitZ() ) * dir0;
+//                            dir1 = Eigen::AngleAxisf( closest_angle, Eigen::Matrix<_Scalar,3,1>::UnitZ() ) * dir1;
+//                        }
 
                         // copy line from pid to pid1
-                        if ( add0 )
+                        _PrimitiveT cand0;
+                        if ( add0 && prim0.generateFrom(cand0, prim1, closest_angle_id, angles, _Scalar(-1.)) )
                         {
                             // prepare
-                            _PrimitiveT cand0 = _PrimitiveT( prim0.pos(), dir0 );
-                            cand0.setTag( _PrimitiveT::GID    , prim0.getTag(_PrimitiveT::GID) );
-                            cand0.setTag( _PrimitiveT::DIR_GID, prim1.getTag(_PrimitiveT::DIR_GID) ); // recently changed this from GID
-                            if ( same_line )
-                            {
-                                cand0.setTag(_PrimitiveT::CHOSEN, prim0.getTag(_PrimitiveT::CHOSEN) ); // keep chosen lines chosen
-                            }
+                            //_PrimitiveT cand0 = _PrimitiveT( prim0.pos(), dir0 );
+                            //cand0.setTag( _PrimitiveT::GID    , prim0.getTag(_PrimitiveT::GID) );
+                            //cand0.setTag( _PrimitiveT::DIR_GID, prim1.getTag(_PrimitiveT::DIR_GID) ); // recently changed this from GID
 
                             // insert
                             int check = containers::add( out_lines, gid0, cand0 ).getTag( _PrimitiveT::GID );
@@ -312,11 +314,13 @@ namespace GF2
                                           << std::endl;
                         }
 
-                        if ( !same_line && add1 ) // add other copy only, if it's not the same line (we don't want duplicates)
+                        _PrimitiveT cand1;
+                        if ( add1 && prim1.generateFrom(cand1, prim0, closest_angle_id, angles, _Scalar(1.)) )
                         {
-                            _PrimitiveT cand1 = _PrimitiveT( prim1.pos(), dir1 );
-                            cand1.setTag( _PrimitiveT::GID    , prim1.getTag(_PrimitiveT::GID    ) );
-                            cand1.setTag( _PrimitiveT::DIR_GID, prim0.getTag(_PrimitiveT::DIR_GID) );
+                            //_PrimitiveT cand1 = _PrimitiveT( prim1.pos(), dir1 );
+                            //_PrimitiveT cand1( prim1, prim0, -closest_angle );
+                            //cand1.setTag( _PrimitiveT::GID    , prim1.getTag(_PrimitiveT::GID    ) );
+                            //cand1.setTag( _PrimitiveT::DIR_GID, prim0.getTag(_PrimitiveT::DIR_GID) );
 
                             // copy line from pid1 to pid
                             int check = containers::add( out_lines, gid1, cand1 ).getTag( _PrimitiveT::DIR_GID );

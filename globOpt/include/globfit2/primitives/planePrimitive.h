@@ -66,6 +66,43 @@ namespace GF2
                 _coeffs.template segment<3>(3) = eigen_vectors.col(min_eig_val_id).normalized();
             }
 
+            /*! \brief Called from \ref GF2::CandidateGenerator::generate to create a new candidate from this and \p other.
+             *         Create back-rotated version of the other at this position.
+             *  \param[out] out              Created output primitive.
+             *  \param[in]  other            Primitive, who's direction we want to use to generate something at our location.
+             *  \param[in]  closest_angle_id The id of closest perfect angle between us and \p other. This we want to rotate back by.
+             *  \param[in]  angles           List of desired angles, one of its entries is referenced by closest_angle_id.
+             *  \return \p out is only valid, if return true. We might decide, that there's nothing to create, in which case we return false.
+             */
+            template <class _AngleContainerT>
+            inline bool generateFrom( PlanePrimitive         & out
+                                    , PlanePrimitive    const& other
+                                    , int               const  closest_angle_id
+                                    , _AngleContainerT  const& angles
+                                    , Scalar            const  angle_multiplier = Scalar(1.)
+                                    ) const
+            {
+                // if not 0 or M_PI, meaning not parallel
+                if ( (closest_angle_id != 0) && (closest_angle_id != angles.size()-1) )
+                {
+                    std::cerr << "[" << __func__ << "]: " << "skipping  plane angle " << angles[closest_angle_id] << std::endl;
+                    return false;
+                }
+
+                //Scalar const angle = angles[ closest_angle_id ];
+                out = PlanePrimitive( /*  position: */ this->pos()
+                                    , /* direction: */ other.dir()
+                                    );
+                // copy position id from self
+                out.setTag( GID, this->getTag(GID) );
+                // copy direction id from the other
+                out.setTag( DIR_GID, other.getTag(DIR_GID) );
+                // erase chosen tag - this is a new candidate
+                out.setTag( CHOSEN , -1 );
+
+                return true;
+            } //...generateFrom
+
             // ____________________VIRTUALS____________________
             //! \brief  Compulsory virtual overload of position getter. The position of the plane is calculated on the fly from the formula N . x0 + d = 0.
             //! \return The position of the plane as a 3D Eigen::Vector.
