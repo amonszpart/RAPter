@@ -233,7 +233,7 @@ SET( GLOBOPT_SRC_LIST
     src/solve.cpp
     src/merge.cpp
     src/datafit.cpp
-    src/correspondance.cpp
+    src/correspondence.cpp
     #src/optimization/candidateGenerator.cpp # cached compilation
     #src/optimization/qp/visualizer.cpp     # cached compilation
 )
