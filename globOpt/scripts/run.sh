@@ -39,10 +39,15 @@ else
 	poplimit=5
 fi
 
+if [ -n "$5" ]; then
+	flag3D=$5;
+else
+	flag3D="";
+fi
+
 anglegens="90";
 nbExtraIter=2
 dirbias="0";
-flag3D=''; #"3D";
 
 visdefparam="--use-tags --no-clusters" #"--use-tags --no-clusters" #--ids
 
