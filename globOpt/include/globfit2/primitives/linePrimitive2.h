@@ -60,9 +60,6 @@ namespace GF2
             {
                 LinePrimitive2 lp2( Eigen::Map<const Eigen::Matrix<Scalar,3,1> >( entries.data()  , 3 ),
                                     Eigen::Map<const Eigen::Matrix<Scalar,3,1> >( entries.data()+3, 3 ).cross(Eigen::Matrix<Scalar,3,1>::UnitZ()) );
-                std::cout << "lp2.pos: " << lp2.pos().transpose() << std::endl;
-                std::cout << "lp2.dir: " << lp2.dir().transpose() << std::endl;
-                std::cout << "lp2.normal: " << lp2.normal().transpose() << std::endl;
 
                 return lp2;
             }
