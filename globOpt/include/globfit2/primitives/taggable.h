@@ -13,6 +13,14 @@ namespace GF2
     class Taggable
     {
         public:
+            enum USER_TAGS {
+                  USER_ID1 = 10 //!< additional flag to store processing attributes (values only in the generation scope)
+                , USER_ID2 = 11 //!< additional flag to store processing attributes (values only in the generation scope)
+                , USER_ID3 = 12 //!< additional flag to store processing attributes (values only in the generation scope)
+                , USER_ID4 = 13 //!< additional flag to store processing attributes (values only in the generation scope)
+                , USER_ID5 = 14 //!< additional flag to store processing attributes (values only in the generation scope)
+            }; //...TAGS
+
             //! \brief              Stores tag for int key. Mostly used by the enum typedefs.
             //! \param[in] key      Key to store \p value at.
             //! \param[in] value    Value to store.
