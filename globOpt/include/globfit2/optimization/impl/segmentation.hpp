@@ -247,7 +247,7 @@ Segmentation::patchify( _PrimitiveContainerT                   & patches
         {
             // PLANE
             _PrimitiveT toAdd;
-            processing::fitLinearPrimitive<_PrimitiveT::Dim>( /*  [in,out] primitive: */ toAdd
+            int err = processing::fitLinearPrimitive<_PrimitiveT::Dim>( /*  [in,out] primitive: */ toAdd
                                                             , /*              points: */ points
                                                             , /*               scale: */ scale
                                                             , /*             indices: */ &(populations[gid])
@@ -257,10 +257,30 @@ Segmentation::patchify( _PrimitiveContainerT                   & patches
                                                             , /*               debug: */ false  );
             std::cout << "repr: " << groups[gid].getRepresentative().toString()
                       << "refit: " << toAdd.toString() << std::endl;
+            if ( err != EXIT_SUCCESS )
+            {
+                std::cerr << "[" << __func__ << "]: " << "Vaiiii? err: " << err << ", pop: " << populations[gid].size() << std::endl;
+                toAdd = groups[gid].getRepresentative();
+                if ( toAdd.template dir().norm() < 0.9 )
+                {
+                    std::cerr << "[" << __func__ << "]: " << "getRepr().norm( " << toAdd.template dir().norm() << ") < 0.9: " << toAdd.toString() << ", this is very bad news" << std::endl;
+                }
+//                containers::add( patches, gid, toAdd )
+//                        .setTag( _PrimitiveT::GID    , gid )
+//                        .setTag( _PrimitiveT::DIR_GID, gid );
+            }
+            else
+            {
+                if ( toAdd.template dir().norm() < 0.9 )
+                {
+                    std::cerr << "[" << __func__ << "]: " << "toAdd.norm( " << toAdd.template dir().norm() << ") < 0.9: " << toAdd.toString() << ", this is very bad news" << std::endl;
+                    throw new std::runtime_error("adding primitive with too small normal");
+                }
 
-            containers::add( patches, gid, toAdd /*groups[gid].getRepresentative()*/ )
-                    .setTag( _PrimitiveT::GID    , gid )
-                    .setTag( _PrimitiveT::DIR_GID, gid );
+                containers::add( patches, gid, toAdd /*groups[gid].getRepresentative()*/ )
+                        .setTag( _PrimitiveT::GID    , gid )
+                        .setTag( _PrimitiveT::DIR_GID, gid );
+            }
         }
         else
             std::cerr << "[" << __func__ << "]: " << "Unrecognized EmbedSpaceDim - refit to patch did not work" << std::endl;
