@@ -63,11 +63,47 @@ namespace GF2
     //! \brief Compute the distance to a finite line
     struct MyPointFinitePlaneDistanceFunctor {
         template <class _LineT, class _PointContainerT, class _Vec3Derived>
-        inline bool eval(
+        inline typename _LineT::Scalar eval(
                   _PointContainerT const& extrema0
                 , _LineT const& l0
                 , _Vec3Derived const& q
                 ) const {
+            typedef typename _PointContainerT::value_type PointT;
+            typedef typename _LineT::Scalar Scalar;
+
+            PointT center (PointT::Zero());
+            std::for_each(extrema0.begin(), extrema0.end(), [&center] (const PointT& p){ center+=p; });
+            center /= Scalar(extrema0.size());
+
+            // First we build the local frame of the finite plane using the extrema.
+            // We use here a trick based on the order of these extrema (see PlanePrimitive::getExtent),
+            // also used in DecideMergePlaneFunctor::eval()
+            // The local frame is stored in a matrix, one column for each axis
+
+            Eigen::Matrix<Scalar, 3,3> frame;
+            frame.col(0) = (extrema0[1]-extrema0[0]).normalized();
+            frame.col(1) = (extrema0[2]-extrema0[1]).normalized();
+            frame.col(2) = frame.col(0).cross(frame.col(1)).normalized();
+
+            Eigen::Matrix<Scalar, 1, 3> hsize ( // row vector
+                        (extrema0[1]-extrema0[0]).norm() / Scalar(2.),
+                        (extrema0[2]-extrema0[1]).norm() / Scalar(2.),
+                        Scalar(0.) // a plane is flat, no thickness
+                        );
+
+            Eigen::Matrix<Scalar, 1, 3> lq = q - center; // column vector
+
+            return (( lq * frame )                                   // project each component of lq onto the frame and get the distance (dot product)
+                    .array().abs().eval().array()                    // get unsigned distance
+                    <= hsize.array())                                // check if we are inside the box for each coordinate
+                    .select (                                        // if test (dimension wise):
+                        Eigen::Matrix<Scalar, 3,1>::Zero(),          //   - we are inside the box, so distance is 0
+                        (( lq * frame ).array().abs() - hsize.array()).eval() //   - we are outside the box, so return unsigned distance (distance to center - box size)
+                        ).norm();
+
+
+
+
             return std::numeric_limits<typename _PointContainerT::value_type::Scalar>::max();
         }
     };
