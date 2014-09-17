@@ -25,6 +25,53 @@ namespace GF2
             }
     };
 
+    //! \brief Compute the distance to a finite line
+    struct MyPointFiniteLineDistanceFunctor {
+        template <class _LineT, class _PointContainerT, class _Vec3Derived>
+        inline typename _LineT::Scalar eval(
+                  _PointContainerT const& extrema0
+                , _LineT const& l0
+                , _Vec3Derived const& q
+                ) const {
+            typedef typename _PointContainerT::value_type PointT;
+            typedef typename _LineT::Scalar Scalar;
+
+
+            // The algorithm is very similar to the one used in DecideMergeLineFunctor::eval,
+            // except that we need to compute the distance between the line l0 and q (and not to l1 extents)
+            // There are two cases:
+            //   - q is projected othogonaly to the finite line l0, in that case we return the orthogonal direction
+            //   - q is projected out of the line, so we return the minimum distance to the two extents
+
+            // check if q is in the band aligned with l0, thickness=scale
+            const PointT & l0a = extrema0[0];
+            const PointT & l0b = extrema0[1];
+
+            // Get line direction using extents
+            const PointT l0dir = (l0b - l0a).normalized();
+            // Compute dq, the parametric position of q on the line
+            const Scalar dq   = l0dir.dot(q-l0a);
+
+            // if orthogonally projected onto the finite line
+            if ((dq >= Scalar(0.) && dq <= (l0b - l0a).norm())){
+                return std::abs(l0.template normal().dot(q-l0.pos())); // orthogonal direction to the line
+            }
+            return std::min( (q-l0a).norm(),(q-l0b).norm()); // minimum distance the the line extremas
+        }
+    };
+
+    //! \brief Compute the distance to a finite line
+    struct MyPointFinitePlaneDistanceFunctor {
+        template <class _LineT, class _PointContainerT, class _Vec3Derived>
+        inline bool eval(
+                  _PointContainerT const& extrema0
+                , _LineT const& l0
+                , _Vec3Derived const& q
+                ) const {
+            return std::numeric_limits<typename _PointContainerT::value_type::Scalar>::max();
+        }
+    };
+
     //! \brief Functor with eval function; Takes two primitives, calculates their angle,
     //!        and returns the abs difference to the closest angle provided in the angles parameter.
     struct MyPrimitivePrimitiveAngleFunctor
