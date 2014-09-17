@@ -38,7 +38,7 @@ class Merging
                  , class _PointContainerT
                  , class _PrimitiveContainerT
                  , typename _Scalar >
-        static inline int adoptPoints( _PointContainerT &points, _PrimitiveContainerT const& prims, _Scalar const scale, char const mode );
+        static inline int adoptPoints( _PointContainerT &points, _PrimitiveContainerT const& prims, _Scalar const scale, char const mode, int pop_limit );
 
         /*! \brief Merges adjacent patches that have the same direction ID or are almost parallel.
          *  \tparam _PatchPatchDistanceFunctorT  Concept: \ref GF2::RepresentativeSqrPatchPatchDistanceFunctorT.

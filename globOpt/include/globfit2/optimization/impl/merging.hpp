@@ -120,6 +120,8 @@ Merging::mergeCli( int argc, char** argv )
         pcl::console::parse_argument( argc, argv, "--thresh-mult", params.spatial_threshold_mult );
         pcl::console::parse_argument( argc, argv, "--assoc", assoc_path );
         pcl::console::parse_argument( argc, argv, "-a", assoc_path );
+        pcl::console::parse_argument( argc, argv, "--patch-pop-limit", params.patch_population_limit );
+
 
         std::cerr << "[" << __func__ << "]: " << "Usage:\t gurobi_opt --formulate\n"
                   << "\t--scale " << params.scale << "\n"
@@ -128,6 +130,7 @@ Merging::mergeCli( int argc, char** argv )
                   << "\t-a,--assoc " << assoc_path << "\n"
                   << "\t[--angle-gens "; for(int i=0;i!=angle_gens.size();++i)std::cerr<<angle_gens[i]<<",";std::cerr<<"]\n";
         std::cerr << "\t[--adopt " << params.do_adopt << "]\n"
+                  << "\t[--patch-pop-limit " << params.patch_population_limit << "]\n"
                   << "\t[--thresh-mult " << params.spatial_threshold_mult << "]\n"
                   << std::endl;
 
@@ -184,10 +187,10 @@ Merging::mergeCli( int argc, char** argv )
         std::cout << "starting adoptPoints" << std::endl; fflush(stdout);
         if (params.is3D)
             adoptPoints<GF2::MyPointFinitePlaneDistanceFunctor, _PointPrimitiveT, _PrimitiveT, typename PrimitiveMapT::mapped_type::const_iterator>
-                    ( points, prims_map, params.scale, params.do_adopt );
+                    ( points, prims_map, params.scale, params.do_adopt, params.patch_population_limit );
         else
             adoptPoints<GF2::MyPointFiniteLineDistanceFunctor, _PointPrimitiveT, _PrimitiveT, typename PrimitiveMapT::mapped_type::const_iterator>
-                    ( points, prims_map, params.scale, params.do_adopt );
+                    ( points, prims_map, params.scale, params.do_adopt, params.patch_population_limit );
     }
 
     // MERGE
@@ -297,7 +300,8 @@ template < class _PointPrimitiveDistanceFunctor
 int Merging::adoptPoints( _PointContainerT          & points
                         , _PrimitiveContainerT const& prims
                         , _Scalar              const  scale
-                        , char                 const  mode )
+                          , char                 const  mode
+                          , int                         poplimit )
 {
     //typedef GF2::MyPointPrimitiveDistanceFunctor _PointPrimitiveDistanceFunctor;
     typedef typename _PrimitiveContainerT::const_iterator             outer_const_iterator;
@@ -328,8 +332,8 @@ int Merging::adoptPoints( _PointContainerT          & points
         {
             typename _PrimitiveContainerT::const_iterator it = prims.find(points[pid].getTag( _PointPrimitiveT::GID ));
 
-            if (    ( it == prims.end())
-                    || (!containers::valueOf<_PrimitiveT>(it).size()) )
+            if (  (( it == prims.end()) || (!containers::valueOf<_PrimitiveT>(it).size()) ||
+                   (populations[(it)->first].size() < poplimit)))
             {
                 // We here have an orphean, se we need to iterate over all primitives and get the closest distance < scale
                 _Scalar minDist = std::numeric_limits<_Scalar>::max();
@@ -344,26 +348,28 @@ int Merging::adoptPoints( _PointContainerT          & points
                     {
                         int gid = (*it2).getTag(_PrimitiveT::GID);
 
-                        // this is very unefficient, extents must be stored !
-                        // ...
-                        // I'm too lazy to do it, sorry (I really apologise)
-                        // ...
-                        // Yes I know there is such code 10 lines below.
-                        // ...
-                        // Just do it and leave me alone
-                        std::vector< Eigen::Matrix<_Scalar,3,1> > extrema;
-                        err = it2->template getExtent<_PointPrimitiveT>
-                                ( extrema
-                                  , points
-                                  , scale
-                                  , populations[gid].size() ? &(populations[gid]) : NULL );
+                        if (populations[gid].size() > poplimit){
 
-                        _Scalar dist = distFunctor.eval(extrema, *it2, pos);
-                        if (dist < minDist){
-                            minDist = dist;
-                            minGid  = gid;
+                            // this is very unefficient, extents must be stored !
+                            // ...
+                            // I'm too lazy to do it, sorry (I really apologise)
+                            // ...
+                            // Yes I know there is such code 10 lines below.
+                            // ...
+                            // Just do it and leave me alone
+                            std::vector< Eigen::Matrix<_Scalar,3,1> > extrema;
+                            err = it2->template getExtent<_PointPrimitiveT>
+                                    ( extrema
+                                      , points
+                                      , scale
+                                      , populations[gid].size() ? &(populations[gid]) : NULL );
+
+                            _Scalar dist = distFunctor.eval(extrema, *it2, pos);
+                            if (dist < minDist){
+                                minDist = dist;
+                                minGid  = gid;
+                            }
                         }
-
                     }
                 }
 
