@@ -154,7 +154,7 @@ namespace GF2
             getDistance( Eigen::Matrix<Scalar,3,1> const& point ) const
             {
                 //return this->dir().dot(point) + this->_coeffs(3);
-                return (this->pos() - point).dot( this->dir() );
+                return (point - this->pos()).dot( this->dir() );
             }
 
             inline Eigen::Matrix<Scalar,3,1>
@@ -180,8 +180,9 @@ namespace GF2
             int
             getExtent( std::vector<Eigen::Matrix<Scalar,3,1> >       & minMax
                      , _PointContainerT                         const& cloud
-                     , double                                   const  threshold   = 0.01
-                     , _IndicesContainerT                       const* indices_arg = NULL ) const
+                     , double                                   const  threshold          = 0.01
+                     , _IndicesContainerT                       const* indices_arg        = NULL
+                     , bool                                     const  force_axis_aligned = false ) const
             {
                 typedef Eigen::Matrix<Scalar,3,1> Position;
 
@@ -226,6 +227,7 @@ namespace GF2
                         c->push_back( pnt );
                     }
                     vptr->addPointCloud( c, "onplane");
+                    vptr->setPointCloudRenderingProperties( pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3.f, "onplane" );
 
                     pcl::PointCloud<pcl::PointXYZRGB>::Ptr c1 ( new pcl::PointCloud<pcl::PointXYZRGB>() );
                     for ( int pid_id = 0; pid_id != inliers.size(); ++pid_id )
@@ -236,6 +238,7 @@ namespace GF2
                         c1->push_back( pnt );
                     }
                     vptr->addPointCloud( c1, "origcloud" );
+                    vptr->setPointCloudRenderingProperties( pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3.f, "origcloud" );
 
                     char plane_name[255];
                     sprintf( plane_name, "plane%03d", 0 );
@@ -249,16 +252,19 @@ namespace GF2
                     processing::PCA<_IndicesContainerT>( frame, on_plane_cloud, /* indices: */ NULL ); // no indices needed, already full cloud
 //                    std::cout << "frame: " << frame << std::endl;
 
-                    // get the unit axis that is most perpendicular to the 3rd dimension of the frame
-                    std::pair<Position,Scalar> dim3( Position::Zero(), Scalar(FLT_MAX) );
+                    if ( force_axis_aligned )
                     {
-                        Scalar tmp;
-                        if ( (tmp=std::abs(frame.col(2).template head<3>().dot( Position::UnitX() ))) < dim3.second ) { dim3.first = Position::UnitX(); dim3.second = tmp; }
-                        if ( (tmp=std::abs(frame.col(2).template head<3>().dot( Position::UnitY() ))) < dim3.second ) { dim3.first = Position::UnitY(); dim3.second = tmp; }
-                        if ( (tmp=std::abs(frame.col(2).template head<3>().dot( Position::UnitZ() ))) < dim3.second ) { dim3.first = Position::UnitZ(); dim3.second = tmp; }
+                        // get the unit axis that is most perpendicular to the 3rd dimension of the frame
+                        std::pair<Position,Scalar> dim3( Position::Zero(), Scalar(FLT_MAX) );
+                        {
+                            Scalar tmp;
+                            if ( (tmp=std::abs(frame.col(2).template head<3>().dot( Position::UnitX() ))) < dim3.second ) { dim3.first = Position::UnitX(); dim3.second = tmp; }
+                            if ( (tmp=std::abs(frame.col(2).template head<3>().dot( Position::UnitY() ))) < dim3.second ) { dim3.first = Position::UnitY(); dim3.second = tmp; }
+                            if ( (tmp=std::abs(frame.col(2).template head<3>().dot( Position::UnitZ() ))) < dim3.second ) { dim3.first = Position::UnitZ(); dim3.second = tmp; }
+                        }
+                        frame.col(0).head<3>() = frame.col(2).head<3>().cross( dim3.first             ).normalized();
+                        frame.col(1).head<3>() = frame.col(2).head<3>().cross( frame.col(0).head<3>() ).normalized();
                     }
-                    frame.col(0).head<3>() = frame.col(2).head<3>().cross( dim3.first             ).normalized();
-                    frame.col(1).head<3>() = frame.col(2).head<3>().cross( frame.col(0).head<3>() ).normalized();
                 }
 //                std::cout << "frame2: " << frame << std::endl;
 
@@ -302,6 +308,9 @@ namespace GF2
             inline pcl::ModelCoefficients::Ptr
             modelCoefficients() const;
 
+            /*! \brief Draws the Plane from extrema
+             *  \tparam PointsT Concept: std::vector<pcl::PointXYZ>.
+             */
             template <class PointsT> static inline int
             draw( PointsT const& corners
                   , pcl::visualization::PCLVisualizer::Ptr v
@@ -403,9 +412,10 @@ namespace GF2
                 do
                 {
                     err = plane.getExtent<_PointPrimitiveT>( minMax
-                                                                               , cloud
-                                                                               , tmp_radius
-                                                                               , indices   );
+                                                           , cloud
+                                                           , tmp_radius
+                                                           , indices
+                                                           , /* force_axis_aligned: */ true );
                     tmp_radius *= 2.f;
                 } while ( (minMax.size() < 2) && (++it < max_it) );
 
