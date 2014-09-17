@@ -30,14 +30,16 @@ namespace GF2 {
             show( PrimitiveContainerT  const& primitives
                 , PointContainerT      const& points
                 , _Scalar              const  scale
-                , Eigen::Vector3f      const& colour    = (Eigen::Vector3f() << 0.f, 0.f, 1.f).finished()
-                , bool                 const  spin      = true
-                , std::vector<_Scalar> const* angles    = NULL
-                , bool                 const  show_ids  = false
-                , char                 const  use_tags  = false
-                , int                  const  pop_limit = 10
-                , std::string          const& title     = ""
-                , bool                 const  show_pids = false );
+                , Eigen::Vector3f      const& colour        = (Eigen::Vector3f() << 0.f, 0.f, 1.f).finished()
+                , bool                 const  spin          = true
+                , std::vector<_Scalar> const* angles        = NULL
+                , bool                 const  show_ids      = false
+                , char                 const  use_tags      = false
+                , int                  const  pop_limit     = 10
+                , std::string          const& title         = ""
+                , bool                 const  show_pids     = false
+                , int                  const  show_normals  = 0
+                , bool                 const  show_pop      = false );
 
             //! \brief Shows a polygon that approximates the bounding ellipse of a cluster
             template <typename _Scalar> static inline int
@@ -74,14 +76,16 @@ namespace GF2
     Visualizer<PrimitiveContainerT,PointContainerT>::show( PrimitiveContainerT    const& primitives
                                                            , PointContainerT      const& points
                                                            , _Scalar              const  scale
-                                                           , Eigen::Vector3f      const& colour    /* = {0,0,1} */
-                                                           , bool                 const  spin      /* = true */
-                                                           , std::vector<_Scalar> const* angles    /* = NULL */
-                                                           , bool                 const  show_ids  /* = false */
-                                                           , char                 const  use_tags  /* = false */
-                                                           , int                  const  pop_limit /* = 10 */
-                                                           , std::string          const& title     /* = "" */
-                                                           , bool                 const  show_pids /* = false */ )
+                                                           , Eigen::Vector3f      const& colour       /* = {0,0,1} */
+                                                           , bool                 const  spin         /* = true */
+                                                           , std::vector<_Scalar> const* angles       /* = NULL */
+                                                           , bool                 const  show_ids     /* = false */
+                                                           , char                 const  use_tags     /* = false */
+                                                           , int                  const  pop_limit    /* = 10 */
+                                                           , std::string          const& title        /* = "" */
+                                                           , bool                 const  show_pids    /* = false */
+                                                           , int                  const  show_normals /* = 0 */
+                                                           , bool                 const  show_pop     /* = false */ )
     {
 #if 1
         typedef typename PrimitiveContainerT::value_type::value_type PrimitiveT;
@@ -114,6 +118,7 @@ namespace GF2
         std::cout << "[" << __func__ << "]: " << " finished initing vis" << std::endl; fflush(stdout);
         vptr->setBackgroundColor( .7, .7, .7 );
         MyCloud::Ptr cloud( new MyCloud );
+        pcl::PointCloud<pcl::Normal>::Ptr normals( new pcl::PointCloud<pcl::Normal> );
         {
             cloud->reserve( points.size() );
             for ( size_t pid = 0; pid != points.size(); ++pid )
@@ -126,9 +131,24 @@ namespace GF2
                 pnt.g = colours[ points[pid].getTag(PointPrimitiveT::GID) ](1);
                 pnt.b = colours[ points[pid].getTag(PointPrimitiveT::GID) ](2);
                 cloud->push_back( pnt );
+
+                pcl::Normal normal;
+                normal.normal_x = points[pid].template dir()(0);
+                normal.normal_y = points[pid].template dir()(1);
+                normal.normal_z = points[pid].template dir()(2);
+                normals->push_back( normal );
             }
         }
         vptr->addPointCloud( cloud, "cloud", 0 );
+        if ( show_normals )
+        {
+            vptr->addPointCloudNormals<MyPoint,pcl::Normal>( cloud
+                                                             , normals
+                                                             , /* level: */ show_normals
+                                                             , /* scale: */ 0.02f
+                                                             , /* cloud_name: */ "normal_cloud"
+                                                             , /* vid: */ 0 );
+        }
         if ( show_pids )
         {
             for ( int pid = 0; pid != points.size(); ++pid )
@@ -190,12 +210,12 @@ namespace GF2
                 vptr->setShapeRenderingProperties( pcl::visualization::PCL_VISUALIZER_LINE_WIDTH, 2.0, line_name, 0 );
 
                 // add line size
-                if ( !lid1 ) // only once per cluster
+                if ( show_pop && !lid1 ) // only once per cluster
                 {
                     char popstr[255];
                     sprintf( popstr, "%d", populations[gid] );
                     vptr->addText3D( popstr, pclutil::asPointXYZ( primitives[lid][lid1].template pos() )
-                                     , 0.015, prim_colour(0), prim_colour(1), prim_colour(2), line_name + std::string( popstr ), 0 );
+                                     , 0.015, prim_colour(0), prim_colour(1), prim_colour(2), line_name + std::string("_pop"), 0 );
                 }
 
                 // show line gid and dir gid
@@ -203,12 +223,16 @@ namespace GF2
                 {
                     char gid_name[255],gid_text[255];
                     sprintf( gid_name, "primgid%d_%d", gid, dir_gid  );
-                    sprintf( gid_text, "%d,%d", gid, dir_gid );
-                    Eigen::Matrix<_Scalar,3,1> pos = primitives[lid][lid1].template pos() + (Eigen::Matrix<_Scalar,3,1>() << scale, scale, 0.).finished();
+                    sprintf( gid_text, "(%d),%d,%d", populations[gid], gid, dir_gid );
+                    Eigen::Matrix<_Scalar,3,1> pos = primitives[lid][lid1].template pos();// + (Eigen::Matrix<_Scalar,3,1>() << scale, scale, 0.).finished();
                     vptr->addText3D( gid_text
                                    , pclutil::asPointXYZ( pos )
-                                   , 0.02
+                                   , 0.015 //0.02
                                    , prim_colour(0)/2., prim_colour(1)/2., prim_colour(2)/2., gid_name, 0 );
+                    if ( show_pop )
+                    {
+                        vptr->removeText3D( line_name + std::string("_pop"), 0 );
+                    }
                 }
 
                 // draw connections

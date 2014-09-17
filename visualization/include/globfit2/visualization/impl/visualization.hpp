@@ -29,11 +29,20 @@ GF2::vis::showCli( int argc, char** argv )
                   << "\t[--no-clusters \tdon't show the \"ellipses\"]\n"
                   << "\t[--pop-limit \tpoplation limit for small patches]\n"
                   << "\t[--pids \tdisplay point ids]\n"
-                  << "\t[--title \t window title]"
+                  << "\t[--title \t window title]\n"
+                  << "\t[--normals i\t show every i-th normal. 0: no normals, 1: every normal]\n"
+                  << "\t[--angle-gens \t comma separated angle generators. I.e.: 36,90]\n"
+                  << "\t[--no-pop \t Don't show cluster point counts]\n"
                   << std::endl;
         return EXIT_SUCCESS;
     }
+
+    // show every show_normals-th normal. 0 means no normals, 1 means every normal, 2 for every second normal, etc.
+    int show_normals = 0;
+    pcl::console::parse_argument( argc, argv, "--normals", show_normals );
+
     bool show_pids = pcl::console::find_switch( argc, argv, "--pids" );
+    bool show_pop = !pcl::console::find_switch( argc, argv, "--no-pop" );
 
     std::string title = "";
     pcl::console::parse_argument( argc, argv, "--title", title );
@@ -74,9 +83,15 @@ GF2::vis::showCli( int argc, char** argv )
     }
 
     // convert cloud
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud( new pcl::PointCloud<pcl::PointXYZRGB> );
+    pcl::PointCloud<pcl::PointNormal>::Ptr cloud( new pcl::PointCloud<pcl::PointNormal> );
     pcl::io::loadPLYFile( dir + "/" + cloud_file, *cloud );
     GF2::pclutil::cloudToVector<PointPrimitiveT::Allocator>( points, cloud );
+    for ( int pid = 0; pid != cloud->size(); ++pid )
+    {
+        points[pid].coeffs()(3) = cloud->at(pid).normal_x;
+        points[pid].coeffs()(4) = cloud->at(pid).normal_y;
+        points[pid].coeffs()(5) = cloud->at(pid).normal_z;
+    }
 
     // parse associations
 
@@ -99,12 +114,17 @@ GF2::vis::showCli( int argc, char** argv )
     }
 
     // angles
-    std::vector<Scalar> angles(3);
-    {
-        angles[0] = 0;
-        angles[1] = M_PI_2;
-        angles[2] = M_PI;
-    }
+    std::vector<Scalar> angle_gens(1);
+    if ( pcl::console::parse_x_arguments( argc, argv, "--angle-gens", angle_gens ) < 0 )
+        angle_gens[0] = Scalar(90.);
+
+    std::vector<Scalar> angles;
+    processing::appendAnglesFromGenerators( angles, angle_gens, true );
+//    {
+//        angles[0] = 0;
+//        angles[1] = M_PI_2;
+//        angles[2] = M_PI;
+//    }
 
     // tags = point colours
     char use_tags = pcl::console::find_switch( argc, argv, "--use-tags" );
@@ -120,14 +140,16 @@ GF2::vis::showCli( int argc, char** argv )
     GF2::Visualizer<PrimitiveContainerT,PointContainerT>::template show<Scalar>( lines
                                                                                , points
                                                                                , scale
-                                                                               , (Eigen::Vector3f() << 1,0,0).finished()
-                                                                               , /*        spin: */ true
-                                                                               , /* connections: */ dont_show_rels ? NULL : &angles
-                                                                               , /*    show_ids: */ show_ids
-                                                                               , /*    use_tags: */ use_tags
-                                                                               , /*   pop-limit: */ pop_limit
-                                                                               , /*       title: */ title
-                                                                               , /*   show_pids: */ show_pids
+                                                                               , /*       colour: */ (Eigen::Vector3f() << 1,0,0).finished()
+                                                                               , /*         spin: */ true
+                                                                               , /*  connections: */ dont_show_rels ? NULL : &angles
+                                                                               , /*     show_ids: */ show_ids
+                                                                               , /*     use_tags: */ use_tags
+                                                                               , /*    pop-limit: */ pop_limit
+                                                                               , /*        title: */ title
+                                                                               , /*    show_pids: */ show_pids
+                                                                               , /* show_normals: */ show_normals
+                                                                               , /* show_populat: */ show_pop
                                                                                );
     return EXIT_SUCCESS;
 } // ... Solver::show()

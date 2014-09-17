@@ -45,6 +45,7 @@ SET( GLOBOPTVIS_H_LIST
 
 SET( GLOBOPTVIS_HPP_LIST
     include/globfit2/visualization/visualizer.hpp
+    include/globfit2/visualization/impl/visualization.hpp
 )
 
 SET( GLOBOPTVIS_SRC_LIST
