@@ -85,14 +85,21 @@ namespace GF2
                 // if not 0 or M_PI, meaning not parallel
                 if ( (closest_angle_id != 0) && (closest_angle_id != angles.size()-1) )
                 {
-                    std::cerr << "[" << __func__ << "]: " << "skipping  plane angle " << angles[closest_angle_id] << std::endl;
-                    return false;
+                    std::cerr << "[" << __func__ << "]: " << "rotating plane by angle " << angles[closest_angle_id] << std::endl;
+                    //return false;
+                    //Scalar const angle = angles[ closest_angle_id ];
+                    Scalar angle = angles[ closest_angle_id ];
+                    out = PlanePrimitive( /*  position: */ this->pos()
+                                        , /* direction: */ Eigen::AngleAxisf( angle, other.dir().cross(dir()) ) * other.dir()
+                                        );
                 }
-
-                //Scalar const angle = angles[ closest_angle_id ];
-                out = PlanePrimitive( /*  position: */ this->pos()
-                                    , /* direction: */ other.dir()
-                                    );
+                else
+                {
+                    //Scalar const angle = angles[ closest_angle_id ];
+                    out = PlanePrimitive( /*  position: */ this->pos()
+                                        , /* direction: */ other.dir()
+                                        );
+                }
                 // copy position id from self
                 out.setTag( GID, this->getTag(GID) );
                 // copy direction id from the other
