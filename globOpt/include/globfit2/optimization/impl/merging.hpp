@@ -181,7 +181,12 @@ Merging::mergeCli( int argc, char** argv )
     // ADOPT
     if ( params.do_adopt )
     {
-        adoptPoints<GF2::MyPointPrimitiveDistanceFunctor, _PointPrimitiveT, _PrimitiveT, typename PrimitiveMapT::mapped_type::const_iterator>
+        std::cout << "starting adoptPoints" << std::endl; fflush(stdout);
+        if (params.is3D)
+            adoptPoints<GF2::MyPointFinitePlaneDistanceFunctor, _PointPrimitiveT, _PrimitiveT, typename PrimitiveMapT::mapped_type::const_iterator>
+                    ( points, prims_map, params.scale, params.do_adopt );
+        else
+            adoptPoints<GF2::MyPointFiniteLineDistanceFunctor, _PointPrimitiveT, _PrimitiveT, typename PrimitiveMapT::mapped_type::const_iterator>
                     ( points, prims_map, params.scale, params.do_adopt );
     }
 
@@ -297,9 +302,84 @@ int Merging::adoptPoints( _PointContainerT          & points
     //typedef GF2::MyPointPrimitiveDistanceFunctor _PointPrimitiveDistanceFunctor;
     typedef typename _PrimitiveContainerT::const_iterator             outer_const_iterator;
     //typedef typename outer_const_iterator::value_type::const_iterator inner_const_iterator;
+    typedef typename _PointContainerT::value_type PointT;
 
     int err = EXIT_SUCCESS;
 
+    // Loop over all points, and select orphans
+
+    bool changed = false;
+
+    do{
+
+        changed = false;
+
+        _PointPrimitiveDistanceFunctor distFunctor;
+
+        // Populations
+        GidPidVectorMap populations; // populations[gid] == std::vector<int> {pid0,pid1,...}
+        if ( EXIT_SUCCESS == err )
+        {
+            err = processing::getPopulations( populations, points );
+            CHECK( err, "getPopulations" );
+        }
+
+        for ( size_t pid = 0; pid != points.size(); ++pid )
+        {
+            typename _PrimitiveContainerT::const_iterator it = prims.find(points[pid].getTag( _PointPrimitiveT::GID ));
+
+            if (    ( it == prims.end())
+                    || (!containers::valueOf<_PrimitiveT>(it).size()) )
+            {
+                // We here have an orphean, se we need to iterate over all primitives and get the closest distance < scale
+                _Scalar minDist = std::numeric_limits<_Scalar>::max();
+                int minGid = -1;
+                auto pos = points[pid].pos();
+
+
+                // now loop over all primitives
+                for ( outer_const_iterator it1 = prims.begin(); it1 != prims.end(); ++it1 )
+                {
+                    for ( _inner_const_iterator it2 = it1->second.begin(); it2 != it1->second.end(); ++it2 )
+                    {
+                        int gid = (*it2).getTag(_PrimitiveT::GID);
+
+                        // this is very unefficient, extents must be stored !
+                        // ...
+                        // I'm too lazy to do it, sorry (I really apologise)
+                        // ...
+                        // Yes I know there is such code 10 lines below.
+                        // ...
+                        // Just do it and leave me alone
+                        std::vector< Eigen::Matrix<_Scalar,3,1> > extrema;
+                        err = it2->template getExtent<_PointPrimitiveT>
+                                ( extrema
+                                  , points
+                                  , scale
+                                  , populations[gid].size() ? &(populations[gid]) : NULL );
+
+                        _Scalar dist = distFunctor.eval(extrema, *it2, pos);
+                        if (dist < minDist){
+                            minDist = dist;
+                            minGid  = gid;
+                        }
+
+                    }
+                }
+
+                //std::cout << "Process orphan.... " << minDist << std::endl;
+
+
+                if(minDist < scale && minDist>=0){
+                    points[pid].setTag( _PointPrimitiveT::GID, minGid );
+                    std::cout << "Orphan re-assigned " << pid << " " << minGid << std::endl;
+                    changed = true;
+                }
+            }
+        }
+    } while (changed);
+
+#if 0
     // select unassigned points
     std::deque<int> orphan_pids;
     {
@@ -436,6 +516,7 @@ int Merging::adoptPoints( _PointContainerT          & points
     } while ( change ); // stop, if no new points were reassigned
 
     return err;
+#endif
 } //...adoptPoints()
 template <class Container,
           class PrimitiveT,
