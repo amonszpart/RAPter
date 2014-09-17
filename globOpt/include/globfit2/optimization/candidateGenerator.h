@@ -245,10 +245,10 @@ namespace GF2
 
                         // find best rotation id and value
                         int     closest_angle_id = 0;
-                        _Scalar closest_angle    = _Scalar( 0 );
+                        //_Scalar closest_angle    = _Scalar( 0 );
                         {
                             _Scalar angdiff    = _PrimitivePrimitiveAngleFunctorT::template eval<_Scalar>( prim0, prim1, angles, &closest_angle_id );
-                            closest_angle      = angles[ closest_angle_id ];
+                            //closest_angle      = angles[ closest_angle_id ];
 
                             // decide based on rotation difference (RECEIVE_SIMILAR)
                             bool    close_ang  = angdiff < angle_limit;
