@@ -212,6 +212,9 @@ namespace GF2 {
 
         //! \brief Added to pairwise cost, if direction ids don't match.
         _Scalar                      dir_id_bias     = _Scalar( 0. );
+
+        //! \brief dataterm = data_weight * freq_weight/#instances * data cost
+        _Scalar                      freq_weight     = _Scalar(0.);
     };
 
     template <typename _Scalar>

@@ -121,7 +121,8 @@ namespace GF2
                                 , _PointContainerT     const& points
                                 , _AssocT              const& lids_varids
                                 , _WeightsT            const& weights
-                                , _Scalar              const  /*scale*/ );
+                                , _Scalar              const  /*scale*/
+                                , _Scalar              const  freq_weight );
 
         //! \brief Nic's version, unfinished!.
         //! \tparam _AssocT     Associates a primitive identified by <lid,lid1> with a variable id in the problem. Default: std::map< std::pair<int,int>, int >
@@ -178,6 +179,7 @@ namespace GF2
              *  \param[in] patch_pop_limit      Decides, whether a patch is large or small. Used in \ref problemSetup::largePatchesNeedDirectionConstraint.
              *  \param[in] dir_id_bias          \copydoc ProblemSetupParams::dir_id_bias.
              *  \param[in] verbose              Debug messages display.
+             *  \param[in] freq_weight          Multiplies the data cost by freq_weight / DIR_COUNT.
              *  \return                         Outputs EXIT_SUCCESS or the error the OptProblem implementation returns.
              *  \note                           \p points are assumed to be tagged at _PointPrimitiveT::GID with the _PrimitiveT::GID of the \p prims.
              *  \sa \ref problemSetup::largePatchesNeedDirectionConstraint
@@ -199,7 +201,9 @@ namespace GF2
                      , GF2::AbstractPrimitivePrimitiveEnergyFunctor<_Scalar,_PrimitiveT>* const& primPrimDistFunctor
                      , int                                                                const  patch_pop_limit
                      , _Scalar                                                            const  dir_id_bias
-                     , int                                                                const  verbose = 0 );
+                     , int                                                                const  verbose                = 0
+                     , _Scalar                                                            const  freq_weight            = 0.
+                     );
 
     }; //...class ProblemSetup
 } //...namespace GF2

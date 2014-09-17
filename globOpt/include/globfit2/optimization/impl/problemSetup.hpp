@@ -43,7 +43,6 @@ ProblemSetup::formulateCli( int    argc
     std::string               data_cost_mode_str = "assoc";
     std::string               constr_mode_str    = "hybrid";
     bool                      calc_energy        = false; // instead of writing the problem, calculate the energy of selecting all input lines.
-
     // parse params
     {
         bool valid_input = true;
@@ -98,6 +97,9 @@ ProblemSetup::formulateCli( int    argc
             calc_energy = pcl::console::find_switch( argc, argv, "--energy" );
         }
 
+        // freq_weight
+        pcl::console::parse_argument( argc, argv, "--freq-weight", params.freq_weight );
+
 
         if ( !valid_input || pcl::console::find_switch(argc,argv,"--help") || pcl::console::find_switch(argc,argv,"-h") || verbose )
         {
@@ -119,6 +121,7 @@ ProblemSetup::formulateCli( int    argc
                       << " [--srand " << srand_val << "]\n"
                       << " [--rod " << problem_rel_path << "]\t\tRelative output path of the output matrix files\n"
                       << " [--patch-pop-limit " << params.patch_population_limit << "]\n"
+                      << " [--freq-weight" << params.freq_weight << "]\n"
                       << std::endl;
             if ( !verbose )
                 return EXIT_FAILURE;
@@ -183,7 +186,8 @@ ProblemSetup::formulateCli( int    argc
                                                        , primPrimDistFunctor
                                                        , params.patch_population_limit
                                                        , params.dir_id_bias
-                                                       , !calc_energy && verbose );
+                                                       , !calc_energy && verbose
+                                                       , params.freq_weight );
 
     // dump. default output: ./problem/*.csv; change by --rod
     if ( EXIT_SUCCESS == err )
@@ -239,6 +243,7 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
                        , int                                                           const  patch_pop_limit
                        , _Scalar                                                       const  dir_id_bias
                        , int                                                           const  verbose
+                       , _Scalar                                                       const  freq_weight /* = 0. */
         )
 {
     using problemSetup::OptProblemT;
@@ -312,7 +317,7 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
         {
             case ProblemSetupParams<_Scalar>::DATA_COST_MODE::ASSOC_BASED:
                 err = problemSetup::associationBasedDataCost<_PointPrimitiveDistanceFunctor, _PrimitiveT, _PointPrimitiveT>
-                        ( problem, prims, points, lids_varids, weights, scale );
+                        ( problem, prims, points, lids_varids, weights, scale, freq_weight );
                 break;
 
             case ProblemSetupParams<_Scalar>::DATA_COST_MODE::INSTANCE_BASED:
@@ -702,11 +707,20 @@ namespace problemSetup {
                             , _PointContainerT     const& points
                             , _AssocT              const& lids_varids
                             , _WeightsT            const& weights
-                            , _Scalar              const  /*scale*/ )
+                            , _Scalar              const  /*scale*/
+                            , _Scalar              const freq_weight )
     {
         typedef typename _AssocT::key_type IntPair;
 
         int err = EXIT_SUCCESS;
+
+        // INSTANCES // added 17/09/2014 by Aron
+        std::map< int, int > dir_instances;
+        for ( size_t lid = 0; lid != prims.size(); ++lid )
+            for ( size_t lid1 = 0; lid1 != prims[lid].size(); ++lid1 )
+            {
+                ++dir_instances[ prims[lid][lid1].getTag(_PrimitiveT::DIR_GID) ];
+            }
 
         for ( size_t lid = 0; lid != prims.size(); ++lid )
         {
@@ -742,6 +756,16 @@ namespace problemSetup {
 
                 _Scalar coeff = cnt ? /* complx: */ weights(2) + /* unary: */ weights(0) * unary_i / _Scalar(cnt)
                                     : /* complx: */ weights(2) + /* unary: */ weights(0) * _Scalar(2);            // add large weight, if no points assigned
+                if ( freq_weight > _Scalar(0) )
+                {
+                    const int dir_gid = prims[lid][lid1].getTag( _PrimitiveT::GID );
+
+                    std::cout << "changed " << coeff << " to ";
+                    if ( dir_instances[dir_gid] > 0 )
+                        coeff *= freq_weight * _Scalar(1.) / _Scalar(dir_instances[dir_gid]);
+                    std::cout << coeff << std::endl;
+
+                }
 
                 // add to problem
                 problem.addLinObjective( /* var_id: */ lids_varids.at( IntPair(lid,lid1) )
