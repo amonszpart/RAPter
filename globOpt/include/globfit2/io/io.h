@@ -281,12 +281,12 @@ namespace GF2
         inline int
         readPoints( _PointContainerT &points
                   , std::string        path
-                  , pcl::PointCloud<pcl::PointXYZRGB>::Ptr *cloud_arg = NULL )
+                  , pcl::PointCloud<pcl::PointNormal>::Ptr *cloud_arg = NULL )
         {
-            pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud;
+            pcl::PointCloud<pcl::PointNormal>::Ptr cloud;
 
             // sample image
-            if ( !cloud ) cloud.reset( new pcl::PointCloud<pcl::PointXYZRGB>() );
+            if ( !cloud ) cloud.reset( new pcl::PointCloud<pcl::PointNormal>() );
             if ( path.find("ply") != std::string::npos )
                 pcl::io::loadPLYFile( path, *cloud );
             else
@@ -300,6 +300,10 @@ namespace GF2
             points.reserve( raw_points.size() );
             for ( size_t pid = 0; pid != raw_points.size(); ++pid )
             {
+                raw_points[pid](3) = cloud->at(pid).normal_x;
+                raw_points[pid](4) = cloud->at(pid).normal_y;
+                raw_points[pid](5) = cloud->at(pid).normal_z;
+
                 points.emplace_back( _PointT(raw_points[pid]) );
                 points.back().setTag( _PointT::PID, pid );
                 points.back().setTag( _PointT::GID, pid );

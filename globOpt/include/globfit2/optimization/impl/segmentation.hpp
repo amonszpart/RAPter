@@ -22,6 +22,7 @@
 #include "globfit2/io/io.h"             // readPoints
 #include "globfit2/optimization/patchDistanceFunctors.h" // RepresentativeSqrPatchPatchDistanceFunctorT
 
+
 namespace GF2 {
 
 //! \param[in,out] points
@@ -58,7 +59,7 @@ Segmentation::orientPoints( _PointContainerT          &points
         for ( int pid_id = 0; pid_id != point_ids.size(); ++pid_id )
         {
             const int pid = point_ids[pid_id];
-            points[pid].coeffs().template segment<3>(3) = fit_lines[pid_id].dir();
+            points[pid].coeffs().template segment<3>(3) = fit_lines.at(pid).dir();
         }
     } // ... (1) local fit
 
@@ -91,13 +92,13 @@ Segmentation:: fitLocal( _PrimitiveContainerT        & primitives
     std::vector< std::vector<int   > > neighs;
     std::vector< std::vector<Scalar> > sqr_dists;
     processing::getNeighbourhoodIndices( /*   [out] neighbours: */ neighs
-                                            , /* [in]  pointCloud: */ cloud
-                                            , /* [in]     indices: */ indices
-                                            , /* [out]  sqr_dists: */ &sqr_dists
-                                            , /* [in]        nn_K: */ K              // 5
-                                            , /* [in]      radius: */ radius         // 0.02f
-                                            , /* [in] soft_radius: */ soft_radius    // true
-                                            );
+                                       , /* [in]  pointCloud: */ cloud
+                                       , /* [in]     indices: */ indices
+                                       , /* [out]  sqr_dists: */ &sqr_dists
+                                       , /* [in]        nn_K: */ K              // 5
+                                       , /* [in]      radius: */ radius         // 0.02f
+                                       , /* [in] soft_radius: */ soft_radius    // true
+                                       );
 
     // only use, if more then 2 data-points
     if ( std::count_if( neighs.begin(), neighs.end(), [] (vector<int> const& n1) { return n1.size() > 2; } ) < 2 )
@@ -121,8 +122,7 @@ Segmentation:: fitLocal( _PrimitiveContainerT        & primitives
         if ( PrimitiveT::EmbedSpaceDim == 2 ) // we are in 2D, and TLine is LinePrimitive2
         {
             Eigen::Matrix<Scalar,6,1> line;
-            err = smartgeometry::geometry::fitLinearPrimitive<PointsT,Scalar,6>( /*           output: */ line
-                                                                                          , /*         points: */ *cloud
+            err = smartgeometry::geometry::fitLinearPrimitive<PointsT,Scalar,6>( /*           output: */ line , /*         points: */ *cloud
                                                                                           , /*          scale: */ radius
                                                                                           , /*        indices: */ &(neighs[pid])
                                                                                           , /*    refit times: */ 2
@@ -136,9 +136,13 @@ Segmentation:: fitLocal( _PrimitiveContainerT        & primitives
         }
         else // we are in 3D, and TLine is PlanePrimitive
         {
+//            std::cout << "fitting to " << (*cloud)[pid].getVector3fMap().transpose() << " and neighbours:\n";
+//            for ( int j = 0; j != neighs[pid].size(); ++j )
+//                std::cout << "\t" << (*cloud)[ neighs[pid][j] ].getVector3fMap().transpose() << "\n";
+
             // fitLInearPirmitive uses "rows==4" to fit a plane TODO: use processing::fitlinearprimitive instead.
             Eigen::Matrix<Scalar,4,1> plane;
-            err = smartgeometry::geometry::fitLinearPrimitive<PointsT,Scalar,4>( /*           output: */ plane
+            err = smartgeometry::geometry::fitLinearPrimitive<PointsT,Scalar,4>( /*         output: */ plane
                                                                                , /*         points: */ *cloud
                                                                                , /*          scale: */ radius
                                                                                , /*        indices: */ &(neighs[pid])
@@ -168,7 +172,8 @@ Segmentation:: fitLocal( _PrimitiveContainerT        & primitives
         {
             point_ids->emplace_back( pid );
         }
-    }
+    } //...for points
+
     std::cout << "[" << __func__ << "]: "
               << skipped << "/" << neighs.size() << ": " << skipped / static_cast<float>(neighs.size()) * 100.f << "% of points did not produce primitives, so the primitive count is:"
               << primitives.size() << " = " << primitives.size() / static_cast<float>(neighs.size()) *100.f << "%" << std::endl;
@@ -223,12 +228,42 @@ Segmentation::patchify( _PrimitiveContainerT                   & patches
     } // ... (1) group
 
     // (2) Create PrimitiveContainer
+    // calc populations
+    GidPidVectorMap populations;
+    processing::getPopulations( populations, points );
+
     // Copy the representative direction of each patch in groups to an output patch with GID as it's linear index in groups.
     for ( size_t gid = 0; gid != groups.size(); ++gid )
     {
+
+        if ( _PrimitiveT::EmbedSpaceDim == 2) // added by Aron on 17 Sep 2014
+        {
+            // LINE
         containers::add( patches, gid, groups[gid].getRepresentative() )
                 .setTag( _PrimitiveT::GID    , gid )
                 .setTag( _PrimitiveT::DIR_GID, gid );
+        }
+        else if ( _PrimitiveT::EmbedSpaceDim == 3)
+        {
+            // PLANE
+            _PrimitiveT toAdd;
+            processing::fitLinearPrimitive<_PrimitiveT::Dim>( /*  [in,out] primitive: */ toAdd
+                                                            , /*              points: */ points
+                                                            , /*               scale: */ scale
+                                                            , /*             indices: */ &(populations[gid])
+                                                            , /*    refit iter count: */ 2                   // fit and refit twice
+                                                            , /*    start from input: */ (_PrimitiveT*)NULL  // use to calculate initial weights
+                                                            , /* refit position only: */ false
+                                                            , /*               debug: */ false  );
+            std::cout << "repr: " << groups[gid].getRepresentative().toString()
+                      << "refit: " << toAdd.toString() << std::endl;
+
+            containers::add( patches, gid, toAdd /*groups[gid].getRepresentative()*/ )
+                    .setTag( _PrimitiveT::GID    , gid )
+                    .setTag( _PrimitiveT::DIR_GID, gid );
+        }
+        else
+            std::cerr << "[" << __func__ << "]: " << "Unrecognized EmbedSpaceDim - refit to patch did not work" << std::endl;
     }
 
     return EXIT_SUCCESS;
@@ -307,7 +342,7 @@ Segmentation::regionGrow( _PointContainerT                       & points
     std::vector< int >  neighs( nn_K );
     int                 found_points_count  = 0;
     pcl::PointXYZ       searchPoint;
-    const _Scalar       max_dist            = patchPatchDistanceFunctor.getSpatialThreshold() * _Scalar(3.5); // longest axis of ellipse)
+    const _Scalar       max_dist            = patchPatchDistanceFunctor.getSpatialThreshold();// * _Scalar(3.5); // longest axis of ellipse)
 
     // look for neighbours, merge most similar
     while ( starting_cands.size() )
@@ -345,13 +380,17 @@ Segmentation::regionGrow( _PointContainerT                       & points
             const int pid2 = neighs[ pid_id ];
             if ( !assigned[pid2] )
             {
-                _Scalar diff = GF2::angleInRad( patches.back().template dir(), points[pid2].template dir() );
+                _Scalar dist_diff = sqrt(sqr_dists[pid_id]);
+                _Scalar ang_diff = GF2::angleInRad( patches.back().template dir(), points[pid2].template dir() );
+                // map 90..180 to 0..90:
+                if ( ang_diff > M_PI_2 )
+                    ang_diff = M_PI - ang_diff;
 
                 // location from point, but direction is the representative's
-                //_PointPrimitiveT p1_proxy(points[pid].template pos(), patches.back().template dir());
+                //_PointPrimitiveT p1_proxy(points[prid].template pos(), patches.back().template dir());
                 //PatchT p2_proxy; p2_proxy.push_back( segmentation::PidLid(pid2,-1) ); p2_proxy.update( points );
 
-                if ( (sqrt(sqr_dists[pid_id]) < patchPatchDistanceFunctor.getSpatialThreshold()) && (diff < patchPatchDistanceFunctor.getAngularThreshold()) ) // original condition
+                if ( (dist_diff < patchPatchDistanceFunctor.getSpatialThreshold()) && (ang_diff < patchPatchDistanceFunctor.getAngularThreshold()) ) // original condition
                 //if ( patchPatchDistanceFunctor.template eval<_PointPrimitiveT>(p1_proxy, p2_proxy, points, NULL) < patchPatchDistanceFunctor.getThreshold() )
                 {
                     patches.back().push_back( segmentation::PidLid(pid2,-1) );
@@ -360,6 +399,16 @@ Segmentation::regionGrow( _PointContainerT                       & points
                     // enqueue for visit
                     starting_cands.push_front( pid2 );
                 }
+//                else if (ang_diff > patchPatchDistanceFunctor.getAngularThreshold() && (dist_diff < patchPatchDistanceFunctor.getSpatialThreshold()) )
+//                {
+//                    std::cout << "not merging: \n"
+//                              << "\t repr.dir:" << patches.back().getRepresentative().template dir().transpose()
+//                              << "vs. pnt.dir: " << points[pid2].template dir().transpose()
+//                              << "-> angdiff: " << ang_diff << " >= " << patchPatchDistanceFunctor.getAngularThreshold()
+//                              << "\n\t pntdiff :" << (points[pid2].template pos() - points[pid].template pos()).norm()
+//                              << "\t dist: " << sqrt(sqr_dists[pid_id])
+//                              << std::endl;
+//                }
             }
         }
 
@@ -548,6 +597,18 @@ Segmentation::segmentCli( int    argc
         if ( err != EXIT_SUCCESS )  std::cerr << "[" << __func__ << "]: " << "saveBackup or savePrimitive exited with error! Code: " << err << std::endl;
         else                        std::cout << "[" << __func__ << "]: " << "wrote to " << candidates_path << std::endl;
     } //...save primitives
+
+    // save oriented cloud
+    if ( err == EXIT_SUCCESS )
+    {
+        // save backup of original input cloud, if needed
+        std::string orig_cloud_path = cloud_path + ".orig";
+        if ( !boost::filesystem::exists(orig_cloud_path) )
+            boost::filesystem::copy( cloud_path, orig_cloud_path );
+
+        // overwrite input cloud with oriented version
+        err = io::writePoints<_PointPrimitiveT>( points, cloud_path );
+    }
 
     return err;
 } // ...Segmentation::segmentCli()
