@@ -444,11 +444,11 @@ namespace GF2 {
                 {
                     Position centroid2( Position::Zero() );
                     centroid2 = processing::getCentroid<Scalar>( cloud, p_indices );
-                    std::cout << "centroids: " << centroid.transpose() << " vs. " << centroid2.transpose() << std::endl;
+                    if ( debug ) std::cout << "centroids: " << centroid.transpose() << " vs. " << centroid2.transpose() << std::endl;
 
                     Eigen::Matrix<Scalar,3,3> cov2( Eigen::Matrix<Scalar,3,3>::Zero() );
                     computeCovarianceMatrix( cov2, cloud, centroid, p_indices, &weights );
-                    std::cout << "[" << __func__ << "]: " << "cov:\n " << cov2 << "\ncov2:\n" << cov2 << std::endl;
+                    if ( debug ) std::cout << "[" << __func__ << "]: " << "cov:\n " << cov2 << "\ncov2:\n" << cov2 << std::endl;
                 }
 
                 // solve for neighbourhood biggest eigen value
