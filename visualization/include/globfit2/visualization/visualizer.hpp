@@ -112,11 +112,9 @@ namespace GF2
                   << std::endl;
         std::vector<Eigen::Vector3f> colours = util::nColoursEigen( max_group_id+1, /* scale: */ 255.f, /* shuffle: */ false );
 
-        std::cout << "[" << __func__ << "]: " << " initing vis" << std::endl; fflush(stdout);
         //pcl::visualization::PCLVisualizer::Ptr vptr( new pcl::visualization::PCLVisualizer() );
         vis::MyVisPtr vptr( new pcl::visualization::PCLVisualizer(title) );
-        std::cout << "[" << __func__ << "]: " << " finished initing vis" << std::endl; fflush(stdout);
-        vptr->setBackgroundColor( .7, .7, .7 );
+        vptr->setBackgroundColor( 1, 1, 1 );
         MyCloud::Ptr cloud( new MyCloud );
         pcl::PointCloud<pcl::Normal>::Ptr normals( new pcl::PointCloud<pcl::Normal> );
         {
@@ -159,7 +157,7 @@ namespace GF2
                 vptr->addText3D( ptext, cloud->at(pid), 0.005, cloud->at(pid).r/255.f, cloud->at(pid).g/255.f, cloud->at(pid).b/255.f, pname, 0 );
             }
         }
-        vptr->setPointCloudRenderingProperties( pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 4.0, "cloud", 0 );
+        vptr->setPointCloudRenderingProperties( pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 6.0, "cloud", 0 );
 
         // count populations
         GidIntMap populations; // populations[patch_id] = all points with GID==patch_id
@@ -207,7 +205,7 @@ namespace GF2
                                                           , /* viewport_id: */ 0
                                                           , /*     stretch: */ _Scalar(1.2)
                                                           );
-                vptr->setShapeRenderingProperties( pcl::visualization::PCL_VISUALIZER_LINE_WIDTH, 2.0, line_name, 0 );
+                vptr->setShapeRenderingProperties( pcl::visualization::PCL_VISUALIZER_LINE_WIDTH, 4.0, line_name, 0 );
 
                 // add line size
                 if ( show_pop && !lid1 ) // only once per cluster
