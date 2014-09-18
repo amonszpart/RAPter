@@ -21,7 +21,10 @@ namespace GF2
             static inline Scalar
             eval( PointT const& point, PrimitiveT const& primitive )
             {
-                return (primitive.pos() - point.pos()).cross(primitive.dir()).norm();
+                // Changed by Aron on 18/09/2014
+                return std::abs( primitive.getDistance(point) );
+                // this only works for lines:
+                // return (primitive.pos() - point.pos()).cross(primitive.dir()).norm();
             }
     };
 

@@ -188,6 +188,8 @@ namespace GF2
                 copied[ inner_it0->getTag(_PrimitiveT::GID) ].insert( inner_it0->getTag(_PrimitiveT::DIR_GID) );
                 // update output count
                 ++nlines;
+
+                std::cout << "[" << __func__ << "]: " << "copied " << inner_it0->toString() << std::endl;
             }
         }
 

@@ -756,15 +756,14 @@ namespace problemSetup {
 
                 _Scalar coeff = cnt ? /* complx: */ weights(2) + /* unary: */ weights(0) * unary_i / _Scalar(cnt)
                                     : /* complx: */ weights(2) + /* unary: */ weights(0) * _Scalar(2);            // add large weight, if no points assigned
-                if ( freq_weight > _Scalar(0) )
+                if ( freq_weight > _Scalar(0.) )
                 {
                     const int dir_gid = prims[lid][lid1].getTag( _PrimitiveT::GID );
 
-                    std::cout << "changed " << coeff << " to ";
+                    std::cout << "[" << __func__ << "]: " << "changed " << coeff << " to ";
                     if ( dir_instances[dir_gid] > 0 )
                         coeff *= freq_weight * _Scalar(1.) / _Scalar(dir_instances[dir_gid]);
-                    std::cout << coeff << std::endl;
-
+                    std::cout << coeff << " since dirpop: " << dir_instances[dir_gid] << std::endl;
                 }
 
                 // add to problem
