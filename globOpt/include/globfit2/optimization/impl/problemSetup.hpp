@@ -749,7 +749,7 @@ namespace problemSetup {
                     {
                         // if within scale, add unary cost
                         _Scalar dist = _PointPrimitiveDistanceFunctor::template eval<_Scalar>( points[pid], prims[lid][lid1] );
-                        unary_i += dist;
+                        unary_i += dist * dist; //changed on 18/09/14
                         ++cnt;              // normalizer
                     }
                 } // for points
