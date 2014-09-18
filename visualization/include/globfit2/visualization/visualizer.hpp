@@ -19,13 +19,16 @@ namespace GF2 {
             typedef pcl::PointXYZRGB         MyPoint;
             typedef pcl::PointCloud<MyPoint> MyCloud;
         public:
-            //! \brief              Visualize lines and points
-            //! \tparam _Scalar     Floating point type used in points to store data. Concept: typename PointContainerT::value_type::Scalar.
-            //! \param spin         Halts execution and allows interactive viewing, if true
-            //! \param draw_cons    Draw perfect angles
-            //! \param show_ids     Draw line ids (lid,lid1)
-            //! \param use_tags     Restrict line extent to GID tagged points. case 1: colour coded points with ellipses. case 2: colour coded points with no ellipses
-            //! \return             The visualizer for further display and manipulation
+            /*! \brief                          Visualize lines and points
+             *  \tparam _Scalar                 Floating point type used in points to store data. Concept: typename PointContainerT::value_type::Scalar.
+             *  \param spin                     Halts execution and allows interactive viewing, if true
+             *  \param draw_cons                Draw perfect angles
+             *  \param show_ids                 Draw line ids (lid,lid1)
+             *  \param use_tags                 Restrict line extent to GID tagged points. case 1: colour coded points with ellipses. case 2: colour coded points with no ellipses
+             *  \param[in] perfect_angle_limit  When to display gray line for "perfect angle".
+             *  \param[in] print_perf_angles    Show the angles in degrees, if below perfect_angle_limit.
+             *  \return             The visualizer for further display and manipulation
+             */
             template <typename _Scalar> static inline vis::MyVisPtr
             show( PrimitiveContainerT  const& primitives
                 , PointContainerT      const& points
@@ -39,7 +42,10 @@ namespace GF2 {
                 , std::string          const& title         = ""
                 , bool                 const  show_pids     = false
                 , int                  const  show_normals  = 0
-                , bool                 const  show_pop      = false );
+                , bool                 const  show_pop      = false
+                , _Scalar              const  perfect_angle_limit = 10.e-6
+                , bool                 const  print_perf_angles = false
+                );
 
             //! \brief Shows a polygon that approximates the bounding ellipse of a cluster
             template <typename _Scalar> static inline int
@@ -85,11 +91,16 @@ namespace GF2
                                                            , std::string          const& title        /* = "" */
                                                            , bool                 const  show_pids    /* = false */
                                                            , int                  const  show_normals /* = 0 */
-                                                           , bool                 const  show_pop     /* = false */ )
+                                                           , bool                 const  show_pop     /* = false */
+                                                           , _Scalar              const  perfect_angle_limit /* = 0872664625 = 5deg*/
+                                                           , bool                 const  print_perf_angles /* = false */ )
     {
 #if 1
         typedef typename PrimitiveContainerT::value_type::value_type PrimitiveT;
         typedef typename PointContainerT::value_type PointPrimitiveT;
+
+        const Eigen::Matrix<double,3,1> gray          ( (Eigen::Matrix<double,3,1>()<<.6,.6,.5).finished() );
+        const _Scalar                   deg_multiplier( _Scalar(180.) / M_PI );
 
         std::cout << "[" << __func__ << "]: " << "scale: " << scale
                   << std::endl;
@@ -248,14 +259,25 @@ namespace GF2
                                 if ( (lid == lid2) && (lid1 == lid3) ) continue;
 
                                 _Scalar angle = MyPrimitivePrimitiveAngleFunctor::eval( primitives[lid][lid1], primitives[lid2][lid3], *angles );
-                                if ( (angle < _Scalar(1e-5)) )
+                                if ( (angle < perfect_angle_limit) )
                                 {
                                     char name[255];
                                     sprintf( name, "conn_l%lu%lu_l%lu%lu", lid, lid1, lid2, lid3 );
                                     vptr->addLine( pclutil::asPointXYZ( primitives[lid][lid1].pos() )
                                                    , pclutil::asPointXYZ( primitives[lid2][lid3].pos() )
-                                                   , .6, .6, .5, name, 0 );
+                                                   , gray(0), gray(1), gray(2), name, 0 );
                                     vptr->setShapeRenderingProperties( pcl::visualization::PCL_VISUALIZER_OPACITY, 0.7, name, 0 );
+
+                                    pcl::PointXYZ line_center;
+                                    line_center.getVector3fMap() = (primitives[lid][lid1].pos() + primitives[lid2][lid3].pos()) / _Scalar(2.);
+
+                                    if ( print_perf_angles )
+                                    {
+                                        char ang_str[255];
+                                        sprintf( ang_str, "%.2f°", angle * deg_multiplier );
+                                        vptr->addText3D( ang_str
+                                                         , line_center, 0.015, gray(0)+.1, gray(1)+.1, gray(2)+.1, name + std::string("_ang"), 0 );
+                                    }
                                 } //... if angle close enough
                             } //...for lid3
                         } //...for lid2

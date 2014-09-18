@@ -140,16 +140,18 @@ GF2::vis::showCli( int argc, char** argv )
     GF2::Visualizer<PrimitiveContainerT,PointContainerT>::template show<Scalar>( lines
                                                                                , points
                                                                                , scale
-                                                                               , /*       colour: */ (Eigen::Vector3f() << 1,0,0).finished()
-                                                                               , /*         spin: */ true
-                                                                               , /*  connections: */ dont_show_rels ? NULL : &angles
-                                                                               , /*     show_ids: */ show_ids
-                                                                               , /*     use_tags: */ use_tags
-                                                                               , /*    pop-limit: */ pop_limit
-                                                                               , /*        title: */ title
-                                                                               , /*    show_pids: */ show_pids
-                                                                               , /* show_normals: */ show_normals
-                                                                               , /* show_populat: */ show_pop
+                                                                               , /*               colour: */ (Eigen::Vector3f() << 1,0,0).finished()
+                                                                               , /*                 spin: */ true
+                                                                               , /*          connections: */ dont_show_rels ? NULL : &angles
+                                                                               , /*             show_ids: */ show_ids
+                                                                               , /*             use_tags: */ use_tags
+                                                                               , /*            pop-limit: */ pop_limit
+                                                                               , /*                title: */ title
+                                                                               , /*            show_pids: */ show_pids
+                                                                               , /*         show_normals: */ show_normals
+                                                                               , /*         show_populat: */ show_pop
+                                                                               , /*  perfect_angle_limit: */ 0.0872664625
+                                                                               , /* print_perfect_angles: */ true
                                                                                );
     return EXIT_SUCCESS;
 } // ... Solver::show()
