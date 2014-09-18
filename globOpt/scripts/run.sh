@@ -6,6 +6,7 @@ executable="../glob_opt";
 function print_usage() {
 	echo "usage: run.sh scale anglelimit pairwisecost [pop-limit]"
 	echo "example: run.sh 0.03 0.2 1"
+        echo "showPearl: ../globOptVis --show --scale 0.05 --pop-limit 0 -p primitives.pearl.csv -a points_primitives.pearl.csv --title \"Pearl\" --use-tags --no-clusters --no-pop"
 }
 
 # parse scale
