@@ -45,16 +45,20 @@ else
 	flag3D="";
 fi
 
-anglegens="90";
-nbExtraIter=2
-dirbias="0";
+anglegens="90"; # Desired angle generators in degrees. Default: 90
+nbExtraIter=2;  # iteration count. Default: 2
+dirbias="0";	# not-same-dir-id cost offset. Default: 0
+freqweight="1"; # dataterm = (freqweight / #instances) * datacost. Default: 0. 1 might be too strong...todo
+adopt="0";		# Adopt points argument. Default: 0
 
 visdefparam="--use-tags --no-clusters" #"--use-tags --no-clusters" #--ids
+iterationconstr="--constr-mode 0" # what to add in the second iteration formulate. Default: --constr-mode 0, experimental: --constr-mode 2
 
 echo "angle-limit: $anglelimit"
 echo "scale: $scale"
 echo "pw: $pw"
 echo "pop-limit: $poplimit"
+echo "freq-weight: $freqweight"
 
 # save run.log arguments to "run.log"
 function save_args() {
@@ -105,16 +109,15 @@ input="patches.csv";
 assoc="points_primitives.csv";
 
 # show segment output
-# my_exec "../globOptVis --show --scale $scale --use-tags --ids --pop-limit $poplimit -p patches.csv -a $assoc --title "Segment output"&"
-# exit
+my_exec "../globOptVis --show$flag3D --scale $scale --use-tags --ids --pop-limit $poplimit -p patches.csv -a $assoc --normals 1 --title \"Segment output\" &"
 
 # Generate candidates. OUT: candidates_it0.csv
 my_exec "$executable --generate$flag3D -sc $scale -al $anglelimit -ald 1 --patch-pop-limit $poplimit -p $input --assoc $assoc --angle-gens $anglegens"
-#my_exec "../globOptVis --show3D --scale $scale --use-tags --ids --pop-limit $poplimit -p candidates_it0.csv -a $assoc --title \"generate output\" &"
-
+my_exec "../globOptVis --show$flag3D --scale $scale --use-tags --ids --pop-limit $poplimit -p candidates_it0.csv -a $assoc --title \"Generate output\" &"
+#exit
 
 # Formulate optimization problem. OUT: "problem" directory
-my_exec "$executable --formulate$flag3D --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $anglegens --candidates candidates_it0.csv -a $assoc"
+my_exec "$executable --formulate$flag3D --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $anglegens --candidates candidates_it0.csv -a $assoc --freq-weight $freqweight"
 
 # Solve optimization problem. OUT: primitives_it0.bonmin.csv
 my_exec "$executable --solver$flag3D bonmin --problem problem -v --time -1 --candidates candidates_it0.csv"
@@ -126,10 +129,12 @@ my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p pri
 #exit
 
 # Merge adjacent candidates with same dir id. OUT: primitives_merged_it0.csv, points_primitives_it0.csv
-my_exec "$executable --merge$flag3D --scale $scale --adopt 0 --prims primitives_it0.bonmin.csv -a $assoc --angle-gens $anglegens"
+my_exec "$executable --merge$flag3D --scale $scale --adopt $adopt --prims primitives_it0.bonmin.csv -a $assoc --angle-gens $anglegens"
+#cp primitives_it0.bonmin.csv primitives_merged_it0.csv
+#cp points_primitives.csv points_primitives_it0.csv
 
 # Show output of first merge.
-my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p primitives_merged_it0.csv -a $assoc --title \"Merged 1st iteration output\" $visdefparam  &"
+my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p primitives_merged_it0.csv -a points_primitives_it0.csv --title \"Merged 1st iteration output\" $visdefparam  &"
 
 for c in $(seq 1 $nbExtraIter)
 do
@@ -148,7 +153,7 @@ do
     # Show candidates:
     # my_exec "../globOptVis --show --scale $scale -a $assoc --ids -p candidates_it$c.csv --pop-limit $poplimit &"
     # Formulate optimization problem. OUT: "problem" directory
-    my_exec "$executable --formulate$flag3D --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --constr-mode 0 --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $anglegens --candidates candidates_it$c.csv -a $assoc"
+    my_exec "$executable --formulate$flag3D --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 $iterationconstr --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $anglegens --candidates candidates_it$c.csv -a $assoc --freq-weight $freqweight"
 
     # Solve optimization problem. OUT: primitives_it$c.bonmin.csv
     my_exec "$executable --solver$flag3D bonmin -v --problem problem --time -1 --angle-gens $anglegens --candidates candidates_it$c.csv"
@@ -157,7 +162,7 @@ do
     my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p primitives_it$c.bonmin.csv -a $assoc --title \"$nextId nd iteration output\" $visdefparam &"
 
     # Merge adjacent candidates with same dir id. OUT: primitives_merged_it$c.csv, points_primitives_it$c.csv
-    my_exec "$executable --merge$flag3D --scale $scale --adopt 0 --angle-gens $anglegens --prims primitives_it$c.bonmin.csv -a $assoc"
+    my_exec "$executable --merge$flag3D --scale $scale --adopt $adopt --angle-gens $anglegens --prims primitives_it$c.bonmin.csv -a $assoc"
 
 
     # Show output of second iteration.
