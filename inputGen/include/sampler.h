@@ -79,15 +79,15 @@ PrimitiveSampler<_Scalar, T>::generateSamples(
         vec tangentVec = (*it).getTangentVector();
 
         if (nbSampleX == 0 && nbSampleY == 0) // generate a single sample at the primitive midpoint
-            scontainer.push_back(Sample(midPoint, primitiveUID));
+            scontainer.push_back(Sample(midPoint, (*it).normal(), primitiveUID));
         else{
 
             if (nbSampleX != 0 && nbSampleY == 0){
-                scontainer.push_back(Sample(midPoint, primitiveUID));
+                scontainer.push_back(Sample(midPoint, (*it).normal(), primitiveUID));
                 for (unsigned int i = 1; i< nbSampleX/2+1; i++){
                     vec offset = Scalar(i)*spacing*tangentVec;
-                    scontainer.push_back(Sample(midPoint + offset, primitiveUID));
-                    scontainer.push_back(Sample(midPoint - offset, primitiveUID));
+                    scontainer.push_back(Sample(midPoint + offset, (*it).normal(), primitiveUID));
+                    scontainer.push_back(Sample(midPoint - offset, (*it).normal(), primitiveUID));
                 }
                 //if ((*it).dim())
             }else if (nbSampleX == 0 && nbSampleY != 0){
