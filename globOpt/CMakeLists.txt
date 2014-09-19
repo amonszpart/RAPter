@@ -306,6 +306,21 @@ TARGET_LINK_LIBRARIES( ${PEARL_TARGET}
     boost_thread
 )
 
+## _____________________________________PLY CONVERTER____________________________________________________
+SET( PLYCONVERTER_TARGET "convert2ply" )
+SET( PLYCONVERTER_SRC
+    src/comparison/plyConverter.cpp
+)
+
+add_executable( ${PLYCONVERTER_TARGET} ${PLYCONVERTER_SRC} ${PLYCONVERTER_H})
+TARGET_LINK_LIBRARIES( ${PLYCONVERTER_TARGET}
+    opencv_core
+    opencv_highgui
+    opencv_imgproc
+    ${PCL_LIBRARIES}
+    boost_filesystem
+)
+
 ## _______________________________________________________________________________________________
 #SET( TEST_TARGET test_bst)
 #add_executable( ${TEST_TARGET} src/test/test_main.cpp )
