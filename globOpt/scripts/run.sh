@@ -56,7 +56,7 @@ adopt="1";      # Adopt points argument. Default: 0
 cand_anglediv="1";
 
 visdefparam="--use-tags --no-clusters" #"--use-tags --no-clusters" #--ids
-iterationconstr="--constr-mode 0" # what to add in the second iteration formulate. Default: --constr-mode 0, experimental: --constr-mode 2
+iterationConstrMode="0" # what to add in the second iteration formulate. Default: 0 (everyPatchNeedsDirection), experimental: 2 (largePatchesNeedDirection).
 
 echo "anglegens: $anglegens"
 echo "angle-limit: $anglelimit"
@@ -89,7 +89,7 @@ save_args $0 $@
 function my_exec() {
 	echo "__________________________________________________________";
 	echo -e "\n\n[CALLING] $1";
-	eval $1;
+        eval $1;
   	if [ "$?" -ne "0" ]; then
 	    echo "Error detected ($?). ABORT."
 	    exit 1
@@ -116,13 +116,13 @@ assoc="points_primitives.csv";
 # show segment output
 my_exec "../globOptVis --show$flag3D --scale $scale --use-tags --pop-limit $poplimit -p patches.csv -a $assoc --normals 1 --title \"Segment output\" &"
 
-# Generate candidates. OUT: candidates_it0.csv
-my_exec "$executable --generate$flag3D -sc $scale -al $anglelimit -ald ${cand_anglediv} --patch-pop-limit $poplimit -p $input --assoc $assoc --angle-gens $anglegens"
+# Generate candidates. OUT: candidates_it0.csv. #small-mode : small patches don't receive any candidates
+my_exec "$executable --generate$flag3D -sc $scale -al $anglelimit -ald ${cand_anglediv} --small-mode 0 --patch-pop-limit $poplimit -p $input --assoc $assoc --angle-gens $anglegens"
 #my_exec "../globOptVis --show$flag3D --scale $scale --use-tags --ids --pop-limit $poplimit -p candidates_it0.csv -a $assoc --title \"Generate output\" &"
 #exit
 
-# Formulate optimization problem. OUT: "problem" directory
-my_exec "$executable --formulate$flag3D --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $anglegens --candidates candidates_it0.csv -a $assoc --freq-weight $freqweight"
+# Formulate optimization problem. OUT: "problem" directory. constr-mode 2: largePatchesNeedDirectionConstraint
+my_exec "$executable --formulate$flag3D --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --constr-mode 2 --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $anglegens --candidates candidates_it0.csv -a $assoc --freq-weight $freqweight"
 
 # Solve optimization problem. OUT: primitives_it0.bonmin.csv
 my_exec "$executable --solver$flag3D bonmin --problem problem -v --time -1 --candidates candidates_it0.csv"
@@ -152,13 +152,13 @@ do
     input="primitives_merged_it$prevId.csv";
     assoc="points_primitives_it$prevId.csv";
 
-    # Generate candidates from output of first. OUT: candidates_it$c.csv
+    # Generate candidates from output of first. OUT: candidates_it$c.csv. #small-mode 2: small patches receive all candidates
     my_exec "$executable --generate$flag3D -sc $scale -al 1 -ald ${cand_anglediv} --small-mode 2 --patch-pop-limit $poplimit --angle-gens $anglegens -p $input --assoc $assoc"
 
     # Show candidates:
     # my_exec "../globOptVis --show --scale $scale -a $assoc --ids -p candidates_it$c.csv --pop-limit $poplimit &"
-    # Formulate optimization problem. OUT: "problem" directory
-    my_exec "$executable --formulate$flag3D --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 $iterationconstr --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $anglegens --candidates candidates_it$c.csv -a $assoc --freq-weight $freqweight"
+    # Formulate optimization problem. OUT: "problem" directory. --constr-mode 2: largePatchesNeedDirectionConstraint
+    my_exec "$executable --formulate$flag3D --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --constr-mode $iterationConstrMode --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $anglegens --candidates candidates_it$c.csv -a $assoc --freq-weight $freqweight"
 
     # Solve optimization problem. OUT: primitives_it$c.bonmin.csv
     my_exec "$executable --solver$flag3D bonmin -v --problem problem --time -1 --angle-gens $anglegens --candidates candidates_it$c.csv"
