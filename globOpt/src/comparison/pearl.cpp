@@ -132,7 +132,6 @@ int pearlCli( int argc, char **argv )
         for ( int pid = 0; pid != primitives.size(); ++pid )
         {
             const int gid = labels[pid];
-            std::cout << "labels[" << pid << "] == " << gid << ": ";
             // assign point
             points[pid].setTag( PointPrimitiveT::GID, gid );
 
@@ -145,7 +144,6 @@ int pearlCli( int argc, char **argv )
                         .setTag( PrimitiveT::DIR_GID, gid );
 
             }
-            std::cout << std::endl;
         }
 
         GF2::io::writeAssociations<PointPrimitiveT>( points, "./points_primitives.pearl.csv" );
@@ -161,6 +159,11 @@ int main(int argc, char *argv[])
     std::cout << "hello pearl\n";
     if ( GF2::console::find_switch(argc,argv,"--3D") )
     {
+        std::cout << "running planes" << std::endl;
+        return pearlCli< GF2::PointContainerT
+                       , GF2::_3d::InnerPrimitiveContainerT
+                       , GF2::_3d::PrimitiveContainerT
+                       >( argc, argv );
         return EXIT_FAILURE;
     }
     else
