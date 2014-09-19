@@ -198,6 +198,7 @@ SET( GLOBOPT_HPP_LIST
     include/globfit2/optimization/impl/solver.hpp
     include/globfit2/optimization/impl/problemSetup.hpp
     include/globfit2/optimization/impl/merging.hpp
+    include/globfit2/io/impl/io.hpp
     include/globfit2/util/diskUtil.hpp
     include/globfit2/util/util.hpp
     include/globfit2/util/pcl_util.hpp
@@ -225,6 +226,7 @@ SET( GLOBOPT_H_LIST
     include/optimization/qp/gurobiOpt.h
     include/optimization/qp/MyGRBCallback.h
     include/globfit2/optimization/solver.h
+    include/globfit2/io/io.h
 )
 
 SET( GLOBOPT_SRC_LIST
