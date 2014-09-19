@@ -206,7 +206,7 @@ namespace GF2 {
         //! \brief Optimization weights. [ 0: unary, 1: pairwise, 2: complexity ]
         Eigen::Matrix<_Scalar,-1,1>  weights         = (Eigen::Matrix<_Scalar,-1,1>(3,1) << 10000, 10, 1).finished();
         //! \brief \copydoc CONSTR_MODE
-        CONSTR_MODE                  constr_mode     = PATCH_WISE;
+        CONSTR_MODE                  constr_mode     = HYBRID;
         //! \brief \copydoc DATA_COST_MODE
         DATA_COST_MODE               data_cost_mode  = ASSOC_BASED;
 
