@@ -33,6 +33,8 @@ GF2::vis::showCli( int argc, char** argv )
                   << "\t[--normals i\t show every i-th normal. 0: no normals, 1: every normal]\n"
                   << "\t[--angle-gens \t comma separated angle generators. I.e.: 36,90]\n"
                   << "\t[--no-pop \t Don't show cluster point counts]\n"
+                  << "\t[--print-angles \t Print angles on relation lines]\n"
+                  << "\t[--perfect-angle 0.5\t Threshold in degrees, under which a gray line is shown indicating 'perfect relationship']\n"
                   << std::endl;
         return EXIT_SUCCESS;
     }
@@ -43,6 +45,9 @@ GF2::vis::showCli( int argc, char** argv )
 
     bool show_pids = pcl::console::find_switch( argc, argv, "--pids" );
     bool show_pop = !pcl::console::find_switch( argc, argv, "--no-pop" );
+    bool print_angles = pcl::console::find_switch( argc, argv, "--print-angles" );
+    float perfect_angle_limit = 10.e-5;
+    pcl::console::parse_argument( argc, argv, "--perfect-angle", perfect_angle_limit );
 
     std::string title = "";
     pcl::console::parse_argument( argc, argv, "--title", title );
@@ -150,8 +155,8 @@ GF2::vis::showCli( int argc, char** argv )
                                                                                , /*            show_pids: */ show_pids
                                                                                , /*         show_normals: */ show_normals
                                                                                , /*         show_populat: */ show_pop
-                                                                               , /*  perfect_angle_limit: */ 0.0872664625
-                                                                               , /* print_perfect_angles: */ true
+                                                                               , /*  perfect_angle_limit: */ perfect_angle_limit
+                                                                               , /* print_perfect_angles: */ print_angles
                                                                                );
     return EXIT_SUCCESS;
 } // ... Solver::show()
