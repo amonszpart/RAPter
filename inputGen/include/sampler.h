@@ -50,57 +50,48 @@ struct PrimitiveSampler : public VisibleSampler<
     virtual VisibleSampler<_Scalar, _DisplayFunctor>* copy(){
         return new PrimitiveSampler<_Scalar, _DisplayFunctor>(this);
     }
-
 };
 
+////! Basic sampler, sampling the primitive regularly
+//template <typename _Scalar,
+//          template <class> class _DisplayFunctor>
+//struct PonctualSampler : public VisibleSampler<
+//        _Scalar,
+//        _DisplayFunctor>{
+//    typedef _Scalar Scalar;
+//    typedef _DisplayFunctor<_Scalar> DisplayFunctor;
+
+//    ///// parameters
+//    Scalar angularSpacing;
 
 
-template <typename _Scalar,
-          template <class> class T>
-template <class SampleContainer, class PrimitiveContainer>
-void
-PrimitiveSampler<_Scalar, T>::generateSamples(
-              SampleContainer&    scontainer,
-        const PrimitiveContainer& pcontainer){
-    typedef typename PrimitiveContainer::value_type::vec vec;
-    typedef typename SampleContainer::value_type Sample;
 
-    typename PrimitiveContainer::const_iterator it;
+//    ///// copy constructor
+//    /// inline
+//    PrimitiveSampler(PrimitiveSampler<_Scalar, _DisplayFunctor>* other)
+//        : angularSpacing(angularSpacing->spacing)
+//    {}
+//    PrimitiveSampler()
+//        : angularSpacing(1.)
+//    {}
 
-    // Iterate over all the primitives and generate samples using uniform spacing
-    for(it = pcontainer.begin(); it != pcontainer.end(); it++){
+//    ///// processing
+//    template <class SampleContainer, class PrimitiveContainer>
+//    inline void generateSamples(      SampleContainer&    scontainer,
+//                                const PrimitiveContainer& pcontainer);
 
-        unsigned int nbSampleX = int(std::abs((*it).dim()(0)) / spacing);
-        unsigned int nbSampleY = int(std::abs((*it).dim()(1)) / spacing);
+//    virtual void display() const {
+//        _DisplayFunctor dfunctor;
+//    }
 
-        const uint& primitiveUID = (*it).uid();
-
-        vec midPoint   = (*it).getMidPoint();
-        vec tangentVec = (*it).getTangentVector();
-
-        if (nbSampleX == 0 && nbSampleY == 0) // generate a single sample at the primitive midpoint
-            scontainer.push_back(Sample(midPoint, (*it).normal(), primitiveUID));
-        else{
-
-            if (nbSampleX != 0 && nbSampleY == 0){
-                scontainer.push_back(Sample(midPoint, (*it).normal(), primitiveUID));
-                for (unsigned int i = 1; i< nbSampleX/2+1; i++){
-                    vec offset = Scalar(i)*spacing*tangentVec;
-                    scontainer.push_back(Sample(midPoint + offset, (*it).normal(), primitiveUID));
-                    scontainer.push_back(Sample(midPoint - offset, (*it).normal(), primitiveUID));
-                }
-                //if ((*it).dim())
-            }else if (nbSampleX == 0 && nbSampleY != 0){
-                std::cerr << "[Sampler] Unsupported configuration" << std::endl;
-            }else{
-                std::cerr << "[Sampler] Unsupported configuration" << std::endl;
-            }
-        }
-    }
-
-}
+//    virtual VisibleSampler<_Scalar, _DisplayFunctor>* copy(){
+//        return new PonctualSampler<_Scalar, _DisplayFunctor>(this);
+//    }
+//};
 
 
 }
+
+#include "impl/sampler.hpp"
 
 #endif // SAMPLER_H
