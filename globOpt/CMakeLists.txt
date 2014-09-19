@@ -41,6 +41,9 @@ IF(WITH_GUROBI)
     ADD_DEFINITIONS(-DGF2_WITH_GUROBI)
 ENDIF()
 
+SET( WITH_PEARL OFF CACHE BINARY "Compile pearl executable.")
+SET( WITH_PLYCONVERTER ON CACHE BINARY "Compile ply-converter executable.")
+
 SET( WITH_SAMPLE_INPUT OFF CACHE BINARY "Compile --sample-input option")
 IF(WITH_SAMPLE_INPUT)
     ADD_DEFINITIONS(-DGF2_WITH_SAMPLE_INPUT)
@@ -268,6 +271,7 @@ TARGET_LINK_LIBRARIES( ${GLOBOPT_TARGET_NAME}
 )
 
 ## _____________________________________PEaRL____________________________________________________
+IF(WITH_PEARL)
 SET( PEARL_TARGET pearl)
 
 ## Deps
@@ -305,8 +309,10 @@ TARGET_LINK_LIBRARIES( ${PEARL_TARGET}
     boost_system
     boost_thread
 )
+ENDIF(WITH_PEARL)
 
 ## _____________________________________PLY CONVERTER____________________________________________________
+IF(WITH_PLYCONVERTER)
 SET( PLYCONVERTER_TARGET "convert2ply" )
 SET( PLYCONVERTER_SRC
     src/comparison/plyConverter.cpp
@@ -320,6 +326,7 @@ TARGET_LINK_LIBRARIES( ${PLYCONVERTER_TARGET}
     ${PCL_LIBRARIES}
     boost_filesystem
 )
+ENDIF(WITH_PLYCONVERTER)
 
 ## _______________________________________________________________________________________________
 #SET( TEST_TARGET test_bst)
