@@ -1,4 +1,4 @@
-#include "io.h"
+#include "globfit2/io/io.h"
 #include <fstream>
 
 #ifdef WITH_QCQPCPP

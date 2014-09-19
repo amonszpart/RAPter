@@ -356,7 +356,7 @@ namespace GF2
 
 #ifndef __GF2_IO_INC_HPP__
 #   define __GF2_IO_INC_HPP__
-#   include "globfit2/io/io.hpp"
+#   include "globfit2/io/impl/io.hpp"
 #endif
 
 #endif // __GF2_IO_H__
