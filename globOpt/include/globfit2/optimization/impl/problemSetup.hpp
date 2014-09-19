@@ -84,7 +84,11 @@ ProblemSetup::formulateCli( int    argc
             /**/ if ( !constr_mode_str.compare( "patch"  ) ) params.constr_mode = ProblemSetupParams<Scalar>::PATCH_WISE; // after first iteration
             else if ( !constr_mode_str.compare( "point"  ) ) params.constr_mode = ProblemSetupParams<Scalar>::POINT_WISE; // banded
             else if ( !constr_mode_str.compare( "hybrid" ) ) params.constr_mode = ProblemSetupParams<Scalar>::HYBRID; // hybrid, default
-            else std::cerr << "[" << __func__ << "]: " << "could NOT parse constraint mode, assuming " << (int)params.constr_mode << std::endl;
+            else
+            {
+                std::cerr << "[" << __func__ << "]: " << "could NOT parse constraint mode (" << constr_mode_str << "), assuming " << (int)params.constr_mode << std::endl;
+                throw new std::runtime_error("Could not parse constr-mode");
+            }
         }
 
         // pop_limit

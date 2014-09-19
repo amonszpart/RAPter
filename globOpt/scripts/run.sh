@@ -56,7 +56,7 @@ adopt="1";      # Adopt points argument. Default: 0
 cand_anglediv="1";
 
 visdefparam="--use-tags --no-clusters" #"--use-tags --no-clusters" #--ids
-iterationConstrMode="0" # what to add in the second iteration formulate. Default: 0 (everyPatchNeedsDirection), experimental: 2 (largePatchesNeedDirection).
+iterationConstrMode="hybrid" # what to add in the second iteration formulate. Default: 0 (everyPatchNeedsDirection), experimental: 2 (largePatchesNeedDirection).
 
 echo "anglegens: $anglegens"
 echo "angle-limit: $anglelimit"
@@ -122,7 +122,7 @@ my_exec "$executable --generate$flag3D -sc $scale -al $anglelimit -ald ${cand_an
 #exit
 
 # Formulate optimization problem. OUT: "problem" directory. constr-mode 2: largePatchesNeedDirectionConstraint
-my_exec "$executable --formulate$flag3D --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --constr-mode 2 --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $anglegens --candidates candidates_it0.csv -a $assoc --freq-weight $freqweight"
+my_exec "$executable --formulate$flag3D --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --constr-mode hybrid --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $anglegens --candidates candidates_it0.csv -a $assoc --freq-weight $freqweight"
 
 # Solve optimization problem. OUT: primitives_it0.bonmin.csv
 my_exec "$executable --solver$flag3D bonmin --problem problem -v --time -1 --candidates candidates_it0.csv"
@@ -153,7 +153,7 @@ do
     assoc="points_primitives_it$prevId.csv";
 
     # Generate candidates from output of first. OUT: candidates_it$c.csv. #small-mode 2: small patches receive all candidates
-    my_exec "$executable --generate$flag3D -sc $scale -al 1 -ald ${cand_anglediv} --small-mode 2 --patch-pop-limit $poplimit --angle-gens $anglegens -p $input --assoc $assoc"
+    my_exec "$executable --generate$flag3D -sc $scale -al 1 -ald ${cand_anglediv} --small-mode 0 --patch-pop-limit $poplimit --angle-gens $anglegens -p $input --assoc $assoc"
 
     # Show candidates:
     # my_exec "../globOptVis --show --scale $scale -a $assoc --ids -p candidates_it$c.csv --pop-limit $poplimit &"
