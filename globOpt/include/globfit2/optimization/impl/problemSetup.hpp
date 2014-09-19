@@ -81,9 +81,9 @@ ProblemSetup::formulateCli( int    argc
         {
             pcl::console::parse_argument( argc, argv, "--constr-mode", constr_mode_str );
             if ( verbose ) std::cout << "parsed constr_mode_str: " << constr_mode_str << std::endl;
-            /**/ if ( !constr_mode_str.compare( "patch"  ) ) params.constr_mode = ProblemSetupParams<Scalar>::PATCH_WISE; // default
+            /**/ if ( !constr_mode_str.compare( "patch"  ) ) params.constr_mode = ProblemSetupParams<Scalar>::PATCH_WISE; // after first iteration
             else if ( !constr_mode_str.compare( "point"  ) ) params.constr_mode = ProblemSetupParams<Scalar>::POINT_WISE; // banded
-            else if ( !constr_mode_str.compare( "hybrid" ) ) params.constr_mode = ProblemSetupParams<Scalar>::HYBRID; // hybrid
+            else if ( !constr_mode_str.compare( "hybrid" ) ) params.constr_mode = ProblemSetupParams<Scalar>::HYBRID; // hybrid, default
             else std::cerr << "[" << __func__ << "]: " << "could NOT parse constraint mode, assuming " << (int)params.constr_mode << std::endl;
         }
 
