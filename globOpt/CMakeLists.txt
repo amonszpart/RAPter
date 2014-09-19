@@ -36,13 +36,14 @@ SET( WITH_BONMIN ON CACHE BINARY "Allow Bonmin to be used for optimization.")
 IF(WITH_BONMIN)
     ADD_DEFINITIONS(-DGF2_WITH_BONMIN)
 ENDIF()
-SET( WITH_GUROBI OFF CACHE BINARY "Allow Gruboi to be used for optimization.")
+SET( WITH_GUROBI OFF CACHE BINARY "Allow Gurobi to be used for optimization.")
 IF(WITH_GUROBI)
     ADD_DEFINITIONS(-DGF2_WITH_GUROBI)
 ENDIF()
 
 SET( WITH_PEARL OFF CACHE BINARY "Compile pearl executable.")
 SET( WITH_PLYCONVERTER ON CACHE BINARY "Compile ply-converter executable.")
+SET( WITH_CORRESP ON CACHE BINARY "Correspondance miniprogram compilation.")
 
 SET( WITH_SAMPLE_INPUT OFF CACHE BINARY "Compile --sample-input option")
 IF(WITH_SAMPLE_INPUT)
@@ -241,7 +242,6 @@ SET( GLOBOPT_SRC_LIST
     src/solve.cpp
     src/merge.cpp
     src/datafit.cpp
-    src/correspondence.cpp
     #src/optimization/candidateGenerator.cpp # cached compilation
     #src/optimization/qp/visualizer.cpp     # cached compilation
 )
@@ -272,61 +272,75 @@ TARGET_LINK_LIBRARIES( ${GLOBOPT_TARGET_NAME}
 
 ## _____________________________________PEaRL____________________________________________________
 IF(WITH_PEARL)
-SET( PEARL_TARGET pearl)
+    SET( PEARL_TARGET pearl)
 
-## Deps
-SET( PATH_PEARL_ROOT ${PATH_GLOBOPT_DEPS_ROOT}/pearl CACHE PATH "Pearl root" FORCE )
-SET( WITH_GCO ON CACHE BINARY "Use alpha-expansion library")
-SET( PATH_GCO_ROOT ${PATH_GLOBOPT_DEPS_ROOT}/gco-v3-0 CACHE PATH "alpha-expansion root" FORCE )
+    ## Deps
+    SET( PATH_PEARL_ROOT ${PATH_GLOBOPT_DEPS_ROOT}/pearl CACHE PATH "Pearl root" FORCE )
+    SET( WITH_GCO ON CACHE BINARY "Use alpha-expansion library")
+    SET( PATH_GCO_ROOT ${PATH_GLOBOPT_DEPS_ROOT}/gco-v3-0 CACHE PATH "alpha-expansion root" FORCE )
 
-# GCO
-IF(WITH_GCO)
-    add_library( libgco-v3 SHARED IMPORTED )
-    set_property( TARGET libgco-v3 PROPERTY IMPORTED_LOCATION_RELEASE ${PATH_GCO_ROOT}/build/Release/lib/libgco-v3-0.so )
-    set_property( TARGET libgco-v3 PROPERTY IMPORTED_LOCATION_DEBUG ${PATH_GCO_ROOT}/build/Debug/lib/libgco-v3-0d.so )
-    SET( GCO_INCLUDE_DIRS ${PATH_GCO_ROOT}/include )
-    SET( GCO_LIBRARIES "libgco-v3" )
-ENDIF(WITH_GCO)
+    # GCO
+    IF(WITH_GCO)
+        add_library( libgco-v3 SHARED IMPORTED )
+        set_property( TARGET libgco-v3 PROPERTY IMPORTED_LOCATION_RELEASE ${PATH_GCO_ROOT}/build/Release/lib/libgco-v3-0.so )
+        set_property( TARGET libgco-v3 PROPERTY IMPORTED_LOCATION_DEBUG ${PATH_GCO_ROOT}/build/Debug/lib/libgco-v3-0d.so )
+        SET( GCO_INCLUDE_DIRS ${PATH_GCO_ROOT}/include )
+        SET( GCO_LIBRARIES "libgco-v3" )
+    ENDIF(WITH_GCO)
 
-MESSAGE( STATUS ${PATH_PEARL_ROOT} )
-MESSAGE( STATUS ${GCO_INCLUDE_DIRS} )
-INCLUDE_DIRECTORIES(
-    ${PATH_PEARL_ROOT}/include
-    ${GCO_INCLUDE_DIRS}
-)
+    MESSAGE( STATUS ${PATH_PEARL_ROOT} )
+    MESSAGE( STATUS ${GCO_INCLUDE_DIRS} )
+    INCLUDE_DIRECTORIES(
+        ${PATH_PEARL_ROOT}/include
+        ${GCO_INCLUDE_DIRS}
+    )
 
-## Sources
-SET( PEARL_SRC
-    src/comparison/pearl.cpp
-)
+    ## Sources
+    SET( PEARL_SRC
+        src/comparison/pearl.cpp
+    )
 
-## Linking
-add_executable( ${PEARL_TARGET} ${PEARL_SRC} )
-TARGET_LINK_LIBRARIES( ${PEARL_TARGET}
-    ${GCO_LIBRARIES}
-    ${PCL_LIBRARIES}
-    boost_filesystem
-    boost_system
-    boost_thread
-)
+    ## Linking
+    add_executable( ${PEARL_TARGET} ${PEARL_SRC} )
+    TARGET_LINK_LIBRARIES( ${PEARL_TARGET}
+        ${GCO_LIBRARIES}
+        ${PCL_LIBRARIES}
+        boost_filesystem
+        boost_system
+        boost_thread
+    )
 ENDIF(WITH_PEARL)
 
 ## _____________________________________PLY CONVERTER____________________________________________________
 IF(WITH_PLYCONVERTER)
-SET( PLYCONVERTER_TARGET "convert2ply" )
-SET( PLYCONVERTER_SRC
-    src/comparison/plyConverter.cpp
-)
+    SET( PLYCONVERTER_TARGET "convert2ply" )
+    SET( PLYCONVERTER_SRC
+        src/comparison/plyConverter.cpp
+    )
 
-add_executable( ${PLYCONVERTER_TARGET} ${PLYCONVERTER_SRC} ${PLYCONVERTER_H})
-TARGET_LINK_LIBRARIES( ${PLYCONVERTER_TARGET}
-    opencv_core
-    opencv_highgui
-    opencv_imgproc
-    ${PCL_LIBRARIES}
-    boost_filesystem
-)
+    add_executable( ${PLYCONVERTER_TARGET} ${PLYCONVERTER_SRC} ${PLYCONVERTER_H})
+    TARGET_LINK_LIBRARIES( ${PLYCONVERTER_TARGET}
+        opencv_core
+        opencv_highgui
+        opencv_imgproc
+        ${PCL_LIBRARIES}
+        boost_filesystem
+    )
 ENDIF(WITH_PLYCONVERTER)
+
+## _____________________________________CORRESPONENCE____________________________________________________
+IF(WITH_CORRESP)
+    SET( CORRESP_TARGET "corresp" )
+    SET( CORRESP_SRC
+        src/correspondence.cpp
+    )
+
+    add_executable( ${CORRESP_TARGET} ${CORRESP_SRC} ${CORRESP_H})
+    TARGET_LINK_LIBRARIES( ${CORRESP_TARGET}
+        ${PCL_LIBRARIES}
+        boost_filesystem
+    )
+ENDIF(WITH_CORRESP)
 
 ## _______________________________________________________________________________________________
 #SET( TEST_TARGET test_bst)
