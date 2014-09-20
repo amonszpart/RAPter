@@ -14,7 +14,6 @@ int formulate( int argc, char** argv ); // problemSetup.cpp
 int solve    ( int argc, char** argv ); // solve.cpp
 int merge    ( int argc, char** argv ); // merge.cpp
 int datafit  ( int argc, char** argv ); // datafit.cpp
-int corresp  ( int argc, char** argv ); // correspondance.cpp
 
 int main( int argc, char *argv[] )
 {
@@ -77,11 +76,12 @@ int main( int argc, char *argv[] )
     {
         return subsample( argc, argv );
     }
-    else if ( GF2::console::find_switch(argc,argv,"--corresp") || GF2::console::find_switch(argc,argv,"--corresp3D") )
-    {
-        return corresp( argc, argv );
-    }
+//    else if ( GF2::console::find_switch(argc,argv,"--corresp") || GF2::console::find_switch(argc,argv,"--corresp3D") )
+//    {
+//        return corresp( argc, argv );
+//    }
 
+    std::cerr << "[" << __func__ << "]: " << "unrecognized option" << std::endl;
     return 1;
 
     // --show --dir . --cloud cloud.ply --scale 0.05f --assoc points_primitives.txt --use-tags --no-clusters --prims primitives.bonmin.txt
