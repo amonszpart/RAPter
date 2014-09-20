@@ -300,22 +300,27 @@ template < class _PointPrimitiveDistanceFunctor
 int Merging::adoptPoints( _PointContainerT          & points
                         , _PrimitiveContainerT const& prims
                         , _Scalar              const  scale
-                          , char                 const  mode
-                          , int                         poplimit )
+                        , char                 const  mode
+                        , int                         poplimit )
 {
     //typedef GF2::MyPointPrimitiveDistanceFunctor _PointPrimitiveDistanceFunctor;
-    typedef typename _PrimitiveContainerT::const_iterator             outer_const_iterator;
+    typedef typename _PrimitiveContainerT::const_iterator   outer_const_iterator;
     //typedef typename outer_const_iterator::value_type::const_iterator inner_const_iterator;
-    typedef typename _PointContainerT::value_type PointT;
+    typedef typename _PointContainerT::value_type           PointT;
+    typedef          Eigen::Matrix<_Scalar,3,1>             Position;
+
+    typedef           std::vector< Position         >       ExtremaT;
+    //typedef           std::map   < int, ExtremaT>              LidExtremaT;
+    typedef           std::pair  < int   , int      >       GidLid;
+    typedef           std::map   < GidLid, ExtremaT >       GidLidExtremaT;
 
     int err = EXIT_SUCCESS;
 
-    // Loop over all points, and select orphans
-
     bool changed = false;
 
-    do{
-
+    // Loop over all points, and select orphans
+    do
+    {
         changed = false;
 
         _PointPrimitiveDistanceFunctor distFunctor;
@@ -328,28 +333,33 @@ int Merging::adoptPoints( _PointContainerT          & points
             CHECK( err, "getPopulations" );
         }
 
+        // cache extrema
+        GidLidExtremaT extremaMap;
+
         for ( size_t pid = 0; pid != points.size(); ++pid )
         {
             typename _PrimitiveContainerT::const_iterator it = prims.find(points[pid].getTag( _PointPrimitiveT::GID ));
 
-            if (  (( it == prims.end()) || (!containers::valueOf<_PrimitiveT>(it).size()) ||
-                   (populations[(it)->first].size() < poplimit)))
+            if (    ( it == prims.end()                            )    // the patch this point is assigned to does not exist
+                 || ( !containers::valueOf<_PrimitiveT>(it).size() )    // the patch this point is assigned to is empty (no primitives in it)
+                 || ( populations[(it)->first].size() < poplimit   ) )  // the patch this point is assigned to is too small
             {
-                // We here have an orphean, se we need to iterate over all primitives and get the closest distance < scale
-                _Scalar minDist = std::numeric_limits<_Scalar>::max();
-                int minGid = -1;
-                auto pos = points[pid].pos();
+                // We here have an orphan, so we need to iterate over all primitives and get the closest distance < scale
+                _Scalar  minDist = std::numeric_limits<_Scalar>::max();
+                int      minGid  = -1;
+                Position pos     = points[pid].pos();
 
-
-                // now loop over all primitives
+                // now loop over all primitives to get the closest for
                 for ( outer_const_iterator it1 = prims.begin(); it1 != prims.end(); ++it1 )
                 {
-                    for ( _inner_const_iterator it2 = it1->second.begin(); it2 != it1->second.end(); ++it2 )
+                    int lid = 0; // primitive linear index in patch
+                    for ( _inner_const_iterator it2 = it1->second.begin(); it2 != it1->second.end(); ++it2, ++lid )
                     {
-                        int gid = (*it2).getTag(_PrimitiveT::GID);
+                        const int gid = (*it2).getTag(_PrimitiveT::GID);
 
-                        if (populations[gid].size() > poplimit){
-
+                        // if large patch found
+                        if ( populations[gid].size() > poplimit )
+                        {
                             // this is very unefficient, extents must be stored !
                             // ...
                             // I'm too lazy to do it, sorry (I really apologise)
@@ -357,15 +367,22 @@ int Merging::adoptPoints( _PointContainerT          & points
                             // Yes I know there is such code 10 lines below.
                             // ...
                             // Just do it and leave me alone
-                            std::vector< Eigen::Matrix<_Scalar,3,1> > extrema;
-                            err = it2->template getExtent<_PointPrimitiveT>
-                                    ( extrema
-                                      , points
-                                      , scale
-                                      , populations[gid].size() ? &(populations[gid]) : NULL );
 
-                            _Scalar dist = distFunctor.eval(extrema, *it2, pos);
-                            if (dist < minDist){
+                            if ( extremaMap.find(GidLid(gid,lid)) == extremaMap.end() )
+                            {
+                                err = it2->template getExtent<_PointPrimitiveT>
+                                        ( extremaMap[ GidLid(gid,lid) ]
+                                        , points
+                                        , scale
+                                        , populations[gid].size() ? &(populations[gid]) : NULL );
+                            }
+
+#warning TODO: !!!should this not be changed to segment distance?
+                            _Scalar dist = distFunctor.eval( extremaMap[ GidLid(gid,lid) ], *it2, pos );
+
+                            // stor minimum distance
+                            if ( dist < minDist )
+                            {
                                 minDist = dist;
                                 minGid  = gid;
                             }
@@ -374,9 +391,9 @@ int Merging::adoptPoints( _PointContainerT          & points
                 }
 
                 //std::cout << "Process orphan.... " << minDist << std::endl;
-
-
-                if(minDist < scale && minDist>=0){
+                if ( (minDist < scale) && (minDist >= _Scalar(0.)) )
+                {
+                    // reassign point
                     points[pid].setTag( _PointPrimitiveT::GID, minGid );
                     std::cout << "Orphan re-assigned " << pid << " " << minGid << std::endl;
                     changed = true;
