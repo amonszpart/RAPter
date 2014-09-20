@@ -490,7 +490,7 @@ Segmentation::segmentCli( int    argc
         }
 
         pcl::console::parse_argument( argc, argv, "--angle-limit", generatorParams.angle_limit );
-        pcl::console::parse_argument( argc, argv, "--patch-dist-limit", generatorParams.patch_dist_limit_mult ); // gets multiplied by scale
+        pcl::console::parse_argument( argc, argv, "--dist-limit-mult", generatorParams.patch_dist_limit_mult ); // gets multiplied by scale
         pcl::console::parse_argument( argc, argv, "--mode", mode_string );
         generatorParams.parsePatchDistMode( mode_string );
 
@@ -514,7 +514,7 @@ Segmentation::segmentCli( int    argc
             std::cerr << "]\n";
 
             std::cerr << "\t [--angle-limit " << generatorParams.angle_limit << "]\n";
-            std::cerr << "\t [--patch-dist-limit " << generatorParams.patch_dist_limit_mult << "]\n";
+            std::cerr << "\t [--dist-limit-mult " << generatorParams.patch_dist_limit_mult << "]\n";
             std::cerr << "\t [--angle-gens "; for(int i=0;i!=angle_gens.size();++i)std::cerr<<angle_gens[i];std::cerr<<"]\n";
             std::cerr << std::endl;
 
