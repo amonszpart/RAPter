@@ -18,7 +18,7 @@
     <item row="0" column="0">
      <widget class="QToolBox" name="toolBox">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="_samplerPrimitives">
        <property name="geometry">
@@ -26,7 +26,7 @@
          <x>0</x>
          <y>0</y>
          <width>478</width>
-         <height>214</height>
+         <height>206</height>
         </rect>
        </property>
        <attribute name="label">
@@ -88,8 +88,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>465</width>
-         <height>178</height>
+         <width>478</width>
+         <height>206</height>
         </rect>
        </property>
        <attribute name="label">
@@ -116,7 +116,14 @@
             </widget>
            </item>
            <item>
-            <widget class="QDoubleSpinBox" name="_samplerPunctualPosX"/>
+            <widget class="QDoubleSpinBox" name="_samplerPunctualPosX">
+             <property name="singleStep">
+              <double>0.010000000000000</double>
+             </property>
+             <property name="value">
+              <double>0.500000000000000</double>
+             </property>
+            </widget>
            </item>
            <item>
             <widget class="QLabel" name="_samplerPunctualPosYLabel">
@@ -129,7 +136,14 @@
             </widget>
            </item>
            <item>
-            <widget class="QDoubleSpinBox" name="_samplerPunctualPosY"/>
+            <widget class="QDoubleSpinBox" name="_samplerPunctualPosY">
+             <property name="singleStep">
+              <double>0.010000000000000</double>
+             </property>
+             <property name="value">
+              <double>0.500000000000000</double>
+             </property>
+            </widget>
            </item>
            <item>
             <widget class="QLabel" name="_samplerPunctualPosZLabel">
@@ -142,7 +156,14 @@
             </widget>
            </item>
            <item>
-            <widget class="QDoubleSpinBox" name="_samplerPunctualPosZ"/>
+            <widget class="QDoubleSpinBox" name="_samplerPunctualPosZ">
+             <property name="singleStep">
+              <double>0.010000000000000</double>
+             </property>
+             <property name="value">
+              <double>0.500000000000000</double>
+             </property>
+            </widget>
            </item>
           </layout>
          </widget>
@@ -171,7 +192,17 @@
             </widget>
            </item>
            <item row="0" column="1">
-            <widget class="QSpinBox" name="_samplerPunctualParamNbSamples"/>
+            <widget class="QSpinBox" name="_samplerPunctualParamNbSamples">
+             <property name="minimum">
+              <number>10</number>
+             </property>
+             <property name="maximum">
+              <number>999999</number>
+             </property>
+             <property name="value">
+              <number>360</number>
+             </property>
+            </widget>
            </item>
           </layout>
          </widget>
@@ -179,19 +210,6 @@
        </layout>
       </widget>
      </widget>
-    </item>
-    <item row="1" column="0">
-     <spacer name="verticalSpacer_2">
-      <property name="orientation">
-       <enum>Qt::Vertical</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>20</width>
-        <height>40</height>
-       </size>
-      </property>
-     </spacer>
     </item>
    </layout>
   </widget>
@@ -227,6 +245,86 @@
     <hint type="destinationlabel">
      <x>144</x>
      <y>103</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>_samplerPunctualPosX</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>SamplerFactory</receiver>
+   <slot>updateSampler()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>137</x>
+     <y>161</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>247</x>
+     <y>159</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>_samplerPunctualPosY</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>SamplerFactory</receiver>
+   <slot>updateSampler()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>283</x>
+     <y>161</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>247</x>
+     <y>159</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>_samplerPunctualPosZ</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>SamplerFactory</receiver>
+   <slot>updateSampler()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>430</x>
+     <y>161</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>247</x>
+     <y>159</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>_samplerPunctualParamNbSamples</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>SamplerFactory</receiver>
+   <slot>updateSampler()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>361</x>
+     <y>242</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>247</x>
+     <y>159</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>_samplerPunctualParamOcclusion</sender>
+   <signal>stateChanged(int)</signal>
+   <receiver>SamplerFactory</receiver>
+   <slot>updateSampler()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>361</x>
+     <y>276</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>247</x>
+     <y>159</y>
     </hint>
    </hints>
   </connection>

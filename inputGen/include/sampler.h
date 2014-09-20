@@ -60,7 +60,7 @@ struct PrimitiveSampler : public VisibleSampler<
 template <typename _Scalar,
           template <class> class _DisplayFunctor,
           class _Primitive>
-struct PonctualSampler : public VisibleSampler<
+struct PunctualSampler : public VisibleSampler<
         _Scalar,
         _DisplayFunctor,
         _Primitive>{
@@ -80,12 +80,12 @@ struct PonctualSampler : public VisibleSampler<
 
     ///// copy constructor
     /// inline
-    PonctualSampler(PonctualSampler<_Scalar, _DisplayFunctor, _Primitive>* other)
+    PunctualSampler(PunctualSampler<_Scalar, _DisplayFunctor, _Primitive>* other)
         : nbSamples(other->nbSamples),
           occlusion(other->occlusion),
-          pos(other->vec)
+          pos(other->pos)
     {}
-    PonctualSampler()
+    PunctualSampler()
         : nbSamples(1), occlusion(true), pos(vec::Zero())
     {}
 
@@ -95,11 +95,11 @@ struct PonctualSampler : public VisibleSampler<
                                 const PrimitiveContainer& pcontainer);
 
     virtual void display() const {
-        DisplayFunctor dfunctor;
+        DisplayFunctor::displayVertex(pos.data());
     }
 
     virtual VisibleSampler<_Scalar, _DisplayFunctor, _Primitive>* copy(){
-        return new PonctualSampler<_Scalar, _DisplayFunctor, _Primitive>(this);
+        return new PunctualSampler<_Scalar, _DisplayFunctor, _Primitive>(this);
     }
 };
 

@@ -116,7 +116,12 @@ MyScene::drawBackground(QPainter *painter, const QRectF &rect){
         glEnd();
     }
 
-    if (_project->sampler() != NULL) _project->sampler()->display();
-
+    if (_project->sampler() != NULL){
+        glPointSize(5.f);
+        glColor3f(1., 0., 0.);
+        glBegin(GL_POINTS);
+        _project->sampler()->display();
+        glEnd();
+    }
     painter->endNativePainting();
 }

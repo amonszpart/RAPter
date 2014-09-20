@@ -104,6 +104,10 @@ public:
         return _coord+0.5*getTangentVector()*_dim(0);
     }
 
+    inline vec getEndPoint() const {
+        return _coord+getTangentVector()*_dim(0);
+    }
+
 
     static inline int getUID() {
         static int uid = 0;
