@@ -24,18 +24,24 @@ namespace correspondence
              >
     int correspCli( int argc, char**argv )
     {
+        // usual <gid, vector<primitive> > map
         typedef std::map<int, _InnerPrimitiveContainerT> PrimitiveMapT;
+        // points belong to two primitives
+        // (one from primtivesA and one from primitivesB),
+        // so we need a second key for that)
         enum { PNT_GID_B    = _PointPrimitiveT::GID
              , PNT_GID_A    = _PointPrimitiveT::USER_ID1
              };
 
+        // first: GID (map key), second: linearId in vector map[gid].
         typedef std::pair< int   , int    > GidLid;   //!< Uniquely identifies an entry in PrimitiveMapT.
+        // first: primitiveA, second: primitiveB
         typedef std::map < GidLid, GidLid > CorrespT; //!< Output type, contains primitive-gt correspondances. Key: <PrimitiveGid,PrimitiveLid> => Value: <GTGid,GTLid>
 
         int err = EXIT_SUCCESS;
 
         // print usage
-        if ( GF2::console::find_switch(argc,argv,"-h")
+        if (    GF2::console::find_switch(argc,argv,"-h")
              || GF2::console::find_switch(argc,argv,"--help")
              || (argc != 6) )
         {
@@ -98,7 +104,7 @@ namespace correspondence
             }
         } //...parse input
 
-        _PointContainerT     points; // need two versions to hold the associations...:-S
+        _PointContainerT     points;
         PrimitiveMapT        prims_mapA, prims_mapB;
         // read input
         {
@@ -109,9 +115,10 @@ namespace correspondence
                 if ( err != EXIT_SUCCESS )  std::cerr << "[" << __func__ << "]: " << "readPoints returned error " << err << std::endl;
             } //...read points
 
+            // tmp var to read to, first: point id, second: primitive GID
             std::vector<std::pair<int,int> > points_primitives;
 
-            // read GT associations
+            // read A associations
             {
                 io::readAssociations( points_primitives, assoc_pathA, NULL );
                 for ( size_t i = 0; i != points.size(); ++i )
@@ -121,7 +128,7 @@ namespace correspondence
                 }
             }
 
-            // read associations
+            // read B associations
             {
                 io::readAssociations( points_primitives, assoc_pathB, NULL );
                 for ( size_t i = 0; i != points.size(); ++i )
@@ -134,132 +141,177 @@ namespace correspondence
             // read primitives
             _PrimitiveContainerT primitivesA, primitivesB; // unused, so local scope
             {
-                // GT
+                // A
                 std::cout << "[" << __func__ << "]: " << "reading primitivesA from " << prims_pathA << "...";
                 io::readPrimitives<_PrimitiveT, _InnerPrimitiveContainerT>( primitivesA, prims_pathA, &prims_mapA );
                 std::cout << "reading primitivesA ok (#: " << prims_mapA.size() << ")\n";
 
-                // solution
+                // B
                 std::cout << "[" << __func__ << "]: " << "reading primitivesB from " << prims_pathB << "...";
                 io::readPrimitives<_PrimitiveT, _InnerPrimitiveContainerT>( primitivesB, prims_pathB, &prims_mapB );
                 std::cout << "reading primitivesB ok (#: " << prims_mapB.size() << ")\n";
             } //...read primitives
         }
 
-        // WORK
+        // ________________________WORK____________________________
+
+        // output correspondences. first: primA(gid,lid), second: primB(gid,lid)
+        CorrespT corresps;
+        // iterator over patches
+        typedef typename PrimitiveMapT::const_iterator             outer_const_iterator;
+        // iterator over primitives in patch (have same GID)
+        typedef typename _InnerPrimitiveContainerT::const_iterator inner_const_iterator;
+
+        // cost float type
+        typedef typename _PointPrimitiveT::Scalar Scalar;
+        typedef std::pair< GidLid , GidLid >      CostKey; // first: primitiveA, second: primitiveB
+        typedef std::map < CostKey, Scalar >      CostMap; // < <primAGid,primALid>,<primBGid,primBLid> > => cost           // watch the order! <primA, primB>
+
+        // store costs in a retrievable map ( we could use a vector right away, but we might need it later )
+        CostMap costs;
         {
-            typedef typename PrimitiveMapT::const_iterator             outer_const_iterator;
-            typedef typename _InnerPrimitiveContainerT::const_iterator inner_const_iterator;
-
-            typedef typename _PointPrimitiveT::Scalar Scalar;
-            typedef std::pair< GidLid , GidLid >      CostKey; // < primGid          ,primLid       > => <gtGid,gtLid>
-            typedef std::map < CostKey, Scalar >      CostMap; // < <primGid,primLid>,<gtGid,gtLid> > => cost           // watch the order! <Prim, GT>
-            CostMap costs;
-
             // calc distances
             int gidA, gidB, lidA, lidB;
+            // for patches in A
             for ( outer_const_iterator outer_it0 = prims_mapA.begin(); outer_it0 != prims_mapA.end(); ++outer_it0 )
             {
+                // cache patch id gidA
                 gidA = (*outer_it0).first;
+                // start linear primitive id from 0 in this patch
                 lidA = 0;
+                // for primtives in patch of A
                 for ( inner_const_iterator inner_it0 = (*outer_it0).second.begin(); inner_it0 != (*outer_it0).second.end(); ++inner_it0, ++lidA )
                 {
+                    // for patches in B
                     for ( outer_const_iterator outer_it1 = prims_mapB.begin(); outer_it1 != prims_mapB.end(); ++outer_it1 )
                     {
+                        // cache patch id gidB
                         gidB = (*outer_it1).first;
+                        // start linear primitive id from 0 in this patch
                         lidB = 0;
+                        // for primitives in patch of B
                         for ( inner_const_iterator inner_it1 = (*outer_it1).second.begin(); inner_it1 != (*outer_it1).second.end(); ++inner_it1, ++lidB )
                         {
+                            // log
                             std::cout << "checking " << gidA << "." << lidA << " vs " << gidB << "." << lidB;
+
+                            // calculate cost and insert into map
                             costs[ CostKey(GidLid(gidA,lidA),GidLid(gidB,lidB)) ] = estimateDistance<float>( *inner_it0, *inner_it1, points, PNT_GID_A, PNT_GID_B );
+
+                            // log
                             std::cout << ": " << costs[ CostKey(GidLid(gidA,lidA),GidLid(gidB,lidB)) ] << std::endl;
-                        } //...for gt_prims
-                    } //...for gt_prims_map
-                } //...for prims
-            } //...for prims_map
+                        } //...for prims in patchB
+                    } //...for patchesB
+                } //...for prims in patchA
+            } //...for patchesA
+        } //...calculate costs
 
-            CorrespT corresps; // map<gidlid,gidlid>
+        // we now have the costs in a map,
+        // but we need them in a sortable list,
+        // where the cost is the key
+
+        // create sorted cost keyed list
+        typedef std::pair<Scalar,CostKey> CostEntry; // first: cost, second: < <gidA,lidA>,<gidB,lidB> >
+        std::vector< CostEntry > cost_list;          // store entries by cost
+        {
+            for ( typename CostMap::const_iterator it = costs.begin(); it != costs.end(); ++it )
             {
-                // copy to list
-                typedef std::pair<Scalar,CostKey> CostEntry;
-                std::vector< CostEntry > cost_list;
-                for ( typename CostMap::const_iterator it = costs.begin(); it != costs.end(); ++it )
-                {
-                    cost_list.push_back( CostEntry(it->second,it->first) );
-                }
+                cost_list.push_back( CostEntry(it->second,it->first) );
+            }
 
-                // sort
-                std::sort( cost_list.begin(), cost_list.end() );
+            // sort by cost
+            std::sort( cost_list.begin(), cost_list.end() );
+        } //...sorted cost list
 
-                // select
-                std::set<GidLid> taken_primsA, taken_primsB;
-                for ( int i = 0; i < cost_list.size(); ++i )
-                {
-                    CostKey const& costKey   = cost_list[i].second;
-                    GidLid  const& gidLidA   = costKey.first;
-                    GidLid  const& gidLidB   = costKey.second;
-                    //std::cout << "cost_list[" << i << "]: " << cost_list[i].first << " for "
-                    //          << gidLidA.first << "." << gidLidA.second << " - "
-                    //          << gidLidB.first << "." << gidLidB.second << std::endl;
-
-                    // if both untaken
-                    if ( (taken_primsA.find(gidLidA) == taken_primsA.end()) && (taken_primsB.find(gidLidB) == taken_primsB.end()) )
-                    {
-                        std::cout << "chose " << cost_list[i].first << " for "
-                                  << gidLidA.first << "." << gidLidA.second << " - "
-                                  << gidLidB.first << "." << gidLidB.second << std::endl;
-
-                        taken_primsA.insert( gidLidA );
-                        taken_primsB.insert( gidLidB   );
-
-                        if ( corresps.find(gidLidA) != corresps.end() )
-                            std::cerr << "[" << __func__ << "]: " << "duplicate choice...should not happen!" << std::endl;
-
-                        corresps[ gidLidA ] = gidLidB;
-                    } //...if both untaken
-                } //...for each cost entry
-            } //...corresps
-
-            // print
+        // calculate correspondences
+        {
+            // select non-taken pairs
+            std::set<GidLid> taken_primsA, taken_primsB;
+            for ( int i = 0; i < cost_list.size(); ++i )
             {
-                std::string corresp_path = "./corresp.csv";
-                GF2::util::saveBackup( corresp_path );
+                CostKey const& costKey   = cost_list[i].second; // second: < <gidA,lidA>,<gidB,lidB> >
+                GidLid  const& gidLidA   = costKey.first;       // <gidA,lidA>
+                GidLid  const& gidLidB   = costKey.second;      // <gidB,lidB>
 
-                std::ofstream corresp_f( corresp_path );
-                if ( !corresp_f.is_open() )
+                // log
+                //std::cout << "cost_list[" << i << "]: " << cost_list[i].first << " for "
+                //          << gidLidA.first << "." << gidLidA.second << " - "
+                //          << gidLidB.first << "." << gidLidB.second << std::endl;
+
+                // use, if *both* free to pair up
+                if (    (taken_primsA.find(gidLidA) == taken_primsA.end())
+                     && (taken_primsB.find(gidLidB) == taken_primsB.end()) )
                 {
-                    std::cerr << "[" << __func__ << "]: " << "could not open " << corresp_path << std::endl;
-                    return EXIT_FAILURE;
-                }
+                    // log
+                    std::cout << "chose " << cost_list[i].first << " for "
+                              << gidLidA.first << "." << gidLidA.second << " - "
+                              << gidLidB.first << "." << gidLidB.second << std::endl;
+
+                    // make them "unfree"
+                    taken_primsA.insert( gidLidA );
+                    taken_primsB.insert( gidLidB );
+
+                    // debug
+                    if ( corresps.find(gidLidA) != corresps.end() )
+                        std::cerr << "[" << __func__ << "]: " << "duplicate choice...should not happen!" << std::endl;
+
+                    // save correspondence
+                    corresps[ gidLidA ] = gidLidB;
+                } //...if both free
+            } //...for each cost entry
+        } //...create corresps
+
+        // print
+        {
+            // create output path
+            std::string corresp_path = "./corresp.csv";
+            // backup previous copy
+            GF2::util::saveBackup( corresp_path );
+
+            // open file
+            std::ofstream corresp_f( corresp_path );
+            // check if opened
+            if ( !corresp_f.is_open() )
+            {
+                std::cerr << "[" << __func__ << "]: " << "could not open " << corresp_path << std::endl;
+                return EXIT_FAILURE;
+            }
+
+            // debug
+            PrimitiveMapT subs;
+
+            // log
+            corresp_f << "# corresp between\n# " << prims_pathA << "," << prims_pathB << std::endl;
+            // for each correspondence
+            for ( CorrespT::const_iterator it = corresps.begin(); it != corresps.end(); ++it )
+            {
+                // cache ids
+                GidLid const& gidLidA = (*it).first;  // first: <gidA,lidA>
+                GidLid const& gidLidB = (*it).second; // second: <gidB,lidB>
+
+                // log
+                std::cout << "prims[" << gidLidA.first << "][" << gidLidA.second << "]: " << prims_mapA[gidLidA.first][gidLidA.second].toString()
+                          << " <--> "
+                          << "gt[" << gidLidB.first << "][" << gidLidB.second << "]: " << prims_mapB[gidLidB.first][gidLidB.second].toString()
+                          << " with cost " << costs[ CostKey(gidLidA,gidLidB) ]
+                          << std::endl;
+
+                // write to file
+                corresp_f << gidLidA.first  << ","
+                          << gidLidA.second << ","
+                          << gidLidB.first  << ","
+                          << gidLidB.second << "\n";
 
                 // debug
-                PrimitiveMapT subs;
-
-                corresp_f << "# corresp between\n# " << prims_pathA << "," << prims_pathB << std::endl;
-                for ( CorrespT::const_iterator it = corresps.begin(); it != corresps.end(); ++it )
-                {
-                    GidLid const& gidLidA = (*it).first;
-                    GidLid const& gidLidB = (*it).second;
-
-                    std::cout << "prims[" << gidLidA.first << "][" << gidLidA.second << "]: " << prims_mapA[gidLidA.first][gidLidA.second].toString()
-                              << " <--> "
-                              << "gt[" << gidLidB.first << "][" << gidLidB.second << "]: " << prims_mapB[gidLidB.first][gidLidB.second].toString()
-                              << " with cost " << costs[ CostKey(gidLidA,gidLidB) ]
-                              << std::endl;
-
-                    corresp_f << gidLidA.first  << ","
-                              << gidLidA.second << ","
-                              << gidLidB.first  << ","
-                              << gidLidB.second << "\n";
-
-                    containers::add( subs, gidLidA.first, prims_mapB[gidLidB.first][gidLidB.second] );
-                }
-
-                corresp_f.close();
-
-                GF2::io::savePrimitives<_PrimitiveT,typename _InnerPrimitiveContainerT::const_iterator>( subs, "subs.csv" );
+                containers::add( subs, gidLidA.first, prims_mapB[gidLidB.first][gidLidB.second] );
             }
-        } //...work
+
+            // close file
+            corresp_f.close();
+
+            // debug
+            GF2::io::savePrimitives<_PrimitiveT,typename _InnerPrimitiveContainerT::const_iterator>( subs, "subs.csv" );
+        } //...print
 
         return EXIT_SUCCESS;
     } //...correspCli()
