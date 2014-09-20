@@ -524,6 +524,12 @@ int Merging::adoptPoints( _PointContainerT          & points
     return err;
 #endif
 } //...adoptPoints()
+
+namespace merging
+{
+/*! \brief Merge two primitives, after the decision has been taken.
+ *  \param[in] max_dir_gid Holds the current maximum dir_gid that's taken. A new direction should get \p max_dir_gid +1.
+ */
 template <class Container,
           class PrimitiveT,
           class Population,
@@ -536,7 +542,10 @@ inline void merge( Container&        out_primitives, // [out] Container storing 
                    const Population& pop1,           // [in]  Second primitive population (point ids)
                    PointCloud&       points,         // [in]  Point cloud
                    Scalar            scale,          // [in]  Working scale (for refit)
-                   bool              nogeneration=false){
+                   int             & max_dir_gid,
+                   bool              nogeneration = false
+                 )
+{
 
     int gid0 = l0.getTag(PrimitiveT::GID );
     int gid1 = l1.getTag(PrimitiveT::GID );
@@ -560,7 +569,7 @@ inline void merge( Container&        out_primitives, // [out] Container storing 
     pop.insert(pop.end(), pop1.begin(), pop1.end());
 
     if (pop.size() == 0){
-        cerr << "THERE IS SOMETHING WRONG HERE" << endl;
+        cerr << "[" << __func__ << "]: " << "THERE IS SOMETHING WRONG HERE: pop.size() == 0" << endl;
         exit(-10);
     }
 
@@ -646,6 +655,9 @@ inline void merge( Container&        out_primitives, // [out] Container storing 
 
         // by default we copy from l0
         mergedPrim.copyTagsFrom(l0);
+        // change direction ID to the next free one, since we changed the direction with refit
+        mergedPrim.setTag( PrimitiveT::DIR_GID, ++max_dir_gid );
+        // save
         primToAdd.push_back(mergedPrim);
 
     }else /* if (arity0 != 1 && arity1 != 1)*/{
@@ -711,6 +723,8 @@ inline void merge( Container&        out_primitives, // [out] Container storing 
     //containers::add<PrimitiveT>( out_primitives, l0.getTag(PrimitiveT::GID ), l0 );
     //containers::add<PrimitiveT>( out_primitives, l1.getTag(PrimitiveT::GID ), l1 );
 }
+
+} //...ns merging
 
 /*! \brief Merges adjacent patches that have the same direction ID or are almost parallel.
  *
@@ -827,6 +841,15 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
         }
     }
 
+    // estimate the maximum direction id, to be able to give new ids to refit primitives
+    int max_dir_gid = 0;
+    for ( outer_const_iterator outer_it  = primitives.begin(); (outer_it != primitives.end()); ++outer_it )
+        for ( _inner_const_iterator inner_it  = containers::valueOf<_PrimitiveT>(outer_it).begin();
+                                   (inner_it != containers::valueOf<_PrimitiveT>(outer_it).end());
+                                  ++inner_it )
+            max_dir_gid = std::max( max_dir_gid, (*inner_it).getTag(_PrimitiveT::DIR_GID) );
+    std::cout << "[" << __func__ << "]: " << "max_dir_gid: " << max_dir_gid << std::endl;
+
 //    // debug
 //    cout << "[in]:  " << primitives.size() << endl;
 //    for ( outer_const_iterator outer_it  = primitives.begin();
@@ -922,13 +945,15 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
                         ignoreList.insert(candGidLid);
                         ignoreList.insert(refGidLid);
 
-                        merge( out_primitives,     // [out] Container storing merged primitives
-                               prim0,              // [in]  First primitive (can be invalidated during the call)
-                               populations[gid0],  // [in]  First primitive population (point ids)
-                               prim1,              // [in]  Second primitive
-                               populations[gid1],  // [in]  Second primitive population (point ids)
-                               points,             // [in]  Point cloud
-                               scale);             // [in]  Working scale (for refit)
+                        merging::merge( out_primitives,     // [out] Container storing merged primitives
+                                        prim0,              // [in]  First primitive (can be invalidated during the call)
+                                        populations[gid0],  // [in]  First primitive population (point ids)
+                                        prim1,              // [in]  Second primitive
+                                        populations[gid1],  // [in]  Second primitive population (point ids)
+                                        points,             // [in]  Point cloud
+                                        scale,              // [in]  Working scale (for refit)
+                                        max_dir_gid         // [in,out] maximum direction id
+                                       );
 
                         is0Valid = false;
 
