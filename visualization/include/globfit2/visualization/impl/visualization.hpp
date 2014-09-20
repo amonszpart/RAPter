@@ -35,6 +35,7 @@ GF2::vis::showCli( int argc, char** argv )
                   << "\t[--no-pop \t Don't show cluster point counts]\n"
                   << "\t[--print-angles \t Print angles on relation lines]\n"
                   << "\t[--perfect-angle 0.5\t Threshold in degrees, under which a gray line is shown indicating 'perfect relationship']\n"
+                  << "\t[--dir-colours \t colourcode direction IDs']\n"
                   << std::endl;
         return EXIT_SUCCESS;
     }
@@ -48,6 +49,7 @@ GF2::vis::showCli( int argc, char** argv )
     bool print_angles = pcl::console::find_switch( argc, argv, "--print-angles" );
     float perfect_angle_limit = 10.e-5;
     pcl::console::parse_argument( argc, argv, "--perfect-angle", perfect_angle_limit );
+    bool dir_colours = pcl::console::find_switch( argc, argv, "--dir-colours" );
 
     std::string title = "";
     pcl::console::parse_argument( argc, argv, "--title", title );
@@ -157,6 +159,7 @@ GF2::vis::showCli( int argc, char** argv )
                                                                                , /*         show_populat: */ show_pop
                                                                                , /*  perfect_angle_limit: */ perfect_angle_limit
                                                                                , /* print_perfect_angles: */ print_angles
+                                                                               , /*          dir_colours: */ dir_colours
                                                                                );
     return EXIT_SUCCESS;
 } // ... Solver::show()

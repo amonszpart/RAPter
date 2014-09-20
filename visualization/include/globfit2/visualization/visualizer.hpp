@@ -33,18 +33,19 @@ namespace GF2 {
             show( PrimitiveContainerT  const& primitives
                 , PointContainerT      const& points
                 , _Scalar              const  scale
-                , Eigen::Vector3f      const& colour        = (Eigen::Vector3f() << 0.f, 0.f, 1.f).finished()
-                , bool                 const  spin          = true
-                , std::vector<_Scalar> const* angles        = NULL
-                , bool                 const  show_ids      = false
-                , char                 const  use_tags      = false
-                , int                  const  pop_limit     = 10
-                , std::string          const& title         = ""
-                , bool                 const  show_pids     = false
-                , int                  const  show_normals  = 0
-                , bool                 const  show_pop      = false
-                , _Scalar              const  perfect_angle_limit = 10.e-6
-                , bool                 const  print_perf_angles = false
+                , Eigen::Vector3f      const& colour                = (Eigen::Vector3f() << 0.f, 0.f, 1.f).finished()
+                , bool                 const  spin                  = true
+                , std::vector<_Scalar> const* angles                = NULL
+                , bool                 const  show_ids              = false
+                , char                 const  use_tags              = false
+                , int                  const  pop_limit             = 10
+                , std::string          const& title                 = ""
+                , bool                 const  show_pids             = false
+                , int                  const  show_normals          = 0
+                , bool                 const  show_pop              = false
+                , _Scalar              const  perfect_angle_limit   = 10.e-6
+                , bool                 const  print_perf_angles     = false
+                , bool                 const  dir_colours           = false
                 );
 
             //! \brief Shows a polygon that approximates the bounding ellipse of a cluster
@@ -82,18 +83,20 @@ namespace GF2
     Visualizer<PrimitiveContainerT,PointContainerT>::show( PrimitiveContainerT    const& primitives
                                                            , PointContainerT      const& points
                                                            , _Scalar              const  scale
-                                                           , Eigen::Vector3f      const& colour       /* = {0,0,1} */
-                                                           , bool                 const  spin         /* = true */
-                                                           , std::vector<_Scalar> const* angles       /* = NULL */
-                                                           , bool                 const  show_ids     /* = false */
-                                                           , char                 const  use_tags     /* = false */
-                                                           , int                  const  pop_limit    /* = 10 */
-                                                           , std::string          const& title        /* = "" */
-                                                           , bool                 const  show_pids    /* = false */
-                                                           , int                  const  show_normals /* = 0 */
-                                                           , bool                 const  show_pop     /* = false */
+                                                           , Eigen::Vector3f      const& colour              /* = {0,0,1} */
+                                                           , bool                 const  spin                /* = true */
+                                                           , std::vector<_Scalar> const* angles              /* = NULL */
+                                                           , bool                 const  show_ids            /* = false */
+                                                           , char                 const  use_tags            /* = false */
+                                                           , int                  const  pop_limit           /* = 10 */
+                                                           , std::string          const& title               /* = "" */
+                                                           , bool                 const  show_pids           /* = false */
+                                                           , int                  const  show_normals        /* = 0 */
+                                                           , bool                 const  show_pop            /* = false */
                                                            , _Scalar              const  perfect_angle_limit /* = 0872664625 = 5deg*/
-                                                           , bool                 const  print_perf_angles /* = false */ )
+                                                           , bool                 const  print_perf_angles   /* = false */
+                                                           , bool                 const  dir_colours         /* = false */
+                                                           )
     {
 #if 1
         typedef typename PrimitiveContainerT::value_type::value_type PrimitiveT;
@@ -106,22 +109,27 @@ namespace GF2
                   << std::endl;
 
         // calc groups
-        int max_group_id = 0, nPrimitives = 0;
+        int max_gid = 0, nPrimitives = 0, max_dir_gid = 0;
         for ( size_t pid = 0; pid != points.size(); ++pid )
-            max_group_id = std::max( max_group_id, points[pid].getTag(PointPrimitiveT::GID) );
+            max_gid = std::max( max_gid, points[pid].getTag(PointPrimitiveT::GID) );
         for ( size_t lid = 0; lid != primitives.size(); ++lid )
             for ( size_t lid1 = 0; lid1 != primitives[lid].size(); ++lid1 )
             {
-                max_group_id = std::max( max_group_id, primitives[lid][lid1].getTag(PrimitiveT::GID) );
+                max_gid     = std::max( max_gid    , primitives[lid][lid1].getTag(PrimitiveT::GID    ) );
+                max_dir_gid = std::max( max_dir_gid, primitives[lid][lid1].getTag(PrimitiveT::DIR_GID) );
                 ++nPrimitives;
             }
         std::cout << "[" << __func__ << "]: "
-                  << "points: " << points.size()
-                  << ", primitives: " << nPrimitives
-                  << ", max_group_id: " << max_group_id
-                  << ", pop-limit: " << pop_limit
+                  << "points: "         << points.size()
+                  << ", primitives: "   << nPrimitives
+                  << ", max_gid: "      << max_gid
+                  << ", max_dir_gid: "  << max_dir_gid
+                  << ", pop-limit: "    << pop_limit
                   << std::endl;
-        std::vector<Eigen::Vector3f> colours = util::nColoursEigen( max_group_id+1, /* scale: */ 255.f, /* shuffle: */ true );
+        std::vector<Eigen::Vector3f> colours = util::nColoursEigen( /*   count: */ dir_colours ? max_dir_gid + 1
+                                                                                               : max_gid     + 1
+                                                                  , /*   scale: */ 255.f
+                                                                  , /* shuffle: */ true );
 
         //pcl::visualization::PCLVisualizer::Ptr vptr( new pcl::visualization::PCLVisualizer() );
         vis::MyVisPtr vptr( new pcl::visualization::PCLVisualizer(title) );
@@ -191,9 +199,10 @@ namespace GF2
 //                { std::cout << "!!!\t\tequal " << line_name << ": " << lid << ", " << lid1 << ", " << gid << ", " << dir_gid << std::endl; fflush(stdout); }
 
                 Eigen::Matrix<_Scalar,3,1> prim_colour;
-                prim_colour << ((gid >= 0) ? (colours[gid](0) / 255.f) : colour(0)),
-                               ((gid >= 0) ? (colours[gid](1) / 255.f) : colour(1)),
-                               ((gid >= 0) ? (colours[gid](2) / 255.f) : colour(2));
+                const int colour_index = dir_colours ? dir_gid : gid;
+                prim_colour << ((gid >= 0) ? (colours[colour_index](0) / 255.f) : colour(0)),
+                               ((gid >= 0) ? (colours[colour_index](1) / 255.f) : colour(1)),
+                               ((gid >= 0) ? (colours[colour_index](2) / 255.f) : colour(2));
 
                 // if use tags, collect GID tagged point indices
                 std::vector<int> indices;
