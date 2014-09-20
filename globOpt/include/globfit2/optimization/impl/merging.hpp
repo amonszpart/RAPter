@@ -360,14 +360,6 @@ int Merging::adoptPoints( _PointContainerT          & points
                         // if large patch found
                         if ( populations[gid].size() > poplimit )
                         {
-                            // this is very unefficient, extents must be stored !
-                            // ...
-                            // I'm too lazy to do it, sorry (I really apologise)
-                            // ...
-                            // Yes I know there is such code 10 lines below.
-                            // ...
-                            // Just do it and leave me alone
-
                             if ( extremaMap.find(GidLid(gid,lid)) == extremaMap.end() )
                             {
                                 err = it2->template getExtent<_PointPrimitiveT>
