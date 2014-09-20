@@ -121,7 +121,7 @@ namespace GF2
                   << ", max_group_id: " << max_group_id
                   << ", pop-limit: " << pop_limit
                   << std::endl;
-        std::vector<Eigen::Vector3f> colours = util::nColoursEigen( max_group_id+1, /* scale: */ 255.f, /* shuffle: */ false );
+        std::vector<Eigen::Vector3f> colours = util::nColoursEigen( max_group_id+1, /* scale: */ 255.f, /* shuffle: */ true );
 
         //pcl::visualization::PCLVisualizer::Ptr vptr( new pcl::visualization::PCLVisualizer() );
         vis::MyVisPtr vptr( new pcl::visualization::PCLVisualizer(title) );
