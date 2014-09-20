@@ -26,7 +26,8 @@ GLDisplayFunctor<float>::displayVertex(const float* data){
 }
 
 typedef VisibleSampler<InputGen::Application::Scalar,
-                               InputGen::Application::GLDisplayFunctor>
+                               InputGen::Application::GLDisplayFunctor,
+                               InputGen::Application::Primitive>
         Sampler;
 }
 }

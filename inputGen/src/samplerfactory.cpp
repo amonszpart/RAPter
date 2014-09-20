@@ -34,7 +34,8 @@ SamplerFactory::updateSampler()
         case GEN_FROM_PRIMITIVE:
         {
             InputGen::PrimitiveSampler<InputGen::Application::Scalar,
-                    InputGen::Application::GLDisplayFunctor > lgen;
+                    InputGen::Application::GLDisplayFunctor,
+                    InputGen::Application::Primitive > lgen;
 
             // set sampler parameters
             lgen.spacing = ui->_samplerPrimitivesParamSpacing->value();

@@ -27,9 +27,11 @@ SET(inputGen_HEADERS
   include/types.h
   include/typesGL.h
   include/project.h
-  include/primitive.h
+  include/primitive.h)
+SET(inputGen_IMPL
   include/impl/randomdisplacement.hpp
-  include/impl/biasdisplacement.hpp)
+  include/impl/biasdisplacement.hpp
+  include/impl/sampler.hpp)
 SET(inputGen_FORMS
   ui/mainwindow.ui
   ui/mergedialog.ui
@@ -54,6 +56,7 @@ ADD_DEFINITIONS(${QT_DEFINITIONS})
 
 ADD_EXECUTABLE(inputGen ${inputGen_SOURCES}
     ${inputGen_HEADERS}
+    ${inputGen_IMPL}
     ${inputGen_HEADERS_MOC}
     ${inputGen_FORMS_HEADERS} )
 TARGET_LINK_LIBRARIES(inputGen
