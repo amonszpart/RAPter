@@ -299,9 +299,12 @@ IF(WITH_PEARL)
     SET( PEARL_SRC
         src/comparison/pearl.cpp
     )
+    SET( PEARL_H
+        ${PATH_GLOBOPT_DEPS_ROOT}/pearl/include/pearl/pearl.h
+    )
 
     ## Linking
-    add_executable( ${PEARL_TARGET} ${PEARL_SRC} )
+    add_executable( ${PEARL_TARGET} ${PEARL_SRC} ${PEARL_H})
     TARGET_LINK_LIBRARIES( ${PEARL_TARGET}
         ${GCO_LIBRARIES}
         ${PCL_LIBRARIES}
