@@ -152,7 +152,7 @@ private:
             return  (std::abs((p-centerlocal).dot(f1)) > hw) &&
                     (std::abs((p-centerlocal).dot(f2)) > hh);
         };
-        it = std::find_if(extrema0local.begin(), extrema0local.end(), isOutFinitePlane);
+        it = std::find_if(extrema1local.begin(), extrema1local.end(), isOutFinitePlane);
         if (it != extrema0local.end()) return false;
 
         return true;
