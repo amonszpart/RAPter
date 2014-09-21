@@ -59,9 +59,9 @@ namespace GF2
                     // saves primitive part
                     out_file << (*lid_it).toFileEntry();
                     // save taggable part (todo: merge these)
-                    out_file << lid_it->getTag( PrimitiveT::GID ) << ",";
-                    out_file << lid_it->getTag( PrimitiveT::DIR_GID ) << ",";
-                    out_file << lid_it->getTag( PrimitiveT::CHOSEN )  << "\n";
+                    out_file << lid_it->getTag( PrimitiveT::TAGS::GID ) << ",";
+                    out_file << lid_it->getTag( PrimitiveT::TAGS::DIR_GID ) << ",";
+                    out_file << lid_it->getTag( PrimitiveT::TAGS::STATUS )  << "\n";
                 }
             }
             out_file.close();
@@ -120,12 +120,12 @@ namespace GF2
                     std::cerr << "[" << __func__ << "]: " << "not good, floats.size() < Dim..." << std::endl;
 
                 // rest
-                int gid = -1, dir_gid = -1, chosen = -1;
+                int gid = -1, dir_gid = -1, status = -1;
                 if ( !iss.eof() )
                 {
                     if ( std::getline(iss, tmp_str, ',') )  gid     = atoi( tmp_str.c_str() );
                     if ( std::getline(iss, tmp_str, ',') )  dir_gid = atoi( tmp_str.c_str() );
-                    if ( std::getline(iss, tmp_str, ',') )  chosen  = atoi( tmp_str.c_str() );
+                    if ( std::getline(iss, tmp_str, ',') )  status  = atoi( tmp_str.c_str() );
                 } // if patch information
 
                 // insert into proper patch, if gid specified
@@ -135,7 +135,7 @@ namespace GF2
                     tmp_lines[ gid ].push_back( PrimitiveT::fromFileEntry(floats) );
                     tmp_lines[ gid ].back().setTag( PrimitiveT::GID    , gid     );
                     tmp_lines[ gid ].back().setTag( PrimitiveT::DIR_GID, dir_gid );
-                    tmp_lines[ gid ].back().setTag( PrimitiveT::CHOSEN , chosen  );
+                    tmp_lines[ gid ].back().setTag( PrimitiveT::STATUS , status  );
                 }
                 else // just make a new patch for it
                 {

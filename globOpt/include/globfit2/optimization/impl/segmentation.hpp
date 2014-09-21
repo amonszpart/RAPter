@@ -271,8 +271,9 @@ Segmentation::patchify( _PrimitiveContainerT                   & patches
                 }
 
                 containers::add( patches, gid, toAdd /*groups[gid].getRepresentative()*/ )
-                        .setTag( _PrimitiveT::GID    , gid )
-                        .setTag( _PrimitiveT::DIR_GID, gid );
+                        .setTag( _PrimitiveT::TAGS::GID    , gid )
+                        .setTag( _PrimitiveT::TAGS::DIR_GID, gid )
+                        .setTag( _PrimitiveT::TAGS::STATUS , _PrimitiveT::STATUS_VALUES::ACTIVE ); // set to active, "large" patch
             }
         }
         else

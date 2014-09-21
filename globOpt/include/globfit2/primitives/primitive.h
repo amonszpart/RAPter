@@ -7,6 +7,8 @@
 #include <iostream> // cout, endl
 #include <fstream>
 
+#include "globfit2/primitives/taggable.h"
+
 namespace GF2
 {
      /*! \brief                 Primitive wrapper base class. Requires implementation of #pos() and #dir() functions.
@@ -16,12 +18,22 @@ namespace GF2
       *  \tparam _Scalar        Internal data type. Concept: float.
       */
     template <int _EmbedSpaceDim, int _Dim, typename _Scalar = float>
-    class Primitive
+    class Primitive : public ::GF2::Taggable
     {
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
             enum { EmbedSpaceDim = _EmbedSpaceDim };
 
+            enum STATUS_VALUES { ACTIVE = 1 //!< Used to show, that this primitive is active. Also used as starting point in \ref GF2::Solver.
+                               , SMALL  = 2 //!< Used to show, that this primitive is *not* active, but needs to be kept for later use, so copied to output everywhere.
+                             /*, UNSET  = -1 */ // implicit from Taggable implementation
+                               };
+            //! \brief Defines the tags (ids) that this primitive can manage using setTag and getTag functions.
+            enum TAGS {
+                GID        = 0  //!< group id             - which group this primitive is supposed to explain
+                , DIR_GID  = 1  //!< direction group id   - which group this primitive got it's direction from
+                , STATUS   = 2  //!< an additional flag to store, if this is part of a solution.
+            };//...TAGS
 
             // ____________________TYPEDEFS____________________
             typedef _Scalar Scalar;                          //!< Scalar typedef to reach from outside.

@@ -2,12 +2,12 @@
 #define __GF2_POINTPRIMITIVE_H__
 
 #include "globfit2/primitives/primitive.h"
-#include "globfit2/primitives/taggable.h"
+//#include "globfit2/primitives/taggable.h"
 
 namespace GF2
 {
     //! \brief Wrapper class for oriented 3D points.
-    class PointPrimitive : public ::GF2::Primitive<3,6>, public ::GF2::Taggable
+    class PointPrimitive : public ::GF2::Primitive<3,6>
     {
         typedef ::GF2::Primitive<3,6> ParentT;
         public:

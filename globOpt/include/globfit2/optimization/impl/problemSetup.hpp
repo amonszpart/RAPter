@@ -271,14 +271,14 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
             for ( size_t lid1 = 0; lid1 != prims[lid].size(); ++lid1 )
             {
                 // add var
-                int gid     = prims[lid][lid1].getTag( _PrimitiveT::GID );
-                int dir_gid = prims[lid][lid1].getTag( _PrimitiveT::DIR_GID );
+                int gid     = prims[lid][lid1].getTag( _PrimitiveT::TAGS::GID );
+                int dir_gid = prims[lid][lid1].getTag( _PrimitiveT::TAGS::DIR_GID );
                 sprintf( name, "x_%d_%d", gid, dir_gid );
 
                 // store var_id for later, add binary variable
                 const int var_id = problem.addVariable( OptProblemT::BOUND::RANGE, 0.0, 1.0, OptProblemT::VAR_TYPE::INTEGER );
                 lids_varids[ IntPair(lid,lid1) ] = var_id;
-                if ( prims[lid][lid1].getTag(_PrimitiveT::CHOSEN) > 0 )
+                if ( prims[lid][lid1].getTag(_PrimitiveT::TAGS::STATUS) == _PrimitiveT::STATUS_VALUES::ACTIVE )
                     chosen_varids.insert( var_id );
             }
         }

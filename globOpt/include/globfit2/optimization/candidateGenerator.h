@@ -182,7 +182,7 @@ namespace GF2
         {
             for ( inner_const_iterator inner_it0  = (*outer_it0).second.begin(); inner_it0 != (*outer_it0).second.end(); ++inner_it0 )
             {
-                // copy input - to keep CHOSEN tag entries, so that we can start second iteration from a selection
+                // copy input - to keep status tag entries, so that we can start second iteration from a selection
                 containers::add( out_lines, inner_it0->getTag( _PrimitiveT::GID ), *inner_it0 );
                 // store position-direction combination to avoid duplicates
                 copied[ inner_it0->getTag(_PrimitiveT::GID) ].insert( inner_it0->getTag(_PrimitiveT::DIR_GID) );

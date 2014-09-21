@@ -3,7 +3,6 @@
 
 #include <Eigen/Dense>
 #include "globfit2/primitives/primitive.h"
-#include "globfit2/primitives/taggable.h"
 //#include "pcltools/util.hpp"
 #include "globfit2/processing/util.hpp" // pca
 
@@ -19,21 +18,10 @@ namespace GF2
     //! \brief   Class to wrap a plane with. Implements #pos() and #dir() functions, and a constructor taking a position and a direction.
     //!
     //!          Stores 3D normal at the first three coeffs, and distance from origin at the fourth coordinate.
-    class PlanePrimitive : public ::GF2::Primitive<3,6>, public ::GF2::Taggable
+    class PlanePrimitive : public ::GF2::Primitive<3,6>
     {
             typedef ::GF2::Primitive<3,6> ParentT;
         public:
-            //! \brief Defines the tags (ids) that this primitive can manage using setTag and getTag functions.
-            enum TAGS {
-                GID        = 0  //!< group id             - which group this primitive is supposed to explain
-                , DIR_GID  = 1  //!< direction group id   - which group this primitive got it's direction from
-                , CHOSEN   = 2  //!< an additional flag to store, if this is part of a solution.
-//                , USER_ID1 = 10 //!< additional flag to store processing attributes (values only in the generation scope)
-//                , USER_ID2 = 11 //!< additional flag to store processing attributes (values only in the generation scope)
-//                , USER_ID3 = 12 //!< additional flag to store processing attributes (values only in the generation scope)
-//                , USER_ID4 = 13 //!< additional flag to store processing attributes (values only in the generation scope)
-//                , USER_ID5 = 14 //!< additional flag to store processing attributes (values only in the generation scope)
-            };//...TAGS
 
             typedef ParentT::Scalar Scalar;
 
@@ -106,7 +94,7 @@ namespace GF2
                 // copy direction id from the other
                 out.setTag( DIR_GID, other.getTag(DIR_GID) );
                 // erase chosen tag - this is a new candidate
-                out.setTag( CHOSEN , -1 );
+                out.setTag( STATUS, TAG_UNSET );
 
                 return true;
             } //...generateFrom
