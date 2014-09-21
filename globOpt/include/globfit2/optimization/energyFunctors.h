@@ -4,6 +4,8 @@
 #include <vector>
 #include "globfit2/my_types.h" // angleInRad
 
+#include<Eigen/StdVector>
+
 namespace GF2
 {
     //! \brief Functor with eval function; Takes a point and a primitive, and returns their distance.
@@ -26,6 +28,137 @@ namespace GF2
                 // this only works for lines:
                 // return (primitive.pos() - point.pos()).cross(primitive.dir()).norm();
             }
+    };
+
+    struct MyFinitePrimitiveToFinitePrimitiveCompatFunctor
+    {
+        template < class DMFunctor         // DecideMergeFunctor, indicating if the primitive are ok to be merged
+                 , class PointToPrimFunctor
+                 , class _PrimitiveT
+                 , class _PointContainerT
+                 , typename _Scalar>
+        inline typename _PrimitiveT::Scalar eval(
+                  _PointContainerT const& extrema0
+                , _PrimitiveT const& p0
+                , _PointContainerT const& extrema1
+                , _PrimitiveT const& p1
+                , _Scalar scale) const {
+            typedef typename _PointContainerT::value_type PointT;
+
+            DMFunctor dmf;
+            if (! dmf.eval(extrema0, p0, extrema1, p1, scale)) // primitives are not compatibles
+                return typename _PrimitiveT::Scalar(0.);
+
+            PointT center0 (PointT::Zero()), center1 (PointT::Zero());
+            std::for_each(extrema0.begin(), extrema0.end(), [&center0] (const PointT& p){ center0+=p; });
+            std::for_each(extrema1.begin(), extrema1.end(), [&center1] (const PointT& p){ center1+=p; });
+            center0 /= _Scalar(extrema0.size());
+            center1 /= _Scalar(extrema1.size());
+
+            PointToPrimFunctor pointToLineFunctor;
+            return std::max( std::max(pointToLineFunctor.eval(extrema0, p0, center1),
+                                      pointToLineFunctor.eval(extrema1, p1, center0)),
+                             (center1 - center0).norm());
+        }
+    };
+
+    struct SharedVolumeForPlanesWithScaleFunctor
+    {
+        // return 1 for perfect match, 0 for invalid
+        template < class _PrimitiveT
+                 , class _PointContainerT
+                 , typename _Scalar>
+        inline typename _PrimitiveT::Scalar eval(
+                  _PointContainerT const& extrema0
+                , _PrimitiveT const& p0
+                , _PointContainerT const& extrema1
+                , _PrimitiveT const& p1
+                , _Scalar scale) const {
+            typedef typename _PointContainerT::value_type PointT;
+
+            // Compute the volume of the boxes defined by the extrema and the scale (both up and bottom)
+            _Scalar v0 = (extrema0[1]-extrema0[0]).norm() * (extrema0[2]-extrema0[1]).norm() * _Scalar(2.) * scale;
+            _Scalar v1 = (extrema1[1]-extrema1[0]).norm() * (extrema1[2]-extrema1[1]).norm() * _Scalar(2.) * scale;
+
+            _PointContainerT points = extrema0;
+            points.insert(points.end(), extrema1.begin(), extrema1.end());
+
+            PointT center (PointT::Zero());
+            std::for_each(points.begin(), points.end(), [&center] (const PointT& p){ center+=p; });
+            center /= _Scalar(extrema0.size());
+
+            Eigen::Matrix<_Scalar, 3, 3> cov = Eigen::Matrix<_Scalar, 3, 3>::Zero();
+            std::for_each(points.begin(), points.end(), [&center, &cov] (const PointT& p){ cov+=(p-center)*(p-center).transpose(); });
+
+            Eigen::SelfAdjointEigenSolver< Eigen::Matrix<_Scalar, 3, 3> > es;
+            es.compute( cov );
+
+            // Build a matrix n*3, where n is the number of points,
+            // By multiplying with the eigenvector matrix, we get the projected distances
+            // of all the points in each directions.
+            // we can then extract the min/max of these distances, and compute the volume
+            // of the box.
+            Eigen::Matrix<_Scalar, Eigen::Dynamic, 3> relativePoints (points.size(), 3);
+            for(unsigned int i = 0; i != points.size(); ++i)
+                relativePoints.row(i) = (points(i) - center).transpose();
+
+            Eigen::Matrix<_Scalar, 3, 3> projMatrix = relativePoints * es.eigenvectors();
+            _Scalar volume  = (projMatrix.colwise().maxCoeff().array() - projMatrix.colwise().minCoeff().array()).prod();
+
+            // we know that volume is necessary bigger than v0 and v1
+            return _Scalar(1.) - (volume - (v0+v1)) / volume;
+        }
+    };
+
+    struct SharedAreaForLinesWithScaleFunctor
+    {
+        // return 1 for perfect match, 0 for invalid
+        template < class _PrimitiveT
+                 , class _PointContainerT
+                 , typename _Scalar>
+        inline typename _PrimitiveT::Scalar eval(
+                  _PointContainerT const& extrema0
+                , _PrimitiveT const& p0
+                , _PointContainerT const& extrema1
+                , _PrimitiveT const& p1
+                , _Scalar scale) const {
+            typedef typename _PointContainerT::value_type PointT;
+            typedef Eigen::Matrix<_Scalar, 2, 1> Point2DT;
+
+            // Compute the area of the boxes defined by the extrema and the scale (above and below the curve)
+            _Scalar a0 = (extrema0[1]-extrema0[0]).norm() * _Scalar(2.) * scale;
+            _Scalar a1 = (extrema1[1]-extrema1[0]).norm() * _Scalar(2.) * scale;
+
+
+            std::vector< Point2DT > points;
+            std::for_each(extrema0.begin(), extrema0.end(), [&points] (const PointT &p){ points.push_back(p.template head<2>()); });
+            std::for_each(extrema1.begin(), extrema1.end(), [&points] (const PointT &p){ points.push_back(p.template head<2>()); });
+
+            Point2DT center (Point2DT::Zero());
+            std::for_each(points.begin(), points.end(), [&center] (const Point2DT& p){ center+=p; });
+            center /= _Scalar(points.size());
+
+            Eigen::Matrix<_Scalar, 2, 2> cov = Eigen::Matrix<_Scalar, 2, 2>::Zero();
+            std::for_each(points.begin(), points.end(), [&center, &cov] (const Point2DT& p){ cov+=(p-center)*(p-center).transpose(); });
+
+            Eigen::SelfAdjointEigenSolver< Eigen::Matrix<_Scalar, 2, 2> > es;
+            es.compute( cov );
+
+            // Build a matrix n*2, where n is the number of points,
+            // By multiplying with the eigenvector matrix, we get the projected distances
+            // of all the points in each directions.
+            // we can then extract the min/max of these distances, and compute the volume
+            // of the box.
+            Eigen::Matrix<_Scalar, Eigen::Dynamic, 2> relativePoints (points.size(), 2);
+            for(unsigned int i = 0; i != points.size(); ++i)
+                relativePoints.row(i) << points.at(i);
+
+            Eigen::Matrix<_Scalar, 2, 2> projMatrix = relativePoints * es.eigenvectors();
+            _Scalar area  = (projMatrix.colwise().maxCoeff().array() - projMatrix.colwise().minCoeff().array()).prod();
+
+            // we know that volume is necessary bigger than v0 and v1
+            return _Scalar(1.) - (area - (a0+a1)) / area;
+        }
     };
 
     //! \brief Compute the distance to a finite line
