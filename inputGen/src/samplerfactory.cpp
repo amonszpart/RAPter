@@ -47,6 +47,26 @@ SamplerFactory::updateSampler()
 
             break;
         }
+        case GEN_FROM_PUNCTUAL:
+        {
+            InputGen::PunctualSampler<InputGen::Application::Scalar,
+                    InputGen::Application::GLDisplayFunctor,
+                    InputGen::Application::Primitive > lgen;
+
+            // set sampler parameters
+            lgen.nbSamples = ui->_samplerPunctualParamNbSamples->value();
+            lgen.occlusion = ui->_samplerPunctualParamOcclusion->isChecked();
+            lgen.pos << InputGen::Application::Scalar(ui->_samplerPunctualPosX->value()),
+                    InputGen::Application::Scalar(ui->_samplerPunctualPosY->value()),
+                    InputGen::Application::Scalar(ui->_samplerPunctualPosZ->value());
+
+            // generate points
+            lgen.generateSamples(_project->samples, _project->primitives);
+
+            _project->copySampler(&lgen);
+
+            break;
+        }
         default:
             ;
         };
@@ -69,6 +89,15 @@ SamplerFactory::saveSamples(QDomDocument& doc, QDomElement& root) const
         case GEN_FROM_PRIMITIVE:
         {
             samplerElement.setAttribute("spacing", QString::number(ui->_samplerPrimitivesParamSpacing->value()));
+            break;
+        }
+        case GEN_FROM_PUNCTUAL:
+        {
+            samplerElement.setAttribute("nbSamples", QString::number(ui->_samplerPunctualParamNbSamples->value()));
+            samplerElement.setAttribute("occlusion", QString::number(int(ui->_samplerPunctualParamOcclusion->isChecked())));
+            samplerElement.setAttribute("x", QString::number(ui->_samplerPunctualPosX->value()));
+            samplerElement.setAttribute("y", QString::number(ui->_samplerPunctualPosY->value()));
+            samplerElement.setAttribute("z", QString::number(ui->_samplerPunctualPosZ->value()));
             break;
         }
         default:
@@ -94,6 +123,15 @@ SamplerFactory::loadSamples(QDomElement &root){
             case GEN_FROM_PRIMITIVE:
             {
                 ui->_samplerPrimitivesParamSpacing->setValue(samplerElement.attribute("spacing").toDouble());
+                break;
+            }
+            case GEN_FROM_PUNCTUAL:
+            {
+                ui->_samplerPunctualParamNbSamples->setValue(samplerElement.attribute("nbSamples").toInt());
+                ui->_samplerPunctualParamOcclusion->setChecked(samplerElement.attribute("occlusion").toInt());
+                ui->_samplerPunctualPosX->setValue(samplerElement.attribute("x").toDouble());
+                ui->_samplerPunctualPosY->setValue(samplerElement.attribute("y").toDouble());
+                ui->_samplerPunctualPosZ->setValue(samplerElement.attribute("z").toDouble());
                 break;
             }
             default:
