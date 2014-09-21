@@ -6,14 +6,45 @@
 #include "globfit2/io/io.h"         // readPrimitives()
 #include "globfit2/util/diskUtil.hpp" // saveBackup()
 
+#include "globfit2/optimization/energyFunctors.h"
+
+#define CHECK(err,text) { if ( err != EXIT_SUCCESS )  std::cerr << "[" << __func__ << "]: " << text << " returned an error! Code: " << err << std::endl; }
+
+
 namespace GF2 {
 namespace correspondence
 {
-    template <typename Scalar, class _PrimitiveT, class _PointContainerT>
-    inline Scalar estimateDistance( _PrimitiveT const& prim, _PrimitiveT const& gt_prim, _PointContainerT const& points, int pnt_gid, int gt_pnt_gid )
+    template <typename Scalar,
+              class _PrimitiveT,
+              class _ExtremaContainerT,
+              class _Functor>
+    inline Scalar estimateDistance( _PrimitiveT const& prim,
+                                    _PrimitiveT const& gt_prim,
+                                    _ExtremaContainerT const& extrema,
+                                    _ExtremaContainerT const& extremagt,
+                                    Scalar scale,
+                                    const _Functor &f)
     {
         std::cout << "pos: " << prim.template pos().transpose() << ", gtpos: " << gt_prim.template pos().transpose() << ", norm: " << (prim.template pos() - gt_prim.template pos()).norm() << std::endl;
-        return (prim.template pos() - gt_prim.template pos()).norm();
+
+        return f.eval(extrema,   prim.template pos(),
+                      extremagt, gt_prim.template pos(),
+                      scale);
+        //return (prim.template pos() - gt_prim.template pos()).norm();
+    }
+
+    template <class _GidIntSetMap, class _PointContainerT > inline int
+    getCustomPopulations( _GidIntSetMap & populations, _PointContainerT const& points, int flag )
+    {
+        typedef typename _PointContainerT::value_type _PointPrimitiveT;
+
+        for ( size_t pid = 0; pid != points.size(); ++pid )
+        {
+            const int gid = points[pid].getTag( flag );
+            containers::add( populations, gid, static_cast<int>(pid) );
+        }
+
+        return EXIT_SUCCESS;
     }
 
     template < typename _PrimitiveT
@@ -21,6 +52,7 @@ namespace correspondence
              , class    _PrimitiveContainerT
              , class    _PointPrimitiveT
              , class    _PointContainerT
+             , class    _PrimitiveCompFunctor
              >
     int correspCli( int argc, char**argv )
     {
@@ -43,7 +75,7 @@ namespace correspondence
         // print usage
         if (    GF2::console::find_switch(argc,argv,"-h")
              || GF2::console::find_switch(argc,argv,"--help")
-             || (argc != 6) )
+             || (argc != 7) )
         {
             std::cout << "Usage: "
                       << argv[0] << "\n"
@@ -52,6 +84,7 @@ namespace correspondence
                       << " primsB.csv \n"
                       << " points_primitivesB.csv\n"
                       << " cloud.ply\n"
+                      << " scale\n"
                       ;
             return err;
         } //...print usage
@@ -62,6 +95,7 @@ namespace correspondence
                     cloud_path = "./cloud.ply",
                     assoc_pathB,
                     assoc_pathA;
+        Scalar scale;
         {
             //if ( GF2::console::parse_argument(argc,argv,"--gt",gt_path) < 0 )
             prims_pathA = std::string( argv[1] );
@@ -102,6 +136,8 @@ namespace correspondence
                 std::cerr << "[" << __func__ << "]: " << "need cloud_path " << cloud_path << "to exist!" << std::endl;
                 return EXIT_FAILURE;
             }
+
+            scale = std::atof(argv[6]);
         } //...parse input
 
         _PointContainerT     points;
@@ -167,6 +203,28 @@ namespace correspondence
         typedef std::pair< GidLid , GidLid >      CostKey; // first: primitiveA, second: primitiveB
         typedef std::map < CostKey, Scalar >      CostMap; // < <primAGid,primALid>,<primBGid,primBLid> > => cost           // watch the order! <primA, primB>
 
+        typedef Eigen::Matrix<Scalar,3,1>             Position;
+        typedef std::vector< Position         >       ExtremaT;
+        typedef std::map   < GidLid, ExtremaT >       GidLidExtremaT;
+
+        GidPidVectorMap populationsA; // populations[gid] == std::vector<int> {pid0,pid1,...}
+        if ( EXIT_SUCCESS == err )
+        {
+            err = getCustomPopulations( populationsA, points, PNT_GID_A );
+            CHECK( err, "getPopulations A" );
+        }
+
+        GidPidVectorMap populationsB; // populations[gid] == std::vector<int> {pid0,pid1,...}
+        if ( EXIT_SUCCESS == err )
+        {
+            err = getCustomPopulations( populationsB, points, PNT_GID_B );
+            CHECK( err, "getPopulations B" );
+        }
+
+
+        // cache extrema
+        GidLidExtremaT extremaMapA, extremaMapB;
+
         // store costs in a retrievable map ( we could use a vector right away, but we might need it later )
         CostMap costs;
         {
@@ -182,6 +240,22 @@ namespace correspondence
                 // for primtives in patch of A
                 for ( inner_const_iterator inner_it0 = (*outer_it0).second.begin(); inner_it0 != (*outer_it0).second.end(); ++inner_it0, ++lidA )
                 {
+                    // compute extrema (should be put in a function)
+                    if ( extremaMapA.find(GidLid(gidA,lidA)) == extremaMapA.end() )
+                    {
+                        if(populationsA[gidA].size() == 0){
+                            cerr << "Skipping patch without population" << endl;
+                            continue;
+                        }
+                        err = inner_it0->template getExtent<_PointPrimitiveT>
+                                ( extremaMapA[ GidLid(gidA,lidA) ]
+                                , points
+                                , scale
+                                , &(populationsA[gidA]) );
+                        CHECK( err, "getExtent" );
+                    }
+
+
                     // for patches in B
                     for ( outer_const_iterator outer_it1 = prims_mapB.begin(); outer_it1 != prims_mapB.end(); ++outer_it1 )
                     {
@@ -192,11 +266,34 @@ namespace correspondence
                         // for primitives in patch of B
                         for ( inner_const_iterator inner_it1 = (*outer_it1).second.begin(); inner_it1 != (*outer_it1).second.end(); ++inner_it1, ++lidB )
                         {
+                            // compute extrema (should be put in a function)
+                            if ( extremaMapB.find(GidLid(gidB,lidB)) == extremaMapB.end() )
+                            {
+                                if(populationsB[gidB].size() == 0){
+                                    cerr << "Skipping patch without population" << endl;
+                                    continue;
+                                }
+                                err = inner_it1->template getExtent<_PointPrimitiveT>
+                                        ( extremaMapB[ GidLid(gidB,lidB) ]
+                                        , points
+                                        , scale
+                                        , &(populationsB[gidB]) );
+                                CHECK( err, "getExtent" );
+                            }
+
                             // log
                             std::cout << "checking " << gidA << "." << lidA << " vs " << gidB << "." << lidB;
 
                             // calculate cost and insert into map
-                            costs[ CostKey(GidLid(gidA,lidA),GidLid(gidB,lidB)) ] = estimateDistance<float>( *inner_it0, *inner_it1, points, PNT_GID_A, PNT_GID_B );
+                            costs[ CostKey(GidLid(gidA,lidA),GidLid(gidB,lidB)) ] =
+                                    estimateDistance<float>(
+                                        *inner_it0,
+                                        *inner_it1,
+                                        extremaMapA[ GidLid(gidA,lidA) ],
+                                        extremaMapB[ GidLid(gidB,lidB) ],
+                                        scale,
+                                        _PrimitiveCompFunctor()
+                                        /*PNT_GID_A, PNT_GID_B*/ );
 
                             // log
                             std::cout << ": " << costs[ CostKey(GidLid(gidA,lidA),GidLid(gidB,lidB)) ] << std::endl;
@@ -332,7 +429,7 @@ int main( int argc, char** argv )
                                               , GF2::_2d::PrimitiveContainerT
                                               , GF2::PointPrimitiveT
                                               , GF2::PointContainerT
-                                              >( argc, argv );
+                                              , GF2::SharedAreaForLinesWithScaleFunctor>( argc, argv );
     }
 
     return EXIT_FAILURE;
