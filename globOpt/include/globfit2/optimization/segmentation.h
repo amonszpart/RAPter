@@ -139,6 +139,7 @@ class Segmentation
                 , std::vector<_Scalar>              const& angles
                 , _PatchPatchDistanceFunctorT       const& patchPatchDistanceFunctor
                 , int                               const  nn_K
+                , int                               const  verbose
                 );
 
         /*! \brief                               Greedy region growing
