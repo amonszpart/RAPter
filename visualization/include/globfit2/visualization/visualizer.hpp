@@ -46,6 +46,7 @@ namespace GF2 {
                 , _Scalar              const  perfect_angle_limit   = 10.e-6
                 , bool                 const  print_perf_angles     = false
                 , bool                 const  dir_colours           = false
+                , std::set<int>        const* filter_gids           = NULL
                 );
 
             //! \brief Shows a polygon that approximates the bounding ellipse of a cluster
@@ -96,6 +97,7 @@ namespace GF2
                                                            , _Scalar              const  perfect_angle_limit /* = 0872664625 = 5deg*/
                                                            , bool                 const  print_perf_angles   /* = false */
                                                            , bool                 const  dir_colours         /* = false */
+                                                           , std::set<int>        const* filter_gids         /* = NULL */
                                                            )
     {
 #if 1
@@ -125,6 +127,7 @@ namespace GF2
                   << ", max_gid: "      << max_gid
                   << ", max_dir_gid: "  << max_dir_gid
                   << ", pop-limit: "    << pop_limit
+                  << ", filter-gids.size(): " << (filter_gids ? filter_gids->size() : 0)
                   << std::endl;
         std::vector<Eigen::Vector3f> colours = util::nColoursEigen( /*   count: */ dir_colours ? max_dir_gid + 1
                                                                                                : max_gid     + 1
@@ -140,13 +143,21 @@ namespace GF2
             cloud->reserve( points.size() );
             for ( size_t pid = 0; pid != points.size(); ++pid )
             {
+                const int point_gid = points[pid].getTag(PointPrimitiveT::GID);
+                // skip, if filtering is on, and this gid is not in the filter
+                if ( filter_gids && (filter_gids->find(point_gid) == filter_gids->end()) )
+                {
+                    continue;
+                }
+                std::cout << "keeping pid " << pid << ", pointgid: " << point_gid << std::endl;
+
                 MyPoint pnt;
                 pnt.x = ((Eigen::Matrix<_Scalar,3,1> )points[pid])(0); // convert PointPrimitive to Eigen::Matrix, and get (0)
                 pnt.y = ((Eigen::Matrix<_Scalar,3,1> )points[pid])(1);
                 pnt.z = ((Eigen::Matrix<_Scalar,3,1> )points[pid])(2);
-                pnt.r = colours[ points[pid].getTag(PointPrimitiveT::GID) ](0);
-                pnt.g = colours[ points[pid].getTag(PointPrimitiveT::GID) ](1);
-                pnt.b = colours[ points[pid].getTag(PointPrimitiveT::GID) ](2);
+                pnt.r = colours[ point_gid ](0);
+                pnt.g = colours[ point_gid ](1);
+                pnt.b = colours[ point_gid ](2);
                 cloud->push_back( pnt );
 
                 pcl::Normal normal;
@@ -189,6 +200,11 @@ namespace GF2
                 sprintf( line_name, "line_%04lu_%04lu", lid, lid1 );
                 const int gid     = primitives[lid][lid1].getTag( PrimitiveT::GID     );
                 const int dir_gid = primitives[lid][lid1].getTag( PrimitiveT::DIR_GID );
+
+                if ( filter_gids && (filter_gids->find(gid) == filter_gids->end()) )
+                {
+                    continue;
+                }
 
 //                if ( lid != gid )
 //                { std::cout << "!!\tstarting " << line_name << ": " << lid << ", " << lid1 << ", " << gid << ", " << dir_gid << std::endl; fflush(stdout); }
