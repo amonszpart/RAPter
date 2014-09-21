@@ -719,6 +719,8 @@ namespace problemSetup {
         int err = EXIT_SUCCESS;
 
         // INSTANCES // added 17/09/2014 by Aron
+#warning TODO: remove small patches from this count
+#warning TODO: FIX THIS: don't count all candidates, just the input!!
         std::map< int, int > dir_instances;
         for ( size_t lid = 0; lid != prims.size(); ++lid )
             for ( size_t lid1 = 0; lid1 != prims[lid].size(); ++lid1 )
@@ -758,8 +760,11 @@ namespace problemSetup {
                     }
                 } // for points
 
-                _Scalar coeff = cnt ? /* complx: */ weights(2) + /* unary: */ weights(0) * unary_i / _Scalar(cnt)
-                                    : /* complx: */ weights(2) + /* unary: */ weights(0) * _Scalar(2);            // add large weight, if no points assigned
+                // average data cost
+                _Scalar coeff = cnt ? /* unary: */ weights(0) * unary_i / _Scalar(cnt)
+                                    : /* unary: */ weights(0) * _Scalar(2);            // add large weight, if no points assigned
+
+                // prefer dominant directions
                 if ( freq_weight > _Scalar(0.) )
                 {
                     const int dir_gid = prims[lid][lid1].getTag( _PrimitiveT::GID );
@@ -767,8 +772,12 @@ namespace problemSetup {
                     std::cout << "[" << __func__ << "]: " << "changed " << coeff << " to ";
                     if ( dir_instances[dir_gid] > 0 )
                         coeff *= freq_weight * _Scalar(1.) / _Scalar(dir_instances[dir_gid]);
+#warning TODO: remove small patches from this count
                     std::cout << coeff << " since dirpop: " << dir_instances[dir_gid] << std::endl;
                 }
+
+                // complexity cost:
+                coeff += weights(2); // changed by Aron on 21/9/2014
 
                 // add to problem
                 problem.addLinObjective( /* var_id: */ lids_varids.at( IntPair(lid,lid1) )
