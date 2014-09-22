@@ -361,8 +361,7 @@ namespace GF2
                             add1 &= (   (prim0.getTag(_PrimitiveT::STATUS) != _PrimitiveT::STATUS_VALUES::SMALL )      // prim0 (dir) needs to be active             to send    directions
                                      && (prim1.getTag(_PrimitiveT::STATUS) != _PrimitiveT::STATUS_VALUES::SMALL ) // prim1 (pos) needs to be active or promoted to receive directions
                                      && promoted.find( GidLid(gid0,lid0) ) == promoted.end() // prim0 needs to be active and not promotoed to send direction
-
-                                        );
+                                    );
                         }
 
                         // store already copied pairs
