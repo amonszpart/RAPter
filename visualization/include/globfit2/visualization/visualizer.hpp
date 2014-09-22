@@ -271,7 +271,7 @@ namespace GF2
                 {
                     char gid_name[255],gid_text[255];
                     sprintf( gid_name, "primgid%d_%d", gid, dir_gid  );
-                    sprintf( gid_text, "(%2.4f),%d,%d", area(0), gid, dir_gid );
+                    sprintf( gid_text, "(%2.4f),%d,%d,%d", area(0), gid, dir_gid, primitives[lid][lid1].getTag(PrimitiveT::STATUS) );
                     Eigen::Matrix<_Scalar,3,1> pos = primitives[lid][lid1].template pos();// + (Eigen::Matrix<_Scalar,3,1>() << scale, scale, 0.).finished();
                     vptr->addText3D( gid_text
                                    , pclutil::asPointXYZ( pos )
