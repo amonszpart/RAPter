@@ -85,17 +85,47 @@ loadDepth( std::string depth_path )
     return dep;
 } //...loadDepth()
 
+// Aron's kinect calibration
+#define FX_D 588.486898
+#define FY_D 588.729416
+#define CX_D 314.509516
+#define CY_D 242.997237
+#define K1_D -0.094563
+#define K2_D 0.387595
+#define P1_D 0.000838
+#define P2_D 0.001505
+#define K3_D -0.494912
+#define ALPHA_D -0.002096
+
 template <typename _Scalar>
 struct Intrinsics
 {
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     typedef _Scalar Scalar;
+    enum CALIB_ID { TIANJIAS, ARONS, /*ARONS_WDISTORTION,*/ RGBDEMOS };
 
-    inline Intrinsics()
-        : _intrinsics( (Eigen::Matrix<Scalar,3,3>() <<
-                        5.1930334103339817e+02, 0., 3.2850951551345941e+02,
-                        0., 5.1816401430246583e+02, 2.5282555217253503e+02,
-                        0., 0., 1. ).finished() ) {}
+    inline Intrinsics( CALIB_ID calib_id = ARONS )
+    {
+         switch ( calib_id )
+         {
+             case ARONS:
+                 _intrinsics << FX_D, 0., CX_D,
+                                0., FY_D, CY_D,
+                                0., 0., 1.;
+                 break;
+             case TIANJIAS:
+                 _intrinsics << 5.1930334103339817e+02, 0., 3.2850951551345941e+02,
+                                0., 5.1816401430246583e+02, 2.5282555217253503e+02,
+                                0., 0., 1.;
+                 break;
+             case RGBDEMOS:
+                 _intrinsics << 5.4013644168716110e+02, 0., 320.,
+                                0., 5.4013644168716110e+02, 240.,
+                                0., 0., 1.;
+                 break;
+         }
+    }
+
     inline Intrinsics( Scalar fx, Scalar fy, Scalar cx, Scalar cy )
         : _intrinsics( (Eigen::Matrix<Scalar,3,3>() <<
                         fx, 0., cx,

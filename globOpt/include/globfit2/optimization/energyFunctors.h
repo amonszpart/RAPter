@@ -325,7 +325,9 @@ namespace GF2
         eval( PrimitiveT p1, PrimitiveT p2 )
         {
             Scalar diff  = MyPrimitivePrimitiveAngleFunctor::eval( p1, p2, this->_angles );
-            Scalar score = sqrt( diff );
+
+            // truncated at half degree difference
+            Scalar score = std::min( Scalar(0.09341652027), Scalar(sqrt(diff)) );
 
             return score;
         }

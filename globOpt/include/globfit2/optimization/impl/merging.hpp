@@ -336,13 +336,14 @@ int Merging::adoptPoints( _PointContainerT          & points
         // cache extrema
         GidLidExtremaT extremaMap;
 
+        std::cout << "Orphan re-assigned ";
         for ( size_t pid = 0; pid != points.size(); ++pid )
         {
             typename _PrimitiveContainerT::const_iterator it = prims.find(points[pid].getTag( _PointPrimitiveT::GID ));
 
             if (    ( it == prims.end()                            )    // the patch this point is assigned to does not exist
                  || ( !containers::valueOf<_PrimitiveT>(it).size() )    // the patch this point is assigned to is empty (no primitives in it)
-                 || ( populations[(it)->first].size() < poplimit   ) )  // the patch this point is assigned to is too small
+                 /*|| ( populations[(it)->first].size() < poplimit   )*/ )  // the patch this point is assigned to is too small
             {
                 // We here have an orphan, so we need to iterate over all primitives and get the closest distance < scale
                 _Scalar  minDist = std::numeric_limits<_Scalar>::max();
@@ -372,7 +373,7 @@ int Merging::adoptPoints( _PointContainerT          & points
 #warning TODO: !!!should this not be changed to segment distance?
                             _Scalar dist = distFunctor.eval( extremaMap[ GidLid(gid,lid) ], *it2, pos );
 
-                            // stor minimum distance
+                            // store minimum distance
                             if ( dist < minDist )
                             {
                                 minDist = dist;
@@ -387,12 +388,13 @@ int Merging::adoptPoints( _PointContainerT          & points
                 {
                     // reassign point
                     points[pid].setTag( _PointPrimitiveT::GID, minGid );
-                    std::cout << "Orphan re-assigned " << pid << " " << minGid << std::endl;
+                    std::cout << pid << " " << minGid << ", ";
                     changed = true;
                 }
             }
         }
     } while (changed);
+    std::cout << std::endl;
 
 #if 0
     // select unassigned points
@@ -813,13 +815,18 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
                     }
                 }
 
-                err = inner_it->template getExtent<_PointPrimitiveT>
-                                                           ( extrema[gid][lid]
-                                                           , points
-                                                           , scale
-                                                           , populations[gid].size() ? &(populations[gid]) : NULL );
+                if ( populations[gid].size() )
+                    err = inner_it->template getExtent<_PointPrimitiveT>
+                                                               ( extrema[gid][lid]
+                                                               , points
+                                                               , scale
+                                                               , &(populations[gid])
+                                                               );
+                else
+                    err = EXIT_FAILURE;
 
-                if(err != EXIT_SUCCESS){
+                if ( err != EXIT_SUCCESS )
+                {
                     std::cerr << "Issue when computing extent of ("
                               << primitives.at(gid).at(lid).getTag(_PrimitiveT::GID )     << ","
                               << primitives.at(gid).at(lid).getTag(_PrimitiveT::DIR_GID ) << ")"

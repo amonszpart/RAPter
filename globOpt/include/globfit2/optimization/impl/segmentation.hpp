@@ -205,6 +205,7 @@ Segmentation::patchify( _PrimitiveContainerT                   & patches
                       , std::vector<_Scalar>              const& angles
                       , _PatchPatchDistanceFunctorT       const& patchPatchDistanceFunctor
                       , int                               const  nn_K
+                      , int                               const  verbose
                       )
 {
     typedef segmentation::Patch<_Scalar,_PrimitiveT> PatchT;
@@ -245,6 +246,8 @@ Segmentation::patchify( _PrimitiveContainerT                   & patches
         }
         else if ( _PrimitiveT::EmbedSpaceDim == 3)
         {
+            if ( !(gid % 100) )
+                std::cout << "[" << __func__ << "]: " <<  float(gid) / groups.size() * 100.f << std::endl;
             // PLANE
             _PrimitiveT toAdd;
             int err = processing::fitLinearPrimitive<_PrimitiveT::Dim>( /*  [in,out] primitive: */ toAdd
@@ -255,21 +258,11 @@ Segmentation::patchify( _PrimitiveContainerT                   & patches
                                                             , /*    start from input: */ (_PrimitiveT*)NULL  // use to calculate initial weights
                                                             , /* refit position only: */ false
                                                             , /*               debug: */ false  );
-            std::cout << "repr: " << groups[gid].getRepresentative().toString()
-                      << "refit: " << toAdd.toString() << std::endl;
-            if ( err != EXIT_SUCCESS )
-            {
-                std::cerr << "[" << __func__ << "]: " << "Vaiiii? err: " << err << ", pop: " << populations[gid].size() << std::endl;
-                toAdd = groups[gid].getRepresentative();
-                if ( toAdd.template dir().norm() < 0.9 )
-                {
-                    std::cerr << "[" << __func__ << "]: " << "getRepr().norm( " << toAdd.template dir().norm() << ") < 0.9: " << toAdd.toString() << ", this is very bad news" << std::endl;
-                }
-//                containers::add( patches, gid, toAdd )
-//                        .setTag( _PrimitiveT::GID    , gid )
-//                        .setTag( _PrimitiveT::DIR_GID, gid );
-            }
-            else
+            if ( verbose )
+                std::cout << "repr: " << groups[gid].getRepresentative().toString()
+                          << "refit: " << toAdd.toString() << std::endl;
+
+            if ( err == EXIT_SUCCESS )
             {
                 if ( toAdd.template dir().norm() < 0.9 )
                 {
@@ -278,13 +271,15 @@ Segmentation::patchify( _PrimitiveContainerT                   & patches
                 }
 
                 containers::add( patches, gid, toAdd /*groups[gid].getRepresentative()*/ )
-                        .setTag( _PrimitiveT::GID    , gid )
-                        .setTag( _PrimitiveT::DIR_GID, gid );
+                        .setTag( _PrimitiveT::TAGS::GID    , gid )
+                        .setTag( _PrimitiveT::TAGS::DIR_GID, gid )
+                        .setTag( _PrimitiveT::TAGS::STATUS , _PrimitiveT::STATUS_VALUES::ACTIVE ); // set to active, "large" patch
             }
         }
         else
             std::cerr << "[" << __func__ << "]: " << "Unrecognized EmbedSpaceDim - refit to patch did not work" << std::endl;
     }
+    std::cout << "used " << patches.size() << " / " << groups.size() << "(" << (float)patches.size() / groups.size() *100.f << "%)\n";
 
     return EXIT_SUCCESS;
 } // ...Segmentation::patchify()
@@ -327,7 +322,7 @@ Segmentation::regionGrow( _PointContainerT                       & points
     typedef          std::vector<PatchT>     Patches;
 
     // create patches with a single point in them
-    std::deque<int> starting_cands( points.size() );
+    std::deque<int> starting_cands;
     for ( int pid = 0; pid != points.size(); ++pid )
     {
         //const int pid = point_ids_arg ? (*point_ids_arg)[ pid_id ] : pid_id;
@@ -409,7 +404,7 @@ Segmentation::regionGrow( _PointContainerT                       & points
                 // location from point, but direction is the representative's
                 //_PointPrimitiveT p1_proxy(points[prid].template pos(), patches.back().template dir());
                 //PatchT p2_proxy; p2_proxy.push_back( segmentation::PidLid(pid2,-1) ); p2_proxy.update( points );
-
+#warning TODO: spatial thresh is not necessary here
                 if ( (dist_diff < patchPatchDistanceFunctor.getSpatialThreshold()) && (ang_diff < patchPatchDistanceFunctor.getAngularThreshold()) ) // original condition
                 //if ( patchPatchDistanceFunctor.template eval<_PointPrimitiveT>(p1_proxy, p2_proxy, points, NULL) < patchPatchDistanceFunctor.getThreshold() )
                 {
@@ -468,6 +463,7 @@ Segmentation::segmentCli( int    argc
     std::vector<_Scalar>        angle_gens              = { _Scalar(90.) };
     std::string                 mode_string             = "representative_sqr";
     std::vector<std::string>    mode_opts               = { "representative_sqr" };
+    bool                        verbose                 = false;
 
     // parse input
     if ( err == EXIT_SUCCESS )
@@ -494,6 +490,8 @@ Segmentation::segmentCli( int    argc
         pcl::console::parse_argument( argc, argv, "--mode", mode_string );
         generatorParams.parsePatchDistMode( mode_string );
 
+        verbose = pcl::console::find_switch(argc,argv,"--verbose") || pcl::console::find_switch(argc,argv,"-v");
+
         if ( pcl::console::find_switch( argc, argv, "--patch-refit" ) )
         {
             std::cerr << "[" << __func__ << "]: " << "--patch-refit option has been DEPRECATED. exiting." << std::endl;
@@ -516,6 +514,7 @@ Segmentation::segmentCli( int    argc
             std::cerr << "\t [--angle-limit " << generatorParams.angle_limit << "]\n";
             std::cerr << "\t [--dist-limit-mult " << generatorParams.patch_dist_limit_mult << "]\n";
             std::cerr << "\t [--angle-gens "; for(int i=0;i!=angle_gens.size();++i)std::cerr<<angle_gens[i];std::cerr<<"]\n";
+            std::cerr << "\t [-v, --verbose]\n";
             std::cerr << std::endl;
 
             if ( !valid_input || pcl::console::find_switch(argc,argv,"--help") || pcl::console::find_switch(argc,argv,"-h") )
@@ -577,6 +576,7 @@ Segmentation::segmentCli( int    argc
                                             , generatorParams.angles
                                             , patchPatchDistanceFunctor
                                             , generatorParams.nn_K
+                                            , verbose
                                             );
             }
                 break;

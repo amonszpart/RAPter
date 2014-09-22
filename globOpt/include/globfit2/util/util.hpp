@@ -76,18 +76,20 @@ hsv2rgb( ::cv::Point3_<Scalar> const& in )
 // assumes hue [0, 360), saturation [0, 100), lightness [0, 100)
 template <typename Scalar>
 inline std::vector< ::cv::Point3f >
-nColoursCv(int n, Scalar scale, bool random_shuffle )
+nColoursCv(int n, Scalar scale, bool random_shuffle, float min_value = 50.f, float min_saturation = 90.f )
 {
     std::vector< ::cv::Point3f > out;
     //srand(time(NULL));
 
     float step = 360. / n;
+    const float saturation_rest = 100.f - min_saturation;
+    const float value_rest = 100.f - min_value;
     for ( int i = 0; i < n; ++i )
     {
         ::cv::Point3f c;
         c.x = i * step; // hue
-        c.y = (90.f + rand()/(float)RAND_MAX * 10.f) / 100.f; // saturation
-        c.z = (50.f + rand()/(float)RAND_MAX * 50.f) / 100.f; // value
+        c.y = (min_saturation + rand()/(float)RAND_MAX * saturation_rest) / 100.f; // saturation
+        c.z = (min_value      + rand()/(float)RAND_MAX * value_rest     ) / 100.f; // value
 
         // convert and store
         out.push_back( hsv2rgb(c) * scale );

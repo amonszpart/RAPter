@@ -271,14 +271,14 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
             for ( size_t lid1 = 0; lid1 != prims[lid].size(); ++lid1 )
             {
                 // add var
-                int gid     = prims[lid][lid1].getTag( _PrimitiveT::GID );
-                int dir_gid = prims[lid][lid1].getTag( _PrimitiveT::DIR_GID );
+                int gid     = prims[lid][lid1].getTag( _PrimitiveT::TAGS::GID );
+                int dir_gid = prims[lid][lid1].getTag( _PrimitiveT::TAGS::DIR_GID );
                 sprintf( name, "x_%d_%d", gid, dir_gid );
 
                 // store var_id for later, add binary variable
                 const int var_id = problem.addVariable( OptProblemT::BOUND::RANGE, 0.0, 1.0, OptProblemT::VAR_TYPE::INTEGER );
                 lids_varids[ IntPair(lid,lid1) ] = var_id;
-                if ( prims[lid][lid1].getTag(_PrimitiveT::CHOSEN) > 0 )
+                if ( prims[lid][lid1].getTag(_PrimitiveT::TAGS::STATUS) == _PrimitiveT::STATUS_VALUES::ACTIVE )
                     chosen_varids.insert( var_id );
             }
         }
@@ -719,6 +719,8 @@ namespace problemSetup {
         int err = EXIT_SUCCESS;
 
         // INSTANCES // added 17/09/2014 by Aron
+#warning TODO: remove small patches from this count
+#warning TODO: FIX THIS: don't count all candidates, just the input!!
         std::map< int, int > dir_instances;
         for ( size_t lid = 0; lid != prims.size(); ++lid )
             for ( size_t lid1 = 0; lid1 != prims[lid].size(); ++lid1 )
@@ -758,8 +760,11 @@ namespace problemSetup {
                     }
                 } // for points
 
-                _Scalar coeff = cnt ? /* complx: */ weights(2) + /* unary: */ weights(0) * unary_i / _Scalar(cnt)
-                                    : /* complx: */ weights(2) + /* unary: */ weights(0) * _Scalar(2);            // add large weight, if no points assigned
+                // average data cost
+                _Scalar coeff = cnt ? /* unary: */ weights(0) * unary_i / _Scalar(cnt)
+                                    : /* unary: */ weights(0) * _Scalar(2);            // add large weight, if no points assigned
+
+                // prefer dominant directions
                 if ( freq_weight > _Scalar(0.) )
                 {
                     const int dir_gid = prims[lid][lid1].getTag( _PrimitiveT::GID );
@@ -767,8 +772,12 @@ namespace problemSetup {
                     std::cout << "[" << __func__ << "]: " << "changed " << coeff << " to ";
                     if ( dir_instances[dir_gid] > 0 )
                         coeff *= freq_weight * _Scalar(1.) / _Scalar(dir_instances[dir_gid]);
+#warning TODO: remove small patches from this count
                     std::cout << coeff << " since dirpop: " << dir_instances[dir_gid] << std::endl;
                 }
+
+                // complexity cost:
+                coeff += weights(2); // changed by Aron on 21/9/2014
 
                 // add to problem
                 problem.addLinObjective( /* var_id: */ lids_varids.at( IntPair(lid,lid1) )

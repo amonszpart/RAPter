@@ -13,6 +13,8 @@ namespace GF2
     class Taggable
     {
         public:
+            static const int TAG_UNSET = -1;
+
             enum USER_TAGS {
                   USER_ID1 = 10 //!< additional flag to store processing attributes (values only in the generation scope)
                 , USER_ID2 = 11 //!< additional flag to store processing attributes (values only in the generation scope)
@@ -43,7 +45,7 @@ namespace GF2
                 if ( it != _tags.end() )
                     return _tags.at( key );
                 else
-                    return -1;
+                    return TAG_UNSET;
             }
 
             //! \brief              Stores tag for string key.
@@ -68,7 +70,7 @@ namespace GF2
                 if ( it != _str_tags.end() )
                     return _str_tags.at( key );
                 else
-                    return -1;
+                    return TAG_UNSET;
             }
 
             inline int
