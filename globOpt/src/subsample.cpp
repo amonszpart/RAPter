@@ -56,6 +56,8 @@ int subsample( int argc, char** argv )
     pcl::getMinMax3D( cloud, min_pt, max_pt );
     std::cout << "min: " << min_pt.transpose() << ", max: " << max_pt.transpose() << std::endl;
     Position div = (max_pt - min_pt);
+    div.setConstant( div.maxCoeff() );
+
     if ( scene_size > 0.f )
     {
         div(0) = sceneSize(0) / div(0);
@@ -71,10 +73,14 @@ int subsample( int argc, char** argv )
         if ( (rand() / (float)RAND_MAX) < chance )
         {
             auto pnt = cloud.at(pid);
-            pnt.getVector4fMap() -= min_pt;
-            pnt.getVector4fMap()(0) *= div(0);
-            pnt.getVector4fMap()(1) *= div(1);
-            pnt.getVector4fMap()(2) *= div(2);
+
+            if ( scene_size > 0.f )
+            {
+                pnt.getVector4fMap() -= min_pt;
+                pnt.getVector4fMap()(0) *= div(0);
+                pnt.getVector4fMap()(1) *= div(1);
+                pnt.getVector4fMap()(2) *= div(2);
+            }
             std::cout << "adding " << pnt.getVector3fMap().transpose() << " from " << cloud.at(pid).getVector3fMap().transpose() << std::endl;
             out_cloud.push_back( pnt );
         }
