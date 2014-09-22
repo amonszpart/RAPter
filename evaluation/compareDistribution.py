@@ -1,12 +1,13 @@
 import packages.project as project
 import packages.primitive as primitive
+import packages.utils as utils
 import packages.io
 import argparse
 from matplotlib import pyplot as plt
 import matplotlib.mlab as mlab
 import numpy as np
 from scipy.stats import norm,kstest,skewtest,kurtosistest,normaltest
-from scipy.integrate import quad
+
 
 ################################################################################
 ## Visualization parameters
@@ -23,18 +24,14 @@ def setupHistogramUI(distribution, title, c1, c2, pdf=None):
     fig, ax1 = plt.subplots()
     fig.canvas.set_window_title(title)
     ax1.set_ylabel('PDF')
-
-    if pdf != None:
-        ax1.plot(x, pdf, color=c1, linestyle='--')
         
     # Generate histogram and display it
     hist, bins = np.histogram(distribution, nbBins/4, (rangeMin, rangeMax), normed=True)
     width = 0.7 * (bins[1] - bins[0])
     center = (bins[:-1] + bins[1:]) / 2
 
-    ax2 = ax1.twinx()
-    ax2.set_ylabel('Noise')
-    ax2.bar(center, hist, align='center', color=c1, width=width, edgecolor = "none")
+    ax1.set_ylabel('Noise')
+    ax1.bar(center, hist, align='center', color=c1, width=width, edgecolor = "none")
 
     # Compute PDF of the gt histogram and display
     mean = np.mean(distribution)
@@ -45,6 +42,9 @@ def setupHistogramUI(distribution, title, c1, c2, pdf=None):
     ax1.fill_between(x, mpdf, 0, color=c2 )
     
     print title," sigma = ",sigma
+
+    if pdf != None:
+        ax1.plot(x, pdf, color='b', linestyle='--')
     
 
 def setupComparisonUI(distrib1, title1, c1, 
@@ -111,8 +111,8 @@ assign_it1 = packages.io.readPointAssignementFromFiles(assignfile_it1)
 ## Process data
 
 # Compute the distance between each point and its assigned primitive
-gtDistrib   = [ [primVar.distanceTo(cloud[a[0]]) for primVar in gtlines if primVar.uid == a[1]][0] for a in gtassign]
-distrib_it1 = [ [primVar.distanceTo(cloud[a[0]]) for primVar in lines_it1 if primVar.uid == a[1]][0] for a in assign_it1]
+gtDistrib   = utils.distanceToPrimitives(cloud, gtassign,   gtlines)
+distrib_it1 = utils.distanceToPrimitives(cloud, assign_it1, lines_it1)
 
 
 ################################################################################

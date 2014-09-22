@@ -26,8 +26,8 @@ class RelationGraph(object):
         for a in assignArray:
             self.G.node[a[1]]['w'] += 1
                     
-        print "Number of primitives:  ",self.G.number_of_nodes()
-        print "Number of connections: ",self.G.number_of_edges()
+        #print "Number of primitives:  ",self.G.number_of_nodes()
+        #print "Number of connections: ",self.G.number_of_edges()
         
     def draw(self):
         nx.draw_spectral(self.G)
