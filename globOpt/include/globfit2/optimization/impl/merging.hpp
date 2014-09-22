@@ -339,7 +339,8 @@ int Merging::adoptPoints( _PointContainerT          & points
         std::cout << "Orphan re-assigned ";
         for ( size_t pid = 0; pid != points.size(); ++pid )
         {
-            typename _PrimitiveContainerT::const_iterator it = prims.find(points[pid].getTag( _PointPrimitiveT::GID ));
+            const int point_gid = points[pid].getTag(_PointPrimitiveT::GID);
+            typename _PrimitiveContainerT::const_iterator it = prims.find( point_gid );
 
             if (    ( it == prims.end()                            )    // the patch this point is assigned to does not exist
                  || ( !containers::valueOf<_PrimitiveT>(it).size() )    // the patch this point is assigned to is empty (no primitives in it)
@@ -391,8 +392,8 @@ int Merging::adoptPoints( _PointContainerT          & points
                     std::cout << pid << " " << minGid << ", ";
                     changed = true;
                 }
-            }
-        }
+            } //...if reassign point
+        }//...for all points
     } while (changed);
     std::cout << std::endl;
 
@@ -804,6 +805,13 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
                                        (inner_it != containers::valueOf<_PrimitiveT>(outer_it).end());// we now handle error
                                       ++inner_it, ++lid )
             {
+                // ignore small patches
+                if ( inner_it->getTag( _PrimitiveT::STATUS ) == _PrimitiveT::STATUS_VALUES::SMALL )
+                {
+                    ignoreList.insert(GidLid (gid, lid));
+                    continue;
+                }
+
                 // save patch gid
                 if ( gid == -2 )
                 {

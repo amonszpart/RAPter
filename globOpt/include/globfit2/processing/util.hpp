@@ -311,7 +311,13 @@ namespace GF2 {
                                           /* Do nothing */)
                 {
                     // apply functor to primitive
-                    if( functor.eval( *inner_it ) ){
+                    if( functor.eval( *inner_it ) )
+                    {
+                        if ( inner_it->getTag(_PrimitiveT::STATUS) == _PrimitiveT::STATUS_VALUES::SMALL )
+                        {
+                            std::cerr << "[" << __func__ << "]: " << "erasing small patch, this should NOT happen" << std::endl;
+                            throw new std::runtime_error("erasing small patch, should not happen");
+                        }
                         ++ret;
                         inner_it = containers::valueOf<_PrimitiveT>(outer_it).erase(inner_it);
                     }else{
