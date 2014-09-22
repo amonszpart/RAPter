@@ -508,8 +508,9 @@ void MainWindow::writePrimitives(QString path){
 
         for(InputGen::Application::Project::PrimitiveContainer::const_iterator it = _project->primitives.begin();
             it != _project->primitives.end(); it++){
-            const InputGen::Application::Primitive::vec& coord  = (*it).coord();
+            InputGen::Application::Primitive::vec coord  = (*it).getMidPoint();
             const InputGen::Application::Primitive::vec& normal = (*it).normal();
+
             out /*<< (*it).coord()(0)     << ","
                 << (*it).coord()(1)     << ","
                 << (*it).coord()(2)     << ","*/
@@ -521,7 +522,7 @@ void MainWindow::writePrimitives(QString path){
                 <<  normal(2)           << ","
                 << (*it).uid()          << ","
                 << (*it).did()          << ","
-                << "1"               << endl; //1 means used
+                << "1"                  << endl; //1 means used
         }
         outfile.close();
     }
