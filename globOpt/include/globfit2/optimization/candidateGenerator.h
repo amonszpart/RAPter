@@ -212,30 +212,38 @@ namespace GF2
                                 promoted.insert( GidLid(gid,lid) );
 
                             prim.setTag( _PrimitiveT::STATUS, _PrimitiveT::STATUS_VALUES::UNSET ); // set to unset, so that formulate can distinguish between promoted and
-                            prim_status = prim.getTag( _PrimitiveT::STATUS );
                         }
                         // Demote, if first iteration
                         else if (prim_status == _PrimitiveT::STATUS_VALUES::UNSET) // this should only happen in the first iteration
                         {
                             std::cout << "demoting" << spatialSignif(0) << std::endl;
                             prim.setTag( _PrimitiveT::STATUS, _PrimitiveT::STATUS_VALUES::SMALL );
+
                         }
                         else
                         {
                             std::cout << "large patch( status: " << prim_status << "): " << spatialSignif(0) << std::endl;
                         }
+
+                        // update cache
+                        prim_status = prim.getTag( _PrimitiveT::STATUS );
                     } //...if not large
 
 #warning This does not copy promoted, remember to account for them later
                     // copy to output, if large
-                    if ( prim_status == _PrimitiveT::STATUS_VALUES::ACTIVE ) // don't copy promoted...
+                    if ( (prim_status == _PrimitiveT::STATUS_VALUES::ACTIVE) || (prim_status == _PrimitiveT::STATUS_VALUES::SMALL) ) // don't copy promoted...
                     {
                         // copy input - to keep CHOSEN tag entries, so that we can start second iteration from a selection
                         containers::add( out_lines, inner_it0->getTag( _PrimitiveT::GID ), *inner_it0 );
-                        // store position-direction combination to avoid duplicates
-                        copied[ inner_it0->getTag(_PrimitiveT::GID) ].insert( inner_it0->getTag(_PrimitiveT::DIR_GID) );
-                        // update output count
-                        ++nlines;
+
+                        // smalls are invisible in this round
+                        if ( (prim_status == _PrimitiveT::STATUS_VALUES::ACTIVE) )
+                        {
+                            // store position-direction combination to avoid duplicates
+                            copied[ inner_it0->getTag(_PrimitiveT::GID) ].insert( inner_it0->getTag(_PrimitiveT::DIR_GID) );
+                            // update output count
+                            ++nlines;
+                        }
                     } //...if active, copy to output
 
                     // bookkeeping
