@@ -233,7 +233,7 @@ namespace GF2
                     .array().abs().eval().array()                    // get unsigned distance
                     <= hsize.array())                                // check if we are inside the box for each coordinate
                     .select (                                        // if test (dimension wise):
-                        Eigen::Matrix<Scalar, 3,1>::Zero(),          //   - we are inside the box, so distance is 0
+                        Eigen::Matrix<Scalar, 1, 3>::Zero(),          //   - we are inside the box, so distance is 0
                         (( lq * frame ).array().abs() - hsize.array()).eval() //   - we are outside the box, so return unsigned distance (distance to center - box size)
                         ).norm();
 

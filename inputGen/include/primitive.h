@@ -68,7 +68,7 @@ public:
 
     template <class vec2Derived>
     inline void setDim  (const vec2Derived& dim )
-    { _dim = dim; if (_type == LINE_2D) _dim(1) = 0; }
+    { _dim = dim; if (_dim(1) != 0.) _type = PLANE_3D; }
 
     inline const uint& uid() const { return _uid; }
 
@@ -91,12 +91,12 @@ public:
     //! \brief Compute tangent vector
     inline vec getTangentVector() const {
         // rotation of the normal vector around z axis
-        if (_type == LINE_2D)
+        //if (_type == LINE_2D)
             return vec(_normal(1), -_normal(0), 0);
-        else{
-            std::cerr << "Invalid request in " << __FILE__ << ":" << __LINE__ << std::endl;
-            return vec::Zero();
-        }
+        //else{
+        //    std::cerr << "Invalid request in " << __FILE__ << ":" << __LINE__ << std::endl;
+        //    return vec::Zero();
+        //}
 
     }
 

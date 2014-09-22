@@ -382,6 +382,37 @@ void MainWindow::on_actionMerge_primitives_triggered()
     delete dialog;
 }
 
+
+
+void MainWindow::on_actionExtrude_triggered()
+{
+    if (_project == NULL)
+        return;
+
+    using InputGen::Application::Scalar;
+
+    bool ok;
+    double esize=
+    QInputDialog::getDouble(this,
+                            "Extrude primitives...",
+                            "Enter extrusion value",
+                            0.2,
+                            0.,
+                            10.,   //maxValue
+                            3,
+                            &ok);    //decimals
+
+    if (ok){
+        for(Project::PrimitiveContainer::iterator it1 = _project->primitives.begin();
+            it1 != _project->primitives.end(); it1++){
+            InputGen::Application::Primitive::vec2 dim = (*it1).dim();
+            dim(1) = esize;
+            (*it1).setDim(dim);
+        }
+    }
+
+}
+
 void MainWindow::on_actionSave_points_triggered()
 {
     if (_project == NULL)
@@ -508,8 +539,9 @@ void MainWindow::writePrimitives(QString path){
 
         for(InputGen::Application::Project::PrimitiveContainer::const_iterator it = _project->primitives.begin();
             it != _project->primitives.end(); it++){
-            const InputGen::Application::Primitive::vec& coord  = (*it).coord();
+            InputGen::Application::Primitive::vec coord  = (*it).getMidPoint();
             const InputGen::Application::Primitive::vec& normal = (*it).normal();
+
             out /*<< (*it).coord()(0)     << ","
                 << (*it).coord()(1)     << ","
                 << (*it).coord()(2)     << ","*/
@@ -521,7 +553,7 @@ void MainWindow::writePrimitives(QString path){
                 <<  normal(2)           << ","
                 << (*it).uid()          << ","
                 << (*it).did()          << ","
-                << "1"               << endl; //1 means used
+                << "1"                  << endl; //1 means used
         }
         outfile.close();
     }

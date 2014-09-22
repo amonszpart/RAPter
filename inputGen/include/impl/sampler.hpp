@@ -1,6 +1,6 @@
 #ifndef SAMPLER_HPP
 #define SAMPLER_HPP
-
+#include <Eigen/Geometry>
 
 namespace InputGen{
 
@@ -10,7 +10,7 @@ template <typename _Scalar,
 template <class SampleContainer, class PrimitiveContainer>
 void
 PrimitiveSampler<_Scalar, T, _Primitive>::generateSamples(
-              SampleContainer&    scontainer,
+        SampleContainer&    scontainer,
         const PrimitiveContainer& pcontainer){
     typedef typename PrimitiveContainer::value_type::vec vec;
     typedef typename SampleContainer::value_type Sample;
@@ -27,23 +27,34 @@ PrimitiveSampler<_Scalar, T, _Primitive>::generateSamples(
 
         vec midPoint   = (*it).getMidPoint();
         vec tangentVec = (*it).getTangentVector();
+        vec orthoVec   = (*it).normal().cross(tangentVec);
 
         if (nbSampleX == 0 && nbSampleY == 0) // generate a single sample at the primitive midpoint
             scontainer.push_back(Sample(midPoint, (*it).normal(), primitiveUID));
         else{
 
-            if (nbSampleX != 0 && nbSampleY == 0){
+            if(nbSampleY == 0){
                 scontainer.push_back(Sample(midPoint, (*it).normal(), primitiveUID));
-                for (unsigned int i = 1; i< nbSampleX/2+1; i++){
-                    vec offset = Scalar(i)*spacing*tangentVec;
-                    scontainer.push_back(Sample(midPoint + offset, (*it).normal(), primitiveUID));
-                    scontainer.push_back(Sample(midPoint - offset, (*it).normal(), primitiveUID));
-                }
-                //if ((*it).dim())
-            }else if (nbSampleX == 0 && nbSampleY != 0){
-                std::cerr << "[Sampler] Unsupported configuration" << std::endl;
             }else{
-                std::cerr << "[Sampler] Unsupported configuration" << std::endl;
+                for (unsigned int j = 1; j< nbSampleY/2+1; j++){
+                    vec offsetY = Scalar(j)*spacing*orthoVec;
+                    scontainer.push_back(Sample(midPoint + offsetY, (*it).normal(), primitiveUID));
+                }
+            }
+            for (unsigned int i = 1; i< nbSampleX/2+1; i++){
+                vec offsetX = Scalar(i)*spacing*tangentVec;
+                scontainer.push_back(Sample(midPoint + offsetX, (*it).normal(), primitiveUID));
+                scontainer.push_back(Sample(midPoint - offsetX, (*it).normal(), primitiveUID));
+
+                for (unsigned int j = 1; j< nbSampleY/2+1; j++){
+                    vec offsetY = Scalar(j)*spacing*orthoVec;
+                    scontainer.push_back(Sample(midPoint + offsetX + offsetY, (*it).normal(), primitiveUID));
+                    scontainer.push_back(Sample(midPoint + offsetX - offsetY, (*it).normal(), primitiveUID));
+
+                    scontainer.push_back(Sample(midPoint - offsetX + offsetY, (*it).normal(), primitiveUID));
+                    scontainer.push_back(Sample(midPoint - offsetX - offsetY, (*it).normal(), primitiveUID));
+                }
+                // \FIXME There is here a case not covered, when nbSampleX == 0 and nbSampleY != 0
             }
         }
     }
@@ -72,6 +83,7 @@ PunctualSampler<_Scalar, T, _Primitive>::generateSamples(
     typename PrimitiveContainer::const_iterator it;
 
     _Scalar angleStep = _Scalar(2.) * _Scalar(M_PI) / _Scalar(nbSamples);
+
 
     for (unsigned int i = 0; i!= this->nbSamples; i++){
         _Scalar angle = _Scalar(i) * angleStep;

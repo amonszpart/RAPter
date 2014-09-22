@@ -27,7 +27,7 @@ namespace correspondence
     {
         std::cout << "pos: " << prim.template pos().transpose() << ", gtpos: " << gt_prim.template pos().transpose() << ", norm: " << (prim.template pos() - gt_prim.template pos()).norm() << std::endl;
 
-        return f.eval(extrema,   prim.template pos(),
+        return 1.- f.eval(extrema,   prim.template pos(),
                       extremagt, gt_prim.template pos(),
                       scale);
         //return (prim.template pos() - gt_prim.template pos()).norm();
@@ -207,6 +207,28 @@ namespace correspondence
         typedef std::vector< Position         >       ExtremaT;
         typedef std::map   < GidLid, ExtremaT >       GidLidExtremaT;
 
+        // check that we have one single primitive per group
+        if ( EXIT_SUCCESS == err )
+        {
+            for ( outer_const_iterator outer_it0 = prims_mapA.begin(); outer_it0 != prims_mapA.end(); ++outer_it0 )
+                if ((*outer_it0).second.size() != 1){
+                    err = EXIT_FAILURE;
+                    break;
+                }
+            CHECK( err, "Single Primitive Per Group A" );
+        }
+        if ( EXIT_SUCCESS == err )
+        {
+            for ( outer_const_iterator outer_it0 = prims_mapB.begin(); outer_it0 != prims_mapB.end(); ++outer_it0 )
+                if ((*outer_it0).second.size() != 1){
+                    err = EXIT_FAILURE;
+                    break;
+                }
+            CHECK( err, "Single Primitive Per Group B" );
+        }
+
+
+
         GidPidVectorMap populationsA; // populations[gid] == std::vector<int> {pid0,pid1,...}
         if ( EXIT_SUCCESS == err )
         {
@@ -220,7 +242,6 @@ namespace correspondence
             err = getCustomPopulations( populationsB, points, PNT_GID_B );
             CHECK( err, "getPopulations B" );
         }
-
 
         // cache extrema
         GidLidExtremaT extremaMapA, extremaMapB;
@@ -379,6 +400,7 @@ namespace correspondence
 
             // log
             corresp_f << "# corresp between\n# " << prims_pathA << "," << prims_pathB << std::endl;
+            corresp_f << "# gid, lid, did, gid, lid, did" << std::endl;
             // for each correspondence
             for ( CorrespT::const_iterator it = corresps.begin(); it != corresps.end(); ++it )
             {
@@ -396,8 +418,10 @@ namespace correspondence
                 // write to file
                 corresp_f << gidLidA.first  << ","
                           << gidLidA.second << ","
+                          << prims_mapA[gidLidA.first][gidLidA.second].getTag(_PrimitiveT::DIR_GID) << ","
                           << gidLidB.first  << ","
-                          << gidLidB.second << "\n";
+                          << gidLidB.second  << ","
+                          << prims_mapB[gidLidB.first][gidLidB.second].getTag(_PrimitiveT::DIR_GID) << "\n";
 
                 // debug
                 containers::add( subs, gidLidA.first, prims_mapB[gidLidB.first][gidLidB.second] );
