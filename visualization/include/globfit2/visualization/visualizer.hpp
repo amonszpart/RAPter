@@ -47,6 +47,7 @@ namespace GF2 {
                 , bool                 const  print_perf_angles     = false
                 , bool                 const  dir_colours           = false
                 , std::set<int>        const* filter_gids           = NULL
+                , std::set<int>        const* filter_status         = NULL
                 );
 
             //! \brief Shows a polygon that approximates the bounding ellipse of a cluster
@@ -98,6 +99,7 @@ namespace GF2
                                                            , bool                 const  print_perf_angles   /* = false */
                                                            , bool                 const  dir_colours         /* = false */
                                                            , std::set<int>        const* filter_gids         /* = NULL */
+                                                           , std::set<int>        const* filter_status       /* = NULL */
                                                            )
     {
 #if 1
@@ -197,6 +199,9 @@ namespace GF2
         for ( size_t lid = 0; lid != primitives.size(); ++lid )
             for ( size_t lid1 = 0; lid1 != primitives[lid].size(); ++lid1 )
             {
+                if ( filter_status && (*filter_status).find(primitives[lid][lid1].getTag(PrimitiveT::STATUS)) == (*filter_status).end() )
+                    continue;
+
                 char line_name[64];
                 sprintf( line_name, "line_%04lu_%04lu", lid, lid1 );
                 const int gid     = primitives[lid][lid1].getTag( PrimitiveT::GID     );

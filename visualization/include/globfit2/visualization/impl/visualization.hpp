@@ -36,7 +36,8 @@ GF2::vis::showCli( int argc, char** argv )
                   << "\t[--print-angles \t Print angles on relation lines]\n"
                   << "\t[--perfect-angle 0.5\t Threshold in degrees, under which a gray line is shown indicating 'perfect relationship']\n"
                   << "\t[--dir-colours \t colourcode direction IDs']\n"
-                  << "\t[--gids \t Show only specific gids (comma separated)]"
+                  << "\t[--gids \t Show only specific gids (comma separated)]\n"
+                  << "\t[--statuses \t Show only specific statuses (comma separated)]"
                   << std::endl;
         return EXIT_SUCCESS;
     }
@@ -51,8 +52,11 @@ GF2::vis::showCli( int argc, char** argv )
     float perfect_angle_limit = 10.e-5;
     pcl::console::parse_argument( argc, argv, "--perfect-angle", perfect_angle_limit );
     bool dir_colours = pcl::console::find_switch( argc, argv, "--dir-colours" );
+
     std::vector<int> gids;
     pcl::console::parse_x_arguments( argc, argv, "--gids", gids );
+    std::vector<int> statuses;
+    pcl::console::parse_x_arguments( argc, argv, "--statuses", statuses );
 
     std::string title = "";
     pcl::console::parse_argument( argc, argv, "--title", title );
@@ -148,8 +152,23 @@ GF2::vis::showCli( int argc, char** argv )
     bool show_ids       = pcl::console::find_switch( argc, argv, "--ids" );
 
     std::set<int> gidsSet;
-    gidsSet.insert( gids.begin(), gids.end() );
-    std::cout<<"gids:";for(size_t vi=0;vi!=gids.size();++vi)std::cout<<gids[vi]<<" ";std::cout << "\n";
+    {
+        gidsSet.insert( gids.begin(), gids.end() );
+        if ( gidsSet.size() )
+        {
+            std::cout<<"gids:";for(size_t vi=0;vi!=gids.size();++vi)std::cout<<gids[vi]<<" ";std::cout << "\n";
+        }
+    }
+
+    // filter status codes UNSET, ACTIVE and SMALL
+    std::set<int> statusSet;
+    {
+        statusSet.insert( statuses.begin(), statuses.end() );
+        if ( statusSet.size() )
+        {
+            std::cout<<"statuses:";for(size_t vi=0;vi!=statuses.size();++vi)std::cout<<statuses[vi]<<" ";std::cout << "\n";
+        }
+    }
 
     GF2::Visualizer<PrimitiveContainerT,PointContainerT>::template show<Scalar>( lines
                                                                                , points
@@ -167,7 +186,8 @@ GF2::vis::showCli( int argc, char** argv )
                                                                                , /*  perfect_angle_limit: */ perfect_angle_limit
                                                                                , /* print_perfect_angles: */ print_angles
                                                                                , /*          dir_colours: */ dir_colours
-                                                                               , /*          filter_gids: */ gidsSet.size() ? &gidsSet : NULL
+                                                                               , /*          filter_gids: */ gidsSet.size  () ? &gidsSet: NULL
+                                                                               , /*        filter_status: */ statusSet.size() ? &statusSet : NULL
                                                                                );
     return EXIT_SUCCESS;
 } // ... Solver::show()
