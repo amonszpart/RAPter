@@ -27,7 +27,7 @@ namespace correspondence
     {
         std::cout << "pos: " << prim.template pos().transpose() << ", gtpos: " << gt_prim.template pos().transpose() << ", norm: " << (prim.template pos() - gt_prim.template pos()).norm() << std::endl;
 
-        return f.eval(extrema,   prim.template pos(),
+        return 1.- f.eval(extrema,   prim.template pos(),
                       extremagt, gt_prim.template pos(),
                       scale);
         //return (prim.template pos() - gt_prim.template pos()).norm();
