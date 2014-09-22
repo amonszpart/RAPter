@@ -774,7 +774,7 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
     // Store the primitives that have been matched and must be ignored
     // First  (key)   = candidate,
     // Second (value) = reference.
-    typedef std::set< GidLid > IgnoreListT;
+    typedef std::set< int > IgnoreListT;
     IgnoreListT ignoreList;
 
 
@@ -833,7 +833,7 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
                               << std::endl
                               << "Ignored later... " << std::endl;
 
-                    ignoreList.insert(GidLid (gid, lid));
+                    ignoreList.insert(gid);
                 }
             } //...for primitives
         } //...for patches
@@ -894,6 +894,8 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
     // old primitives and replace them by merged one.
     out_primitives = primitives;
 
+    bool merged = false;
+
     // Reference traversal
     for ( GidIt gid_it = extrema.cbegin(); gid_it != extrema.cend(); ++gid_it )
     {
@@ -908,7 +910,7 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
             GidLid refGidLid (gid0, lid0);
 
             // check if this primitives has not been merged previously
-            if (ignoreList.find(refGidLid) != ignoreList.end()) continue;
+            if (ignoreList.find(gid0) != ignoreList.end()) continue;
 
             // reference primitive
             const _PrimitiveT& prim0 = primitives.at(gid0).at(lid0);
@@ -945,7 +947,7 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
                     // bool is1Valid,
                     // calling continue is sufficient to jump to the next primitive after and merge,
                     // plus here check that a previous merge has not been recorded
-                    if (ignoreList.find(candGidLid) != ignoreList.end()) continue;
+                    if (ignoreList.find(gid1) != ignoreList.end()) continue;
 
                     const _PrimitiveT& prim1 = primitives.at(gid1).at(lid1);
 
@@ -958,8 +960,8 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
                         //std::cout << " YES" << std::endl;
 
                         // record this to detect unmerged primitives later and invalidate both primitives
-                        ignoreList.insert(candGidLid);
-                        ignoreList.insert(refGidLid);
+                        ignoreList.insert(gid0);
+                        ignoreList.insert(gid1);
 
                         merging::merge( out_primitives,     // [out] Container storing merged primitives
                                         prim0,              // [in]  First primitive (can be invalidated during the call)
@@ -970,6 +972,8 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
                                         scale,              // [in]  Working scale (for refit)
                                         max_dir_gid         // [in,out] maximum direction id
                                        );
+
+                        merged = true;
 
                         is0Valid = false;
 
@@ -987,6 +991,8 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
     // we can now remove primitives that are not assigned to any points
     processing::eraseNonAssignedPrimitives<_PrimitiveT, inner_iterator>(out_primitives, points);
 
+
+
 //    cout << "[out]: " << out_primitives.size() << endl;
 //    for ( outer_const_iterator outer_it  = out_primitives.begin();
 //          (outer_it != out_primitives.end()) ;
@@ -1002,6 +1008,7 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
     // So we check that the primitive arrays of each gid are different
     if(primitives.size() != out_primitives.size())
         return true; // we need another iteration
+
 
     typename _PrimitiveContainerT::iterator outer_itIn  =     primitives.begin();
     typename _PrimitiveContainerT::iterator outer_itOut = out_primitives.begin();
