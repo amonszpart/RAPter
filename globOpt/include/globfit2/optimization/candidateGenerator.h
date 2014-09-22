@@ -230,8 +230,10 @@ namespace GF2
                     } //...if not large
 
 #warning This does not copy promoted, remember to account for them later
-                    // copy to output, if large
-                    if ( (prim_status == _PrimitiveT::STATUS_VALUES::ACTIVE) || (prim_status == _PrimitiveT::STATUS_VALUES::SMALL) ) // don't copy promoted...
+                    // copy to output
+                    //  if first iteration: copy UNSET
+                    //  if second iteration: copy ACTIVE and SMALL, there should be no unset, except promoted, which we don't want to copy
+                    //if ( (prim_status == _PrimitiveT::STATUS_VALUES::ACTIVE) || (prim_status == _PrimitiveT::STATUS_VALUES::SMALL) ) // don't copy promoted...
                     {
                         // copy input - to keep CHOSEN tag entries, so that we can start second iteration from a selection
                         containers::add( out_lines, inner_it0->getTag( _PrimitiveT::GID ), *inner_it0 );
