@@ -26,7 +26,7 @@
      <x>0</x>
      <y>0</y>
      <width>732</width>
-     <height>25</height>
+     <height>27</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -56,9 +56,10 @@
    </widget>
    <widget class="QMenu" name="menuAnalyze">
     <property name="title">
-     <string>Analyze</string>
+     <string>Tools</string>
     </property>
     <addaction name="actionMerge_primitives"/>
+    <addaction name="actionExtrude"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuAnalyze"/>
@@ -133,6 +134,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="actionExtrude">
+   <property name="text">
+    <string>Extrude</string>
    </property>
   </action>
  </widget>

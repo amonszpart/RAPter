@@ -25,6 +25,8 @@ private slots:
 
     void on_actionLoad_Project_triggered();
 
+    void on_actionExtrude_triggered();
+
 private:
     void writeSamples(QString path);
     void writePrimitives(QString path);

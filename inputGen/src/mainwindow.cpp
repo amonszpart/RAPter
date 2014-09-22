@@ -382,6 +382,37 @@ void MainWindow::on_actionMerge_primitives_triggered()
     delete dialog;
 }
 
+
+
+void MainWindow::on_actionExtrude_triggered()
+{
+    if (_project == NULL)
+        return;
+
+    using InputGen::Application::Scalar;
+
+    bool ok;
+    double esize=
+    QInputDialog::getDouble(this,
+                            "Extrude primitives...",
+                            "Enter extrusion value",
+                            0.2,
+                            0.,
+                            10.,   //maxValue
+                            3,
+                            &ok);    //decimals
+
+    if (ok){
+        for(Project::PrimitiveContainer::iterator it1 = _project->primitives.begin();
+            it1 != _project->primitives.end(); it1++){
+            InputGen::Application::Primitive::vec2 dim = (*it1).dim();
+            dim(1) = esize;
+            (*it1).setDim(dim);
+        }
+    }
+
+}
+
 void MainWindow::on_actionSave_points_triggered()
 {
     if (_project == NULL)
