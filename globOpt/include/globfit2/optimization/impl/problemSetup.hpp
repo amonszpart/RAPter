@@ -270,6 +270,10 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
         {
             for ( size_t lid1 = 0; lid1 != prims[lid].size(); ++lid1 )
             {
+                // ignore smalls
+                if ( prims[lid][lid1].getTag( _PrimitiveT::TAGS::STATUS ) == _PrimitiveT::STATUS_VALUES::SMALL )
+                    continue;
+
                 // add var
                 int gid     = prims[lid][lid1].getTag( _PrimitiveT::TAGS::GID );
                 int dir_gid = prims[lid][lid1].getTag( _PrimitiveT::TAGS::DIR_GID );
@@ -278,7 +282,8 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
                 // store var_id for later, add binary variable
                 const int var_id = problem.addVariable( OptProblemT::BOUND::RANGE, 0.0, 1.0, OptProblemT::VAR_TYPE::INTEGER );
                 lids_varids[ IntPair(lid,lid1) ] = var_id;
-#warning "this if needs to come earlier"
+
+                // save for initial starting point
                 if ( prims[lid][lid1].getTag(_PrimitiveT::TAGS::STATUS) == _PrimitiveT::STATUS_VALUES::ACTIVE )
                     chosen_varids.insert( var_id );
             }
@@ -293,7 +298,7 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
         {
             case ProblemSetupParams<_Scalar>::CONSTR_MODE::PATCH_WISE:
                 err = problemSetup::everyPatchNeedsDirectionConstraint<_PointPrimitiveDistanceFunctor, _PrimitiveT, _PointPrimitiveT>
-                        ( problem, prims, points, lids_varids, weights, scale );
+                        ( problem, prims, points, lids_varids, weights, scale, verbose );
                 break;
 
             case ProblemSetupParams<_Scalar>::CONSTR_MODE::POINT_WISE:
@@ -353,10 +358,16 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
         {
             for ( size_t lid1 = 0; lid1 != prims[lid].size(); ++lid1 )
             {
+                if ( prims[lid][lid1].getTag( _PrimitiveT::TAGS::STATUS ) == _PrimitiveT::STATUS_VALUES::SMALL )
+                    continue;
+
                 for ( size_t olid = 0; olid != prims.size(); ++olid )
                 {
                     for ( size_t olid1 = 0; olid1 != prims[olid].size(); ++olid1 )
                     {
+                        if ( prims[olid][olid1].getTag( _PrimitiveT::TAGS::STATUS ) == _PrimitiveT::STATUS_VALUES::SMALL )
+                            continue;
+
                         // skip same line, that's always zero
                         if ( (lid == olid) && (lid1 == olid1) ) continue;
 
@@ -364,7 +375,7 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
                         if ( prims[lid][lid1].getTag(_PrimitiveT::DIR_GID) != prims[olid][olid1].getTag(_PrimitiveT::DIR_GID) )
                             dist += dir_id_bias;
                         dist *= weights(1);
-                        problem.addQObjective( lids_varids[ IntPair(lid,lid1) ], lids_varids[ IntPair(olid,olid1) ], dist );
+                        problem.addQObjective( lids_varids.at( IntPair(lid,lid1) ), lids_varids.at( IntPair(olid,olid1) ), dist );
                     } // ... olid1
                 } // ... olid
             } // ... lid1
@@ -438,6 +449,9 @@ namespace problemSetup {
             for ( size_t lid = 0; lid != prims.size(); ++lid )
                 for ( size_t lid1 = 0; lid1 != prims[lid].size(); ++lid1 )
                 {
+                    if ( prims[lid][lid1].getTag( _PrimitiveT::TAGS::STATUS ) == _PrimitiveT::STATUS_VALUES::SMALL )
+                        continue;
+
                     _Scalar dist = _PointPrimitiveDistanceFunctor::template eval<_Scalar>( points[pid], prims[lid][lid1] );
                     if ( dist < scale )
                     {
@@ -476,9 +490,9 @@ namespace problemSetup {
                                       , _PointContainerT     const& /*points*/
                                       , _AssocT              const& lids_varids
                                       , _WeightsT            const& /*weights*/
-                                      , _Scalar              const  /*scale*/ )
+                                      , _Scalar              const  /*scale*/
+                                      , bool                 const  verbose     /* = false */ )
     {
-        bool verbose = false;
         typedef typename _AssocT::key_type IntPair;
 
         int err = EXIT_SUCCESS;
@@ -489,28 +503,37 @@ namespace problemSetup {
         // for all patches
         for ( size_t lid = 0; lid != prims.size(); ++lid )
         {
+            bool non_zero_line = false;
+
             // init row to 0
             std::fill( coeffs.begin(), coeffs.end(), 0 );
 
             // add 1 for each direction patch -> at least one direction has to be chosen for this patch
             for ( size_t lid1 = 0; lid1 != prims[lid].size(); ++lid1 )
             {
+                if ( prims[lid][lid1].getTag( _PrimitiveT::TAGS::STATUS ) == _PrimitiveT::STATUS_VALUES::SMALL )
+                    continue;
+
                 if ( verbose && (lid1 == 0) ) std::cout << "[" << __func__ << "]: " << "Constraining " << prims[lid][lid1].getTag( _PrimitiveT::GID ) << " to choose one of ";
                 coeffs[ /* varid: */ lids_varids.at(IntPair(lid,lid1)) ] = 1.0;
+                non_zero_line = true;
                 if ( verbose ) std::cout << prims[lid][lid1].getTag( _PrimitiveT::DIR_GID ) << ", ";
             }
             if ( verbose )std::cout << " directions";
 
-            // unique insertion
-            unsigned prev_size = uniqueA.size(); // store prev set size to check for unique insert
-            uniqueA.insert( coeffs );            // insert into set
-            if ( uniqueA.size() > prev_size )    // if line was unique, add to problem
+            if ( non_zero_line )
             {
-                problem.addLinConstraint( _OptProblemT::BOUND::GREATER_EQ, 1, problem.getINF(), coeffs ); // 1 <= A( lid, : ) * X <= INF
-                if  ( verbose )     std::cout << " ADDED\n";
+                // unique insertion
+                unsigned prev_size = uniqueA.size(); // store prev set size to check for unique insert
+                uniqueA.insert( coeffs );            // insert into set
+                if ( uniqueA.size() > prev_size )    // if line was unique, add to problem
+                {
+                    problem.addLinConstraint( _OptProblemT::BOUND::GREATER_EQ, 1, problem.getINF(), coeffs ); // 1 <= A( lid, : ) * X <= INF
+                    if  ( verbose )     std::cout << " ADDED\n";
+                }
+                else
+                    if ( verbose )          std::cout << " IGNORED\n";
             }
-            else
-                if ( verbose )          std::cout << " IGNORED\n";
         } // ... for each patch
 
         return err;
@@ -541,6 +564,9 @@ namespace problemSetup {
                                        , int                  const  pop_limit
                                        , bool                 const  verbose )
     {
+        std::cerr << "[" << __func__ << "]: " << "don't use this" << std::endl;
+        throw new std::runtime_error("don't use largePatchesNeedDirectionConstraint");
+
         typedef typename _AssocT::key_type      IntPair;        // <lid,lid1> pair to retrieve the linear index of a variable in the problem using lids_varids
         typedef typename _OptProblemT::Scalar   ProblemScalar;  // Scalar in OptProblem, usually has to be double because of the implementation
         typedef std::vector<ProblemScalar>      RowInA;         // "A" is the constraint matrix
@@ -665,6 +691,9 @@ namespace problemSetup {
         {
             for ( size_t lid1 = 0; lid1 != prims[lid].size(); ++lid1 )
             {
+                if ( prims[lid][lid1].getTag( _PrimitiveT::TAGS::STATUS ) == _PrimitiveT::STATUS_VALUES::SMALL )
+                    continue;
+
                 // unary cost
                 {
                     unsigned cnt = 0;
@@ -719,13 +748,16 @@ namespace problemSetup {
 
         int err = EXIT_SUCCESS;
 
-        // INSTANCES // added 17/09/2014 by Aron
-#warning TODO: remove small patches from this count
-#warning TODO: FIX THIS: don't count all candidates, just the input!!
+        // INSTANCES
+        // added 17/09/2014 by Aron
+        // modified 22/09/2014 by Aron
         std::map< int, int > dir_instances;
         for ( size_t lid = 0; lid != prims.size(); ++lid )
             for ( size_t lid1 = 0; lid1 != prims[lid].size(); ++lid1 )
             {
+                if ( prims[lid][lid1].getTag( _PrimitiveT::TAGS::STATUS ) != _PrimitiveT::STATUS_VALUES::ACTIVE )
+                    continue;
+
                 ++dir_instances[ prims[lid][lid1].getTag(_PrimitiveT::DIR_GID) ];
             }
 
@@ -744,6 +776,9 @@ namespace problemSetup {
             // for each direction
             for ( size_t lid1 = 0; lid1 != prims[lid].size(); ++lid1 )
             {
+                if ( prims[lid][lid1].getTag( _PrimitiveT::TAGS::STATUS ) == _PrimitiveT::STATUS_VALUES::SMALL )
+                    continue;
+
                 // point count for normalization
                 unsigned cnt = 0;
                 // data-cost coefficient (output)
@@ -772,8 +807,10 @@ namespace problemSetup {
 
                     std::cout << "[" << __func__ << "]: " << "changed " << coeff << " to ";
                     if ( dir_instances[dir_gid] > 0 )
-                        coeff *= freq_weight * _Scalar(1.) / _Scalar(dir_instances[dir_gid]);
-#warning TODO: remove small patches from this count
+                        coeff *= freq_weight / _Scalar(dir_instances[dir_gid]);
+                    else
+                        coeff *= freq_weight;
+
                     std::cout << coeff << " since dirpop: " << dir_instances[dir_gid] << std::endl;
                 }
 

@@ -270,13 +270,25 @@ Solver::solve( int    argc
                 _PrimitiveContainerT out_prims( 1 );
                 int prim_id = 0;
                 for ( size_t l = 0; l != prims.size(); ++l )
-                    for ( size_t l1 = 0; l1 != prims[l].size(); ++l1, ++prim_id )
+                    for ( size_t l1 = 0; l1 != prims[l].size(); ++l1 )
                     {
-                        if ( int(round(x_out[prim_id])) > 0 )
+                        if ( prims[l][l1].getTag( _PrimitiveT::TAGS::STATUS ) == _PrimitiveT::STATUS_VALUES::SMALL )
                         {
-                            std::cout << "saving " << prims[l][l1].getTag(_PrimitiveT::GID) << ", " << prims[l][l1].getTag(_PrimitiveT::DIR_GID) << ", X: " << x_out[prim_id] << "\t, ";
-                            prims[l][l1].setTag( _PrimitiveT::TAGS::STATUS, _PrimitiveT::STATUS_VALUES::ACTIVE );
+                            // copy small, keep for later iterations
                             out_prims.back().push_back( prims[l][l1] );
+                        }
+                        else
+                        {
+                            // copy to output, only, if chosen
+                            if ( int(round(x_out[prim_id])) > 0 )
+                            {
+                                std::cout << "saving " << prims[l][l1].getTag(_PrimitiveT::GID) << ", " << prims[l][l1].getTag(_PrimitiveT::DIR_GID) << ", X: " << x_out[prim_id] << "\t, ";
+                                prims[l][l1].setTag( _PrimitiveT::TAGS::STATUS, _PrimitiveT::STATUS_VALUES::ACTIVE );
+                                out_prims.back().push_back( prims[l][l1] );
+                            }
+
+                            // increment non-small primitive ids
+                            ++prim_id;
                         }
                     } // ... for l1
                 std::cout << std::endl;

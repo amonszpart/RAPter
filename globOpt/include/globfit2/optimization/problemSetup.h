@@ -56,7 +56,8 @@ namespace GF2
                                           , _PointContainerT     const& /*points*/
                                           , _AssocT              const& lids_varids
                                           , _WeightsT            const& /*weights*/
-                                          , _Scalar              const  /*scale*/ );
+                                          , _Scalar              const  /*scale*/
+                                          , bool                 const  verbose = false );
 
         //! \brief                      Hybrid mode, large patches need one direction, points in small patches need to be assigned to one.
         //! \tparam _PrimitiveT         Concept: _PrimitiveContainerT::value_type::value_type
