@@ -26,7 +26,7 @@ namespace GF2
 
             enum STATUS_VALUES { ACTIVE = 1 //!< Used to show, that this primitive is active. Also used as starting point in \ref GF2::Solver.
                                , SMALL  = 2 //!< Used to show, that this primitive is *not* active, but needs to be kept for later use, so copied to output everywhere.
-                             /*, UNSET  = -1 */ // implicit from Taggable implementation
+                               , UNSET  = ::GF2::Taggable::TAG_UNSET
                                };
             //! \brief Defines the tags (ids) that this primitive can manage using setTag and getTag functions.
             enum TAGS {
