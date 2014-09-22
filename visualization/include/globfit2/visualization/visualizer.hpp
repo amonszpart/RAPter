@@ -149,7 +149,6 @@ namespace GF2
                 {
                     continue;
                 }
-                std::cout << "keeping pid " << pid << ", pointgid: " << point_gid << std::endl;
 
                 MyPoint pnt;
                 pnt.x = ((Eigen::Matrix<_Scalar,3,1> )points[pid])(0); // convert PointPrimitive to Eigen::Matrix, and get (0)
@@ -192,6 +191,8 @@ namespace GF2
         // count populations
         GidIntMap populations; // populations[patch_id] = all points with GID==patch_id
         processing::calcPopulations( populations, points );
+
+        Eigen::Matrix<_Scalar,Eigen::Dynamic,1> area(1,1);
 
         for ( size_t lid = 0; lid != primitives.size(); ++lid )
             for ( size_t lid1 = 0; lid1 != primitives[lid].size(); ++lid1 )
@@ -243,11 +244,19 @@ namespace GF2
                                                           );
                 vptr->setShapeRenderingProperties( pcl::visualization::PCL_VISUALIZER_LINE_WIDTH, 4.0, line_name, 0 );
 
-                // add line size
+                // store line size in "area"
+                if ( show_pop || show_ids )
+                {
+                    primitives[lid][lid1].getSpatialSignificance( /* [out] sqrt(max(eigval)): */ area
+                                                                , /* [in]             points: */ points
+                                                                , /* [in]              scale: */ scale );
+                }
+
                 if ( show_pop && !lid1 ) // only once per cluster
                 {
                     char popstr[255];
-                    sprintf( popstr, "%d", populations[gid] );
+                    //sprintf( popstr, "%d", populations[gid] );
+                    sprintf( popstr, "%2.4f", area(0) );
                     vptr->addText3D( popstr, pclutil::asPointXYZ( primitives[lid][lid1].template pos() )
                                      , 0.015, prim_colour(0), prim_colour(1), prim_colour(2), line_name + std::string("_pop"), 0 );
                 }
@@ -257,7 +266,7 @@ namespace GF2
                 {
                     char gid_name[255],gid_text[255];
                     sprintf( gid_name, "primgid%d_%d", gid, dir_gid  );
-                    sprintf( gid_text, "(%d),%d,%d", populations[gid], gid, dir_gid );
+                    sprintf( gid_text, "(%2.4f),%d,%d", area(0), gid, dir_gid );
                     Eigen::Matrix<_Scalar,3,1> pos = primitives[lid][lid1].template pos();// + (Eigen::Matrix<_Scalar,3,1>() << scale, scale, 0.).finished();
                     vptr->addText3D( gid_text
                                    , pclutil::asPointXYZ( pos )
