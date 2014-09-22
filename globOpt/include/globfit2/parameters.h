@@ -86,6 +86,11 @@ namespace GF2 {
              */
             SmallPatchesMode small_mode = IGNORE;
 
+            /*! \brief Decides, what primitive counts as small. Usually a multiple of scale (4x..0.1x)
+             */
+            _Scalar          small_thresh_mult = 10.f;
+
+
             //_____________________________________________
             //____________________Parsers__________________
             //_____________________________________________

@@ -278,6 +278,7 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
                 // store var_id for later, add binary variable
                 const int var_id = problem.addVariable( OptProblemT::BOUND::RANGE, 0.0, 1.0, OptProblemT::VAR_TYPE::INTEGER );
                 lids_varids[ IntPair(lid,lid1) ] = var_id;
+#warning "this if needs to come earlier"
                 if ( prims[lid][lid1].getTag(_PrimitiveT::TAGS::STATUS) == _PrimitiveT::STATUS_VALUES::ACTIVE )
                     chosen_varids.insert( var_id );
             }

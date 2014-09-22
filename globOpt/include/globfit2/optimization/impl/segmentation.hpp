@@ -273,7 +273,7 @@ Segmentation::patchify( _PrimitiveContainerT                   & patches
                 containers::add( patches, gid, toAdd /*groups[gid].getRepresentative()*/ )
                         .setTag( _PrimitiveT::TAGS::GID    , gid )
                         .setTag( _PrimitiveT::TAGS::DIR_GID, gid )
-                        .setTag( _PrimitiveT::TAGS::STATUS , _PrimitiveT::STATUS_VALUES::ACTIVE ); // set to active, "large" patch
+                        .setTag( _PrimitiveT::TAGS::STATUS , _PrimitiveT::STATUS_VALUES::UNSET ); // set to unset, so that candidategenerator can set it to proper value
             }
         }
         else
