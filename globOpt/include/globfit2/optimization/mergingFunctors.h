@@ -100,8 +100,6 @@ private:
         // 3. Check if p1 extrema y coordinate are all included in [-scale,scale]
         // 4. Check if at least one extrema is included in the finite plane p0 (according to its extrema)
 
-        // \todo
-
 
         // 1. Compute p0 local frame
         //  - build a local copy p0local centered in 0 and oriented with updirection=y
@@ -129,33 +127,30 @@ private:
         // 4. Check if at least one extrema is included in the finite plane p0 (according to its extrema)
         _PointContainerT extrema0local = extrema0;
         std::for_each(extrema0local.begin(), extrema0local.end(), transform);
-        // \todo
+
 
         // The computation of the local frame direction (f1, f2) is hardcoded wrt to the
         // order of the extrema computed in PlanePrimitive::getExtent
         //
         // Here we compute f1, f2, directions of the normal frame (1 coordinate shoud be = 0, we work in the plane frame)
-        // sqrhw,sqrhh are computed form the finite plane width and height (w,h) respectively as sqrhw = (w/2) ** 2
+        // and hw, hh the dimensions of the planes is those directions, extended by scale.
         // center is the middle of the finite plane
         PointT f1 = (extrema0local[1]-extrema0local[0]);
         PointT f2 = (extrema0local[2]-extrema0local[1]);
-        _Scalar hw = f1.norm() / _Scalar(2.); f1.normalized();
-        _Scalar hh = f2.norm() / _Scalar(2.); f2.normalized();
-        //_Scalar sqrhw = w*w;
-       // _Scalar sqrhh = h*h;
-        PointT centerlocal (PointT::Zero());
-        std::for_each(extrema0local.begin(), extrema0local.end(), [&centerlocal] (PointT& p){ centerlocal+=p; });
-        centerlocal /= _Scalar(extrema0local.size());
-        // here we project p-center over the two basis axis and check the norm of the projected vector
-        // is < to the
-        auto isOutFinitePlane = [&f1, &f2, &hw, &hh, &centerlocal] (const PointT& p){
-            return  (std::abs((p-centerlocal).dot(f1)) > hw) &&
-                    (std::abs((p-centerlocal).dot(f2)) > hh);
-        };
-        it = std::find_if(extrema1local.begin(), extrema1local.end(), isOutFinitePlane);
-        if (it != extrema0local.end()) return false;
+        _Scalar hw = scale + f1.norm() / _Scalar(2.); f1.normalize();
+        _Scalar hh = scale + f2.norm() / _Scalar(2.); f2.normalize();
 
-        return true;
+        // here we project p over the two basis axis and check the norm of the projected vector
+        // is < to the plane dimensions (hh,hw)
+        auto isInFinitePlane = [&f1, &f2, &hw, &hh] (const PointT& p){
+            return  (std::abs((p).dot(f1)) <= hw) &&
+                    (std::abs((p).dot(f2)) <= hh);
+        };
+        // run the test on the coordinates of the second plane, expressed in the coordinate
+        // system of the first. We merge is at least one of this coordinate is inside the
+        // plane.
+        it = std::find_if(extrema1local.begin(), extrema1local.end(), isInFinitePlane);
+        return  it != extrema1local.end(); // true if we found someone
     }
 
 public:
