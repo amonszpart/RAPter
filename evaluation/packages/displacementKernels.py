@@ -62,13 +62,19 @@ class NormalRandomDisplacementKernel(DisplacementKernel):
         #self._ctor_param['momtype'] = 0
     
     def _pdf(self, x):
-        mean  = self._ctor_param['paramList'][1]
-        stdev = self._ctor_param['paramList'][0]
+        mean  = self.mean()
+        stdev = self.stdev()
         
         #print 'did you call me ?'
 
         #http://www.cplusplus.com/reference/random/normal_distribution/
         return 1./(stdev* math.sqrt(2.*math.pi)) * np.exp(-pow((x-mean),2)/(2.*stdev*stdev))
+        
+    def mean(self): 
+        return self._ctor_param['paramList'][1]
+        
+    def stdev(self): 
+        return self._ctor_param['paramList'][0]
             
 
 class BiasDisplacementKernel(DisplacementKernel):
