@@ -35,6 +35,15 @@ namespace containers {
         return ( *prims[gid].find(primitive) );
     }
 
+    // vector
+    template <class _InnerT> static inline
+    _InnerT& add( std::vector<_InnerT> &container, _InnerT const& value )
+    {
+        container.push_back( value );
+
+        return container.back();
+    }
+
     // vector< vector >::const_iterator
     template <class _PrimitiveT> static inline
     typename std::vector<_PrimitiveT> const&

@@ -44,7 +44,7 @@ namespace GF2 {
         } //...calcPopulation
 
         /*! \brief Calculate the number of points that are assigned to a GID (group id).
-        *   \tparam                 Concept: std::map< int, std::set<int> >. Key: GID, value: list of point ids that have that GID. (\#points assigned to a group id (GID).
+        *   \tparam _GidIntSetMap   Concept: std::map< int, std::set<int> >. Key: GID, value: list of point ids that have that GID. (\#points assigned to a group id (GID).
         *   \param[out] populations Contains an int value for each GID that occurred in points. The value is the count, how many points had this GID.
         *   \param[in]  points      The points containing gids retrievable by \code points[pid].getTag( _PointPrimitiveT::GID ) \endcode.
         *   \return                 EXIT_SUCCESS
@@ -61,6 +61,31 @@ namespace GF2 {
             }
 
             return EXIT_SUCCESS;
+        } //...getPopulations
+
+        /*! \brief Calculate the number of points that are assigned to the GID (group id).
+         *
+         *  \tparam _PidContainerT  Concept: vector<int>: list of point ids that have that GID \p gid. (\#points assigned to a group id (GID).
+         *
+         *  \param[out] population  Contains an int value for the GID \p gid that occurred in points. The value is the count, how many points has this GID \p gid.
+         *  \param[in]  gid         The group id to look for.
+         *  \param[in]  points      The points containing gids retrievable by \code points[pid].getTag( _PointPrimitiveT::GID ) \endcode.
+         *  \return                 Number of points assigned to \p gid.
+         */
+        template <class _PidContainerT, class _PointContainerT > inline int
+        getPopulationOf( _PidContainerT & population, int const gid, _PointContainerT const& points )
+        {
+            typedef typename _PointContainerT::value_type _PointPrimitiveT;
+
+            // loop over points
+            for ( size_t pid = 0; pid != points.size(); ++pid )
+            {
+                // if assigned to gid, push_back pid
+                if ( points[pid].getTag( _PointPrimitiveT::GID ) == gid )
+                    containers::add( population, static_cast<int>(pid) );
+            } //...for points
+
+            return population.size();
         } //...getPopulations
 
         /*! \brief Adds angles from generator to in/out vector \p angles.
@@ -687,9 +712,55 @@ namespace GF2 {
         {
 
             template <typename PairT>
-            struct SortFunctor {
-                    bool operator()( PairT const& a, PairT const& b ) { return a.first > b.first; }
+            struct AbsDecrSortFunctor {
+                    bool operator()( PairT const& a, PairT const& b ) { return std::abs(a.first) > std::abs(b.first); }
             }; // > means biggest first
+        }
+
+        template <class _IndicesContainerT, typename Scalar, class _PointContainerT> inline int
+        eigenDecomposition( Eigen::Matrix<Scalar,3,1> & eigen_values
+                          , Eigen::Matrix<Scalar,3,3> & eigen_vectors
+                          , _PointContainerT     const& points
+                          , _IndicesContainerT        * indices             = NULL
+                          , Eigen::Matrix<Scalar,3,1> * out_centroid_arg    = NULL
+                          , Eigen::Matrix<Scalar,3,3> * out_covariance_arg  = NULL )
+        {
+
+            Eigen::Matrix<Scalar,3,1> centroid = processing::getCentroid<Scalar>( points, indices );
+            Eigen::Matrix<Scalar,3,3> covariance;
+            processing::computeCovarianceMatrix< /* _WeightsContainerT */ std::vector<int>, _IndicesContainerT >( covariance, points, centroid, /* indices: */ indices, /* weights: */ NULL );
+
+            // eigen decomposition
+            Eigen::SelfAdjointEigenSolver<Eigen::Matrix<Scalar,3,3> > eigen_solver( covariance, Eigen::ComputeEigenvectors );
+
+            // sort in decreasing order
+            {
+                typedef std::pair< Scalar, int > EigValEigVecIdT; //first: eigen value, second: id of eigen vector
+                std::vector<EigValEigVecIdT> sorted( 3 );
+                sorted[0] = EigValEigVecIdT( eigen_solver.eigenvalues()(0), 0 );
+                sorted[1] = EigValEigVecIdT( eigen_solver.eigenvalues()(1), 1 );
+                sorted[2] = EigValEigVecIdT( eigen_solver.eigenvalues()(2), 2 );
+                std::sort( sorted.begin(), sorted.end(), pca::AbsDecrSortFunctor<EigValEigVecIdT>() );
+
+                eigen_values     (0) = sorted[0].first;
+                eigen_values     (1) = sorted[1].first;
+                eigen_values     (2) = sorted[2].first;
+                eigen_vectors.col(0) = eigen_solver.eigenvectors().col( sorted[0].second );
+                eigen_vectors.col(1) = eigen_solver.eigenvectors().col( sorted[1].second );
+                eigen_vectors.col(2) = eigen_solver.eigenvectors().col( sorted[2].second );
+            }
+
+            if (    (std::abs(eigen_values(1)) > std::abs(eigen_values(0)) )
+                 || (std::abs(eigen_values(2)) > std::abs(eigen_values(0)) )
+                 || (std::abs(eigen_values(2)) > std::abs(eigen_values(1)) ) )
+                throw new std::runtime_error("eigen values not sorted decreasingly...");
+
+            if ( out_centroid_arg )
+                *out_centroid_arg = centroid; // TODO: don't copy
+            if ( out_covariance_arg )
+                *out_covariance_arg = covariance; // TODO: don't copy
+
+            return EXIT_SUCCESS;
         }
 
         /*! \brief Computes a column-wise 3D frame and a centroid in a 4,4 matrix.
@@ -721,7 +792,7 @@ namespace GF2 {
             sorted[0] = PairT( eigen_solver.eigenvalues()(0), eigen_vectors.col(0) );
             sorted[1] = PairT( eigen_solver.eigenvalues()(1), eigen_vectors.col(1) );
             sorted[2] = PairT( eigen_solver.eigenvalues()(2), eigen_vectors.col(2) );
-            std::sort( sorted.begin(), sorted.end(), pca::SortFunctor<PairT>() );
+            std::sort( sorted.begin(), sorted.end(), pca::AbsDecrSortFunctor<PairT>() ); // TODO: use eigenDecomp instead
 
             // orthogonalize
             eigen_vectors.col(2) = eigen_vectors.col(0).cross( eigen_vectors.col(1) );

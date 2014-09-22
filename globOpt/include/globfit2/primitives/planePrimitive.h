@@ -3,8 +3,7 @@
 
 #include <Eigen/Dense>
 #include "globfit2/primitives/primitive.h"
-//#include "pcltools/util.hpp"
-#include "globfit2/processing/util.hpp" // pca
+#include "globfit2/processing/util.hpp" // pca, getPopulationOf()
 
 #ifdef GF2_USE_PCL
 #   include "pcl/ModelCoefficients.h"
@@ -94,7 +93,7 @@ namespace GF2
                 // copy direction id from the other
                 out.setTag( DIR_GID, other.getTag(DIR_GID) );
                 // erase chosen tag - this is a new candidate
-                out.setTag( STATUS, TAG_UNSET );
+                out.setTag( STATUS, UNSET );
 
                 return true;
             } //...generateFrom
@@ -298,6 +297,49 @@ namespace GF2
                 return exit_FAILURE;
 #           endif //...GF2_USE_PCL
             } //...getExtent()
+
+            /*! \brief Calculates size, a bit smarter, than taking the area of #getExtent().
+             *  \tparam MatrixDerived   Concept: Eigen::Matrix<_Scalar,-1,1>.
+             */
+            template <typename MatrixDerived, typename _Scalar, class _PointContainerT > inline
+            MatrixDerived& getSpatialSignificance( MatrixDerived& in, _PointContainerT const& points, _Scalar const /*scale*/, bool return_squared = false ) const
+            {
+                // TODO: move this outside, it's suboptimal...
+                std::vector<int> population;
+                processing::getPopulationOf( population, this->getTag(GID), points );
+
+                if ( !population.size() )
+                {
+                    std::cerr << "[" << __func__ << "]: " << "_____________NO points in primitive!!!!_____________" << std::endl;
+                    in.setConstant( _Scalar(-1.) );
+                }
+                in.setConstant( _Scalar(0.) );
+
+#if 1 // biggest eigen value
+                Eigen::Matrix<_Scalar,3,1> eigen_values;
+                Eigen::Matrix<_Scalar,3,3> eigen_vectors;
+                processing::eigenDecomposition( eigen_values, eigen_vectors, points, &population );
+                if ( return_squared )
+                    in(0) = eigen_values( 0 );
+                else
+                    in(0) = std::sqrt( eigen_values(0) );
+#else // variance
+                Eigen::Matrix<_Scalar,3,1> centroid = processing::getCentroid<_Scalar>( points, &population );
+                for ( size_t pid_id = 0; pid_id != population.size(); ++pid_id )
+                {
+                    const int pid = population[pid_id];
+                    std::cout << "[" << __func__ << "]: " << "\tadding " \
+                    "points[" << pid <<"].pos() (" << points[pid].template pos().transpose()
+                              << " - " << centroid.transpose() << ").squaredNorm(): "
+                              << (points[pid].template pos() - centroid).squaredNorm() << "\n";
+                    in(0) += (points[pid].template pos() - centroid).squaredNorm();
+                    std::cout << "\tin0 is now " << in(0) << std::endl;
+                }
+                in(0) /= _Scalar( population.size() );
+#endif
+
+                return in;
+            } //...getSpatialSignificance()
 
             // ____________________DRAWING____________________
 #ifdef GF2_USE_PCL
