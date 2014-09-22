@@ -44,6 +44,8 @@ def setupHistogramUI(distribution, title, c1, c2, pdf=None):
     ax1.plot(x, mpdf, linewidth=3, color=c1)
     ax1.fill_between(x, mpdf, 0, color=c2 )
     
+    print title," sigma = ",sigma
+    
 
 def setupComparisonUI(distrib1, title1, c1, 
                       distrib2, title2, c2,
@@ -60,8 +62,8 @@ def setupComparisonUI(distrib1, title1, c1,
     if kernel != None:
       ax1.plot(x, kernel.cdf(x), color=c3, linestyle='--')
       
-      print 'Analyzing ',title1,': ',kstest(distrib1, kernel.cdf, mode='asymp')
-      print 'Analyzing ',title2,': ',kstest(distrib2, kernel.cdf, mode='asymp')
+      #print 'Analyzing ',title1,': ',kstest(distrib1, kernel.cdf, mode='asymp')
+      #print 'Analyzing ',title2,': ',kstest(distrib2, kernel.cdf, mode='asymp')
     
     
     
