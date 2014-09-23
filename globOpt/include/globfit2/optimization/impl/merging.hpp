@@ -212,10 +212,12 @@ Merging::mergeCli( int argc, char** argv )
     //auto decideMergeFunct = *(params.is3D ? ((void*)(&(DecideMergePlaneFunctor))) : ((void*)(&(DecideMergeLineFunctor()))));
     //
     // nico: This is ugly, but I didn't find a nice way to handle that (something like lazy type evaluation)
+    bool preserveSmallPatches = ! params.do_adopt;
+
     if (params.is3D){
     while(
           mergeSameDirGids<_PrimitiveT, _PointPrimitiveT, typename PrimitiveMapT::mapped_type::const_iterator>
-          ( *out, points, *in, params.scale, params.spatial_threshold_mult * params.scale, params.parallel_limit, patchPatchDistFunct, DecideMergePlaneFunctor() ))
+          ( *out, points, *in, params.scale, params.spatial_threshold_mult * params.scale, params.parallel_limit, patchPatchDistFunct, DecideMergePlaneFunctor(), preserveSmallPatches ))
     {
         PrimitiveMapT* tmp = out;
         out = in;
@@ -224,7 +226,7 @@ Merging::mergeCli( int argc, char** argv )
     }else {// 2D
         while(
               mergeSameDirGids<_PrimitiveT, _PointPrimitiveT, typename PrimitiveMapT::mapped_type::const_iterator>
-              ( *out, points, *in, params.scale, params.spatial_threshold_mult * params.scale, params.parallel_limit, patchPatchDistFunct, DecideMergeLineFunctor() ))
+              ( *out, points, *in, params.scale, params.spatial_threshold_mult * params.scale, params.parallel_limit, patchPatchDistFunct, DecideMergeLineFunctor(), preserveSmallPatches ))
         {
             PrimitiveMapT* tmp = out;
             out = in;
@@ -342,10 +344,16 @@ int Merging::adoptPoints( _PointContainerT          & points
             const int point_gid = points[pid].getTag(_PointPrimitiveT::GID);
             typename _PrimitiveContainerT::const_iterator it = prims.find( point_gid );
 
+            // try to find if at least one of the primitive of the group is big
+            // if is not the case, we can potentially re-assign
+            auto isBigPatch = [] (const _PrimitiveT& prim) { return prim.getTag(_PrimitiveT::STATUS) != _PrimitiveT::STATUS_VALUES::SMALL; };
+
             if (    ( it == prims.end()                            )    // the patch this point is assigned to does not exist
-                 || ( !containers::valueOf<_PrimitiveT>(it).size() )    // the patch this point is assigned to is empty (no primitives in it)
-                 /*|| ( populations[(it)->first].size() < poplimit   )*/ )  // the patch this point is assigned to is too small
+                 || ( !containers::valueOf<_PrimitiveT>(it).size()      // the patch this point is assigned to is empty (no primitives in it)
+                 || std::find_if((*it).second.begin(), (*it).second.end(), isBigPatch) == (*it).second.end()) // there is no big patch in the group
+               )  // the patch this point is assigned to is too small
             {
+
                 // We here have an orphan, so we need to iterate over all primitives and get the closest distance < scale
                 _Scalar  minDist = std::numeric_limits<_Scalar>::max();
                 int      minGid  = -1;
@@ -360,7 +368,7 @@ int Merging::adoptPoints( _PointContainerT          & points
                         const int gid = (*it2).getTag(_PrimitiveT::GID);
 
                         // if large patch found
-                        if ( populations[gid].size() > poplimit )
+                        if ( (*it2).getTag(_PrimitiveT::STATUS) != _PrimitiveT::STATUS_VALUES::SMALL)
                         {
                             if ( extremaMap.find(GidLid(gid,lid)) == extremaMap.end() )
                             {
@@ -371,7 +379,6 @@ int Merging::adoptPoints( _PointContainerT          & points
                                         , populations[gid].size() ? &(populations[gid]) : NULL );
                             }
 
-#warning TODO: !!!should this not be changed to segment distance?
                             _Scalar dist = distFunctor.eval( extremaMap[ GidLid(gid,lid) ], *it2, pos );
 
                             // store minimum distance
@@ -760,7 +767,8 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
                              , _Scalar                     const  spatial_threshold
                              , _Scalar                     const  parallel_limit
                              , _PatchPatchDistanceFunctorT const& patchPatchDistFunct
-                             , _PrimitiveDecideMergeFunctorT const& primitiveDecideMergeFunct  )
+                             , _PrimitiveDecideMergeFunctorT const& primitiveDecideMergeFunct
+                             , bool preserveSmallPatches  )
 {
     typedef typename _PrimitiveContainerT::const_iterator      outer_const_iterator;
     typedef           std::vector<Eigen::Matrix<_Scalar,3,1> > ExtremaT;
@@ -1003,7 +1011,7 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
     typedef typename _PrimitiveContainerT::mapped_type::iterator inner_iterator;
 
     // we can now remove primitives that are not assigned to any points
-    processing::eraseNonAssignedPrimitives<_PrimitiveT, inner_iterator>(out_primitives, points);
+    processing::eraseNonAssignedPrimitives<_PrimitiveT, inner_iterator>(out_primitives, points, preserveSmallPatches);
 
 
 
