@@ -48,9 +48,9 @@ else
 fi
 
 anglegens="90"; # Desired angle generators in degrees. Default: 90.
-nbExtraIter=3;  # iteration count. Default: 2.
+nbExtraIter=5;  # iteration count. Default: 2.
 dirbias="0";	# not-same-dir-id cost offset. Default: 0. Don't use, if freqweight is on.
-freqweight="0.5"; # dataterm = (freqweight / #instances) * datacost. Default: 0. 1 might be too strong...todo
+freqweight="1"; # dataterm = (freqweight / #instances) * datacost. Default: 0. 1 might be too strong...todo
 adopt="0";      # Adopt points argument. Default: 0
 # In candidate generation, divide angle limit with this to match copies. Default: 1. Set to 10, if too many candidates (variables).
 cand_anglediv="1";# for 3D: "2.5";
@@ -63,6 +63,7 @@ iterationConstrMode="patch" # what to add in the second iteration formulate. Def
 premerge=0
 startAt=0
 smallThresh="10" # smallThresh * scale is the small threshold
+smallThreshlimit="1"
 
 
 echo "scale: $scale"
@@ -161,10 +162,12 @@ my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p pri
 
 for c in $(seq 1 $nbExtraIter)
 do
+    
     smallThresh=$(($smallThresh / 2))
-    if [ $c -eq $nbExtraIter ]; then
-        echo "here, c: $c"
-        smallThresh=2
+    
+    if [ $smallThresh -lt $smallThreshlimit ]; then
+        smallThresh=$smallThreshlimit
+        adopt="1"
     fi
 
     echo "smallThreshMult: " $smallThresh
