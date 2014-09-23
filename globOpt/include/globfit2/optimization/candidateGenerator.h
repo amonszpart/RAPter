@@ -204,7 +204,7 @@ namespace GF2
                          || (prim_status == _PrimitiveT::STATUS_VALUES::UNSET) )    // first ranking has to be done, since this is first iteration patchify output
                     {
                         // Promote: check, if patch is large by now
-                        if ( prim.getSpatialSignificance( spatialSignif, points, scale)(0) > smallThresh )
+                        if ( prim.getSpatialSignificance( spatialSignif, points, scale, &(populations[gid]))(0) >= smallThresh )
                         {
                             std::cout << "promoting " << spatialSignif(0) << std::endl;
                             // store primitives, that have just been promoted to large from small
@@ -218,9 +218,8 @@ namespace GF2
                         {
                             std::cout << "demoting" << spatialSignif(0) << std::endl;
                             prim.setTag( _PrimitiveT::STATUS, _PrimitiveT::STATUS_VALUES::SMALL );
-
                         }
-                        else
+                        else if (prim_status != _PrimitiveT::STATUS_VALUES::SMALL) // this should only happen in the first iteration
                         {
                             std::cout << "large patch( status: " << prim_status << "): " << spatialSignif(0) << std::endl;
                         }
@@ -396,10 +395,12 @@ namespace GF2
                             //cand0.setTag( _PrimitiveT::DIR_GID, prim1.getTag(_PrimitiveT::DIR_GID) ); // recently changed this from GID
 
                             // debug - show here, that promote worked
+#if 0
                             {
                                 if ( (prim0.getTag(_PrimitiveT::STATUS) != _PrimitiveT::STATUS_VALUES::ACTIVE) || (prim1.getTag(_PrimitiveT::STATUS) != _PrimitiveT::STATUS_VALUES::ACTIVE) )
                                     std::cout << "possible promote. cand0.pos = prim0(" << prim0.getTag(_PrimitiveT::STATUS) << ").pos, cand0.dir = prim1(" << prim1.getTag(_PrimitiveT::STATUS)<< ").dir()\n";
                             }
+#endif
 
                             // This is a new candidate, make sure formulate knows that
                             cand0.setTag( _PrimitiveT::STATUS, _PrimitiveT::STATUS_VALUES::UNSET );
@@ -431,10 +432,12 @@ namespace GF2
                             //cand1.setTag( _PrimitiveT::DIR_GID, prim0.getTag(_PrimitiveT::DIR_GID) );
 
                             // debug - show here, that promote worked
+#if 0
                             {
                                 if ( (prim0.getTag(_PrimitiveT::STATUS) != _PrimitiveT::STATUS_VALUES::ACTIVE) || (prim1.getTag(_PrimitiveT::STATUS) != _PrimitiveT::STATUS_VALUES::ACTIVE) )
                                     std::cout << "possible promote. cand1.pos = prim1(" << prim1.getTag(_PrimitiveT::STATUS) << ").pos, cand1.dir = prim0(" << prim0.getTag(_PrimitiveT::STATUS)<< ").dir()\n";
                             }
+#endif
 
                             // This is a new candidate, make sure formulate knows that
                             cand1.setTag( _PrimitiveT::STATUS, _PrimitiveT::STATUS_VALUES::UNSET );

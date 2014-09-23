@@ -208,6 +208,7 @@ namespace GF2
                     const int pid = inliers[ pid_id ];
                     on_plane_cloud.push_back( _PointPrimitiveT(this->projectPoint(cloud[pid].template pos()), cloud[pid].template dir()) );
                 }
+
 #if 0
                 // debug
                 {
@@ -245,7 +246,7 @@ namespace GF2
                 Eigen::Matrix<Scalar,4,4> frame; // 3 major vectors as columns, and the fourth is the centroid
                 {
                     processing::PCA<_IndicesContainerT>( frame, on_plane_cloud, /* indices: */ NULL ); // no indices needed, already full cloud
-//                    std::cout << "frame: " << frame << std::endl;
+                    std::cout << "frame: " << frame << std::endl;
 
                     if ( force_axis_aligned )
                     {
@@ -301,14 +302,19 @@ namespace GF2
             /*! \brief Calculates size, a bit smarter, than taking the area of #getExtent().
              *  \tparam MatrixDerived   Concept: Eigen::Matrix<_Scalar,-1,1>.
              */
-            template <typename MatrixDerived, typename _Scalar, class _PointContainerT > inline
-            MatrixDerived& getSpatialSignificance( MatrixDerived& in, _PointContainerT const& points, _Scalar const /*scale*/, bool return_squared = false ) const
+            template <class _IndicesContainerT, typename MatrixDerived, typename _Scalar, class _PointContainerT > inline
+            MatrixDerived& getSpatialSignificance( MatrixDerived& in, _PointContainerT const& points, _Scalar const /*scale*/
+                                                 , _IndicesContainerT *indices = NULL, bool return_squared = false ) const
             {
                 // TODO: move this outside, it's suboptimal...
-                std::vector<int> population;
-                processing::getPopulationOf( population, this->getTag(GID), points );
+                _IndicesContainerT tmp_population,
+                                   *pop = &tmp_population;
+                if ( !indices )
+                    processing::getPopulationOf( tmp_population, this->getTag(GID), points );
+                else
+                    pop = indices;
 
-                if ( !population.size() )
+                if ( !(pop->size()) )
                 {
                     std::cerr << "[" << __func__ << "]: " << "_____________NO points in primitive!!!!_____________" << std::endl;
                     in.setConstant( _Scalar(-1.) );
@@ -318,7 +324,7 @@ namespace GF2
 #if 1 // biggest eigen value
                 Eigen::Matrix<_Scalar,3,1> eigen_values;
                 Eigen::Matrix<_Scalar,3,3> eigen_vectors;
-                processing::eigenDecomposition( eigen_values, eigen_vectors, points, &population );
+                processing::eigenDecomposition( eigen_values, eigen_vectors, points, pop );
                 if ( return_squared )
                     in(0) = eigen_values( 0 );
                 else
@@ -494,7 +500,7 @@ namespace GF2
     PlanePrimitive::PlanePrimitive( Eigen::Matrix<Scalar, 3, 1> pnt, Eigen::Matrix<Scalar, 3, 1> normal )
     {
         _coeffs.template head<3>() = pnt;
-        _coeffs.template segment<3>(3) = normal;
+        _coeffs.template segment<3>(3) = normal.normalized();
         //_coeffs.template segment<3>(0) = normal.normalized();
         //_coeffs                    (3) = Scalar(-1) * _coeffs.template head<3>().dot( pnt.template head<3>() ); // distance
     }

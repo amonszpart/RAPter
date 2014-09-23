@@ -333,6 +333,49 @@ namespace GF2
         }
     }; //...SqrtPrimitivePrimitiveEnergyFunctor
 
+#if 0
+    /*!
+     * \tparam _PrimitiveCompFunctor Concept: \ref GF2::SharedAreaForLinesWithScaleFunctor.
+     */
+    template <class _PrimitiveCompFunctor, class _PointContainerT, typename _Scalar, class PrimitiveT>
+    struct SpatialSqrtPrimitivePrimitiveEnergyFunctor : public AbstractPrimitivePrimitiveEnergyFunctor<_Scalar,PrimitiveT>
+    {
+
+        SpatialSqrtPrimitivePrimitiveEnergyFunctor( std::vector<_Scalar> const& angles
+                                                  , _PointContainerT     const& points
+                                                  , _Scalar              const  scale )
+            : AbstractPrimitivePrimitiveEnergyFunctor<_Scalar,PrimitiveT>( angles )
+            , _points( points )
+            , _scale ( scale )
+        {}
+
+        virtual ~SpatialSqrtPrimitivePrimitiveEnergyFunctor() {};
+
+        virtual inline _Scalar
+        eval( PrimitiveT p1, PrimitiveT p2 )
+        {
+            _Scalar diff  = MyPrimitivePrimitiveAngleFunctor::eval( p1, p2, this->_angles );
+
+            // truncated at half degree difference
+            _Scalar score = std::min( _Scalar(0.09341652027), _Scalar(sqrt(diff)) );
+
+            std::cout << "score was " << score << ", and now will be ";
+
+            return _primPrimCompFunctor.eval(extrema,   p1.template pos(),
+                                             extremagt, p2.template pos(),
+                                             scale);
+
+            return score;
+        }
+
+        protected:
+            _PrimitiveCompFunctor          _primPrimCompFunctor;
+            _PointContainerT        const& _points;
+            _Scalar                        _scale;
+
+    }; //...SqrtPrimitivePrimitiveEnergyFunctor
+#endif
+
     template <typename Scalar, class PrimitiveT>
     struct CExpPrimitivePrimitiveEnergyFunctor : public AbstractPrimitivePrimitiveEnergyFunctor<Scalar,PrimitiveT>
     {
