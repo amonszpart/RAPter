@@ -808,7 +808,7 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
                 // ignore small patches
                 if ( inner_it->getTag( _PrimitiveT::STATUS ) == _PrimitiveT::STATUS_VALUES::SMALL )
                 {
-                    ignoreList.insert(GidLid (gid, lid));
+                    ignoreList.insert(gid);
                     continue;
                 }
 
@@ -970,6 +970,12 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
                         // record this to detect unmerged primitives later and invalidate both primitives
                         ignoreList.insert(gid0);
                         ignoreList.insert(gid1);
+
+                        if ( ( prim0.getTag(_PrimitiveT::STATUS) == _PrimitiveT::SMALL ) || ( prim1.getTag(_PrimitiveT::STATUS) == _PrimitiveT::SMALL ) )
+                        {
+                            std::cout << "[" << __func__ << "]: " << "crap, small patches are merged..." << std::endl; fflush(stdout);
+                            throw new std::runtime_error("asdf");
+                        }
 
                         merging::merge( out_primitives,     // [out] Container storing merged primitives
                                         prim0,              // [in]  First primitive (can be invalidated during the call)
