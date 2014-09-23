@@ -5,6 +5,7 @@
 
 #include "globfit2/io/io.h"         // readPrimitives()
 #include "globfit2/util/diskUtil.hpp" // saveBackup()
+#include "globfit2/util/util.hpp"
 
 #include "globfit2/optimization/energyFunctors.h"
 
@@ -258,16 +259,16 @@ namespace correspondence
                 gidA = (*outer_it0).first;
                 // start linear primitive id from 0 in this patch
                 lidA = 0;
+                if(populationsA[gidA].size() == 0){
+                    cerr << "Skipping patch without population" << endl;
+                    continue;
+                }
                 // for primtives in patch of A
                 for ( inner_const_iterator inner_it0 = (*outer_it0).second.begin(); inner_it0 != (*outer_it0).second.end(); ++inner_it0, ++lidA )
                 {
                     // compute extrema (should be put in a function)
                     if ( extremaMapA.find(GidLid(gidA,lidA)) == extremaMapA.end() )
                     {
-                        if(populationsA[gidA].size() == 0){
-                            cerr << "Skipping patch without population" << endl;
-                            continue;
-                        }
                         err = inner_it0->template getExtent<_PointPrimitiveT>
                                 ( extremaMapA[ GidLid(gidA,lidA) ]
                                 , points
@@ -275,6 +276,8 @@ namespace correspondence
                                 , &(populationsA[gidA]) );
                         CHECK( err, "getExtent" );
                     }
+
+                    if (extremaMapA[ GidLid(gidA,lidA) ].size() == 0) continue;
 
 
                     // for patches in B
@@ -284,16 +287,16 @@ namespace correspondence
                         gidB = (*outer_it1).first;
                         // start linear primitive id from 0 in this patch
                         lidB = 0;
+                        if(populationsB[gidB].size() == 0){
+                            cerr << "Skipping patch without population" << endl;
+                            continue;
+                        }
                         // for primitives in patch of B
                         for ( inner_const_iterator inner_it1 = (*outer_it1).second.begin(); inner_it1 != (*outer_it1).second.end(); ++inner_it1, ++lidB )
                         {
                             // compute extrema (should be put in a function)
                             if ( extremaMapB.find(GidLid(gidB,lidB)) == extremaMapB.end() )
                             {
-                                if(populationsB[gidB].size() == 0){
-                                    cerr << "Skipping patch without population" << endl;
-                                    continue;
-                                }
                                 err = inner_it1->template getExtent<_PointPrimitiveT>
                                         ( extremaMapB[ GidLid(gidB,lidB) ]
                                         , points
@@ -301,6 +304,8 @@ namespace correspondence
                                         , &(populationsB[gidB]) );
                                 CHECK( err, "getExtent" );
                             }
+
+                            if ( extremaMapB[ GidLid(gidB,lidB) ].size() == 0 ) continue;
 
                             // log
                             std::cout << "checking " << gidA << "." << lidA << " vs " << gidB << "." << lidB;
@@ -382,7 +387,31 @@ namespace correspondence
         // print
         {
             // create output path
-            std::string corresp_path = "./corresp.csv";
+            std::string corresp_path;
+            int         iteration = 0;
+            bool first = true;
+            {
+                iteration = util::parseIteration( prims_pathA );
+                if (iteration == -1){
+                    iteration = util::parseIteration( prims_pathB );
+                    first = false;
+                }
+
+
+                std::stringstream ss;
+
+                if (iteration == -1){
+                    std::string fname = prims_pathA.substr( 0, prims_pathA.size()-4 );
+                    ss << fname << "_corresp.csv";
+                }
+                else{
+                    size_t it_loc = (first ? prims_pathA : prims_pathB).find("_it");
+                    std::string fname = (first ? prims_pathA : prims_pathB).substr( 0, it_loc );
+                    ss << fname << "_corresp_it" << iteration << ".csv";
+                }
+                corresp_path = ss.str();
+            }
+
             // backup previous copy
             GF2::util::saveBackup( corresp_path );
 
