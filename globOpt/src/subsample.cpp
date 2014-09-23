@@ -81,7 +81,7 @@ int subsample( int argc, char** argv )
                 pnt.getVector4fMap()(1) *= div(1);
                 pnt.getVector4fMap()(2) *= div(2);
             }
-            std::cout << "adding " << pnt.getVector3fMap().transpose() << " from " << cloud.at(pid).getVector3fMap().transpose() << std::endl;
+//            std::cout << "adding " << pnt.getVector3fMap().transpose() << " from " << cloud.at(pid).getVector3fMap().transpose() << std::endl;
             out_cloud.push_back( pnt );
         }
     }

@@ -206,7 +206,7 @@ namespace GF2
                         // Promote: check, if patch is large by now
                         if ( prim.getSpatialSignificance( spatialSignif, points, scale, &(populations[gid]))(0) >= smallThresh )
                         {
-                            std::cout << "promoting " << spatialSignif(0) << std::endl;
+                            //std::cout << "promoting " << spatialSignif(0) << std::endl;
                             // store primitives, that have just been promoted to large from small
                             if ( (prim_status == _PrimitiveT::STATUS_VALUES::SMALL) )
                                 promoted.insert( GidLid(gid,lid) );
@@ -216,7 +216,7 @@ namespace GF2
                         // Demote, if first iteration
                         else if (prim_status == _PrimitiveT::STATUS_VALUES::UNSET) // this should only happen in the first iteration
                         {
-                            std::cout << "demoting" << spatialSignif(0) << std::endl;
+                            //std::cout << "demoting" << spatialSignif(0) << std::endl;
                             prim.setTag( _PrimitiveT::STATUS, _PrimitiveT::STATUS_VALUES::SMALL );
                         }
                         else if (prim_status != _PrimitiveT::STATUS_VALUES::SMALL) // this should only happen in the first iteration
