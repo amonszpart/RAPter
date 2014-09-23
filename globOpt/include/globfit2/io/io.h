@@ -195,7 +195,7 @@ namespace GF2
             std::ifstream f( path.c_str() );
             if ( !f.is_open() )
             {
-                std::cerr << "[" << __func__ << "] couldn't open file" << std::endl;
+                std::cerr << "[" << __func__ << "] couldn't open file" << path << std::endl;
                 return EXIT_FAILURE;
             }
 

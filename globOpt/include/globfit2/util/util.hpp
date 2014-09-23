@@ -147,6 +147,56 @@ inline int parseIteration( std::string const& input_prims_path )
     return iteration;
 }
 
+#if 0
+template <class ExtremaT, class PrimitiveT>
+void printme (ExtremaT& extre, PrimitiveT& prim, std::ofstream& mstream)
+{
+    using std::endl;
+
+    mstream << extre.rbegin()->transpose() << endl;
+    mstream << extre.begin()->transpose() << endl << endl << endl;
+
+    auto mit_local = extre.begin();
+    auto mit_localn = extre.begin()+1;
+
+    for ( ; mit_localn != extre.end(); ++mit_local, ++mit_localn )
+    {
+        mstream << mit_local->transpose() << endl;
+        mstream << mit_localn->transpose() << endl << endl << endl;
+    }
+    typedef typename ExtremaT::value_type PointT;
+    typedef typename PointT::Scalar _Scalar;
+
+    PointT center (PointT::Zero());
+    std::for_each(extre.begin(), extre.end(), [&center] (const PointT& p){ center+=p; });
+    center /= _Scalar(extre.size());
+
+    // display normal
+    mstream << center.transpose() << endl;
+    mstream << (center+prim.normal()).transpose() << endl << endl << endl;
+
+    // display normal from extrema
+    mstream << center.transpose() << endl;
+    mstream << (center+(extre[1]-extre[0]).normalized().cross((extre[2]-extre[1])).normalized()).transpose() << endl << endl << endl;
+}
+
+std::ofstream f("onplanecloud.plot");
+for ( int i = 0; i != on_plane_cloud.size(); ++i )
+{
+    f << on_plane_cloud[i].template pos().transpose() << "\n";
+}
+f.close();
+std::ofstream f2("onplanecloud_normal.plot");
+f2 << this->pos().transpose() << "\n"
+   << (this->pos() + this->dir()).transpose() << "\n";
+f2 << "\n\n"
+   << this->pos().transpose() << "\n"
+   << (this->pos() + (minMax[2] - minMax[1]).normalized().cross( (minMax[1] - minMax[0]).normalized() ).normalized()).transpose() << "\n";
+
+f2.close();
+system( "gnuplot -e \"splot 'onplanecloud.plot' w points, 'onplanecloud_normal.plot' w lines\" -p" );
+#endif
+
 } //...namespace util
 } //...namespace GF2
 
