@@ -191,8 +191,8 @@ namespace GF2
         vptr->setPointCloudRenderingProperties( pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 6.0, "cloud", 0 );
 
         // count populations
-        GidIntMap populations; // populations[patch_id] = all points with GID==patch_id
-        processing::calcPopulations( populations, points );
+        GidPidVectorMap populations; // populations[patch_id] = all points with GID==patch_id
+        processing::getPopulations( populations, points );
 
         Eigen::Matrix<_Scalar,Eigen::Dynamic,1> area(1,1);
 
@@ -254,7 +254,8 @@ namespace GF2
                 {
                     primitives[lid][lid1].getSpatialSignificance( /* [out] sqrt(max(eigval)): */ area
                                                                 , /* [in]             points: */ points
-                                                                , /* [in]              scale: */ scale );
+                                                                , /* [in]              scale: */ scale
+                                                                , /* [in]            indices: */ &(populations[gid]) );
                 }
 
                 if ( show_pop && !lid1 ) // only once per cluster
@@ -286,11 +287,11 @@ namespace GF2
                 // draw connections
                 if ( angles )
                 {
-                    if ( populations[gid] > pop_limit )
+                    if ( populations[gid].size() > pop_limit )
                     {
                         for ( size_t lid2 = lid; lid2 != primitives.size(); ++lid2 )
                         {
-                            if ( populations[ primitives[lid2].at(0).getTag(PrimitiveT::GID) ]< pop_limit )
+                            if ( populations[ primitives[lid2].at(0).getTag(PrimitiveT::GID) ].size() < pop_limit )
                                 continue;
 
                             for ( size_t lid3 = lid1; lid3 < primitives[lid2].size(); ++lid3 )
