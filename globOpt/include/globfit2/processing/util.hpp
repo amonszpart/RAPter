@@ -316,7 +316,7 @@ namespace GF2 {
                         if ( inner_it->getTag(_PrimitiveT::STATUS) == _PrimitiveT::STATUS_VALUES::SMALL )
                         {
                             std::cerr << "[" << __func__ << "]: " << "erasing small patch, this should NOT happen" << std::endl;
-                            throw new std::runtime_error("erasing small patch, should not happen");
+                            //throw new std::runtime_error("erasing small patch, should not happen");
                         }
                         ++ret;
                         inner_it = containers::valueOf<_PrimitiveT>(outer_it).erase(inner_it);
@@ -352,17 +352,21 @@ namespace GF2 {
                  , class _PrimitiveContainerT
                  >
         int eraseNonAssignedPrimitives( _PrimitiveContainerT   & primitives,
-                                         _PointContainerT const & points) {
+                                         _PointContainerT const & points,
+                                        bool preserveSmall) {
             // In a first run over all points, collect all used GID
 
             typedef typename _PointContainerT::value_type PointT;
 
             struct {
                 std::set<int> gids;
+                bool _preserveSmall;
 
                 //! Return true when the id cannot be found in the set -> induce destruction
                 inline
                 bool eval(const _PrimitiveT& p) const{
+                    if (_preserveSmall && p.getTag(_PrimitiveT::STATUS)  == _PrimitiveT::STATUS_VALUES::SMALL)
+                        return false;
                     return gids.find( p.getTag(_PrimitiveT::GID) ) == gids.end();
                 }
             } nestedFunctor;
@@ -371,6 +375,7 @@ namespace GF2 {
                                                           it != points.end();
                                                         ++it)
                 nestedFunctor.gids.insert((*it).getTag(PointT::GID));
+            nestedFunctor._preserveSmall = preserveSmall;
 
             return erasePrimitives<_PrimitiveT, _inner_iterator>(primitives, nestedFunctor);
         }
