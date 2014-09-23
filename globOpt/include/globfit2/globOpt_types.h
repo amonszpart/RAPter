@@ -6,6 +6,7 @@
 #include "globfit2/primitives/linePrimitive.h"
 #include "globfit2/primitives/planePrimitive.h"
 #include "globfit2/primitives/pointPrimitive.h"
+#include "globfit2/optimization/energyFunctors.h"
 
 namespace GF2
 {
@@ -18,6 +19,7 @@ namespace GF2
         typedef GF2::LinePrimitive                    PrimitiveT;
         typedef std::vector<PrimitiveT>               InnerPrimitiveContainerT;
         typedef std::vector<InnerPrimitiveContainerT> PrimitiveContainerT;
+        typedef MyFinitePrimitiveToFinitePrimitiveCompatFunctor<PrimitiveT, MyPointFiniteLineDistanceFunctor> MyFiniteLineToFiniteLineCompatFunctor;
     }
 
     namespace _3d
@@ -25,6 +27,7 @@ namespace GF2
         typedef GF2::PlanePrimitive                   PrimitiveT;
         typedef std::vector<PrimitiveT>               InnerPrimitiveContainerT;
         typedef std::vector<InnerPrimitiveContainerT> PrimitiveContainerT;
+        typedef MyFinitePrimitiveToFinitePrimitiveCompatFunctor<PrimitiveT, MyPointFinitePlaneDistanceFunctor> MyFinitePlaneToFinitePlaneCompatFunctor;
     }
 }
 

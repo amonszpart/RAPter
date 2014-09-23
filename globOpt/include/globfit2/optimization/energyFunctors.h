@@ -30,38 +30,6 @@ namespace GF2
             }
     };
 
-    struct MyFinitePrimitiveToFinitePrimitiveCompatFunctor
-    {
-        template < class DMFunctor         // DecideMergeFunctor, indicating if the primitive are ok to be merged
-                 , class PointToPrimFunctor
-                 , class _PrimitiveT
-                 , class _PointContainerT
-                 , typename _Scalar>
-        inline typename _PrimitiveT::Scalar eval(
-                  _PointContainerT const& extrema0
-                , _PrimitiveT const& p0
-                , _PointContainerT const& extrema1
-                , _PrimitiveT const& p1
-                , _Scalar scale) const {
-            typedef typename _PointContainerT::value_type PointT;
-
-            DMFunctor dmf;
-            if (! dmf.eval(extrema0, p0, extrema1, p1, scale)) // primitives are not compatibles
-                return typename _PrimitiveT::Scalar(0.);
-
-            PointT center0 (PointT::Zero()), center1 (PointT::Zero());
-            std::for_each(extrema0.begin(), extrema0.end(), [&center0] (const PointT& p){ center0+=p; });
-            std::for_each(extrema1.begin(), extrema1.end(), [&center1] (const PointT& p){ center1+=p; });
-            center0 /= _Scalar(extrema0.size());
-            center1 /= _Scalar(extrema1.size());
-
-            PointToPrimFunctor pointToLineFunctor;
-            return std::max( std::max(pointToLineFunctor.eval(extrema0, p0, center1),
-                                      pointToLineFunctor.eval(extrema1, p1, center0)),
-                             (center1 - center0).norm());
-        }
-    };
-
     struct SharedVolumeForPlanesWithScaleFunctor
     {
         // return 1 for perfect match, 0 for invalid
@@ -241,6 +209,37 @@ namespace GF2
 
 
             return std::numeric_limits<typename _PointContainerT::value_type::Scalar>::max();
+        }
+    };
+
+    template <class _PrimitiveT, class PointToPrimFunctor>
+    struct MyFinitePrimitiveToFinitePrimitiveCompatFunctor
+    {
+        template < class _PointContainerT
+                 , typename _Scalar>
+        inline typename _PrimitiveT::Scalar eval(
+                  _PointContainerT const& extrema0
+                , _PrimitiveT const& p0
+                , _PointContainerT const& extrema1
+                , _PrimitiveT const& p1) const {
+            typedef typename _PointContainerT::value_type PointT;
+
+            PointToPrimFunctor functor;
+
+            _Scalar min = std::numeric_limits<_Scalar>::max();
+            for (typename _PointContainerT::const_iterator it = extrema0.begin();
+                 it != extrema0.end(); ++it){
+                const _Scalar m = functor.eval(extrema1, p1, *it);
+                if(m < min) min = m;
+            }
+
+            for (typename _PointContainerT::const_iterator it = extrema1.begin();
+                 it != extrema1.end(); ++it){
+                const _Scalar m = functor.eval(extrema0, p0, *it);
+                if(m < min) min = m;
+            }
+
+            return min;
         }
     };
 
