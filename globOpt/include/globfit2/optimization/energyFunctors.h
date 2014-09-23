@@ -302,7 +302,7 @@ namespace GF2
         virtual ~AbstractPrimitivePrimitiveEnergyFunctor() {}
 
         virtual inline Scalar
-        eval( PrimitiveT /*p1*/, PrimitiveT /*p2*/ )
+        eval( const PrimitiveT &/*p1*/, const PrimitiveT &/*p2*/ )
         {
             std::cerr << "[" << __func__ << "]: " << "Abstract function, use specialization!" << std::endl;
             return std::numeric_limits<Scalar>::max();
@@ -321,7 +321,7 @@ namespace GF2
         virtual ~SqrtPrimitivePrimitiveEnergyFunctor() {};
 
         virtual inline Scalar
-        eval( PrimitiveT p1, PrimitiveT p2 )
+        eval( const PrimitiveT &p1, const PrimitiveT &p2 )
         {
             Scalar diff  = MyPrimitivePrimitiveAngleFunctor::eval( p1, p2, this->_angles );
 
@@ -384,7 +384,7 @@ namespace GF2
         virtual ~CExpPrimitivePrimitiveEnergyFunctor() {};
 
         virtual inline Scalar
-        eval( PrimitiveT p1, PrimitiveT p2 )
+        eval( const PrimitiveT &p1, const PrimitiveT &p2 )
         {
             Scalar diff  = MyPrimitivePrimitiveAngleFunctor::eval( p1, p2, this->_angles );
             Scalar score = diff * diff * diff;
