@@ -565,7 +565,17 @@ namespace problemSetup {
             if ( !prims[lid].size() ) continue;
             // cache patch group id
             const int gid = prims[lid].at(0).getTag(_PrimitiveT::GID);
-
+            // check for population size
+//            if ( populations[gid].size() < pop_limit )
+//            { // small patch
+//                if ( populations[gid].size() < 1 ) std::cerr << "[" << __func__ << "]: " << "patch with no points...needs to be expensive!! TODO" << std::endl;
+//                // add all points to point-wise constraints todo list
+//                PidSet::const_iterator end_it = populations[gid].end();
+//                for ( PidSet::const_iterator it = populations[gid].begin(); it != end_it; ++it )
+//                    smalls_points.insert( *it );
+//            }
+//            else
+            if ( populations[gid].size() > pop_limit )
             { // create patch-wise constraint
                 // init row to 0
                 std::fill( coeffs.begin(), coeffs.end(), 0 );
@@ -584,7 +594,38 @@ namespace problemSetup {
                 }
             }
         } // ... for each patch
+//        // set-up point-wise constraints for small patches
+//        PidSet::const_iterator end_it = smalls_points.end();
+//        for ( PidSet::const_iterator it = smalls_points.begin(); it != end_it; ++it )
+//        {
+//            const int pid = *it;
 
+//            // work - check distance to all lines, select the ones in range
+//            RowInA coeffs  ( problem.getVarCount(), 0 );
+//            bool   non_zero( false );
+//            // for each patch and direction
+//            for ( size_t lid = 0; lid != prims.size(); ++lid )
+//                for ( size_t lid1 = 0; lid1 != prims[lid].size(); ++lid1 )
+//                {
+//                    _Scalar dist = _PointPrimitiveDistanceFunctor::template eval<_Scalar>( points[pid], prims[lid][lid1] );
+//                    if ( dist < scale )
+//                    {
+//                        coeffs[ /* varid: */ lids_varids.at(IntPair(lid,lid1)) ] = ProblemScalar( 1. ) ;
+//                        non_zero = true;
+//                    }
+//                }
+
+//            if ( non_zero )
+//            {
+//                unsigned prev_size = uniqueA.size();
+//                uniqueA.insert( coeffs );
+//                if ( uniqueA.size() > prev_size )
+//                {
+//                    ++stats.second;
+//                    problem.addLinConstraint( _OptProblemT::BOUND::GREATER_EQ, 1, problem.getINF(), coeffs );
+//                }
+//            }
+//        } //... for each point
         if ( verbose ) std::cout << "[" << __func__ << "]: " << "added "  << stats.first << " large and " << stats.second << " small patch constraint lines" << std::endl;
 
         return err;
@@ -682,7 +723,8 @@ namespace problemSetup {
         for ( size_t lid = 0; lid != prims.size(); ++lid )
             for ( size_t lid1 = 0; lid1 != prims[lid].size(); ++lid1 )
             {
-                ++dir_instances[ prims[lid][lid1].getTag(_PrimitiveT::DIR_GID) ];
+                if (prims[lid][lid1].getTag(_PrimitiveT::ACTIVE) )
+                    ++dir_instances[ prims[lid][lid1].getTag(_PrimitiveT::DIR_GID) ];
             }
 
         for ( size_t lid = 0; lid != prims.size(); ++lid )
