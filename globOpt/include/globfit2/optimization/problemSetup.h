@@ -152,24 +152,28 @@ namespace GF2
     class ProblemSetup
     {
         public:
-            //! \brief                          Step 2. Reads the output from generate and sets up the optimization problem in form of sparse matrices.
-            //! \tparam _PrimitiveContainerT    Concept: vector< vector< \ref GF2::LinePrimitive2 > >
-            //! \tparam _PointContainerT        Concept: vector< \ref GF2::PointPrimitive >
-            //! \param argc                     Number of CLI arguments.
-            //! \param argv                     Vector of CLI arguments.
-            //! \return                         Outputs EXIT_SUCCESS or the error the OptProblem implementation returns.
-            //! \sa \ref problemSetup::largePatchesNeedDirectionConstraint
+             /*! \brief                          Step 2. Reads the output from generate and sets up the optimization problem in form of sparse matrices.
+              *  \tparam _PrimitiveContainerT    Concept: vector< vector< \ref GF2::LinePrimitive2 > >
+              *  \tparam _PointContainerT        Concept: vector< \ref GF2::PointPrimitive >
+              *  \tparam _FiniteFiniteDistFunctor Concept: \ref GF2::SpatialSqrtPrimitivePrimitiveEnergyFunctor.
+              *  \param argc                     Number of CLI arguments.
+              *  \param argv                     Vector of CLI arguments.
+              *  \return                         Outputs EXIT_SUCCESS or the error the OptProblem implementation returns.
+              *  \sa \ref problemSetup::largePatchesNeedDirectionConstraint
+                                                         */
             template <
                        class _PrimitiveContainerT
                      , class _PointContainerT
-                     , class _PrimitiveT          = typename _PrimitiveContainerT::value_type::value_type
-                     , class _PointPrimitiveT     = typename _PointContainerT::value_type
+                     , class _PrimitiveT /*         = typename _PrimitiveContainerT::value_type::value_type*/
+                     , class _PointPrimitiveT     /*= typename _PointContainerT::value_type*/
+                     , class _FiniteFiniteDistFunctor
                      >
             static inline int formulateCli( int argc, char** argv );
 
             /*! \brief                          Step 2. Reads the output from generate and sets up the optimization problem in form of sparse matrices.
              *  \tparam _PrimitiveContainerT    Concept: vector< vector< \ref GF2::LinePrimitive2 > >.
              *  \tparam _PointContainerT        Concept: vector< \ref GF2::PointPrimitive >.
+             *  \tparam _PrimPrimDistFunctorT   Concept: \ref GF2::SpatialSqrtPrimitivePrimitiveEnergyFunctor.
              *  \param[in,out] problem          QCQPcpp::OptProblem (\ref problemSetup::OptProblemT) typed problem to append to.
              *  \param[in] prims                Holds the input primitives to setup the optimization with.
              *  \param[in] points               Holds the input points.
@@ -189,6 +193,7 @@ namespace GF2
             template < class _PointPrimitiveDistanceFunctor
                      , class _PrimitiveContainerT
                      , class _PointContainerT
+                     , class _PrimPrimDistFunctorT
                      , class _PrimitiveT        = typename _PrimitiveContainerT::value_type::value_type
                      , class _PointPrimitiveT   = typename _PointContainerT::value_type
                      , typename _Scalar         = typename _PointPrimitiveT::Scalar
@@ -200,7 +205,7 @@ namespace GF2
                      , typename ProblemSetupParams<_Scalar>::DATA_COST_MODE               const  data_cost_mode
                      , _Scalar                                                            const  scale
                      , Eigen::Matrix<_Scalar,-1,1>                                        const& weights
-                     , GF2::AbstractPrimitivePrimitiveEnergyFunctor<_Scalar,_PrimitiveT>* const& primPrimDistFunctor
+                     , _PrimPrimDistFunctorT                                            * const& primPrimDistFunctor
                      , int                                                                const  patch_pop_limit
                      , _Scalar                                                            const  dir_id_bias
                      , int                                                                const  verbose                = 0

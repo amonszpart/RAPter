@@ -11,6 +11,7 @@ int formulate( int argc, char** argv )
                                               , GF2::PointContainerT
                                               , GF2::_3d::PrimitiveT
                                               , GF2::PointPrimitiveT
+                                              , GF2::_3d::MyFinitePlaneToFinitePlaneCompatFunctor
                                               >( argc, argv );
     }
     else
@@ -19,6 +20,7 @@ int formulate( int argc, char** argv )
                                               , GF2::PointContainerT
                                               , GF2::_2d::PrimitiveT
                                               , GF2::PointPrimitiveT
+                                              , GF2::_2d::MyFiniteLineToFiniteLineCompatFunctor
                                               >( argc, argv );
     } //...if find_switch
 }
