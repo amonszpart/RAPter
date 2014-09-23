@@ -246,7 +246,7 @@ namespace GF2
                 Eigen::Matrix<Scalar,4,4> frame; // 3 major vectors as columns, and the fourth is the centroid
                 {
                     processing::PCA<_IndicesContainerT>( frame, on_plane_cloud, /* indices: */ NULL ); // no indices needed, already full cloud
-                    std::cout << "frame: " << frame << std::endl;
+//                    std::cout << "frame: " << frame << std::endl;
 
                     if ( force_axis_aligned )
                     {
