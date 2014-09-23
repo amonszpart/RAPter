@@ -93,8 +93,21 @@ function save_args() {
 	# endline
 	echo -e -n "\n" >> $logfile
 }
+
 # call it
 save_args $0 $@ "--freqweight" $freqweight "--angle-limit" $anglelimit "--segment-scale-mult" $segmentScaleMultiplier "--adopt" $adopt "--dirbias" $dirbias "--cand-anglediv" ${cand_anglediv} "--angle-gens" $anglegens "--cost-fn" $pwCostFunc
+
+#####
+# Check if the gt folder exists, in that case compute the primitive comparisons
+correspondance=false
+correspondance_exe="../corresp"
+correspondance_gtprim="./gt/primitives.csv"
+correspondance_gtassing="./gt/points_primitives.csv"
+if [ -e "$correspondance_gtprim" ]; then
+  echo "Ground truth folder detected, compute primitive correspondances" 
+  correspondance=true  
+fi
+
 # show command before run
 # stop script when the command fails
 function my_exec() {
@@ -147,6 +160,10 @@ my_exec "$executable --formulate$flag3D --scale $scale --cloud cloud.ply --unary
 # Solve optimization problem. OUT: primitives_it0.bonmin.csv
 my_exec "$executable --solver$flag3D bonmin --problem problem -v --time -1 --candidates candidates_it0.csv"
 
+if [ "$correspondance" = true ] ; then
+    my_exec "$correspondance_exe  $correspondance_gtprim $correspondance_gtassing primitives_it0.bonmin.csv $assoc cloud.ply $scale"
+fi
+
 # Show output of first iteration.
 my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p primitives_it0.bonmin.csv -a $assoc --title \"1st iteration output\" $visdefparam --ids# &"
 # !! set flag3D to "3D" and recomment these two lines to work with 3D
@@ -192,6 +209,10 @@ do
 
     # Solve optimization problem. OUT: primitives_it$c.bonmin.csv
     my_exec "$executable --solver$flag3D bonmin -v --problem problem --time -1 --angle-gens $anglegens --candidates candidates_it$c.csv"
+    
+    if [ "$correspondance" = true ] ; then
+        my_exec "$correspondance_exe  $correspondance_gtprim $correspondance_gtassing primitives_it$c.bonmin.csv $assoc cloud.ply $scale"
+    fi
 
     # Show output of first iteration.
     my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p primitives_it$c.bonmin.csv -a $assoc --title \"$nextId nd iteration output\" $visdefparam &"

@@ -119,9 +119,9 @@ namespace GF2
             // of the box.
             Eigen::Matrix<_Scalar, Eigen::Dynamic, 2> relativePoints (points.size(), 2);
             for(unsigned int i = 0; i != points.size(); ++i)
-                relativePoints.row(i) << points.at(i);
+                relativePoints.row(i) << points.at(i).transpose();
 
-            Eigen::Matrix<_Scalar, 2, 2> projMatrix = relativePoints * es.eigenvectors();
+            Eigen::Matrix<_Scalar, Eigen::Dynamic, 2> projMatrix = relativePoints * es.eigenvectors();
             _Scalar area  = (projMatrix.colwise().maxCoeff().array() - projMatrix.colwise().minCoeff().array()).prod();
 
             // we know that volume is necessary bigger than v0 and v1
@@ -302,7 +302,7 @@ namespace GF2
         virtual ~AbstractPrimitivePrimitiveEnergyFunctor() {}
 
         virtual inline Scalar
-        eval( PrimitiveT /*p1*/, PrimitiveT /*p2*/ )
+        eval( const PrimitiveT &/*p1*/, const PrimitiveT &/*p2*/ )
         {
             std::cerr << "[" << __func__ << "]: " << "Abstract function, use specialization!" << std::endl;
             return std::numeric_limits<Scalar>::max();
@@ -321,7 +321,7 @@ namespace GF2
         virtual ~SqrtPrimitivePrimitiveEnergyFunctor() {};
 
         virtual inline Scalar
-        eval( PrimitiveT p1, PrimitiveT p2 )
+        eval( const PrimitiveT &p1, const PrimitiveT &p2 )
         {
             Scalar diff  = MyPrimitivePrimitiveAngleFunctor::eval( p1, p2, this->_angles );
 
@@ -402,7 +402,7 @@ namespace GF2
         virtual ~CExpPrimitivePrimitiveEnergyFunctor() {};
 
         virtual inline Scalar
-        eval( PrimitiveT p1, PrimitiveT p2 )
+        eval( const PrimitiveT &p1, const PrimitiveT &p2 )
         {
             Scalar diff  = MyPrimitivePrimitiveAngleFunctor::eval( p1, p2, this->_angles );
             Scalar score = diff * diff * diff;
