@@ -237,6 +237,8 @@ Segmentation::patchify( _PrimitiveContainerT                   & patches
     for ( size_t gid = 0; gid != groups.size(); ++gid )
     {
 
+        if(populations[gid].size() < 3 ) continue;
+
         if ( _PrimitiveT::EmbedSpaceDim == 2) // added by Aron on 17 Sep 2014
         {
             // LINE
