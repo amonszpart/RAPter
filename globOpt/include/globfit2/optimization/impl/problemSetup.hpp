@@ -327,7 +327,7 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
         {
             case ProblemSetupParams<_Scalar>::DATA_COST_MODE::ASSOC_BASED:
                 err = problemSetup::associationBasedDataCost<_PointPrimitiveDistanceFunctor, _PrimitiveT, _PointPrimitiveT>
-                        ( problem, prims, points, lids_varids, weights, scale, freq_weight );
+                        ( problem, prims, points, lids_varids, weights, scale, freq_weight, verbose );
                 break;
 
             case ProblemSetupParams<_Scalar>::DATA_COST_MODE::INSTANCE_BASED:
@@ -699,7 +699,8 @@ namespace problemSetup {
                             , _AssocT              const& lids_varids
                             , _WeightsT            const& weights
                             , _Scalar              const  /*scale*/
-                            , _Scalar              const freq_weight )
+                            , _Scalar              const freq_weight
+                            , bool                 const verbose )
     {
         typedef typename _AssocT::key_type IntPair;
 
@@ -762,13 +763,15 @@ namespace problemSetup {
                 {
                     const int dir_gid = prims[lid][lid1].getTag( _PrimitiveT::GID );
 
-                    std::cout << "[" << __func__ << "]: " << "changed " << coeff << " to ";
+                    if ( verbose && dir_instances[dir_gid] )
+                        std::cout << "[" << __func__ << "]: " << "changed " << coeff << " to ";
                     if ( dir_instances[dir_gid] > 0 )
                         coeff *= freq_weight / _Scalar(dir_instances[dir_gid]);
                     else
                         coeff *= freq_weight;
 
-                    std::cout << coeff << " since dirpop: " << dir_instances[dir_gid] << std::endl;
+                    if ( verbose && dir_instances[dir_gid] )
+                        std::cout << coeff << " since dirpop: " << dir_instances[dir_gid] << std::endl;
                 }
 
                 // complexity cost:

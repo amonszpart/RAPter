@@ -123,7 +123,8 @@ namespace GF2
                                 , _AssocT              const& lids_varids
                                 , _WeightsT            const& weights
                                 , _Scalar              const  /*scale*/
-                                , _Scalar              const  freq_weight );
+                                , _Scalar              const  freq_weight
+                                , bool                 const  verbose );
 
         //! \brief Nic's version, unfinished!.
         //! \tparam _AssocT     Associates a primitive identified by <lid,lid1> with a variable id in the problem. Default: std::map< std::pair<int,int>, int >

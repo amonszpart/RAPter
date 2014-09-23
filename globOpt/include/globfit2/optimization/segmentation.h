@@ -111,7 +111,8 @@ class Segmentation
         static inline int
         orientPoints( _PointContainerT       &points
                     , _Scalar          const  scale
-                    , int              const  nn_K   );
+                    , int              const  nn_K
+                    , int              const  verbose );
 
         /*!
          * \brief patchify Groups unoriented points into oriented patches represented by a single primitive
@@ -172,7 +173,9 @@ class Segmentation
                   , _Scalar                     const  /*scale*/
                   , _PatchPatchDistanceFunctorT const& patchPatchDistanceFunctor
                   , int                         const  gid_tag_name              //= _PointT::GID
-                  , int                         const  nn_K );
+                  , int                         const  nn_K
+                  , bool                        const  verbose
+                  );
 
         /*! \brief  Fits a local direction to each point and it's neighourhood.
          *          Create local fits to local neighbourhoods, these will be the point orientations.
@@ -189,6 +192,7 @@ class Segmentation
                 , float                const  radius
                 , bool                 const  soft_radius
                 , std::vector<int>          * mapping
+                , int                    const  verbose
                 );
     protected:
         template < class    _PointPrimitiveT

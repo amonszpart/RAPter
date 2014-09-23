@@ -34,7 +34,8 @@ template < class    _PointPrimitiveT
 int
 Segmentation::orientPoints( _PointContainerT          &points
                           , _Scalar             const  scale
-                          , int                 const  nn_K   )
+                          , int                 const  nn_K
+                          , int                 const  verbose )
 {
     typedef pcl::PointCloud<pcl::PointXYZ>        CloudXYZ;
 
@@ -53,7 +54,8 @@ Segmentation::orientPoints( _PointContainerT          &points
                , /*              nn_K: */ nn_K
                , /*         nn_radius: */ scale
                , /*       soft_radius: */ true
-               , /* [out]     mapping: */ &point_ids ); // contains point id for fit_line
+               , /* [out]     mapping: */ &point_ids
+               , verbose ); // contains point id for fit_line
 
         // copy line direction into point
         for ( int pid_id = 0; pid_id != point_ids.size(); ++pid_id )
@@ -79,6 +81,7 @@ Segmentation:: fitLocal( _PrimitiveContainerT        & primitives
                        , float                  const  radius
                        , bool                   const  soft_radius
                        , std::vector<int>            * point_ids
+                       , int                    const  verbose
                        )
 {
     using std::vector;
@@ -89,6 +92,7 @@ Segmentation:: fitLocal( _PrimitiveContainerT        & primitives
     if ( indices ) { std::cerr << __PRETTY_FUNCTION__ << "]: indices must be NULL, not implemented yet..." << std::endl; return EXIT_FAILURE; }
 
     // get neighbourhoods
+    if ( verbose ) std::cout << "[" << __func__ << "]: " << "starting neighbourhood queries";
     std::vector< std::vector<int   > > neighs;
     std::vector< std::vector<Scalar> > sqr_dists;
     processing::getNeighbourhoodIndices( /*   [out] neighbours: */ neighs
@@ -99,6 +103,7 @@ Segmentation:: fitLocal( _PrimitiveContainerT        & primitives
                                        , /* [in]      radius: */ radius         // 0.02f
                                        , /* [in] soft_radius: */ soft_radius    // true
                                        );
+    if ( verbose ) std::cout << "ok...\n";
 
     // only use, if more then 2 data-points
     if ( std::count_if( neighs.begin(), neighs.end(), [] (vector<int> const& n1) { return n1.size() > 2; } ) < 2 )
@@ -108,6 +113,7 @@ Segmentation:: fitLocal( _PrimitiveContainerT        & primitives
     }
 
     // every point proposes primitive[s] using its neighbourhood
+    unsigned int step_count;
     int skipped = 0;
     for ( size_t pid = 0; pid != neighs.size(); ++pid )
     {
@@ -172,6 +178,12 @@ Segmentation:: fitLocal( _PrimitiveContainerT        & primitives
         {
             point_ids->emplace_back( pid );
         }
+
+        if ( verbose && !(++step_count % 1000) )
+        {
+            std::cout << "fit to " << primitives.size() << " / " << neighs.size() << "(" << (Scalar)(primitives.size()) / neighs.size() << "%)" << std::endl;
+            fflush(stdout);
+        }
     } //...for points
 
     std::cout << "[" << __func__ << "]: "
@@ -193,6 +205,7 @@ Segmentation:: fitLocal( _PrimitiveContainerT        & primitives
  * \param[in]  patchPatchDistanceFunctor #regionGrow() uses the thresholds encoded to group points. The evalSpatial() function is used to assign orphan points.
  * \param[in]  nn_K                      Number of nearest neighbour points looked for in #regionGrow().
  */
+
 template < class       _PrimitiveT
          , typename    _Scalar
          , class       _PrimitiveContainerT
@@ -225,7 +238,8 @@ Segmentation::patchify( _PrimitiveContainerT                   & patches
                   , /* [in]                     scale: */ scale
                   , /* [in] patchPatchDistanceFunctor: */ patchPatchDistanceFunctor
                   , /* [in]              gid_tag_name: */ PointPrimitiveT::GID
-                  , /* [in]                      nn_K: */ nn_K );
+                  , /* [in]                      nn_K: */ nn_K
+                  , /* [in]                   verbose: */ verbose );
     } // ... (1) group
 
     // (2) Create PrimitiveContainer
@@ -236,6 +250,8 @@ Segmentation::patchify( _PrimitiveContainerT                   & patches
     // Copy the representative direction of each patch in groups to an output patch with GID as it's linear index in groups.
     for ( size_t gid = 0; gid != groups.size(); ++gid )
     {
+        // don't add single clusters primitives, they will have to join others immediately
+        if ( populations[gid].size() <= 1 ) continue;
 
         if ( _PrimitiveT::EmbedSpaceDim == 2) // added by Aron on 17 Sep 2014
         {
@@ -258,10 +274,6 @@ Segmentation::patchify( _PrimitiveContainerT                   & patches
                                                             , /*    start from input: */ (_PrimitiveT*)NULL  // use to calculate initial weights
                                                             , /* refit position only: */ false
                                                             , /*               debug: */ false  );
-            if ( verbose )
-                std::cout << "repr: " << groups[gid].getRepresentative().toString()
-                          << "refit: " << toAdd.toString() << std::endl;
-
             if ( err == EXIT_SUCCESS )
             {
                 if ( toAdd.template dir().norm() < 0.9 )
@@ -312,7 +324,9 @@ Segmentation::regionGrow( _PointContainerT                       & points
                         , _Scalar                           const  /*scale*/
                         , _PatchPatchDistanceFunctorT       const& patchPatchDistanceFunctor
                         , int                               const  gid_tag_name
-                        , int                               const  nn_K )
+                        , int                               const  nn_K
+                        , bool                              const  verbose
+                        )
 {
     std::cout << "[" << __func__ << "]: " << "running with " << patchPatchDistanceFunctor.toString() << std::endl;
     std::cout << "[" << __func__ << "]: " << "running at " << patchPatchDistanceFunctor.getSpatialThreshold() << " spatial threshold" << std::endl;
@@ -359,12 +373,14 @@ Segmentation::regionGrow( _PointContainerT                       & points
     pcl::PointXYZ       searchPoint;
     const _Scalar       max_dist            = patchPatchDistanceFunctor.getSpatialThreshold();// * _Scalar(3.5); // longest axis of ellipse)
 
+    unsigned step_count = 0; // for logging
     // look for neighbours, merge most similar
     while ( starting_cands.size() )
     {
         // remove point from unassigned
         int pid = starting_cands.front();
         starting_cands.pop_front();
+        if ( verbose && !(++step_count % 100) ) std::cout << starting_cands.size() << " ";
 
         if ( visited[pid] && !assigned[pid] )
             std::cerr << "[" << __func__ << "]: " << " visited but not assigned...:JSDL:FJSD:LKFSDK:SFDJ" << std::endl;
@@ -429,6 +445,7 @@ Segmentation::regionGrow( _PointContainerT                       & points
 
         visited[pid] = true;
     }
+    std::cout << std::endl;
 
     // copy patches to groups
     groups_arg.insert( groups_arg.end(), patches.begin(), patches.end() );
@@ -553,7 +570,7 @@ Segmentation::segmentCli( int    argc
     // orientPoints
     if ( EXIT_SUCCESS == err )
     {
-        err = Segmentation::orientPoints<_PointPrimitiveT,_PrimitiveT>( points, generatorParams.scale, generatorParams.nn_K );
+        err = Segmentation::orientPoints<_PointPrimitiveT,_PrimitiveT>( points, generatorParams.scale, generatorParams.nn_K, verbose );
         if ( err != EXIT_SUCCESS ) std::cerr << "[" << __func__ << "]: " << "orientPoints exited with error! Code: " << err << std::endl;
     } //...orientPoints
 
