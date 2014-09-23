@@ -60,7 +60,8 @@ class Merging
                                           , _Scalar              const  spatial_threshold
                                           , _Scalar              const  parallel_limit
                                           , _PatchPatchDistanceFunctorT const& patchPatchDistFunct
-                                          , _PrimitiveDecideMergeFunctorT const& primitiveDecideMergeFunct );
+                                          , _PrimitiveDecideMergeFunctorT const& primitiveDecideMergeFunct
+                                          , bool preserveSmallPatches);
 
 
 }; //...class Merging
