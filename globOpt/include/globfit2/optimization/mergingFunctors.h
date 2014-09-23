@@ -105,8 +105,10 @@ private:
         //  - build a local copy p0local centered in 0 and oriented with updirection=y
         //  - compute the rotation between p0 and p0local
         //  - compute p0 gravity center
-        _PlaneT p0local (PointT::Zero(), PointT(_Scalar(0.), _Scalar(1.), _Scalar(0.)));
-        Eigen::Quaternion<_Scalar> q = Eigen::Quaternion<_Scalar>::FromTwoVectors(p0.normal(), p0local.normal());
+        PointT p0normal      ((extrema0[1]-extrema0[0]).normalized().cross((extrema0[2]-extrema0[1])).normalized());
+        PointT p0localnormal (_Scalar(0.), _Scalar(1.), _Scalar(0.));
+        //Eigen::Quaternion<_Scalar> q = Eigen::Quaternion<_Scalar>::FromTwoVectors(p0.normal(), p0local.normal());
+        Eigen::Quaternion<_Scalar> q = Eigen::Quaternion<_Scalar>::FromTwoVectors(p0normal, p0localnormal);
 
         PointT center (PointT::Zero());
         std::for_each(extrema0.begin(), extrema0.end(), [&center] (const PointT& p){ center+=p; });
@@ -122,7 +124,11 @@ private:
         // 3. Check if p1 extrema y coordinate are all included in [-scale,scale]
         auto inScaleBound = [&scale] (PointT& p){ return std::abs(p(1)) > scale; };
         typename _PointContainerT::iterator it = std::find_if(extrema1local.begin(), extrema1local.end(), inScaleBound);
-        if (it != extrema1local.end()) return false;
+        if (it != extrema1local.end()) {
+            //std::cerr << "Exiting at test 1" << std::endl;
+            return false;
+        }
+        //std::cerr << "Test 1 passed" << std::endl;
 
         // 4. Check if at least one extrema is included in the finite plane p0 (according to its extrema)
         _PointContainerT extrema0local = extrema0;
@@ -139,6 +145,13 @@ private:
         PointT f2 = (extrema0local[2]-extrema0local[1]);
         _Scalar hw = scale + f1.norm() / _Scalar(2.); f1.normalize();
         _Scalar hh = scale + f2.norm() / _Scalar(2.); f2.normalize();
+
+
+        PointT centerlocal (PointT::Zero());
+        std::for_each(extrema0local.begin(), extrema0local.end(), [&centerlocal] (PointT& p){ centerlocal+=p; });
+        centerlocal /= _Scalar(extrema0local.size());
+        if (centerlocal.norm() >= 10.e-6)
+        	std::cout << "problem here " << centerlocal.transpose() << std::endl;
 
         // here we project p over the two basis axis and check the norm of the projected vector
         // is < to the plane dimensions (hh,hw)
@@ -163,16 +176,26 @@ public:
             , _Scalar scale) const {
         typedef typename _PointContainerT::value_type PointT;
 
-        //    std::cout << "testing (" << p0.getTag(_LineT::GID )     << ","
-        //                             << p0.getTag(_LineT::DIR_GID ) << ")"
-        //              << " vs. ("    << p1.getTag(_LineT::GID ) << ","
-        //                             << p1.getTag(_LineT::DIR_GID ) << ")\t" << std::endl;
-
         // we don't merge when both group id and direction id are identical
         if (p0.getTag(_PlaneT::DIR_GID ) == p1.getTag(_PlaneT::DIR_GID ) &&
             p0.getTag(_PlaneT::GID )     == p1.getTag(_PlaneT::GID ) )
             return false;
 
+
+        // compute patch with biggest area
+        _Scalar a1 = (extrema0[1]-extrema0[0]).norm() * (extrema0[2]-extrema0[1]).norm();
+        _Scalar a2 = (extrema1[1]-extrema1[0]).norm() * (extrema1[2]-extrema1[1]).norm();
+
+        if (a1 > a2) return directionnalEval(extrema0, p0, extrema1, p1, scale);
+        if (a1 < a2) return directionnalEval(extrema1, p1, extrema0, p0, scale);
+
+        std::cout << "Pathes wich the same area: " << std::endl;
+        std::cout << "(" << p0.getTag(_PlaneT::GID )     << ","
+                  << p0.getTag(_PlaneT::DIR_GID ) << ")"
+                  << " vs. ("    << p1.getTag(_PlaneT::GID ) << ","
+                  << p1.getTag(_PlaneT::DIR_GID ) << ")\t" << std::endl;
+
+        // same area (few chances...)
         return directionnalEval(extrema0, p0, extrema1, p1, scale) ||
                directionnalEval(extrema1, p1, extrema0, p0, scale);
 
