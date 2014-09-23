@@ -119,9 +119,9 @@ namespace GF2
             // of the box.
             Eigen::Matrix<_Scalar, Eigen::Dynamic, 2> relativePoints (points.size(), 2);
             for(unsigned int i = 0; i != points.size(); ++i)
-                relativePoints.row(i) << points.at(i);
+                relativePoints.row(i) << points.at(i).transpose();
 
-            Eigen::Matrix<_Scalar, 2, 2> projMatrix = relativePoints * es.eigenvectors();
+            Eigen::Matrix<_Scalar, Eigen::Dynamic, 2> projMatrix = relativePoints * es.eigenvectors();
             _Scalar area  = (projMatrix.colwise().maxCoeff().array() - projMatrix.colwise().minCoeff().array()).prod();
 
             // we know that volume is necessary bigger than v0 and v1
