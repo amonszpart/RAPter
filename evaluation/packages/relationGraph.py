@@ -22,9 +22,10 @@ class RelationGraph(object):
         
         # And finaly the node weights (number of samples)
         # assignArray[][0] = point id
-        # assignArray[][0] = primitive uid
+        # assignArray[][1] = primitive uid
         for a in assignArray:
-            self.G.node[a[1]]['w'] += 1
+            if a[1] in self.G.node:
+                self.G.node[a[1]]['w'] += 1
                     
         #print "Number of primitives:  ",self.G.number_of_nodes()
         #print "Number of connections: ",self.G.number_of_edges()

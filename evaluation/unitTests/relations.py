@@ -42,13 +42,17 @@ def process(primArray1, assignArray1,
                 # 
                 # if we find it, we increment the matched field of the edges, and move to the next one
                 #mprint ((cUid, primitiveCorresId[cUid]))
-                for idx2, matched_cUid in enumerate(graph2.G.edge[matched_p.uid]):                
-                    #mprint (("  ",matched_cUid, primitiveCorresId[cUid]))
-                    if matched_cUid == primitiveCorresId[cUid]:
-                        #mprint ("  match found !")
-                        graph1.G.edge[p.uid][cUid]['matched'] += 1
-                        graph2.G.edge[matched_p.uid][matched_cUid]['matched'] += 1
-                        break
+                if cUid in primitiveCorresId:
+                    for idx2, matched_cUid in enumerate(graph2.G.edge[matched_p.uid]):                
+                        #mprint (("  ",matched_cUid, primitiveCorresId[cUid]))
+                        if matched_cUid == primitiveCorresId[cUid]:
+                            #mprint ("  match found !")
+                            graph1.G.edge[p.uid][cUid]['matched'] += 1
+                            graph2.G.edge[matched_p.uid][matched_cUid]['matched'] += 1
+                            break
+                else:
+                    mprint("relation.py:54") 
+
             
     def checkEdges(graph, doPrint):
         correct=0
@@ -72,6 +76,9 @@ def process(primArray1, assignArray1,
     if gtcorrect != correct_it1:
         mprint ("Error: non-symmetric detection")
         return -1., -1.
+        
+    mprint("Graph1, nbedges = %i", graph1.G.number_of_edges())
+    mprint("Graph2, nbedges = %i", graph2.G.number_of_edges())
         
     precision = float(gtcorrect)/float(graph2.G.number_of_edges())
     recall    = float(gtcorrect)/float(graph1.G.number_of_edges())
