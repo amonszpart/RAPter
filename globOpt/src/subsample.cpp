@@ -54,9 +54,9 @@ int subsample( int argc, char** argv )
 
     Position min_pt, max_pt;
     pcl::getMinMax3D( cloud, min_pt, max_pt );
-    std::cout << "min: " << min_pt.transpose() << ", max: " << max_pt.transpose() << std::endl;
     Position div = (max_pt - min_pt);
-    div.setConstant( div.maxCoeff() );
+    div.setConstant( div.head<3>().maxCoeff() );
+    std::cout << "min: " << min_pt.transpose() << ", max: " << max_pt.transpose() << ", div: " << div.transpose() << std::endl;
 
     if ( scene_size > 0.f )
     {
