@@ -114,20 +114,32 @@ namespace GF2
         std::cout << "[" << __func__ << "]: " << "scale: " << scale
                   << std::endl;
 
+        const int primColourTag  = dir_colours ? PrimitiveT::DIR_GID      : PrimitiveT::GID;
+        const int pointColourTag = dir_colours ? PointPrimitiveT::DIR_GID : PointPrimitiveT::GID;
+
         // calc groups
-        int max_gid = 0, nPrimitives = 0, max_dir_gid = 0;
+        int max_gid = 0, nPrimitives = 0, max_dir_gid = 0, nbColour = 0;
         std::map< int, std::pair<int,int> > gid2lidLid1;
+        std::map< int, int >  id2ColId;
         for ( size_t pid = 0; pid != points.size(); ++pid )
             max_gid = std::max( max_gid, points[pid].getTag(PointPrimitiveT::GID) );
         for ( size_t lid = 0; lid != primitives.size(); ++lid )
             for ( size_t lid1 = 0; lid1 != primitives[lid].size(); ++lid1 )
             {
-                max_gid     = std::max( max_gid    , primitives[lid][lid1].getTag(PrimitiveT::GID    ) );
-                max_dir_gid = std::max( max_dir_gid, primitives[lid][lid1].getTag(PrimitiveT::DIR_GID) );
-                ++nPrimitives;
+                if (primitives[lid][lid1].getTag(PrimitiveT::STATUS) != PrimitiveT::SMALL){
 
-                if (primitives[lid][lid1].getTag(PrimitiveT::STATUS) != PrimitiveT::SMALL)
-                    gid2lidLid1[ primitives[lid][lid1].getTag(PrimitiveT::GID) ] = std::pair<int,int>( lid, lid1 );
+                    max_gid     = std::max( max_gid    , primitives[lid][lid1].getTag(PrimitiveT::GID    ) );
+                    max_dir_gid = std::max( max_dir_gid, primitives[lid][lid1].getTag(PrimitiveT::DIR_GID) );
+
+                    // this id has not been referenced to a color previously
+                    if (id2ColId.find(primitives[lid][lid1].getTag(primColourTag)) == id2ColId.end()){
+                        id2ColId  [ primitives[lid][lid1].getTag(primColourTag) ] = nbColour;
+                        nbColour++;
+                    }
+                    gid2lidLid1[primitives[lid][lid1].getTag(PrimitiveT::GID)] = std::pair<int,int>(lid,lid1);
+
+                    ++nPrimitives;
+                }
             }
         std::cout << "[" << __func__ << "]: "
                   << "points: "         << points.size()
@@ -137,19 +149,29 @@ namespace GF2
                   << ", pop-limit: "    << pop_limit
                   << ", filter-gids.size(): " << (filter_gids ? filter_gids->size() : 0)
                   << std::endl;
-        std::vector<Eigen::Vector3f> colours = util::nColoursEigen( /*   count: */ dir_colours ? max_dir_gid + 1
-                                                                                               : max_gid     + 1
-                                                                  , /*   scale: */ 255.f
-                                                                  , /* shuffle: */ true );
 
-        // here we iterate of the colour vector to set a black color to unused gids
-        Eigen::Vector3f unusedColor = Eigen::Vector3f::Zero();
-        for(int i = 0; i != colours.size(); ++i){
-            if (gid2lidLid1.find(i) == gid2lidLid1.end()){
-                colours[i] = unusedColor;
-            }
+
+        // Check if we can use color palette
+        bool usePalette =  id2ColId.size() < util::paletteLightColoursEigen().size();
+        std::vector<Eigen::Vector3f> pointColours, primColours;
+        Eigen::Vector3f unusedPointColour, unusedPrimColour;
+
+        if (usePalette){
+            cout << "SWitching to nicer color palette" << endl;
+
+            pointColours = util::paletteLightColoursEigen();
+            primColours  = util::paletteDarkColoursEigen();
+
+            unusedPointColour = util::paletteLightNeutralColour();
+            unusedPrimColour  = util::paletteDarkNeutralColour();
+
+        }else {
+            pointColours = util::nColoursEigen( /*   count: */ nbColour
+                                                , /*   scale: */ 255.f
+                                                , /* shuffle: */ true );
+            primColours = pointColours;
+            unusedPointColour = unusedPrimColour = Eigen::Vector3f::Zero();
         }
-
 
         //pcl::visualization::PCLVisualizer::Ptr vptr( new pcl::visualization::PCLVisualizer() );
         vis::MyVisPtr vptr( new pcl::visualization::PCLVisualizer(title) );
@@ -160,20 +182,28 @@ namespace GF2
             cloud->reserve( points.size() );
             for ( size_t pid = 0; pid != points.size(); ++pid )
             {
-                const int point_gid = points[pid].getTag(PointPrimitiveT::GID);
-                // skip, if filtering is on, and this gid is not in the filter
-                if ( filter_gids && (filter_gids->find(point_gid) == filter_gids->end()) )
-                {
-                    continue;
+
+                Eigen::Vector3f colour = unusedPointColour;
+
+                if(gid2lidLid1.find(points[pid].getTag(PointPrimitiveT::GID)) != gid2lidLid1.end()){
+                    std::pair<int,int> lid =  gid2lidLid1[points[pid].getTag(PointPrimitiveT::GID)];
+                    const int mid = primitives[lid.first][lid.second].getTag(primColourTag);
+                    if (id2ColId.find(mid) != id2ColId.end())
+                        colour = pointColours[id2ColId[mid]];
                 }
+                // skip, if filtering is on, and this gid is not in the filter
+                //if ( filter_gids && (filter_gids->find(primitives[points[pid]].getTag(PrimitiveT::GID)) == filter_gids->end()) )
+                //{
+                //    continue;
+                //}
 
                 MyPoint pnt;
                 pnt.x = ((Eigen::Matrix<_Scalar,3,1> )points[pid])(0); // convert PointPrimitive to Eigen::Matrix, and get (0)
                 pnt.y = ((Eigen::Matrix<_Scalar,3,1> )points[pid])(1);
                 pnt.z = ((Eigen::Matrix<_Scalar,3,1> )points[pid])(2);
-                pnt.r = colours[ point_gid ](0);
-                pnt.g = colours[ point_gid ](1);
-                pnt.b = colours[ point_gid ](2);
+                pnt.r = colour(0);
+                pnt.g = colour(1);
+                pnt.b = colour(2);
                 cloud->push_back( pnt );
 
                 pcl::Normal normal;
@@ -212,12 +242,6 @@ namespace GF2
 
         Eigen::Matrix<_Scalar,Eigen::Dynamic,1> area(1,1);
 
-        // recompute colors for lines
-        colours = util::nColoursEigen( /*   count: */ dir_colours ? max_dir_gid + 1
-                                                                  : max_gid     + 1
-                                                                    , /*   scale: */ 255.f
-                                       , /* shuffle: */ true );
-
         for ( size_t lid = 0; lid != primitives.size(); ++lid )
             for ( size_t lid1 = 0; lid1 != primitives[lid].size(); ++lid1 )
             {
@@ -229,10 +253,12 @@ namespace GF2
                 const int gid     = primitives[lid][lid1].getTag( PrimitiveT::GID     );
                 const int dir_gid = primitives[lid][lid1].getTag( PrimitiveT::DIR_GID );
 
-                if ( filter_gids && (filter_gids->find(gid) == filter_gids->end()) )
-                {
-                    continue;
-                }
+                if (primitives[lid][lid1].getTag(PrimitiveT::STATUS) == PrimitiveT::SMALL) continue;
+
+                //if ( filter_gids && (filter_gids->find(gid) == filter_gids->end()) )
+                //{
+                //    continue;
+                //}
 
 //                if ( lid != gid )
 //                { std::cout << "!!\tstarting " << line_name << ": " << lid << ", " << lid1 << ", " << gid << ", " << dir_gid << std::endl; fflush(stdout); }
@@ -242,11 +268,7 @@ namespace GF2
 //                if ( strcmp(line_name,"line_2_11") == 0 )
 //                { std::cout << "!!!\t\tequal " << line_name << ": " << lid << ", " << lid1 << ", " << gid << ", " << dir_gid << std::endl; fflush(stdout); }
 
-                Eigen::Matrix<_Scalar,3,1> prim_colour;
-                const int colour_index = dir_colours ? dir_gid : gid;
-                prim_colour << ((gid >= 0) ? (colours[colour_index](0) / 255.f) : colour(0)),
-                               ((gid >= 0) ? (colours[colour_index](1) / 255.f) : colour(1)),
-                               ((gid >= 0) ? (colours[colour_index](2) / 255.f) : colour(2));
+                Eigen::Matrix<_Scalar,3,1> prim_colour = primColours[id2ColId[dir_colours ? dir_gid : gid]] / 255.;
 
                 // if use tags, collect GID tagged point indices
                 std::vector<int> indices;
