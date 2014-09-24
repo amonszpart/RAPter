@@ -263,6 +263,7 @@ namespace correspondence
                     cerr << "Skipping patch without population" << endl;
                     continue;
                 }
+
                 // for primtives in patch of A
                 for ( inner_const_iterator inner_it0 = (*outer_it0).second.begin(); inner_it0 != (*outer_it0).second.end(); ++inner_it0, ++lidA )
                 {
@@ -276,6 +277,9 @@ namespace correspondence
                                 , &(populationsA[gidA]) );
                         CHECK( err, "getExtent" );
                     }
+
+                    if (inner_it0->getTag(_PrimitiveT::STATUS) != _PrimitiveT::STATUS_VALUES::ACTIVE) continue;
+
 
                     if (extremaMapA[ GidLid(gidA,lidA) ].size() == 0) continue;
 
@@ -306,6 +310,8 @@ namespace correspondence
                             }
 
                             if ( extremaMapB[ GidLid(gidB,lidB) ].size() == 0 ) continue;
+
+                            if (inner_it1->getTag(_PrimitiveT::STATUS) != _PrimitiveT::STATUS_VALUES::ACTIVE) continue;
 
                             // log
                             std::cout << "checking " << gidA << "." << lidA << " vs " << gidB << "." << lidB;
@@ -411,6 +417,8 @@ namespace correspondence
                 }
                 corresp_path = ss.str();
             }
+
+            cout << "Correspondances: Output " << corresp_path.c_str() << endl;
 
             // backup previous copy
             GF2::util::saveBackup( corresp_path );
