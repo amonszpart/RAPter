@@ -50,7 +50,7 @@ fi
 anglegens="90"; # Desired angle generators in degrees. Default: 90.
 nbExtraIter=5;  # iteration count. Default: 2.
 dirbias="0";	# not-same-dir-id cost offset. Default: 0. Don't use, if freqweight is on.
-freqweight="0.1"; # dataterm = (freqweight / #instances) * datacost. Default: 0. 1 might be too strong...todo
+freqweight="10"; # dataterm = (freqweight / #instances) * datacost. Default: 0. 1 might be too strong...todo
 adopt="0";      # Adopt points argument. Default: 0
 # In candidate generation, divide angle limit with this to match copies. Default: 1. Set to 10, if too many candidates (variables).
 cand_anglediv="1";# for 3D: "2.5";
@@ -63,7 +63,7 @@ firstConstrMode="patch" # what to add in the first run formulate. Default: 0 (ev
 iterationConstrMode="patch" # what to add in the second iteration formulate. Default: 0 (everyPatchNeedsDirection), experimental: 2 (largePatchesNeedDirection).
 premerge=0
 startAt=0
-smallThresh="10" # smallThresh * scale is the small threshold
+smallThresh="10" # smallThresh * scale is the small threshold # 5 was good for most of the stuff, except big scenes (kinect, lanslevillard)
 smallThreshlimit="1"
 
 
@@ -95,7 +95,7 @@ function save_args() {
 }
 
 # call it
-save_args $0 $@ "--freqweight" $freqweight "--angle-limit" $anglelimit "--segment-scale-mult" $segmentScaleMultiplier "--adopt" $adopt "--dirbias" $dirbias "--cand-anglediv" ${cand_anglediv} "--angle-gens" $anglegens "--cost-fn" $pwCostFunc
+save_args $0 $@ "--freqweight" $freqweight "--angle-limit" $anglelimit "--segment-scale-mult" $segmentScaleMultiplier "--adopt" $adopt "--dirbias" $dirbias "--cand-anglediv" ${cand_anglediv} "--angle-gens" $anglegens "--cost-fn" $pwCostFunc "--small-thresh" $smallThresh "--small-thresh-limit" $smallThreshLimit
 
 #####
 # Check if the gt folder exists, in that case compute the primitive comparisons
@@ -113,7 +113,7 @@ fi
 function my_exec() {
 	echo "__________________________________________________________";
 	echo -e "\n\n[CALLING] $1";
-    eval $1;
+    #eval $1;
   	if [ "$?" -ne "0" ]; then
 	    echo "Error detected ($?). ABORT."
 	    exit 1
@@ -140,14 +140,14 @@ input="patches.csv";
 assoc="points_primitives.csv";
 
 # show segment output
-my_exec "../globOptVis --show$flag3D --scale $scale --use-tags --pop-limit $poplimit -p patches.csv -a $assoc --normals 10 --title \"Segment output\" --no-clusters &"
+my_exec "../globOptVis --show$flag3D --scale $scale --use-tags --pop-limit $poplimit -p patches.csv -a $assoc --normals 10 --title \"GlobOpt - Segment output\" --no-clusters --no-pop &"
 
 # merge before start
 if [ $premerge -ne 0 ]; then
     my_exec "$executable --merge$flag3D --scale $scale --adopt $adopt --prims $input -a $assoc --angle-gens $anglegens --patch-pop-limit $poplimit"
     cp patches.csv_merged_it-1.csv $input
     cp points_primitives_it-1.csv $assoc
-    my_exec "../globOptVis --show$flag3D --scale $scale --use-tags --pop-limit $poplimit -p patches.csv -a $assoc --normals 5 --title \"PreMerge output\" --no-clusters &"
+    my_exec "../globOptVis --show$flag3D --scale $scale --use-tags --pop-limit $poplimit -p patches.csv -a $assoc --normals 5 --title \"GlobOpt - PreMerge output\" --no-clusters &"
 fi
 
 # Generate candidates. OUT: candidates_it0.csv. #small-mode : small patches don't receive any candidates
@@ -165,7 +165,7 @@ if [ "$correspondance" = true ] ; then
 fi
 
 # Show output of first iteration.
-my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p primitives_it0.bonmin.csv -a $assoc --title \"1st iteration output\" $visdefparam --ids# &"
+my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p primitives_it0.bonmin.csv -a $assoc --title \"GlobOpt - 1st iteration output\" $visdefparam --ids# &"
 # !! set flag3D to "3D" and recomment these two lines to work with 3D
 #energies
 #exit
@@ -176,7 +176,7 @@ my_exec "$executable --merge$flag3D --scale $scale --adopt $adopt --prims primit
 #cp points_primitives.csv points_primitives_it0.csv
 
 # Show output of first merge.
-my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p primitives_merged_it0.csv -a points_primitives_it0.csv --title \"Merged 1st iteration output\" $visdefparam  &"
+my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p primitives_merged_it0.csv -a points_primitives_it0.csv --title \"GlobOpt - Merged 1st iteration output\" $visdefparam  &"
 
 for c in $(seq 1 $nbExtraIter)
 do
@@ -215,17 +215,20 @@ do
     fi
 
     # Show output of first iteration.
-    my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p primitives_it$c.bonmin.csv -a $assoc --title \"$nextId nd iteration output\" $visdefparam &"
+    my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p primitives_it$c.bonmin.csv -a $assoc --title \"GlobOpt - $nextId iteration output\" $visdefparam &"
 
     if [ $c -lt $nbExtraIter ]; then
         # Merge adjacent candidates with same dir id. OUT: primitives_merged_it$c.csv, points_primitives_it$c.csv
         my_exec "$executable --merge$flag3D --scale $scale --adopt $adopt --angle-gens $anglegens --prims primitives_it$c.bonmin.csv -a $assoc --patch-pop-limit $poplimit"
 
         # Show output of second iteration.
-        my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit 0 --angle-gens $anglegens --prims primitives_merged_it$c.csv -a points_primitives_it$c.csv --title \"Merged $nextId nd iteration output\" $visdefparam &"
+        my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit 0 --angle-gens $anglegens --prims primitives_merged_it$c.csv -a points_primitives_it$c.csv --title \"GlobOpt - Merged $nextId iteration output\" $visdefparam &"
     else
-        my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p primitives_it$c.bonmin.csv -a $assoc --title \"$nextId nd iteration output\" $visdefparam --dir-colours --no-rels &"
+        my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p primitives_it$c.bonmin.csv -a $assoc --title \"GlobOpt - [Dir-Colours] $nextId iteration output\" $visdefparam --dir-colours --no-rels &"
     fi
+
+    my_exec "$executable --formulate$flag3D --candidates primitives_it$c.bonmin.csv -a $assoc --energy --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $anglegens --constr-mode $iterationConstrMode --cost-fn $pwCostFunc"
 done
 
-#energies
+energies
+# ../pearl --scale 0.05 --cloud cloud.ply --prims patches.csv --assoc points_primitives.csv --pw 1000 --cmp 1000
