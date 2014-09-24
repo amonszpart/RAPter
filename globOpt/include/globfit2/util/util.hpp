@@ -118,6 +118,72 @@ nColoursEigen( int n, Scalar scale, bool random_shuffle )
     return colours_eigen;
 }
 
+inline std::vector< ::Eigen::Vector3f >
+paletteLightColoursEigen()
+{
+    // don't have template parameters, since we return Vector3f....
+    std::vector< ::Eigen::Vector3f > colours_eigen;
+    colours_eigen.resize(7);
+    colours_eigen [0] << 242.f, 175.f, 173.f;
+    colours_eigen [1] << 217.f, 228.f, 170.f;
+    colours_eigen [2] << 184.f, 210.f, 236.f;
+    colours_eigen [3] << 243.f, 209.f, 176.f;
+    colours_eigen [4] << 213.f, 178.f, 212.f;
+    colours_eigen [5] << 221.f, 185.f, 169.f;
+    colours_eigen [6] << 235.f, 192.f, 218.f;
+
+    return colours_eigen;
+}
+
+inline Eigen::Vector3f
+paletteLightNeutralColour(){
+    return Eigen::Vector3f(204.f, 204.f, 204.f);
+}
+
+inline std::vector< ::Eigen::Vector3f >
+paletteMediumColoursEigen()
+{
+    // don't have template parameters, since we return Vector3f....
+    std::vector< ::Eigen::Vector3f > colours_eigen;
+    colours_eigen.resize(7);
+    colours_eigen [0] << 241.f, 090.f, 096.f;
+    colours_eigen [1] << 122.f, 195.f, 106.f;
+    colours_eigen [2] << 090.f, 155.f, 212.f;
+    colours_eigen [3] << 250.f, 167.f, 091.f;
+    colours_eigen [4] << 158.f, 103.f, 171.f;
+    colours_eigen [5] << 206.f, 112.f, 088.f;
+    colours_eigen [6] << 215.f, 127.f, 180.f;
+
+    return colours_eigen;
+}
+
+inline Eigen::Vector3f
+paletteMediumNeutralColour(){
+    return Eigen::Vector3f(115.f, 115.f, 115.f);
+}
+
+inline std::vector< ::Eigen::Vector3f >
+paletteDarkColoursEigen()
+{
+    // don't have template parameters, since we return Vector3f....
+    std::vector< ::Eigen::Vector3f > colours_eigen;
+    colours_eigen.resize(7);
+    colours_eigen [0] << 238.f, 046.f, 047.f;
+    colours_eigen [1] << 000.f, 140.f, 072.f;
+    colours_eigen [2] << 024.f, 090.f, 169.f;
+    colours_eigen [3] << 244.f, 125.f, 035.f;
+    colours_eigen [4] << 102.f, 044.f, 145.f;
+    colours_eigen [5] << 162.f, 029.f, 033.f;
+    colours_eigen [6] << 180.f, 056.f, 148.f;
+
+    return colours_eigen;
+}
+
+inline Eigen::Vector3f
+paletteDarkNeutralColour(){
+    return Eigen::Vector3f(001.f, 002.f, 002.f);
+}
+
 inline std::string timestamp2Str()
 {
     time_t rawtime;
