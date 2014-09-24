@@ -215,27 +215,27 @@ namespace GF2
     template <class _PrimitiveT, class PointToPrimFunctor>
     struct MyFinitePrimitiveToFinitePrimitiveCompatFunctor
     {
-        template < class _PointContainerT
-                 , typename _Scalar>
+        template < class _PointContainerT>
         inline typename _PrimitiveT::Scalar eval(
                   _PointContainerT const& extrema0
                 , _PrimitiveT const& p0
                 , _PointContainerT const& extrema1
                 , _PrimitiveT const& p1) const {
             typedef typename _PointContainerT::value_type PointT;
+            typedef typename _PrimitiveT::Scalar Scalar;
 
             PointToPrimFunctor functor;
 
-            _Scalar min = std::numeric_limits<_Scalar>::max();
+            Scalar min = std::numeric_limits<Scalar>::max();
             for (typename _PointContainerT::const_iterator it = extrema0.begin();
                  it != extrema0.end(); ++it){
-                const _Scalar m = functor.eval(extrema1, p1, *it);
+                const Scalar m = functor.eval(extrema1, p1, *it);
                 if(m < min) min = m;
             }
 
             for (typename _PointContainerT::const_iterator it = extrema1.begin();
                  it != extrema1.end(); ++it){
-                const _Scalar m = functor.eval(extrema0, p0, *it);
+                const Scalar m = functor.eval(extrema0, p0, *it);
                 if(m < min) min = m;
             }
 
@@ -332,13 +332,14 @@ namespace GF2
         }
     }; //...SqrtPrimitivePrimitiveEnergyFunctor
 
-#if 0
-    /*!
-     * \tparam _PrimitiveCompFunctor Concept: \ref GF2::SharedAreaForLinesWithScaleFunctor.
+#if 1
+    /*! \brief Used to setup spatially smooth pairwise cost in \ref GF2::problemSetup::formulate().
+     * \tparam _PrimitiveCompFunctor Concept: \ref GF2::MyFinitePrimitiveToFinitePrimitiveCompatFunctor
      */
-    template <class _PrimitiveCompFunctor, class _PointContainerT, typename _Scalar, class PrimitiveT>
+    template <class _FiniteFiniteDistanceFunctor, class _PointContainerT, typename _Scalar, class PrimitiveT>
     struct SpatialSqrtPrimitivePrimitiveEnergyFunctor : public AbstractPrimitivePrimitiveEnergyFunctor<_Scalar,PrimitiveT>
     {
+        typedef std::vector< Eigen::Matrix<_Scalar,3,1> > ExtremaT;
 
         SpatialSqrtPrimitivePrimitiveEnergyFunctor( std::vector<_Scalar> const& angles
                                                   , _PointContainerT     const& points
@@ -346,31 +347,48 @@ namespace GF2
             : AbstractPrimitivePrimitiveEnergyFunctor<_Scalar,PrimitiveT>( angles )
             , _points( points )
             , _scale ( scale )
+            , _verbose( false )
         {}
 
         virtual ~SpatialSqrtPrimitivePrimitiveEnergyFunctor() {};
 
         virtual inline _Scalar
-        eval( PrimitiveT p1, PrimitiveT p2 )
+        eval( PrimitiveT const& p1, ExtremaT const& ex1, PrimitiveT const& p2, ExtremaT const& ex2 )
         {
             _Scalar diff  = MyPrimitivePrimitiveAngleFunctor::eval( p1, p2, this->_angles );
 
             // truncated at half degree difference
             _Scalar score = std::min( _Scalar(0.09341652027), _Scalar(sqrt(diff)) );
 
-            std::cout << "score was " << score << ", and now will be ";
+            _Scalar dist = _primPrimCompFunctor.template eval( ex1, p1, ex2, p2 );
+            _Scalar spat_w = std::max( _Scalar(5.) * _scale
+                                       - _primPrimCompFunctor.template eval( ex1, p1, ex2, p2 )
+                                     , _Scalar(0.) );
 
-            return _primPrimCompFunctor.eval(extrema,   p1.template pos(),
-                                             extremagt, p2.template pos(),
-                                             scale);
+            if ( _verbose && (spat_w > _Scalar(0.)) )
+            {
+                std::cout << "score was " << score << ", and now will be using dist ";
+                std::cout << dist << " --> ";
+
+                std::cout << score << " + " << spat_w << " = ";
+            }
+            score *= _Scalar(1.) + spat_w;
+
+            if ( _verbose && (spat_w > _Scalar(0.)) )
+            {
+                std::cout << score << std::endl;
+            }
 
             return score;
         }
 
+            bool                           _verbose;
         protected:
-            _PrimitiveCompFunctor          _primPrimCompFunctor;
+            _FiniteFiniteDistanceFunctor   _primPrimCompFunctor;
             _PointContainerT        const& _points;
             _Scalar                        _scale;
+
+
 
     }; //...SqrtPrimitivePrimitiveEnergyFunctor
 #endif

@@ -3,6 +3,8 @@
 
 #include <iostream>                               // cout, cerr, endl
 #include "Eigen/Dense"
+#include <vector>
+#include <map>
 
 #if GF2_USE_PCL
 #   include "pcl/console/parse.h" // pcl::console::parse_argument
@@ -23,12 +25,15 @@ template < class _PrimitiveContainerT
          , class _PointContainerT
          , class _PrimitiveT
          , class _PointPrimitiveT
+         , class _FiniteFiniteDistFunctor
          > int
 ProblemSetup::formulateCli( int    argc
                           , char** argv )
 {
     bool verbose = false;
     typedef          MyPointPrimitiveDistanceFunctor               _PointPrimitiveDistanceFunctor;
+    //typedef          MyPointPrimitiveDistanceFunctor               _PointPrimitiveDistanceFunctor;
+
     typedef typename _PointPrimitiveT::Scalar                      Scalar;
 
     GF2::ProblemSetupParams<Scalar> params;
@@ -119,7 +124,7 @@ ProblemSetup::formulateCli( int    argc
                       << " [--unary " << params.weights(0) << "]\n"
                       << " [--pw " << params.weights(1) << "]\n"
                       << " [--cmp " << params.weights(2) << "]\n"
-                      << " [--cost-fn *" << cost_string << "* (cexp | sqrt)" << "]\n"
+                      << " [--cost-fn *" << cost_string << "* (spatsqrt | cexp | sqrt)" << "]\n"
                       << " [--data-mode *" << (int)params.data_cost_mode << "* (assoc | band | instance) ]\n"
                       << " [--constr-mode *" << (int)params.constr_mode << "* (patch | point | hybrid ) ]\n"
                       << " [--srand " << srand_val << "]\n"
@@ -170,12 +175,24 @@ ProblemSetup::formulateCli( int    argc
             std::cerr << "[" << __func__ << "]: " << "point assigned to patch with id -1" << std::endl;
     } //...read associations
 
-    AbstractPrimitivePrimitiveEnergyFunctor<Scalar,_PrimitiveT> *primPrimDistFunctor = NULL;
+    //AbstractPrimitivePrimitiveEnergyFunctor<Scalar,_PrimitiveT> *primPrimDistFunctor = NULL;
+    SpatialSqrtPrimitivePrimitiveEnergyFunctor<_FiniteFiniteDistFunctor, _PointContainerT, Scalar,_PrimitiveT> *primPrimDistFunctor = NULL;
     // parse cost function
     {
-             if ( !cost_string.compare("cexp") )    primPrimDistFunctor = new CExpPrimitivePrimitiveEnergyFunctor<Scalar,_PrimitiveT>( params.angles );
-        else if ( !cost_string.compare("sqrt") )    primPrimDistFunctor = new SqrtPrimitivePrimitiveEnergyFunctor<Scalar,_PrimitiveT>( params.angles );
-        else                                        std::cerr << "[" << __func__ << "]: " << "Could not parse cost functor input..." << std::endl;
+        if ( !cost_string.compare("spatsqrt") )
+        {
+            primPrimDistFunctor = new SpatialSqrtPrimitivePrimitiveEnergyFunctor<_FiniteFiniteDistFunctor, _PointContainerT, Scalar,_PrimitiveT>
+                    ( params.angles, points, params.scale );
+            primPrimDistFunctor->_verbose = verbose;
+        }
+        else
+        {
+            std::cerr << "[" << __func__ << "]: " << "unrecognized primitive-primitive cost function: " << cost_string << " you probably need --cost-fn \"spatsqrt\""<< std::endl;
+            throw new std::runtime_error( "Unrecognized primitive-primitive cost function" );
+        }
+//             if ( !cost_string.compare("cexp") )    primPrimDistFunctor = new CExpPrimitivePrimitiveEnergyFunctor<Scalar,_PrimitiveT>( params.angles );
+//        else if ( !cost_string.compare("sqrt") )    primPrimDistFunctor = new SqrtPrimitivePrimitiveEnergyFunctor<Scalar,_PrimitiveT>( params.angles );
+//        else                                        std::cerr << "[" << __func__ << "]: " << "Could not parse cost functor input..." << std::endl;
     } //...parse cost function
 
     // WORK
@@ -232,6 +249,7 @@ ProblemSetup::formulateCli( int    argc
 template < class _PointPrimitiveDistanceFunctor
          , class _PrimitiveContainerT
          , class _PointContainerT
+         , class _PrimPrimDistFunctorT
          , class _PrimitiveT
          , class _PointPrimitiveT
          , typename _Scalar
@@ -243,7 +261,7 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
                        , typename ProblemSetupParams<_Scalar>::DATA_COST_MODE          const  data_cost_mode
                        , _Scalar                                                       const  scale
                        , Eigen::Matrix<_Scalar,-1,1>                                   const& weights
-                       , AbstractPrimitivePrimitiveEnergyFunctor<_Scalar,_PrimitiveT>* const& primPrimDistFunctor
+                       , _PrimPrimDistFunctorT                                       * const& primPrimDistFunctor // AbstractPrimitivePrimitiveEnergyFunctor<_Scalar,_PrimitiveT>
                        , int                                                           const  patch_pop_limit
                        , _Scalar                                                       const  dir_id_bias
                        , int                                                           const  verbose
@@ -354,6 +372,14 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
     // Pairwise cost -> quad objective
     if ( EXIT_SUCCESS == err )
     {
+        typedef std::vector< Eigen::Matrix<_Scalar,3,1> > ExtremaT;
+        typedef std::pair<int,int> LidLid;
+        typedef std::map< LidLid, ExtremaT > ExtremaMapT;
+        ExtremaMapT extremas;
+
+        GidPidVectorMap populations;
+        processing::getPopulations( populations, points );
+
         for ( size_t lid = 0; lid != prims.size(); ++lid )
         {
             for ( size_t lid1 = 0; lid1 != prims[lid].size(); ++lid1 )
@@ -361,21 +387,58 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
                 if ( prims[lid][lid1].getTag( _PrimitiveT::TAGS::STATUS ) == _PrimitiveT::STATUS_VALUES::SMALL )
                     continue;
 
-                for ( size_t olid = 0; olid != prims.size(); ++olid )
+                const int gid = prims[lid][lid1].getTag( _PrimitiveT::TAGS::GID );
+
+                // extremas key
+                LidLid lidLid1( lid, lid1 );
+                // find/calculate extrema
+                typename ExtremaMapT::const_iterator it = extremas.find(lidLid1);
+                if ( it == extremas.end() )
                 {
-                    for ( size_t olid1 = 0; olid1 != prims[olid].size(); ++olid1 )
+                    prims[lid][lid1].template getExtent<_PointPrimitiveT>( extremas[lidLid1]
+                                                       , points
+                                                       , scale
+                                                       , &(populations[gid]) );
+                    it = extremas.find( lidLid1 );
+                }
+
+                for ( size_t lidOth = 0; lidOth != prims.size(); ++lidOth )
+                {
+                    for ( size_t lid1Oth = 0; lid1Oth != prims[lidOth].size(); ++lid1Oth )
                     {
-                        if ( prims[olid][olid1].getTag( _PrimitiveT::TAGS::STATUS ) == _PrimitiveT::STATUS_VALUES::SMALL )
+                        if ( prims[lidOth][lid1Oth].getTag( _PrimitiveT::TAGS::STATUS ) == _PrimitiveT::STATUS_VALUES::SMALL )
                             continue;
 
                         // skip same line, that's always zero
-                        if ( (lid == olid) && (lid1 == olid1) ) continue;
+                        if ( (lid == lidOth) && (lid1 == lid1Oth) ) continue;
 
-                        _Scalar dist = primPrimDistFunctor->eval( prims[lid][lid1], prims[olid][olid1] );
-                        if ( prims[lid][lid1].getTag(_PrimitiveT::DIR_GID) != prims[olid][olid1].getTag(_PrimitiveT::DIR_GID) )
+                        const int gidOth = prims[lidOth][lid1Oth].getTag( _PrimitiveT::TAGS::GID );
+
+                        // extremas key
+                        LidLid lidLid1Oth( lidOth, lid1Oth );
+                        // find/calculate extrema
+                        typename ExtremaMapT::const_iterator oit = extremas.find( lidLid1Oth );
+                        if ( oit == extremas.end() )
+                        {
+                            prims[lidOth][lid1Oth].template getExtent<_PointPrimitiveT>( extremas[lidLid1Oth]
+                                                               , points
+                                                               , scale
+                                                               , &(populations[gidOth]) );
+                            oit = extremas.find( lidLid1Oth );
+                        }
+
+                        // SqrtAngle:
+                        _Scalar dist = primPrimDistFunctor->eval( prims[lid][lid1], (*it).second, prims[lidOth][lid1Oth], (*oit).second );
+
+                        // should be deprecated:
+                        if ( prims[lid][lid1].getTag(_PrimitiveT::DIR_GID) != prims[lidOth][lid1Oth].getTag(_PrimitiveT::DIR_GID) )
                             dist += dir_id_bias;
+
+                        // multiply by pairwise weight
                         dist *= weights(1);
-                        problem.addQObjective( lids_varids.at( IntPair(lid,lid1) ), lids_varids.at( IntPair(olid,olid1) ), dist );
+
+                        // add
+                        problem.addQObjective( lids_varids.at( IntPair(lid,lid1) ), lids_varids.at( IntPair(lidOth,lid1Oth) ), dist );
                     } // ... olid1
                 } // ... olid
             } // ... lid1
