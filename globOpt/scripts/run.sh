@@ -58,7 +58,7 @@ cand_anglediv="1";# for 3D: "2.5";
 segmentScaleMultiplier="1";# for 3D: "2.5";
 pwCostFunc="spatsqrt" # spatial cost function. TODO: reactivate sqrt (does not compile for now)
 
-visdefparam="--use-tags --no-clusters --statuses -1,1 --no-pop" #"--use-tags --no-clusters" #--ids
+visdefparam="--use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours" #"--use-tags --no-clusters" #--ids
 firstConstrMode="patch" # what to add in the first run formulate. Default: 0 (everyPatchNeedsDirection), experimental: 2 (largePatchesNeedDirection).
 iterationConstrMode="patch" # what to add in the second iteration formulate. Default: 0 (everyPatchNeedsDirection), experimental: 2 (largePatchesNeedDirection).
 premerge=0
@@ -113,7 +113,7 @@ fi
 function my_exec() {
 	echo "__________________________________________________________";
 	echo -e "\n\n[CALLING] $1";
-    #eval $1;
+    eval $1;
   	if [ "$?" -ne "0" ]; then
 	    echo "Error detected ($?). ABORT."
 	    exit 1
@@ -152,7 +152,7 @@ fi
 
 # Generate candidates. OUT: candidates_it0.csv. #small-mode : small patches don't receive any candidates
 my_exec "$executable --generate$flag3D -sc $scale -al $anglelimit -ald ${cand_anglediv} --small-mode 0 --patch-pop-limit $poplimit -p $input --assoc $assoc --angle-gens $anglegens --small-thresh-mult $smallThresh"
-#my_exec "../globOptVis --show$flag3D --scale $scale --use-tags --ids --pop-limit $poplimit -p candidates_it0.csv -a $assoc --statuses -1,1 --title \"Generate output\" &"
+my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p candidates_it0.csv -a $assoc --statuses -1,1 --title \"Candidates\" $visdefparam &"
 
 # Formulate optimization problem. OUT: "problem" directory. constr-mode 2: largePatchesNeedDirectionConstraint
 my_exec "$executable --formulate$flag3D --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --constr-mode $firstConstrMode --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $anglegens --candidates candidates_it0.csv -a $assoc --freq-weight $freqweight --cost-fn $pwCostFunc"
