@@ -38,6 +38,7 @@ GF2::vis::showCli( int argc, char** argv )
                   << "\t[--dir-colours \t colourcode direction IDs']\n"
                   << "\t[--gids \t Show only specific gids (comma separated)]\n"
                   << "\t[--statuses \t Show only specific statuses (comma separated)]"
+                  << "\t[--hide-pts \t Hide point cloud (display only primitives)]"
                   << std::endl;
         return EXIT_SUCCESS;
     }
@@ -52,6 +53,7 @@ GF2::vis::showCli( int argc, char** argv )
     float perfect_angle_limit = 10.e-5;
     pcl::console::parse_argument( argc, argv, "--perfect-angle", perfect_angle_limit );
     bool dir_colours = pcl::console::find_switch( argc, argv, "--dir-colours" );
+    bool hide_points = pcl::console::find_switch( argc, argv, "--hide-pts" );
 
     std::vector<int> gids;
     pcl::console::parse_x_arguments( argc, argv, "--gids", gids );
@@ -186,6 +188,7 @@ GF2::vis::showCli( int argc, char** argv )
                                                                                , /*  perfect_angle_limit: */ perfect_angle_limit
                                                                                , /* print_perfect_angles: */ print_angles
                                                                                , /*          dir_colours: */ dir_colours
+                                                                               , /*          hide_points: */ hide_points
                                                                                , /*          filter_gids: */ gidsSet.size  () ? &gidsSet: NULL
                                                                                , /*        filter_status: */ statusSet.size() ? &statusSet : NULL
                                                                                );

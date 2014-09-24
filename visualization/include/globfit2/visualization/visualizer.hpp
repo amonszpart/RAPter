@@ -46,6 +46,7 @@ namespace GF2 {
                 , _Scalar              const  perfect_angle_limit   = 10.e-6
                 , bool                 const  print_perf_angles     = false
                 , bool                 const  dir_colours           = false
+                , bool                 const  no_points             = false
                 , std::set<int>        const* filter_gids           = NULL
                 , std::set<int>        const* filter_status         = NULL
                 );
@@ -98,6 +99,7 @@ namespace GF2
                                                            , _Scalar              const  perfect_angle_limit /* = 0872664625 = 5deg*/
                                                            , bool                 const  print_perf_angles   /* = false */
                                                            , bool                 const  dir_colours         /* = false */
+                                                           , bool                 const  hide_points         /* = false */
                                                            , std::set<int>        const* filter_gids         /* = NULL */
                                                            , std::set<int>        const* filter_status       /* = NULL */
                                                            )
@@ -168,7 +170,8 @@ namespace GF2
                 normals->push_back( normal );
             }
         }
-        vptr->addPointCloud( cloud, "cloud", 0 );
+        if (! hide_points)
+            vptr->addPointCloud( cloud, "cloud", 0 );
         if ( show_normals )
         {
             vptr->addPointCloudNormals<MyPoint,pcl::Normal>( cloud
