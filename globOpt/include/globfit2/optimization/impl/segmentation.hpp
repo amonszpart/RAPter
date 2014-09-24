@@ -253,7 +253,7 @@ Segmentation::patchify( _PrimitiveContainerT                   & patches
         // don't add single clusters primitives, they will have to join others immediately
         if ( populations[gid].size() <= 1 ) continue;
 
-        if(populations[gid].size() < 3 ) continue;
+        if (populations[gid].size() < 3 ) continue;
 
         if ( _PrimitiveT::EmbedSpaceDim == 2) // added by Aron on 17 Sep 2014
         {
@@ -264,6 +264,9 @@ Segmentation::patchify( _PrimitiveContainerT                   & patches
         }
         else if ( _PrimitiveT::EmbedSpaceDim == 3)
         {
+
+            if (populations[gid].size() < 5 ) continue; // planes below 4 have no datacost
+
             if ( !(gid % 100) )
                 std::cout << "[" << __func__ << "]: " <<  float(gid) / groups.size() * 100.f << std::endl;
             // PLANE
