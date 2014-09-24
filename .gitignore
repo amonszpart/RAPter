@@ -27,3 +27,6 @@ build
 .excludes
 
 globOpt/data
+
+*.orig
+*_test

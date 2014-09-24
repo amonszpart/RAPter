@@ -1,1 +1,17 @@
 [09/24/14 11:36:11] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 40 --freqweight 0.1 --angle-limit 0.4 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 --cost-fn spatsqrt 
+[09/24/14 13:23:03] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 40 --freqweight 100 --angle-limit 0.4 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 --cost-fn spatsqrt 
+[09/24/14 13:23:35] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 40 --freqweight 100 --angle-limit 0.4 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 --cost-fn spatsqrt 
+[09/24/14 13:24:05] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 40 --freqweight 100 --angle-limit 0.4 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 --cost-fn spatsqrt 
+[09/24/14 13:31:52] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 40 --freqweight 100 --angle-limit 0.4 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 --cost-fn spatsqrt 
+[09/24/14 13:33:22] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 40 --freqweight 100 --angle-limit 0.4 --segment-scale-mult 1 --adopt 0 --dirbias 1 --cand-anglediv 1 --angle-gens 90 --cost-fn spatsqrt 
+[09/24/14 13:37:51] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 40 --freqweight 100 --angle-limit 0.4 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 --cost-fn spatsqrt 
+[09/24/14 13:39:23] ../../../globOpt/scripts/run.sh 0.03 0.4 10 40 --freqweight 100 --angle-limit 0.4 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 --cost-fn spatsqrt 
+[09/24/14 13:39:45] ../../../globOpt/scripts/run.sh 0.03 0.4 5 40 --freqweight 100 --angle-limit 0.4 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 --cost-fn spatsqrt 
+[09/24/14 13:40:04] ../../../globOpt/scripts/run.sh 0.03 0.4 2 40 --freqweight 100 --angle-limit 0.4 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 --cost-fn spatsqrt 
+[09/24/14 13:42:33] ../../../globOpt/scripts/run.sh 0.03 0.4 2 40 --freqweight 1 --angle-limit 0.4 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 --cost-fn spatsqrt 
+[09/24/14 13:43:05] ../../../globOpt/scripts/run.sh 0.03 0.4 2 40 --freqweight 1 --angle-limit 0.4 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 --cost-fn spatsqrt 
+[09/24/14 13:43:19] ../../../globOpt/scripts/run.sh 0.03 0.4 2 40 --freqweight 100 --angle-limit 0.4 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 --cost-fn spatsqrt 
+[09/24/14 13:59:06] ../../../globOpt/scripts/run.sh 0.03 0.4 2 40 --freqweight 100 --angle-limit 0.4 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 72,90 --cost-fn spatsqrt 
+[09/24/14 13:59:46] ../../../globOpt/scripts/run.sh 0.03 0.4 2 40 --freqweight 100 --angle-limit 0.4 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 --cost-fn spatsqrt 
+[09/24/14 14:34:41] ../../../globOpt/scripts/run.sh 0.03 0.4 2 40 --freqweight 10 --angle-limit 0.4 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 --cost-fn spatsqrt 
+[09/24/14 14:35:01] ../../../globOpt/scripts/run.sh 0.03 0.4 1 40 --freqweight 10 --angle-limit 0.4 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 --cost-fn spatsqrt 

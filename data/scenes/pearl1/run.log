@@ -2,3 +2,4 @@
 [09/24/14 13:57:02] ../run.sh 0.03 0.3 0.05 20 --freqweight 100 --angle-limit 0.3 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 72,90 --cost-fn spatsqrt 
 [09/24/14 13:58:08] ../run.sh 0.03 0.3 0.1 20 --freqweight 100 --angle-limit 0.3 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 72,90 --cost-fn spatsqrt 
 [09/24/14 13:58:25] ../run.sh 0.03 0.3 1 20 --freqweight 100 --angle-limit 0.3 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 72,90 --cost-fn spatsqrt 
+[09/24/14 14:36:18] ../run.sh 0.03 0.3 1 20 --freqweight 10 --angle-limit 0.3 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 --cost-fn spatsqrt 
