@@ -159,13 +159,20 @@ namespace GF2
         typedef typename _PrimitiveContainerT::mapped_type::const_iterator inner_const_iterator;
         typedef typename _PrimitiveContainerT::mapped_type::iterator       inner_iterator;
         typedef          std::pair<int,int>                                GidLid;                  // uniquely identifies a primitive by first: gid, second: linear id in innerContainer (vector).
+        typedef          std::pair<int,int>                                DidAid;
 
         if ( out_lines.size() ) std::cerr << "[" << __func__ << "]: " << "warning, out_lines not empty!" << std::endl;
         if ( params.patch_population_limit < 0 ) { std::cerr << "[" << __func__ << "]: " << "error, popfilter is necessary!!!" << std::endl; return EXIT_FAILURE; }
+        if ( angles[0] != _Scalar(0.) )
+        {
+            std::cerr << "[" << __func__ << "]: " << "angles[0] = 0 always! we need it for parallel" << std::endl;
+            throw new std::runtime_error("angles[0] = 0 always! we need it for parallel");
+        }
 
         int nlines = 0; // output size
         // filter already copied directions
-        std::map< int, std::set<int> > copied; // [gid] = [ dir0, dir 1, dir2, ... ]
+
+        std::map< int, std::set<DidAid> > copied; // [gid] = [ <dir0,angle_id0>, <dir0,angle_id1>, <dir2,angle_id0>, ... ]
 
         // (2) Mix and Filter
         // count patch populations
@@ -241,7 +248,7 @@ namespace GF2
                         if ( (prim_status == _PrimitiveT::STATUS_VALUES::ACTIVE) )
                         {
                             // store position-direction combination to avoid duplicates
-                            copied[ inner_it0->getTag(_PrimitiveT::GID) ].insert( inner_it0->getTag(_PrimitiveT::DIR_GID) );
+                            copied[ inner_it0->getTag(_PrimitiveT::GID) ].insert( DidAid(inner_it0->getTag(_PrimitiveT::DIR_GID),0) );
                             // update output count
                             ++nlines;
                         }
@@ -345,6 +352,12 @@ namespace GF2
                             bool    close_ang  = angdiff < angle_limit;
                             add0              |= close_ang; // prim0 needs to be close to prim1 in angle
                             add1              |= close_ang; // prim1 needs to be close to prim0 in angle
+
+                            // debug
+                            std::cout << "angle of " << gid0 << ", " << dir_gid0 << " and " << gid1 << ", " << dir_gid1 << " = " << angdiff
+                                      << ", closest: " << angles[closest_angle_id]
+                                      << ", closestid : " << closest_angle_id
+                                         << std::endl;
                         }
 
                         if ( params.small_mode == CandidateGeneratorParams<_Scalar>::SmallPatchesMode::RECEIVE_ALL ) // unused branch
@@ -375,10 +388,10 @@ namespace GF2
 
                         // store already copied pairs
                         {
-                            if ( copied[gid0].find(dir_gid1) != copied[gid0].end() )
+                            if ( copied[gid0].find(DidAid(dir_gid1,closest_angle_id)) != copied[gid0].end() )
                                 add0 = false;
 
-                            if ( copied[gid1].find(dir_gid0) != copied[gid1].end() )
+                            if ( copied[gid1].find(DidAid(dir_gid0,closest_angle_id)) != copied[gid1].end() )
                                 add1 = false;
                         }
 
@@ -387,7 +400,7 @@ namespace GF2
 
                         // copy line from pid to pid1
                         _PrimitiveT cand0;
-                        if ( add0 && prim0.generateFrom(cand0, prim1, closest_angle_id, angles, _Scalar(-1.)) )
+                        if ( add0 && prim0.generateFrom(cand0, prim1, closest_angle_id, angles, _Scalar(1.)) )
                         {
                             // prepare
                             //_PrimitiveT cand0 = _PrimitiveT( prim0.pos(), dir0 );
@@ -414,17 +427,18 @@ namespace GF2
                             int tmp_size = copied[ cand0.getTag(_PrimitiveT::GID) ].size();
 
                             // keep track of instances
-                            copied[ cand0.getTag(_PrimitiveT::GID) ].insert( cand0.getTag(_PrimitiveT::DIR_GID) );
+                            DidAid didAid( cand0.getTag(_PrimitiveT::DIR_GID),closest_angle_id ); // direction id, closest angle id
+                            copied[ cand0.getTag(_PrimitiveT::GID) ].insert( didAid );
 
                             // debug
-                            if ( copied[cand0.getTag(_PrimitiveT::GID)].size() == tmp_size )
+                            if ( copied[cand0.getTag(_PrimitiveT::GID) ].size() == tmp_size )
                                 std::cerr << "[" << __func__ << "][" << __LINE__ << "]: NOOOOO insertion, should not happen"
                                           << cand0.getTag( _PrimitiveT::GID ) << ", " << cand0.getTag( _PrimitiveT::DIR_GID )
                                           << std::endl;
                         }
 
                         _PrimitiveT cand1;
-                        if ( add1 && prim1.generateFrom(cand1, prim0, closest_angle_id, angles, _Scalar(1.)) )
+                        if ( add1 && prim1.generateFrom(cand1, prim0, closest_angle_id, angles, _Scalar(-1.)) )
                         {
                             //_PrimitiveT cand1 = _PrimitiveT( prim1.pos(), dir1 );
                             //_PrimitiveT cand1( prim1, prim0, -closest_angle );
@@ -447,11 +461,12 @@ namespace GF2
                             ++nlines;
 
                             // debug
+                            DidAid didAid( cand1.getTag(_PrimitiveT::DIR_GID), closest_angle_id );
                             if ( check != cand1.getTag(_PrimitiveT::DIR_GID) ) std::cerr << "dirgid tag copy check failed" << std::endl;
                             int tmp_size = copied[ cand1.getTag(_PrimitiveT::GID) ].size();
 
                             // keep track of instances
-                            copied[ cand1.getTag(_PrimitiveT::GID) ].insert(  cand1.getTag(_PrimitiveT::DIR_GID) );
+                            copied[ cand1.getTag(_PrimitiveT::GID) ].insert( didAid );
 
                             // debug
                             if ( copied[cand1.getTag(_PrimitiveT::GID)].size() == tmp_size )
