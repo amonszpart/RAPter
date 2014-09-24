@@ -814,6 +814,7 @@ namespace problemSetup {
         // added 17/09/2014 by Aron
         // modified 22/09/2014 by Aron
         std::map< int, int > dir_instances;
+        int active_count = 0;
         for ( size_t lid = 0; lid != prims.size(); ++lid )
             for ( size_t lid1 = 0; lid1 != prims[lid].size(); ++lid1 )
             {
@@ -821,6 +822,7 @@ namespace problemSetup {
                     continue;
 
                 ++dir_instances[ prims[lid][lid1].getTag(_PrimitiveT::DIR_GID) ];
+                ++active_count;
             }
 
         for ( size_t lid = 0; lid != prims.size(); ++lid )
@@ -869,8 +871,21 @@ namespace problemSetup {
 
                     if ( verbose && dir_instances[dir_gid] )
                         std::cout << "[" << __func__ << "]: " << "changed " << coeff << " to ";
+
+                    // changed by Aron 10:32 24/09/2014
+                    // old version: 1/#did, better version would be normalized, so: 1 / (#did/all)
+                    // new version: .1 + .9 * ((#did/n)^2 - 1.)^6
                     if ( dir_instances[dir_gid] > 0 )
-                        coeff *= freq_weight / _Scalar(dir_instances[dir_gid]);
+                    {
+                        _Scalar v = _Scalar(dir_instances[dir_gid]) / _Scalar(active_count); // #did/n
+                        v *= v;                                                              // (#did/n)^2
+                        v -= _Scalar(1.);                                                    // (#did/n)^2 - 1.
+                        v *= v;                                                              // ((#did/n)^2 - 1.)^2
+                        v *= v * v;                                                          // ((#did/n)^2 - 1.)^6
+                        coeff *= _Scalar(0.1) + _Scalar(0.9) * v;                            // .1 + .9 * ((#did/n)^2 - 1.)^6
+                        //coeff *= freq_weight * _Scalar(1.) / ( _Scalar(1.) + std::log(dir_instances[dir_gid]) );
+                        //coeff *= freq_weight / _Scalar(dir_instances[dir_gid]);
+                    }
                     else
                         coeff *= freq_weight;
 

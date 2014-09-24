@@ -358,12 +358,15 @@ namespace GF2
             _Scalar diff  = MyPrimitivePrimitiveAngleFunctor::eval( p1, p2, this->_angles );
 
             // truncated at half degree difference
-            _Scalar score = std::min( _Scalar(0.09341652027), _Scalar(sqrt(diff)) );
+            //_Scalar score = std::min( _Scalar(0.09341652027), _Scalar(sqrt(diff)) );
+            _Scalar score = _Scalar( std::sqrt(diff) );
 
+            // distance between finite primitives
             _Scalar dist = _primPrimCompFunctor.template eval( ex1, p1, ex2, p2 );
-            _Scalar spat_w = std::max( _Scalar(5.) * _scale
+            // (scale - distance) truncated at scale-scale = 0, normalized by scale to 0..1
+            _Scalar spat_w = std::max( _Scalar(1.) * _scale
                                        - _primPrimCompFunctor.template eval( ex1, p1, ex2, p2 )
-                                     , _Scalar(0.) );
+                                     , _Scalar(0.) ) / _scale;
 
             if ( _verbose && (spat_w > _Scalar(0.)) )
             {
@@ -372,8 +375,12 @@ namespace GF2
 
                 std::cout << score << " + " << spat_w << " = ";
             }
-            score *= _Scalar(1.) + spat_w;
+            //score *= _Scalar(1.) + spat_w;
+            //_Scalar angle = GF2::angleInRad( p1.dir(), p2.dir() );
+            //score += spat_w * std::sqrt( std::min( angle, _Scalar(M_PI) - angle ) );
 
+            // score = sqrt(angle) + sqrt(angle) * spatial_weight = (1+spatial_weight) * sqrt(angle)
+            score += spat_w * score;
             if ( _verbose && (spat_w > _Scalar(0.)) )
             {
                 std::cout << score << std::endl;
