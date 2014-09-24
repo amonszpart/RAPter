@@ -1,0 +1,1 @@
+[09/24/14 11:36:11] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 40 --freqweight 0.1 --angle-limit 0.4 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 --cost-fn spatsqrt 
