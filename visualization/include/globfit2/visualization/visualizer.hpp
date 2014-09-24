@@ -116,6 +116,7 @@ namespace GF2
 
         // calc groups
         int max_gid = 0, nPrimitives = 0, max_dir_gid = 0;
+        std::map< int, std::pair<int,int> > gid2lidLid1;
         for ( size_t pid = 0; pid != points.size(); ++pid )
             max_gid = std::max( max_gid, points[pid].getTag(PointPrimitiveT::GID) );
         for ( size_t lid = 0; lid != primitives.size(); ++lid )
@@ -124,6 +125,9 @@ namespace GF2
                 max_gid     = std::max( max_gid    , primitives[lid][lid1].getTag(PrimitiveT::GID    ) );
                 max_dir_gid = std::max( max_dir_gid, primitives[lid][lid1].getTag(PrimitiveT::DIR_GID) );
                 ++nPrimitives;
+
+                if (primitives[lid][lid1].getTag(PrimitiveT::STATUS) != PrimitiveT::SMALL)
+                    gid2lidLid1[ primitives[lid][lid1].getTag(PrimitiveT::GID) ] = std::pair<int,int>( lid, lid1 );
             }
         std::cout << "[" << __func__ << "]: "
                   << "points: "         << points.size()
@@ -137,6 +141,15 @@ namespace GF2
                                                                                                : max_gid     + 1
                                                                   , /*   scale: */ 255.f
                                                                   , /* shuffle: */ true );
+
+        // here we iterate of the colour vector to set a black color to unused gids
+        Eigen::Vector3f unusedColor = Eigen::Vector3f::Zero();
+        for(int i = 0; i != colours.size(); ++i){
+            if (gid2lidLid1.find(i) == gid2lidLid1.end()){
+                colours[i] = unusedColor;
+            }
+        }
+
 
         //pcl::visualization::PCLVisualizer::Ptr vptr( new pcl::visualization::PCLVisualizer() );
         vis::MyVisPtr vptr( new pcl::visualization::PCLVisualizer(title) );
@@ -198,6 +211,12 @@ namespace GF2
         processing::getPopulations( populations, points );
 
         Eigen::Matrix<_Scalar,Eigen::Dynamic,1> area(1,1);
+
+        // recompute colors for lines
+        colours = util::nColoursEigen( /*   count: */ dir_colours ? max_dir_gid + 1
+                                                                  : max_gid     + 1
+                                                                    , /*   scale: */ 255.f
+                                       , /* shuffle: */ true );
 
         for ( size_t lid = 0; lid != primitives.size(); ++lid )
             for ( size_t lid1 = 0; lid1 != primitives[lid].size(); ++lid1 )
