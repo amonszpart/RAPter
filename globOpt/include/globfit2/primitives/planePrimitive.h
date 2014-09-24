@@ -10,6 +10,7 @@
 #   include "pcl/sample_consensus/sac_model_plane.h"
 #   include "pcl/common/common.h"
 #   include "pcl/visualization/pcl_visualizer.h"
+#   include "pcl/surface/concave_hull.h"
 #endif
 
 namespace GF2
@@ -424,6 +425,55 @@ namespace GF2
                 return EXIT_SUCCESS;
             }
 
+            /*! \brief Extract convec hull and display
+             *  \tparam PointsT Concept: std::vector<pcl::PointXYZ>.
+             */
+            template <class _PointContainerT, class _IndicesContainerT> static inline int
+            drawConvex( pcl::visualization::PCLVisualizer::Ptr v
+                  , PlanePrimitive      const& plane
+                  , _PointContainerT    const& cloud
+                  , _IndicesContainerT  const* indices
+                  , std::string plane_name
+                  , double r, double g, double b
+                  , int viewport_id = 0
+                  )
+            {
+                pcl::ConcaveHull<pcl::PointXYZ>              concave_hull;                                   // object
+                //typename pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_hull( new pcl::PointCloud<pcl::PointXYZ>() );
+                typename pcl::PointCloud<pcl::PointXYZ> cloud_hull;
+                typename pcl::PointCloud<pcl::PointXYZ> cloud_projected;
+                std::vector<pcl::Vertices>                   polygons;                               // output list indexing the points from cloud_hull, in 2D this is size 1
+                pcl::PointCloud<pcl::PointXYZ>::Ptr plane_polygon_cloud_ptr( new pcl::PointCloud<pcl::PointXYZ> );
+
+                cloud_projected.resize(indices->size());
+
+                // get assigned points, project them to the plane and store as PCL cloud
+                int i = 0;
+                for ( typename _IndicesContainerT::const_iterator it = indices->begin(); it != indices->end(); ++i, ++it )
+                {
+                    cloud_projected.at(i).getVector3fMap() = plane.projectPoint(cloud[*it].pos()).template cast<float>();
+                }
+
+                concave_hull.setAlpha( 0.1 );
+                concave_hull.setInputCloud( cloud_projected.makeShared() );
+                concave_hull.reconstruct  ( cloud_hull, polygons );
+
+                plane_polygon_cloud_ptr->resize(polygons[0].vertices.size());
+                i = 0;
+                for ( std::vector<uint32_t>::const_iterator it  = polygons[0].vertices.begin();
+                                                            it != polygons[0].vertices.end(); ++i, ++it ){
+                    plane_polygon_cloud_ptr->at(i) = cloud_projected.at(*it);
+                }
+
+
+                // draw plane polygon
+                v->addPolygon<pcl::PointXYZ>( plane_polygon_cloud_ptr, r,g,b, plane_name, viewport_id );
+               // v->setShapeRenderingProperties( pcl::visualization::PCL_VISUALIZER_OPACITY, .9, plane_name);
+                v->setShapeRenderingProperties( pcl::visualization::PCL_VISUALIZER_REPRESENTATION, pcl::visualization::PCL_VISUALIZER_REPRESENTATION_SURFACE, plane_name );
+
+                return EXIT_SUCCESS;
+            }
+
             /*! \brief Draws plane.
              * \tparam  _PointPrimitiveT   Concept: \ref GF2::PointPrimitive.
              * \tparam _PointContainerT   Concept: std::vector< _PointPrimitiveT >.
@@ -479,6 +529,7 @@ namespace GF2
                         ps.push_back( pnt );
                     }
                     err += draw( ps, v, plane_name, r, g, b, viewport_id );
+                    //err += drawConvex( v, plane, cloud, indices, plane_name, r, g, b, viewport_id );
                 }
 
                 return err;
