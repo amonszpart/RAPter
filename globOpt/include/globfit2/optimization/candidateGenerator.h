@@ -352,12 +352,6 @@ namespace GF2
                             bool    close_ang  = angdiff < angle_limit;
                             add0              |= close_ang; // prim0 needs to be close to prim1 in angle
                             add1              |= close_ang; // prim1 needs to be close to prim0 in angle
-
-                            // debug
-                            std::cout << "angle of " << gid0 << ", " << dir_gid0 << " and " << gid1 << ", " << dir_gid1 << " = " << angdiff
-                                      << ", closest: " << angles[closest_angle_id]
-                                      << ", closestid : " << closest_angle_id
-                                         << std::endl;
                         }
 
                         if ( params.small_mode == CandidateGeneratorParams<_Scalar>::SmallPatchesMode::RECEIVE_ALL ) // unused branch
