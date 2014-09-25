@@ -41,7 +41,8 @@ GF2::vis::showCli( int argc, char** argv )
                   << "\t[--hide-pts,--no-pts \t Hide point cloud (display only primitives)]"
                   << "\t[--draw-mode \t 0: classic, 1: axis aligned, 2: qhull]\n"
                   << "\t[--stretch \t Elong primitives by multiplying their extents with this number]\n"
-                  << "\t[--no-paral \t Don't add 0 and 180 to angles'\n"
+                  << "\t[--no-paral \t Don't add 0 and 180 to angles]\n"
+                  << "\t[--no-scale \t Hide scale sphere]\n"
                   << std::endl;
         return EXIT_SUCCESS;
     }
@@ -62,6 +63,7 @@ GF2::vis::showCli( int argc, char** argv )
     int draw_mode = 1;
     pcl::console::parse_argument( argc, argv, "--draw-mode", draw_mode );
     bool no_paral = pcl::console::find_switch( argc, argv, "--no-paral" );
+    bool no_scale_sphere = pcl::console::find_switch( argc, argv, "--no-scale" );
 
 
     std::vector<int> gids;
@@ -202,6 +204,7 @@ GF2::vis::showCli( int argc, char** argv )
                                                                                , /*        filter_status: */ statusSet.size() ? &statusSet : NULL
                                                                                , /*              stretch: */ stretch
                                                                                , /*            draw_mode: */ draw_mode
+                                                                               , /*      no_scale_sphere: */ no_scale_sphere
                                                                                );
     return EXIT_SUCCESS;
 } // ... Solver::show()
