@@ -97,7 +97,7 @@ namespace GF2 {
          *  \param[in] verbose        Enable logging.
          */
         template <class _AnglesContainerT, class _Scalar> inline int
-        appendAnglesFromGenerators( _AnglesContainerT &angles, std::vector<_Scalar> &angle_gens, char verbose = true )
+        appendAnglesFromGenerators( _AnglesContainerT &angles, std::vector<_Scalar> &angle_gens, bool no_parallel, char verbose )
         {
             std::cout << "[" << __func__ << "]: " << "ASSUMING DEGREES" << std::endl;
             std::set<_Scalar> angles_set;
@@ -105,7 +105,8 @@ namespace GF2 {
             angles_set.insert( angles.begin(), angles.end() );
 
             // insert 0 element
-            angles_set.insert( _Scalar(0) );
+            if ( !no_parallel )
+                angles_set.insert( _Scalar(0) );
 
             for ( int i = 0; i != angle_gens.size(); ++i )
             {
@@ -116,7 +117,8 @@ namespace GF2 {
             }
 
             // insert 0 element
-            angles_set.insert( _Scalar(M_PI) );
+            if ( !no_parallel )
+                angles_set.insert( _Scalar(M_PI) );
 
             angles.resize( angles_set.size() );
             std::copy( angles_set.begin(), angles_set.end(), angles.begin() );

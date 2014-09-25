@@ -41,6 +41,7 @@ GF2::vis::showCli( int argc, char** argv )
                   << "\t[--hide-pts,--no-pts \t Hide point cloud (display only primitives)]"
                   << "\t[--draw-mode \t 0: classic, 1: axis aligned, 2: qhull]\n"
                   << "\t[--stretch \t Elong primitives by multiplying their extents with this number]\n"
+                  << "\t[--no-paral \t Don't add 0 and 180 to angles'\n"
                   << std::endl;
         return EXIT_SUCCESS;
     }
@@ -60,6 +61,8 @@ GF2::vis::showCli( int argc, char** argv )
     pcl::console::parse_argument( argc, argv, "--stretch", stretch );
     int draw_mode = 1;
     pcl::console::parse_argument( argc, argv, "--draw-mode", draw_mode );
+    bool no_paral = pcl::console::find_switch( argc, argv, "--no-paral" );
+
 
     std::vector<int> gids;
     pcl::console::parse_x_arguments( argc, argv, "--gids", gids );
@@ -141,7 +144,7 @@ GF2::vis::showCli( int argc, char** argv )
         angle_gens[0] = Scalar(90.);
 
     std::vector<Scalar> angles;
-    processing::appendAnglesFromGenerators( angles, angle_gens, true );
+    processing::appendAnglesFromGenerators( angles, angle_gens, no_paral, true );
 //    {
 //        angles[0] = 0;
 //        angles[1] = M_PI_2;

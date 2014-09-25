@@ -72,6 +72,121 @@ hsv2rgb( ::cv::Point3_<Scalar> const& in )
     return out;
 }
 
+static void RGB2HSV(float r, float g, float b,
+                    float &h, float &s, float &v)
+{
+    float K = 0.f;
+
+    if (g < b)
+    {
+        std::swap(g, b);
+        K = -1.f;
+    }
+
+    if (r < g)
+    {
+        std::swap(r, g);
+        K = -2.f / 6.f - K;
+    }
+
+    float chroma = r - std::min(g, b);
+    h = fabs(K + (g - b) / (6.f * chroma + 1e-20f));
+    s = chroma / (r + 1e-20f);
+    v = r;
+}
+
+/*! \brief
+ *  \tparam MatrixDervied Concept: Eigen::Matrix<Scalar,3,1>
+ */
+template <class MatrixDerived>
+inline MatrixDerived
+hsv2rgbEigen( MatrixDerived const& in )
+{
+    typedef typename MatrixDerived::Scalar Scalar;
+
+    double      hh, p, q, t, ff;
+    long        i;
+    MatrixDerived out;
+
+    if ( in(1) <= Scalar(0.) ) // < is bogus, just shuts up warnings
+    {
+        out(0) = in(2);
+        out(1) = in(2);
+        out(2) = in(2);
+        return out;
+    }
+
+    hh = in(0);
+    if ( hh >= Scalar(360.) ) hh = Scalar(0.);
+    hh /= Scalar(60.);
+    i = (long)hh;
+    ff = hh - i;
+    p = in(2) * (1.f - in(1));
+    q = in(2) * (1.f - (in(1) * ff));
+    t = in(2) * (1.f - (in(1) * (1.f - ff)));
+
+    switch(i) {
+        case 0:
+            out(0) = in(2);
+            out(1) = t;
+            out(2) = p;
+            break;
+        case 1:
+            out(0) = q;
+            out(1) = in(2);
+            out(2) = p;
+            break;
+        case 2:
+            out(0) = p;
+            out(1) = in(2);
+            out(2) = t;
+            break;
+
+        case 3:
+            out(0) = p;
+            out(1) = q;
+            out(2) = in(2);
+            break;
+        case 4:
+            out(0) = t;
+            out(1) = p;
+            out(2) = in(2);
+            break;
+
+        case 5:
+        default:
+            out(0) = in(2);
+            out(1) = p;
+            out(2) = q;
+            break;
+    }
+
+    return out;
+}
+
+template <typename Scalar> inline
+static void rgb2hsv( Scalar r, Scalar g, Scalar b,
+                     Scalar &h, Scalar &s, Scalar &v)
+{
+    Scalar K(0.);
+    if (g < b)
+    {
+        std::swap(g, b);
+        K = -1.;
+    }
+    Scalar min_gb(b);
+    if (r < g)
+    {
+        std::swap(r, g);
+        K = -2. / 6. - K;
+        min_gb = std::min(g, b);
+    }
+    Scalar chroma = r - min_gb;
+    h = fabs(K + (g - b) / (6. * chroma + 1.e-20));
+    s = chroma / (r + 1.e-20);
+    v = r;
+}
+
 // generates n different colours
 // assumes hue [0, 360), saturation [0, 100), lightness [0, 100)
 template <typename Scalar>
@@ -103,10 +218,10 @@ nColoursCv(int n, Scalar scale, bool random_shuffle, float min_value = 50.f, flo
 
 template <typename Scalar>
 inline std::vector< ::Eigen::Vector3f >
-nColoursEigen( int n, Scalar scale, bool random_shuffle )
+nColoursEigen( int n, Scalar scale, bool random_shuffle, float min_value = 50.f, float min_saturation = 90.f )
 {
     typedef std::vector< ::cv::Point3f > CvPointsT;
-    CvPointsT colours = nColoursCv( n, scale, random_shuffle );
+    CvPointsT colours = nColoursCv( n, scale, random_shuffle, min_value, min_saturation );
     std::vector< ::Eigen::Vector3f > colours_eigen;
     //for ( CvPointsT::value_type const& colour : colours )
     for ( CvPointsT::const_iterator it = colours.begin(); it != colours.end(); ++it )
@@ -132,7 +247,11 @@ paletteLightColoursEigen()
     colours_eigen [5] << 221.f, 185.f, 169.f;
     colours_eigen [6] << 235.f, 192.f, 218.f;
 
-    return colours_eigen;
+    std::vector< ::Eigen::Vector3f > out;
+    out.insert( out.end(), colours_eigen.begin(), colours_eigen.end() );
+    out.insert( out.end(), colours_eigen.begin(), colours_eigen.end() );
+
+    return out;
 }
 
 inline Eigen::Vector3f
@@ -154,7 +273,11 @@ paletteMediumColoursEigen()
     colours_eigen [5] << 206.f, 112.f, 088.f;
     colours_eigen [6] << 215.f, 127.f, 180.f;
 
-    return colours_eigen;
+    std::vector< ::Eigen::Vector3f > out;
+    out.insert( out.end(), colours_eigen.begin(), colours_eigen.end() );
+    out.insert( out.end(), colours_eigen.begin(), colours_eigen.end() );
+
+    return out;
 }
 
 inline Eigen::Vector3f
@@ -176,7 +299,11 @@ paletteDarkColoursEigen()
     colours_eigen [5] << 162.f, 029.f, 033.f;
     colours_eigen [6] << 180.f, 056.f, 148.f;
 
-    return colours_eigen;
+    std::vector< ::Eigen::Vector3f > out;
+    out.insert( out.end(), colours_eigen.begin(), colours_eigen.end() );
+    out.insert( out.end(), colours_eigen.begin(), colours_eigen.end() );
+
+    return out;
 }
 
 inline Eigen::Vector3f

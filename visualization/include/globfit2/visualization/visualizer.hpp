@@ -162,7 +162,8 @@ namespace GF2
         std::vector<Eigen::Vector3f> pointColours, primColours;
         Eigen::Vector3f unusedPointColour, unusedPrimColour;
 
-        if (usePalette){
+        if ( usePalette )
+        {
             cout << "SWitching to nicer color palette" << endl;
 
             pointColours = util::paletteLightColoursEigen();
@@ -171,11 +172,20 @@ namespace GF2
             unusedPointColour = util::paletteLightNeutralColour();
             unusedPrimColour  = util::paletteDarkNeutralColour();
 
-        }else {
-            pointColours = util::nColoursEigen( /*   count: */ nbColour
-                                                , /*   scale: */ 255.f
-                                                , /* shuffle: */ true );
+        }
+        else
+        {
+            pointColours = util::nColoursEigen( /*           count: */ nbColour
+                                                , /*         scale: */ 255.f
+                                                , /*       shuffle: */ true
+                                                , /* min_hsv_value: */ 70.f );
             primColours = pointColours;
+            for ( size_t cid = 0; cid != pointColours.size(); ++cid )
+            {
+                pointColours[cid](0) = std::min( pointColours[cid](0) * 1.6, 255.);
+                pointColours[cid](1) = std::min( pointColours[cid](1) * 1.6, 255.);
+                pointColours[cid](2) = std::min( pointColours[cid](2) * 1.6, 255.);
+            }
             unusedPointColour = unusedPrimColour = Eigen::Vector3f::Zero();
         }
 
@@ -191,11 +201,23 @@ namespace GF2
 
                 Eigen::Vector3f colour = unusedPointColour;
 
-                if(gid2lidLid1.find(points[pid].getTag(PointPrimitiveT::GID)) != gid2lidLid1.end()){
+                if ( gid2lidLid1.find(points[pid].getTag(PointPrimitiveT::GID)) != gid2lidLid1.end() )
+                {
                     std::pair<int,int> lid =  gid2lidLid1[points[pid].getTag(PointPrimitiveT::GID)];
+                    std::cout << "pid" << pid << ".lid=" << lid.first << ", " << lid.second << ", primgid: " << primitives[lid.first][lid.second].getTag(PrimitiveT::GID)
+                            << ", primdid: " << primitives[lid.first][lid.second].getTag(PrimitiveT::DIR_GID)
+                            << ", pgid: " << points[pid].getTag(PointPrimitiveT::GID) << std::endl;
                     const int mid = primitives[lid.first][lid.second].getTag(primColourTag);
-                    if (id2ColId.find(mid) != id2ColId.end())
+                    std::cout << ", mid= " << mid << ", for primcolourtag: " << primColourTag;
+                    if ( id2ColId.find(mid) != id2ColId.end() )
+                    {
+                        if ( primitives[lid.first][lid.second].getTag(PrimitiveT::GID) == 15 )
+                            std::cout << "here";
                         colour = pointColours[id2ColId[mid]];
+                        std::cout << ", found colour " << id2ColId[mid] << ": "  << colour.transpose() << std::endl;
+                    }
+                    else
+                        std::cout << ", didn't fing colour, so " << colour.transpose() << std::endl;
                 }
                 // skip, if filtering is on, and this gid is not in the filter
                 //if ( filter_gids && (filter_gids->find(primitives[points[pid]].getTag(PrimitiveT::GID)) == filter_gids->end()) )
@@ -275,6 +297,9 @@ namespace GF2
 //                { std::cout << "!!!\t\tequal " << line_name << ": " << lid << ", " << lid1 << ", " << gid << ", " << dir_gid << std::endl; fflush(stdout); }
 
                 Eigen::Matrix<_Scalar,3,1> prim_colour = primColours[id2ColId[dir_colours ? dir_gid : gid]] / 255.;
+                if ( gid == 15 )
+                    std::cout << "getting colour " << "id2ColId[" << (dir_colours ? dir_gid : gid)
+                              << "] = " << id2ColId[dir_colours ? dir_gid : gid] << " = " << prim_colour.transpose() << " for 15 " << std::endl;
 
                 // if use tags, collect GID tagged point indices
                 std::vector<int> indices;
