@@ -133,6 +133,7 @@ ProblemSetup::formulateCli( int    argc
                       << " [--patch-pop-limit " << params.patch_population_limit << "]\n"
                       << " [--freq-weight" << params.freq_weight << "]\n"
                       << " [--energy-out" << energy_path << "]\n"
+                      << " [--no-paral\n]"
                       << std::endl;
             if ( !verbose )
                 return EXIT_FAILURE;
@@ -140,8 +141,9 @@ ProblemSetup::formulateCli( int    argc
     } // ... parse params
 
     // Read desired angles
+    bool no_paral = pcl::console::find_switch( argc, argv, "--no-paral");
     {
-        processing::appendAnglesFromGenerators( params.angles, angle_gens, verbose );
+        processing::appendAnglesFromGenerators( params.angles, angle_gens, no_paral, verbose );
     } //...read angles
 
     // read points

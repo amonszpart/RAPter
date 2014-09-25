@@ -454,7 +454,7 @@ namespace GF2
                     cloud_projected.at(i).getVector3fMap() = plane.projectPoint(cloud[*it].pos()).template cast<float>();
                 }
 
-                concave_hull.setAlpha( 1 );
+                concave_hull.setAlpha( 2 );
                 concave_hull.setInputCloud( cloud_projected.makeShared() );
                 concave_hull.reconstruct  ( cloud_hull, polygons );
 
@@ -540,6 +540,8 @@ namespace GF2
                         err = EXIT_FAILURE;
                     }
                 }
+
+                //v->setShapeRenderingProperties( pcl::visualization::PCL_VISUALIZER_SHADING, pcl::visualization::PCL_VISUALIZER_SHADING_FLAT, plane_name );
 
                 return err;
             } //...draw()

@@ -593,6 +593,7 @@ namespace GF2
                 std::cerr << "\t [--angle-gens "; for(size_t vi=0;vi!=angle_gens.size();++vi)std::cerr<<angle_gens[vi]<<","; std::cerr << "]\n";
                 std::cerr << "\t [--patch-pop-limit " << generatorParams.patch_population_limit << "]\n";
                 std::cerr << "\t [--small-mode " << generatorParams.small_mode << "\t | 0: IGNORE, 1: RECEIVE_SIMILAR, 2: RECEIVE_ALL]\n";
+                std::cerr << "\t [--no-paral \n";
                 std::cerr << std::endl;
 
                 if ( !valid_input || pcl::console::find_switch(argc,argv,"--help") || pcl::console::find_switch(argc,argv,"-h") )
@@ -611,10 +612,11 @@ namespace GF2
             }
         } // ... parse input
 
+        bool no_paral = pcl::console::find_switch( argc, argv, "--no-paral");
         // Read desired angles
         if ( EXIT_SUCCESS == err )
         {
-            processing::appendAnglesFromGenerators( generatorParams.angles, angle_gens, true );
+            processing::appendAnglesFromGenerators( generatorParams.angles, angle_gens, no_paral, true );
         } //...read angles
 
         // Read points

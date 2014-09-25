@@ -536,6 +536,7 @@ Segmentation::segmentCli( int    argc
             std::cerr << "\t [--angle-limit " << generatorParams.angle_limit << "]\n";
             std::cerr << "\t [--dist-limit-mult " << generatorParams.patch_dist_limit_mult << "]\n";
             std::cerr << "\t [--angle-gens "; for(int i=0;i!=angle_gens.size();++i)std::cerr<<angle_gens[i];std::cerr<<"]\n";
+            std::cerr << "\t [--no-paral]\n";
             std::cerr << "\t [-v, --verbose]\n";
             std::cerr << std::endl;
 
@@ -556,9 +557,10 @@ Segmentation::segmentCli( int    argc
     } // ... parse input
 
     // Read desired angles
+    bool no_paral = pcl::console::find_switch(argc,argv,"--no_paral");
     if ( EXIT_SUCCESS == err )
     {
-        processing::appendAnglesFromGenerators( generatorParams.angles, angle_gens, true );
+        processing::appendAnglesFromGenerators( generatorParams.angles, angle_gens, no_paral, true );
     } //...read angles
 
     // Read points
