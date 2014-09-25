@@ -41,7 +41,7 @@ IF(WITH_GUROBI)
     ADD_DEFINITIONS(-DGF2_WITH_GUROBI)
 ENDIF()
 
-SET( WITH_PEARL OFF CACHE BINARY "Compile pearl executable.")
+SET( WITH_PEARL ON CACHE BINARY "Compile pearl executable.")
 SET( WITH_PLYCONVERTER ON CACHE BINARY "Compile ply-converter executable.")
 SET( WITH_CORRESP ON CACHE BINARY "Correspondance miniprogram compilation.")
 
@@ -270,6 +270,7 @@ TARGET_LINK_LIBRARIES( ${GLOBOPT_TARGET_NAME}
     boost_thread
 )
 
+## _____________________________________PEaRL____________________________________________________
 ## _____________________________________PEaRL____________________________________________________
 IF(WITH_PEARL)
     SET( PEARL_TARGET pearl)

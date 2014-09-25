@@ -47,24 +47,24 @@ else
 	flag3D="";
 fi
 
-anglegens="90"; # Desired angle generators in degrees. Default: 90.
-nbExtraIter=5;  # iteration count. Default: 2.
+anglegens="30"; # Desired angle generators in degrees. Default: 90.
+nbExtraIter=10;  # iteration count. Default: 2.
 dirbias="0";	# not-same-dir-id cost offset. Default: 0. Don't use, if freqweight is on.
 freqweight="10"; # dataterm = (freqweight / #instances) * datacost. Default: 0. 1 might be too strong...todo
 adopt="0";      # Adopt points argument. Default: 0
 # In candidate generation, divide angle limit with this to match copies. Default: 1. Set to 10, if too many candidates (variables).
-cand_anglediv="1";# for 3D: "2.5";
+cand_anglediv="10";# for 3D: "2.5";
 # multiply scale by this number to get the segmentation (regionGrowing) spatial distance
-segmentScaleMultiplier="1";# for 3D: "2.5";
+segmentScaleMultiplier="1.5";# for 3D: "2.5";
 pwCostFunc="spatsqrt" # spatial cost function. TODO: reactivate sqrt (does not compile for now)
 
-visdefparam="--use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours" #"--use-tags --no-clusters" #--ids
+visdefparam="--angle-gens $anglegens --use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-rel" #"--use-tags --no-clusters" #--ids
 firstConstrMode="patch" # what to add in the first run formulate. Default: 0 (everyPatchNeedsDirection), experimental: 2 (largePatchesNeedDirection).
 iterationConstrMode="patch" # what to add in the second iteration formulate. Default: 0 (everyPatchNeedsDirection), experimental: 2 (largePatchesNeedDirection).
 premerge=0
 startAt=0
-smallThresh="10" # smallThresh * scale is the small threshold # 5 was good for most of the stuff, except big scenes (kinect, lanslevillard)
-smallThreshlimit="1"
+smallThresh="128" # smallThresh * scale is the small threshold # 5 was good for most of the stuff, except big scenes (kinect, lanslevillard)
+smallThreshlimit="0"
 
 
 echo "scale: $scale"
@@ -113,7 +113,7 @@ fi
 function my_exec() {
 	echo "__________________________________________________________";
 	echo -e "\n\n[CALLING] $1";
-    eval $1;
+        eval $1;
   	if [ "$?" -ne "0" ]; then
 	    echo "Error detected ($?). ABORT."
 	    exit 1
