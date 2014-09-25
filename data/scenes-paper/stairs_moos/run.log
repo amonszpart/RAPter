@@ -5,3 +5,7 @@
 [09/25/14 14:57:24] ../run.sh 0.05 0.2 10 25 3D --freqweight 10 --angle-limit 0.2 --segment-scale-mult 2 --adopt 0 --dirbias 0 --cand-anglediv 10 --angle-gens 90 --cost-fn spatsqrt --small-thresh 42 --small-thresh-limit 
 [09/25/14 14:57:53] ../run.sh 0.1 0.2 10 25 3D --freqweight 10 --angle-limit 0.2 --segment-scale-mult 2 --adopt 0 --dirbias 0 --cand-anglediv 10 --angle-gens 90 --cost-fn spatsqrt --small-thresh 42 --small-thresh-limit 
 [09/25/14 15:02:24] ../run.sh 0.1 0.2 10 25 3D --freqweight 10 --angle-limit 0.2 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 10 --angle-gens 90 --cost-fn spatsqrt --small-thresh 42 --small-thresh-limit 
+[09/25/14 15:36:01] ../run.sh 0.08 0.2 20 25 3D --freqweight 10 --angle-limit 0.2 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 10 --angle-gens 90 --cost-fn spatsqrt --small-thresh 42 --small-thresh-limit 
+[09/25/14 15:40:59] ../run.sh 0.08 0.25 25 25 3D --freqweight 10 --angle-limit 0.25 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 10 --angle-gens 90 --cost-fn spatsqrt --small-thresh 42 --small-thresh-limit 
+[09/25/14 16:06:13] ../run.sh 0.1 0.3 10 25 3D --freqweight 10 --angle-limit 0.3 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 10 --angle-gens 90 --cost-fn spatsqrt --small-thresh 42 --small-thresh-limit 
+[09/25/14 16:44:02] ../run.sh 0.1 0.3 15 25 3D --freqweight 10 --angle-limit 0.3 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 10 --angle-gens 90 --cost-fn spatsqrt --small-thresh 32 --small-thresh-limit 
