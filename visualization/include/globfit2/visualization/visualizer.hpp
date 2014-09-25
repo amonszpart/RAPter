@@ -27,6 +27,8 @@ namespace GF2 {
              *  \param use_tags                 Restrict line extent to GID tagged points. case 1: colour coded points with ellipses. case 2: colour coded points with no ellipses
              *  \param[in] perfect_angle_limit  When to display gray line for "perfect angle".
              *  \param[in] print_perf_angles    Show the angles in degrees, if below perfect_angle_limit.
+             *  \param[in] stretch              Elong primitives beyond their extrema by multiplying their dimensions by this number (1 == don't elong, 1.2 == elong a bit)
+             *  \param[in] draw_mode            Mode0: classic, Mode1: classic, axis aligned, Mode2: qhull
              *  \return             The visualizer for further display and manipulation
              */
             template <typename _Scalar> static inline vis::MyVisPtr
@@ -49,6 +51,8 @@ namespace GF2 {
                 , bool                 const  no_points             = false
                 , std::set<int>        const* filter_gids           = NULL
                 , std::set<int>        const* filter_status         = NULL
+                , _Scalar              const  stretch               = 1.
+                , int                  const  draw_mode             = 0
                 );
 
             //! \brief Shows a polygon that approximates the bounding ellipse of a cluster
@@ -102,6 +106,8 @@ namespace GF2
                                                            , bool                 const  hide_points         /* = false */
                                                            , std::set<int>        const* filter_gids         /* = NULL */
                                                            , std::set<int>        const* filter_status       /* = NULL */
+                                                           , _Scalar              const  stretch             /* = 1. */
+                                                           , int                  const  draw_mode           /* = 0 */
                                                            )
     {
 #if 1
@@ -289,7 +295,8 @@ namespace GF2
                                                           , /*   unique_id: */ line_name
                                                           , /*      colour: */ prim_colour(0), prim_colour(1), prim_colour(2)
                                                           , /* viewport_id: */ 0
-                                                          , /*     stretch: */ _Scalar(1.2)
+                                                          , /*     stretch: */ stretch /* = 1.2 */
+                                                          , /*       qhull: */ draw_mode /* = 1, classic, axis aligned */
                                                           );
                 vptr->setShapeRenderingProperties( pcl::visualization::PCL_VISUALIZER_LINE_WIDTH, 4.0, line_name, 0 );
 
