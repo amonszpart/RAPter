@@ -1,0 +1,93 @@
+[09/21/14 22:19:15] ../../../globOpt/scripts/run.sh 0.05 0.4 100000 50 3D 
+[09/21/14 22:24:54] ../../../globOpt/scripts/run.sh 0.05 0.4 100000 50 3D 
+[09/21/14 23:06:24] ../../../globOpt/scripts/run.sh 0.05 0.4 100000 50 3D 
+[09/21/14 23:07:37] ../../../globOpt/scripts/run.sh 0.03 0.4 100000 50 3D 
+[09/22/14 10:01:31] ../../../globOpt/scripts/run.sh 0.03 0.4 100000 50 3D 
+[09/22/14 10:27:07] ../../../globOpt/scripts/run.sh 0.03 0.4 100000 50 3D 
+[09/22/14 10:30:48] ../../../globOpt/scripts/run.sh 0.03 0.4 100000 50 3D 
+[09/22/14 19:38:33] ../../../globOpt/scripts/run.sh 0.01 0.2 1 40 3D 
+[09/22/14 19:39:07] ../../../globOpt/scripts/run.sh 0.05 0.2 1 40 3D 
+[09/22/14 19:43:00] ../../../globOpt/scripts/run.sh 0.05 0.2 1 40 3D 
+[09/22/14 19:44:01] ../../../globOpt/scripts/run.sh 0.05 0.2 1 40 3D 
+[09/22/14 20:07:41] ../../../globOpt/scripts/run.sh 0.1 0.2 1 40 3D 
+[09/22/14 20:10:13] ../../../globOpt/scripts/run.sh 0.03 0.4 100000 50 3D 
+[09/22/14 20:12:19] ../../../globOpt/scripts/run.sh 0.03 0.4 100000 50 3D 
+[09/22/14 20:15:42] ../../../globOpt/scripts/run.sh 0.03 0.2 1 25 3D 
+[09/22/14 20:19:40] ../../../globOpt/scripts/run.sh 0.03 0.2 1 25 3D 
+[09/22/14 20:31:44] ../../../globOpt/scripts/run.sh 0.03 0.2 1 25 3D 
+[09/22/14 20:37:37] ../../../globOpt/scripts/run.sh 0.03 0.2 1 25 3D 
+[09/22/14 20:39:29] ../../../globOpt/scripts/run.sh 0.05 0.2 1 25 3D 
+[09/22/14 20:43:04] ../../../globOpt/scripts/run.sh 0.05 0.2 1 25 3D 
+[09/22/14 20:44:53] ../../../globOpt/scripts/run.sh 0.05 0.2 1 25 3D 
+[09/22/14 20:44:55] ../../../globOpt/scripts/run.sh 0.05 0.2 1 25 3D 
+[09/22/14 20:45:05] ../../../globOpt/scripts/run.sh 0.05 0.2 1 25 3D 
+[09/22/14 20:51:57] ../../../globOpt/scripts/run.sh 0.05 0.2 1 50 3D 
+[09/22/14 20:56:55] ../../../globOpt/scripts/run.sh 0.03 0.4 100000 50 3D 
+[09/22/14 21:01:13] ../../../globOpt/scripts/run.sh 0.03 0.4 100000 50 3D 
+[09/22/14 21:02:15] ../../../globOpt/scripts/run.sh 0.03 0.4 100000 50 3D 
+[09/22/14 21:04:33] ../../../globOpt/scripts/run.sh 0.03 0.4 100000 50 3D 
+[09/22/14 21:11:45] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 50 3D 
+[09/22/14 21:41:02] ../../../globOpt/scripts/run.sh 0.8 0.4 0.1 50 3D 
+[09/22/14 21:41:31] ../../../globOpt/scripts/run.sh 0.6 0.4 0.1 50 3D 
+[09/22/14 21:42:23] ../../../globOpt/scripts/run.sh 0.1 0.4 0.1 50 3D 
+[09/22/14 21:42:37] ../../../globOpt/scripts/run.sh 0.06 0.4 0.1 50 3D 
+[09/22/14 21:57:11] ../../../globOpt/scripts/run.sh 0.06 0.4 0.1 50 3D 
+[09/22/14 21:57:43] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 50 3D 
+[09/22/14 21:58:20] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 50 3D 
+[09/22/14 22:19:37] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 50 3D 
+[09/22/14 22:23:46] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 50 3D 
+[09/22/14 22:35:25] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 50 3D 
+[09/23/14 10:22:41] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 50 3D 
+[09/23/14 10:25:35] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 50 3D 
+[09/23/14 11:12:00] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 50 3D 
+[09/23/14 11:12:59] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 50 3D 
+[09/23/14 11:13:17] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 50 3D 
+[09/23/14 11:13:58] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 50 3D 
+[09/23/14 11:17:59] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 50 3D 
+[09/23/14 11:20:25] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 50 3D 
+[09/23/14 11:26:23] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 50 3D 
+[09/23/14 11:52:25] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 50 3D 
+[09/23/14 11:53:56] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 50 3D 
+[09/23/14 11:57:52] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 50 3D 
+[09/23/14 11:59:25] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 50 3D 
+[09/23/14 12:31:30] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 50 3D 
+[09/23/14 14:54:19] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 50 3D 
+[09/23/14 14:58:57] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 50 3D 
+[09/23/14 15:02:00] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 50 3D 
+[09/23/14 15:02:24] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 50 3D 
+[09/23/14 15:03:23] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 50 3D 
+[09/23/14 15:05:46] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 50 3D 
+[09/23/14 15:09:13] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 50 3D 
+[09/23/14 15:14:02] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 50 3D 
+[09/23/14 15:16:02] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 50 3D 
+[09/23/14 15:16:47] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 50 3D 
+[09/23/14 15:23:24] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 50 3D 
+[09/23/14 15:35:31] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 50 3D 
+[09/23/14 15:37:34] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 50 3D 
+[09/23/14 16:10:28] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 50 3D 
+[09/23/14 16:12:04] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 50 3D 
+[09/23/14 16:12:50] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 20 3D 
+[09/23/14 16:20:28] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 20 3D 
+[09/23/14 16:24:13] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 20 3D 
+[09/23/14 16:24:20] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 40 3D 
+[09/23/14 16:25:05] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 40 3D 
+[09/23/14 16:25:52] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 20 3D 
+[09/23/14 16:40:49] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 20 3D 
+[09/23/14 16:59:51] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 40 3D --freqweight 0.5 --angle-limit 0.4 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 
+[09/23/14 17:01:54] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 40 3D --freqweight 0.5 --angle-limit 0.4 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 
+[09/23/14 17:17:33] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 40 3D --freqweight 0.5 --angle-limit 0.4 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 
+[09/23/14 17:21:44] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 40 3D --freqweight 1 --angle-limit 0.4 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 
+[09/23/14 17:42:46] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 40 3D --freqweight 1 --angle-limit 0.4 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 
+[09/23/14 17:49:25] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 40 3D --freqweight 1 --angle-limit 0.4 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 
+[09/23/14 17:50:21] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 40 3D --freqweight 1 --angle-limit 0.4 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 
+[09/23/14 17:50:30] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 40 3D --freqweight 1 --angle-limit 0.4 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 
+[09/23/14 17:59:20] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 40 3D --freqweight 1 --angle-limit 0.4 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 
+[09/23/14 18:10:34] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 40 3D --freqweight 1 --angle-limit 0.4 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 
+[09/23/14 18:17:57] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 40 3D --freqweight 1 --angle-limit 0.4 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 
+[09/23/14 18:22:58] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 40 3D --freqweight 1 --angle-limit 0.4 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 
+[09/23/14 21:44:29] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 40 3D --freqweight 1 --angle-limit 0.4 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 
+[09/23/14 21:51:39] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 40 3D --freqweight 1 --angle-limit 0.4 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 
+[09/24/14 09:57:00] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 40 3D --freqweight 1 --angle-limit 0.4 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 
+[09/24/14 09:59:38] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 40 3D --freqweight 1 --angle-limit 0.4 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 
+[09/24/14 10:03:26] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 40 3D --freqweight 1 --angle-limit 0.4 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 
+[09/24/14 10:09:55] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 40 3D --freqweight 1 --angle-limit 0.4 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 

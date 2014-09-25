@@ -1,0 +1,26 @@
+<!DOCTYPE test>
+<scene name="test">
+ <primitives>
+  <primitive dim="-0.99091 0.2" dir="0 -1 0" uid="3" did="0" pos="0.00909 1 0"/>
+  <primitive dim="-1 0.2" dir="-1 0 0" uid="4" did="0" pos="1 1 0"/>
+  <primitive dim="-0.99091 0.2" dir="0 1 0" uid="5" did="0" pos="1 0 0"/>
+  <primitive dim="-1 0.2" dir="1 0 0" uid="6" did="0" pos="0.00909 0 0"/>
+  <primitive dim="-0.3 0.2" dir="0 -1 0" uid="7" did="0" pos="0.00909 0.80545 0"/>
+  <primitive dim="-0.22909 0.2" dir="-1 0 0" uid="8" did="0" pos="0.30909 0.80545 0"/>
+  <primitive dim="-0.0564 0.2" dir="-1 0 0" uid="10" did="0" pos="0.31273 0.47273 0"/>
+  <primitive dim="-0.30364 0.2" dir="0 1 0" uid="11" did="0" pos="0.31273 0.41633 0"/>
+  <primitive dim="-0.52728 0.2" dir="0 1 0" uid="13" did="0" pos="0.99455 0.45091 0"/>
+  <primitive dim="-0.30909 0.2" dir="-1 0 0" uid="14" did="0" pos="0.46727 0.45091 0"/>
+  <primitive dim="-0.28546 0.2" dir="-1 0 0" uid="16" did="0" pos="0.31273 0.29455 0"/>
+  <primitive dim="-0.34363 0.2" dir="0 1 0" uid="18" did="0" pos="0.98545 0.31636 0"/>
+  <primitive dim="-0.17091 0.2" dir="-1 0 0" uid="19" did="0" pos="0.64182 0.31636 0"/>
+  <primitive dim="-0.35454 0.2" dir="0 -1 0" uid="20" did="0" pos="0.64182 0.14545 0"/>
+  <primitive dim="1 1" dir="0 0 1" uid="21" did="0" pos="0 0 -0.1"/>
+ </primitives>
+ <samplers>
+  <sampler typeId="0" spacing="0.011"/>
+ </samplers>
+ <displacements>
+  <kernel typeId="1" distributionMean="0" enabled="1" distributionStdDev="0.005"/>
+ </displacements>
+</scene>
