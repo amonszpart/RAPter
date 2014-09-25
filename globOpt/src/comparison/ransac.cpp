@@ -105,6 +105,7 @@ int ransacCli( int argc, char **argv )
                       << "\t --3D\n"
                       //<< "\t --pw " << params.lambdas(2) << "\n"
                       //<< "\t --cmp " << params.beta << "\n"
+                      << "\t Example: ../ransac --scale 0.03 --cloud cloud.ply -p patches.csv -a points_primitives.csv"
                       << "\n";
 
             return EXIT_FAILURE;
