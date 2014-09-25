@@ -53,6 +53,7 @@ namespace GF2 {
                 , std::set<int>        const* filter_status         = NULL
                 , _Scalar              const  stretch               = 1.
                 , int                  const  draw_mode             = 0
+                , bool                 const  no_scale_sphere       = false
                 );
 
             //! \brief Shows a polygon that approximates the bounding ellipse of a cluster
@@ -108,6 +109,7 @@ namespace GF2
                                                            , std::set<int>        const* filter_status       /* = NULL */
                                                            , _Scalar              const  stretch             /* = 1. */
                                                            , int                  const  draw_mode           /* = 0 */
+                                                           , bool                 const  no_scale_sphere     /* = false */
                                                            )
     {
 #if 1
@@ -414,10 +416,14 @@ namespace GF2
                 }
             } // ... lid1
 
-        MyPoint min_pt, max_pt;
-        pcl::getMinMax3D( *cloud, min_pt, max_pt );
+        if ( !no_scale_sphere )
+        {
+            MyPoint min_pt, max_pt;
+            pcl::getMinMax3D( *cloud, min_pt, max_pt );
 
-        //vptr->addSphere( pcl::PointXYZ(0,0,0), scale, "scale_sphere", 0 );
+            vptr->addSphere( pcl::PointXYZ(0,0,0), scale, "scale_sphere", 0 );
+        }
+
         if ( spin )
             vptr->spin();
         else
