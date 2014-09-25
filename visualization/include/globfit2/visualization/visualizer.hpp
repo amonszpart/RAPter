@@ -400,7 +400,8 @@ namespace GF2
 
         MyPoint min_pt, max_pt;
         pcl::getMinMax3D( *cloud, min_pt, max_pt );
-        vptr->addSphere( pcl::PointXYZ(0,0,0), scale, "scale_sphere", 0 );
+
+        //vptr->addSphere( pcl::PointXYZ(0,0,0), scale, "scale_sphere", 0 );
         if ( spin )
             vptr->spin();
         else
