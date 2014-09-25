@@ -158,24 +158,37 @@ namespace GF2
 
 
         // Check if we can use color palette
-        bool usePalette =  id2ColId.size() < util::paletteLightColoursEigen().size();
+        const int paletteRequiredSize = id2ColId.size()+1; // set this to 0, if you only want 7 colours
+
+        bool usePalette =  id2ColId.size() < util::paletteLightColoursEigen(paletteRequiredSize).size();
         std::vector<Eigen::Vector3f> pointColours, primColours;
         Eigen::Vector3f unusedPointColour, unusedPrimColour;
 
-        if (usePalette){
-            cout << "SWitching to nicer color palette" << endl;
+        if ( usePalette )
+        {
+            cout << "Switching to nicer color palette" << endl;
 
-            pointColours = util::paletteLightColoursEigen();
-            primColours  = util::paletteDarkColoursEigen();
+            pointColours = util::paletteLightColoursEigen(paletteRequiredSize);
+            primColours  = util::paletteDarkColoursEigen(paletteRequiredSize);
 
             unusedPointColour = util::paletteLightNeutralColour();
             unusedPrimColour  = util::paletteDarkNeutralColour();
 
-        }else {
-            pointColours = util::nColoursEigen( /*   count: */ nbColour
-                                                , /*   scale: */ 255.f
-                                                , /* shuffle: */ true );
+        }
+        else
+        {
+            cout << " NOT Switching to nicer color palette, need " << id2ColId.size() << " colours" << endl;
+            pointColours = util::nColoursEigen( /*           count: */ nbColour
+                                                , /*         scale: */ 255.f
+                                                , /*       shuffle: */ true
+                                                , /* min_hsv_value: */ 70.f );
             primColours = pointColours;
+            for ( size_t cid = 0; cid != pointColours.size(); ++cid )
+            {
+                pointColours[cid](0) = std::min( pointColours[cid](0) * 1.6, 255.);
+                pointColours[cid](1) = std::min( pointColours[cid](1) * 1.6, 255.);
+                pointColours[cid](2) = std::min( pointColours[cid](2) * 1.6, 255.);
+            }
             unusedPointColour = unusedPrimColour = Eigen::Vector3f::Zero();
         }
 
@@ -191,11 +204,14 @@ namespace GF2
 
                 Eigen::Vector3f colour = unusedPointColour;
 
-                if(gid2lidLid1.find(points[pid].getTag(PointPrimitiveT::GID)) != gid2lidLid1.end()){
+                if ( gid2lidLid1.find(points[pid].getTag(PointPrimitiveT::GID)) != gid2lidLid1.end() )
+                {
                     std::pair<int,int> lid =  gid2lidLid1[points[pid].getTag(PointPrimitiveT::GID)];
                     const int mid = primitives[lid.first][lid.second].getTag(primColourTag);
-                    if (id2ColId.find(mid) != id2ColId.end())
+                    if ( id2ColId.find(mid) != id2ColId.end() )
+                    {
                         colour = pointColours[id2ColId[mid]];
+                    }
                 }
                 // skip, if filtering is on, and this gid is not in the filter
                 //if ( filter_gids && (filter_gids->find(primitives[points[pid]].getTag(PrimitiveT::GID)) == filter_gids->end()) )
