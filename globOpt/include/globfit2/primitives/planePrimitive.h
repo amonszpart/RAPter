@@ -454,15 +454,16 @@ namespace GF2
                     cloud_projected.at(i).getVector3fMap() = plane.projectPoint(cloud[*it].pos()).template cast<float>();
                 }
 
-                concave_hull.setAlpha( 0.1 );
+                concave_hull.setAlpha( 1 );
                 concave_hull.setInputCloud( cloud_projected.makeShared() );
                 concave_hull.reconstruct  ( cloud_hull, polygons );
 
                 plane_polygon_cloud_ptr->resize(polygons[0].vertices.size());
                 i = 0;
                 for ( std::vector<uint32_t>::const_iterator it  = polygons[0].vertices.begin();
-                                                            it != polygons[0].vertices.end(); ++i, ++it ){
-                    plane_polygon_cloud_ptr->at(i) = cloud_projected.at(*it);
+                                                            it != polygons[0].vertices.end(); ++i, ++it )
+                {
+                    plane_polygon_cloud_ptr->at(i) = cloud_hull.at(*it);
                 }
 
 
@@ -489,8 +490,9 @@ namespace GF2
                 , double                                const  r
                 , double                                const  g
                 , double                                const  b
-                , int                                   const  viewport_id = 0
-                , Scalar                                const  stretch = Scalar( 1. )
+                , int                                   const  viewport_id  = 0
+                , Scalar                                const  stretch      = Scalar( 1. )
+                , int                                   const  draw_mode    = 0
                 )
             {
                 int err     = EXIT_SUCCESS;
@@ -509,7 +511,7 @@ namespace GF2
                                                            , cloud
                                                            , tmp_radius
                                                            , indices
-                                                           , /* force_axis_aligned: */ true );
+                                                           , /* force_axis_aligned: */ (draw_mode == 1) /*true*/ );
                     tmp_radius *= 2.f;
                 } while ( (minMax.size() < 2) && (++it < max_it) );
 
@@ -528,8 +530,15 @@ namespace GF2
                         pnt.x = minMax[i](0); pnt.y = minMax[i](1); pnt.z = minMax[i](2);
                         ps.push_back( pnt );
                     }
-                    err += draw( ps, v, plane_name, r, g, b, viewport_id );
-                    //err += drawConvex( v, plane, cloud, indices, plane_name, r, g, b, viewport_id );
+                    if ( draw_mode <= 1 ) // 0: classic, 1: classic axis_aligned, 2: qhull
+                        err += draw( ps, v, plane_name, r, g, b, viewport_id );
+                    else if ( draw_mode == 2 )
+                        err += drawConvex( v, plane, cloud, indices, plane_name, r, g, b, viewport_id );
+                    else
+                    {
+                        std::cerr << "can't recognize draw mode " << draw_mode << std::endl;
+                        err = EXIT_FAILURE;
+                    }
                 }
 
                 return err;

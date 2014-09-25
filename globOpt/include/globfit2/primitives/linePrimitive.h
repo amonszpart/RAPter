@@ -328,7 +328,8 @@ namespace GF2
                 , double                           const  g
                 , double                           const  b
                 , int                              const  viewport_id = 0
-                , Scalar                          const  stretch     = Scalar( 1. )
+                , Scalar                           const  stretch     = Scalar( 1. )
+                , int                              const  draw_mode   = 0               // this is needed in plane
                 )
             {
                 typedef Eigen::Matrix<Scalar,3,1> Position;

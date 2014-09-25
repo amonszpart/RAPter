@@ -131,6 +131,8 @@ function energies() {
         my_exec "$executable --formulate$flag3D --candidates primitives_merged_it1.csv -a points_primitives_it1.csv --energy --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $anglegens --constr-mode $iterationConstrMode --cost-fn $pwCostFunc"
 }
 
+mv energy.csv energy.csv.bak
+
 # [0] Segmentation. OUTPUT: patches.csv, points_primitives.csv
 if [ $startAt -eq 0 ]; then
     my_exec "$executable --segment$flag3D --angle-limit $anglelimit --scale $scale --dist-limit-mult $segmentScaleMultiplier --angle-gens $anglegens"
@@ -177,6 +179,7 @@ my_exec "$executable --merge$flag3D --scale $scale --adopt $adopt --prims primit
 
 # Show output of first merge.
 my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p primitives_merged_it0.csv -a points_primitives_it0.csv --title \"GlobOpt - Merged 1st iteration output\" $visdefparam  &"
+my_exec "$executable --formulate$flag3D --energy --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --constr-mode $firstConstrMode --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $anglegens --candidates primitives_it0.bonmin.csv -a $assoc --freq-weight $freqweight --cost-fn $pwCostFunc"
 
 for c in $(seq 1 $nbExtraIter)
 do
@@ -227,8 +230,8 @@ do
         my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p primitives_it$c.bonmin.csv -a $assoc --title \"GlobOpt - [Dir-Colours] $nextId iteration output\" $visdefparam --dir-colours --no-rels &"
     fi
 
-    my_exec "$executable --formulate$flag3D --candidates primitives_it$c.bonmin.csv -a $assoc --energy --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $anglegens --constr-mode $iterationConstrMode --cost-fn $pwCostFunc"
+    my_exec "$executable --energy --formulate$flag3D --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --constr-mode $iterationConstrMode --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $anglegens --candidates primitives_it$c.bonmin.csv -a $assoc --freq-weight $freqweight  --cost-fn $pwCostFunc"
 done
 
-energies
+#energies
 # ../pearl --scale 0.05 --cloud cloud.ply --prims patches.csv --assoc points_primitives.csv --pw 1000 --cmp 1000

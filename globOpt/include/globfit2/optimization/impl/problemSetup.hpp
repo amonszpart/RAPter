@@ -47,6 +47,7 @@ ProblemSetup::formulateCli( int    argc
     std::string               problem_rel_path   = "problem";
     std::string               data_cost_mode_str = "assoc";
     std::string               constr_mode_str    = "hybrid";
+    std::string               energy_path        = "energy.csv";
     bool                      calc_energy        = false; // instead of writing the problem, calculate the energy of selecting all input lines.
     // parse params
     {
@@ -131,6 +132,7 @@ ProblemSetup::formulateCli( int    argc
                       << " [--rod " << problem_rel_path << "]\t\tRelative output path of the output matrix files\n"
                       << " [--patch-pop-limit " << params.patch_population_limit << "]\n"
                       << " [--freq-weight" << params.freq_weight << "]\n"
+                      << " [--energy-out" << energy_path << "]\n"
                       << std::endl;
             if ( !verbose )
                 return EXIT_FAILURE;
@@ -213,11 +215,12 @@ ProblemSetup::formulateCli( int    argc
     // dump. default output: ./problem/*.csv; change by --rod
     if ( EXIT_SUCCESS == err )
     {
+        std::string parent_path = boost::filesystem::path(candidates_path).parent_path().string();
+        if ( !parent_path.empty() )     parent_path += "/";
+        else                            parent_path =  ".";
+
         if ( !calc_energy )
         {
-            std::string parent_path = boost::filesystem::path(candidates_path).parent_path().string();
-            if ( !parent_path.empty() )     parent_path += "/";
-            else                            parent_path =  ".";
             std::string problem_path = parent_path + "/" + problem_rel_path;
             problem.write( problem_path );
         }
@@ -236,6 +239,9 @@ ProblemSetup::formulateCli( int    argc
                       << " + " << params.weights(1) << " * " << pairwiseC / params.weights(1)
                       << " + " << params.weights(2) << " * " << complexityC / params.weights(2)
                       << std::endl;
+            std::ofstream fenergy( parent_path + "/" + energy_path, std::ofstream::out | std::ofstream::app );
+            fenergy << dataC + pairwiseC + complexityC << "," << dataC << "," << pairwiseC << "," << complexityC << std::endl;
+            fenergy.close();
         }
     } //...dump
 
@@ -874,7 +880,7 @@ namespace problemSetup {
 
                     // changed by Aron 10:32 24/09/2014
                     // old version: 1/#did, better version would be normalized, so: 1 / (#did/all)
-                    // new version: .1 + .9 * ((#did/n)^2 - 1.)^6
+                    // new version: Dataweight = dataweight * (.1 + .9 * ((#did/n)^2 - 1.)^6)
                     if ( dir_instances[dir_gid] > 0 )
                     {
                         _Scalar v = _Scalar(dir_instances[dir_gid]) / _Scalar(active_count); // #did/n
