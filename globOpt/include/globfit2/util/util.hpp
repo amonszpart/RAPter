@@ -234,7 +234,7 @@ nColoursEigen( int n, Scalar scale, bool random_shuffle, float min_value = 50.f,
 }
 
 inline std::vector< ::Eigen::Vector3f >
-paletteLightColoursEigen()
+paletteLightColoursEigen( int min_count = 0 )
 {
     // don't have template parameters, since we return Vector3f....
     std::vector< ::Eigen::Vector3f > colours_eigen;
@@ -248,8 +248,8 @@ paletteLightColoursEigen()
     colours_eigen [6] << 235.f, 192.f, 218.f;
 
     std::vector< ::Eigen::Vector3f > out;
-    out.insert( out.end(), colours_eigen.begin(), colours_eigen.end() );
-    out.insert( out.end(), colours_eigen.begin(), colours_eigen.end() );
+    while ( out.size() < min_count )
+        out.insert( out.end(), colours_eigen.begin(), colours_eigen.end() );
 
     return out;
 }
@@ -260,7 +260,7 @@ paletteLightNeutralColour(){
 }
 
 inline std::vector< ::Eigen::Vector3f >
-paletteMediumColoursEigen()
+paletteMediumColoursEigen( int min_count = 0 )
 {
     // don't have template parameters, since we return Vector3f....
     std::vector< ::Eigen::Vector3f > colours_eigen;
@@ -274,8 +274,8 @@ paletteMediumColoursEigen()
     colours_eigen [6] << 215.f, 127.f, 180.f;
 
     std::vector< ::Eigen::Vector3f > out;
-    out.insert( out.end(), colours_eigen.begin(), colours_eigen.end() );
-    out.insert( out.end(), colours_eigen.begin(), colours_eigen.end() );
+    while ( out.size() < min_count )
+        out.insert( out.end(), colours_eigen.begin(), colours_eigen.end() );
 
     return out;
 }
@@ -286,7 +286,7 @@ paletteMediumNeutralColour(){
 }
 
 inline std::vector< ::Eigen::Vector3f >
-paletteDarkColoursEigen()
+paletteDarkColoursEigen( int min_count = 0 )
 {
     // don't have template parameters, since we return Vector3f....
     std::vector< ::Eigen::Vector3f > colours_eigen;
@@ -300,8 +300,8 @@ paletteDarkColoursEigen()
     colours_eigen [6] << 180.f, 056.f, 148.f;
 
     std::vector< ::Eigen::Vector3f > out;
-    out.insert( out.end(), colours_eigen.begin(), colours_eigen.end() );
-    out.insert( out.end(), colours_eigen.begin(), colours_eigen.end() );
+    while ( out.size() < min_count )
+        out.insert( out.end(), colours_eigen.begin(), colours_eigen.end() );
 
     return out;
 }

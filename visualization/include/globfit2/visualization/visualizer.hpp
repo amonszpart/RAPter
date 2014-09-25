@@ -158,16 +158,18 @@ namespace GF2
 
 
         // Check if we can use color palette
-        bool usePalette =  id2ColId.size() < util::paletteLightColoursEigen().size();
+        const int paletteRequiredSize = id2ColId.size()+1; // set this to 0, if you only want 7 colours
+
+        bool usePalette =  id2ColId.size() < util::paletteLightColoursEigen(paletteRequiredSize).size();
         std::vector<Eigen::Vector3f> pointColours, primColours;
         Eigen::Vector3f unusedPointColour, unusedPrimColour;
 
         if ( usePalette )
         {
-            cout << "SWitching to nicer color palette" << endl;
+            cout << "Switching to nicer color palette" << endl;
 
-            pointColours = util::paletteLightColoursEigen();
-            primColours  = util::paletteDarkColoursEigen();
+            pointColours = util::paletteLightColoursEigen(paletteRequiredSize);
+            primColours  = util::paletteDarkColoursEigen(paletteRequiredSize);
 
             unusedPointColour = util::paletteLightNeutralColour();
             unusedPrimColour  = util::paletteDarkNeutralColour();
@@ -175,6 +177,7 @@ namespace GF2
         }
         else
         {
+            cout << " NOT Switching to nicer color palette, need " << id2ColId.size() << " colours" << endl;
             pointColours = util::nColoursEigen( /*           count: */ nbColour
                                                 , /*         scale: */ 255.f
                                                 , /*       shuffle: */ true
@@ -204,20 +207,11 @@ namespace GF2
                 if ( gid2lidLid1.find(points[pid].getTag(PointPrimitiveT::GID)) != gid2lidLid1.end() )
                 {
                     std::pair<int,int> lid =  gid2lidLid1[points[pid].getTag(PointPrimitiveT::GID)];
-                    std::cout << "pid" << pid << ".lid=" << lid.first << ", " << lid.second << ", primgid: " << primitives[lid.first][lid.second].getTag(PrimitiveT::GID)
-                            << ", primdid: " << primitives[lid.first][lid.second].getTag(PrimitiveT::DIR_GID)
-                            << ", pgid: " << points[pid].getTag(PointPrimitiveT::GID) << std::endl;
                     const int mid = primitives[lid.first][lid.second].getTag(primColourTag);
-                    std::cout << ", mid= " << mid << ", for primcolourtag: " << primColourTag;
                     if ( id2ColId.find(mid) != id2ColId.end() )
                     {
-                        if ( primitives[lid.first][lid.second].getTag(PrimitiveT::GID) == 15 )
-                            std::cout << "here";
                         colour = pointColours[id2ColId[mid]];
-                        std::cout << ", found colour " << id2ColId[mid] << ": "  << colour.transpose() << std::endl;
                     }
-                    else
-                        std::cout << ", didn't fing colour, so " << colour.transpose() << std::endl;
                 }
                 // skip, if filtering is on, and this gid is not in the filter
                 //if ( filter_gids && (filter_gids->find(primitives[points[pid]].getTag(PrimitiveT::GID)) == filter_gids->end()) )
@@ -297,9 +291,6 @@ namespace GF2
 //                { std::cout << "!!!\t\tequal " << line_name << ": " << lid << ", " << lid1 << ", " << gid << ", " << dir_gid << std::endl; fflush(stdout); }
 
                 Eigen::Matrix<_Scalar,3,1> prim_colour = primColours[id2ColId[dir_colours ? dir_gid : gid]] / 255.;
-                if ( gid == 15 )
-                    std::cout << "getting colour " << "id2ColId[" << (dir_colours ? dir_gid : gid)
-                              << "] = " << id2ColId[dir_colours ? dir_gid : gid] << " = " << prim_colour.transpose() << " for 15 " << std::endl;
 
                 // if use tags, collect GID tagged point indices
                 std::vector<int> indices;
