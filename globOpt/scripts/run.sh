@@ -47,27 +47,30 @@ else
 	flag3D="";
 fi
 
+#d=`../divide.py 2 3`;
+
 anglegens="90"; # Desired angle generators in degrees. Default: 90.
-nbExtraIter=5;  # iteration count. Default: 2.
-dirbias="0";	# not-same-dir-id cost offset. Default: 0. Don't use, if freqweight is on.
-freqweight="10"; # dataterm = (freqweight / #instances) * datacost. Default: 0. 1 might be too strong...todo
+nbExtraIter=20;  # iteration count. Default: 2.
+dirbias="1";	# not-same-dir-id cost offset. Default: 0. Don't use, if freqweight is on.
+freqweight="100"; # dataterm = (freqweight / #instances) * datacost. Default: 0. 1 might be too strong...todo
 adopt="0";      # Adopt points argument. Default: 0
 # In candidate generation, divide angle limit with this to match copies. Default: 1. Set to 10, if too many candidates (variables).
-cand_anglediv="1";# for 3D: "2.5";
+cand_anglediv="5";# for 3D: "2.5";
 # multiply scale by this number to get the segmentation (regionGrowing) spatial distance
-segmentScaleMultiplier="1";# for 3D: "2.5";
+segmentScaleMultiplier="1.25";# for 3D: "2.5";
 pwCostFunc="spatsqrt" # spatial cost function. TODO: reactivate sqrt (does not compile for now)
 
 visdefparam="--use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-rel --no-scale" #"--use-tags --no-clusters" #--ids
 firstConstrMode="patch" # what to add in the first run formulate. Default: 0 (everyPatchNeedsDirection), experimental: 2 (largePatchesNeedDirection).
 iterationConstrMode="patch" # what to add in the second iteration formulate. Default: 0 (everyPatchNeedsDirection), experimental: 2 (largePatchesNeedDirection).
 startAt=0
-smallThresh="10" # smallThresh * scale is the small threshold # 5 was good for most of the stuff, except big scenes (kinect, lanslevillard)
+smallThresh="128" # smallThresh * scale is the small threshold # 5 was good for most of the stuff, except big scenes (kinect, lanslevillard)
 smallThreshlimit="1"
+smallThreshDiv="1.3";
 
-safeMode=""; #"--safe-mode" # "--safe-mode" for new, or "" for old version
-variableLimit=20000; # 1300; # Safe mode gets turned on, and generate rerun, if candidates exceed this number (1300)
-premerge=0 # call merge after segmentation 0/1
+safeMode="--safe-mode"; #"--safe-mode" # "--safe-mode" for new, or "" for old version
+variableLimit=1500; # 1300; # Safe mode gets turned on, and generate rerun, if candidates exceed this number (1300)
+premerge=1 # call merge after segmentation 0/1
 
 
 echo "scale: $scale"
@@ -158,7 +161,7 @@ input="patches.csv";
 assoc="points_primitives.csv";
 
 # show segment output
-my_exec "../globOptVis --show$flag3D --scale $scale --use-tags --pop-limit $poplimit -p patches.csv -a $assoc --normals 10  --no-clusters --title \"GlobOpt - Segment output\" --no-pop --no-rel&"
+my_exec "../globOptVis --show$flag3D --scale $scale --use-tags --pop-limit $poplimit -p patches.csv -a $assoc --normals 100  --no-clusters --title \"GlobOpt - Segment output\" --no-pop --no-rel &"
 
 if [ $startAt -le 1 ]; then
 
@@ -171,7 +174,7 @@ if [ $premerge -ne 0 ]; then
     echo ">>>>>> PREMERGE produced  $premergeLinesCnt patches instead of $patchesLinesCnt";
     cp patches.csv_merged_it-1.csv $input
     cp points_primitives_it-1.csv $assoc
-    my_exec "../globOptVis --show$flag3D --scale $scale --use-tags --pop-limit $poplimit -p patches.csv -a $assoc --normals 5 --title \"GlobOpt - PreMerge output\" --no-clusters &"
+    my_exec "../globOptVis --show$flag3D --scale $scale --use-tags --pop-limit $poplimit -p patches.csv -a $assoc --normals 100 --title \"GlobOpt - PreMerge output\" --no-clusters --no-pop --no-rel &"
 fi
 
 # Generate candidates. OUT: candidates_it0.csv. #small-mode : small patches don't receive any candidates
@@ -212,7 +215,9 @@ fi #startAt <= 1
 for c in $(seq 1 $nbExtraIter)
 do
     
-    smallThresh=$(($smallThresh / 2))
+    #smallThresh=$(($smallThresh / 2))
+    smallThresh=`../divide.py $smallThresh $smallThreshDiv`;
+    smallThresh=$smallThresh;
     
     if [ $smallThresh -lt $smallThreshlimit ]; then
         smallThresh=$smallThreshlimit
