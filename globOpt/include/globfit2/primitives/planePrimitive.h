@@ -458,32 +458,38 @@ namespace GF2
                 concave_hull.setAlpha( alpha );
                 concave_hull.setInputCloud( cloud_projected.makeShared() );
                 concave_hull.reconstruct( cloud_hull, polygons );
-                int max_size = 0, max_id = 0;
-                for ( i = 0; i != polygons.size(); ++i )
+
+                if ( polygons.size() )
                 {
-                    if ( polygons[i].vertices.size() >max_size)
+                    int max_size = 0, max_id = 0;
+                    for ( i = 0; i != polygons.size(); ++i )
                     {
-                        max_size = polygons[i].vertices.size();
-                        max_id = i;
+                        if ( polygons[i].vertices.size() >max_size)
+                        {
+                            max_size = polygons[i].vertices.size();
+                            max_id = i;
+                        }
+                    }
+
+                    plane_polygon_cloud.resize( polygons[max_id].vertices.size() );
+                    i = 0;
+                    for ( std::vector<uint32_t>::const_iterator it  = polygons[max_id].vertices.begin();
+                          it != polygons[max_id].vertices.end(); ++i, ++it )
+                    {
+                        plane_polygon_cloud.at( i ) = cloud_hull.at(*it);
+                    }
+
+                    if ( out_mesh )
+                    {
+                        // Perform reconstruction
+                        out_mesh->polygons = polygons;
+
+                        // Convert the PointCloud into a PCLPointCloud2
+                        pcl::toPCLPointCloud2 (cloud_hull, out_mesh->cloud);
                     }
                 }
-
-                plane_polygon_cloud.resize( polygons[max_id].vertices.size() );
-                i = 0;
-                for ( std::vector<uint32_t>::const_iterator it  = polygons[max_id].vertices.begin();
-                                                            it != polygons[max_id].vertices.end(); ++i, ++it )
-                {
-                    plane_polygon_cloud.at( i ) = cloud_hull.at(*it);
-                }
-
-                if ( out_mesh )
-                {
-                    // Perform reconstruction
-                    out_mesh->polygons = polygons;
-
-                    // Convert the PointCloud into a PCLPointCloud2
-                    pcl::toPCLPointCloud2 (cloud_hull, out_mesh->cloud);
-                }
+                else
+                    std::cout << "no hull" << std::endl;
 
                 return plane_polygon_cloud.size();
             }

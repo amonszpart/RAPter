@@ -334,7 +334,9 @@ inline int parseIteration( std::string const& input_prims_path )
         iteration = -1;
     else
     {
-        iteration = atoi( input_prims_path.substr( it_loc+3,1 ).c_str() );
+        iteration = atoi( input_prims_path.substr( it_loc+3,
+                                                       input_prims_path.find(".",it_loc)).c_str() );
+        //iteration = atoi( input_prims_path.substr( it_loc+3,1 ).c_str() );
     }
 
     return iteration;

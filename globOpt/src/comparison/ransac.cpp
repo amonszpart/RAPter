@@ -5,6 +5,8 @@
 #include "globfit2/io/io.h"         // readPrimitives, readPoints
 #include "globfit2/util/containers.hpp" // add
 #include "globfit2/processing/util.hpp" // getpop
+#include "schnabelEnv.h"
+#include "../../src/schnabelEnv.cpp"
 
 #if GF2_USE_PCL
     #include "pcl/sample_consensus/model_types.h" // sacmodel
@@ -258,7 +260,63 @@ int ransacCli( int argc, char **argv )
 int main(int argc, char *argv[])
 {
     std::cout << "hello ransac\n";
-    if ( GF2::console::find_switch(argc,argv,"--3D") )
+    if ( GF2::console::find_switch(argc,argv,"--schnabel3D") )
+    {
+        typedef GF2::PointPrimitive PointPrimitiveT;
+        typedef GF2::PlanePrimitive PrimitiveT;
+
+        std::string cloud_path = "./cloud.ply";
+        std::cout << "hello Schnabel\n";
+        if ( (  GF2::console::parse_argument( argc, argv, "--cloud", cloud_path) < 0)
+             && (!boost::filesystem::exists(cloud_path)) )
+        {
+            std::cerr << "--cloud" << std::endl;
+            return 1;
+        }
+
+        // scale
+        float scale = 0.1f;
+        if (    (GF2::console::parse_argument( argc, argv, "--scale", scale) < 0)
+             && (GF2::console::parse_argument( argc, argv, "-sc"    , scale) < 0) )
+        {
+            std::cerr << "[" << __func__ << "]: " << "--scale is compulsory" << std::endl;
+            return 1;
+        }
+
+        int min_support_arg = 300;
+        if (    (GF2::console::parse_argument( argc, argv, "--minsup", min_support_arg) < 0) )
+        {
+            std::cerr << "[" << __func__ << "]: " << "--minsup required (300?)" << std::endl;
+            return EXIT_FAILURE;
+        }
+
+        int err = EXIT_SUCCESS;
+
+        std::vector<PointPrimitiveT> points;
+        GF2::MyCloud::Ptr   pcl_cloud( new GF2::MyCloud() );
+        if ( EXIT_SUCCESS == err )
+        {
+            err = GF2::io::readPoints<PointPrimitiveT>( points, cloud_path, &pcl_cloud );
+            if ( err != EXIT_SUCCESS )  std::cerr << "[" << __func__ << "]: " << "readPoints returned error " << err << std::endl;
+        } //...read points
+
+         std::vector<GF2::PlanePrimitive> planes;
+        err = GF2::SchnabelEnv::run( planes
+                            , pcl_cloud
+                            , scale
+                            , min_support_arg  );
+        std::map< int, std::vector<GF2::PlanePrimitive> > out_prims;
+        for ( int gid = 0; gid != planes.size(); ++gid )
+        {
+            GF2::containers::add( out_prims, gid, planes[gid] )
+                    .setTag( PrimitiveT::GID    , gid )
+                    .setTag( PrimitiveT::DIR_GID, gid );
+        }
+
+        GF2::io::savePrimitives<PrimitiveT,std::vector<GF2::PlanePrimitive>::const_iterator >( out_prims, "./primitives.schnabel.csv" );
+
+    }
+    else if ( GF2::console::find_switch(argc,argv,"--3D") )
     {
         std::cout << "running planes" << std::endl;
         return ransacCli< GF2::PointContainerT

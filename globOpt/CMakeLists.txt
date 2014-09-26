@@ -356,6 +356,18 @@ IF(WITH_RSAC)
     SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-local-typedefs " ) #-Wreturn-type # removed c++11
     SET( RSAC_TARGET ransac)
 
+#################################
+# libSchnabel
+SET( SCHNABEL07_DIR /home/bontius/workspace/SmartGeometry/schnabel07/)
+add_library( libSchnabel07 SHARED IMPORTED )
+set_property( TARGET libSchnabel07 PROPERTY IMPORTED_LOCATION_RELEASE ${SCHNABEL07_DIR}/lib/libSchnabel07.so )
+set_property( TARGET libSchnabel07 PROPERTY IMPORTED_LOCATION_DEBUG ${SCHNABEL07_DIR}/lib/libSchnabel07d.so )
+add_library( libSchnabel07_MiscLib SHARED IMPORTED )
+set_property( TARGET libSchnabel07_MiscLib PROPERTY IMPORTED_LOCATION_RELEASE ${SCHNABEL07_DIR}/lib/libMiscLib.so )
+set_property( TARGET libSchnabel07_MiscLib PROPERTY IMPORTED_LOCATION_DEBUG ${SCHNABEL07_DIR}/lib/libMiscLibd.so )
+INCLUDE_DIRECTORIES( ${SCHNABEL07_DIR} )
+SET( SCHNABEL07_LIBRARIES libSchnabel07 libSchnabel07_MiscLib)
+
     INCLUDE_DIRECTORIES(
         ${PATH_RSAC_ROOT}/include
     )
@@ -363,6 +375,7 @@ IF(WITH_RSAC)
     ## Sources
     SET( RSAC_SRC
         src/comparison/ransac.cpp
+        src/schnabelEnv.cpp
     )
     SET( RSAC_H
 
@@ -371,6 +384,8 @@ IF(WITH_RSAC)
     ## Linking
     add_executable( ${RSAC_TARGET} ${RSAC_SRC} ${RSAC_H})
     TARGET_LINK_LIBRARIES( ${RSAC_TARGET}
+        libSchnabel07
+        libSchnabel07_MiscLib
         ${GCO_LIBRARIES}
         ${PCL_LIBRARIES}
         boost_filesystem
