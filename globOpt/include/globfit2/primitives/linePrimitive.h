@@ -172,7 +172,8 @@ namespace GF2
             getExtent( std::vector<Eigen::Matrix<Scalar,3,1> >      & minMax
                      , _PointContainerT                         const& cloud
                      , double                                   const  threshold   = 0.01
-                     , std::vector<int>                         const* indices_arg = NULL ) const
+                     , std::vector<int>                         const* indices_arg = NULL
+                     , bool const force = false ) const
             {
                 typedef Eigen::Matrix<Scalar,3,1> Position;
 
