@@ -90,6 +90,10 @@ namespace GF2 {
              */
             _Scalar          small_thresh_mult = 10.f;
 
+            /*! \brief Prevent variable explosion by trusting active candidates and just solving the promoted ones.
+             */
+            bool safe_mode = false;
+
 
             //_____________________________________________
             //____________________Parsers__________________

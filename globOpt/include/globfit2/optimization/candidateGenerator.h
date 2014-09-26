@@ -43,7 +43,8 @@ namespace GF2
                     , Scalar                           const   scale
                     , std::vector<Scalar>              const&  angles
                     , CandidateGeneratorParams<Scalar> const&  params
-                    , Scalar                           const  smallThresh );
+                    , Scalar                           const  smallThresh
+                    , bool                             const  safe_mode = false );
 
     }; //...class CandidateGenerator
 } // ...ns::GF2
@@ -150,7 +151,8 @@ namespace GF2
                                 , _Scalar                           const  scale
                                 , std::vector<_Scalar>              const& angles
                                 , CandidateGeneratorParams<_Scalar> const& params
-                                , _Scalar                           const  smallThreshMult )
+                                , _Scalar                           const  smallThreshMult
+                                , bool                              const  safe_mode_arg )
     {
         typedef typename _PointContainerT::value_type                      _PointPrimitiveT;
         typedef typename _PrimitiveContainerT::const_iterator              outer_const_iterator;
@@ -160,6 +162,7 @@ namespace GF2
         typedef typename _PrimitiveContainerT::mapped_type::iterator       inner_iterator;
         typedef          std::pair<int,int>                                GidLid;                  // uniquely identifies a primitive by first: gid, second: linear id in innerContainer (vector).
         typedef          std::pair<int,int>                                DidAid;
+        bool safe_mode = safe_mode_arg;
 
         if ( out_lines.size() ) std::cerr << "[" << __func__ << "]: " << "warning, out_lines not empty!" << std::endl;
         if ( params.patch_population_limit < 0 ) { std::cerr << "[" << __func__ << "]: " << "error, popfilter is necessary!!!" << std::endl; return EXIT_FAILURE; }
@@ -266,6 +269,11 @@ namespace GF2
 //                promoted.clear();
 
             std::cout << "[" << __func__ << "]: " << "promoted " << promoted.size() << " primitives" << std::endl;
+            if ( !promoted.size() && safe_mode )
+            {
+                std::cout << "[" << __func__ << "]: " << "\n\nDISABLING safe mode, since no promoted\n" << std::endl;
+                safe_mode = false;
+            }
         } //...sort size
 
         // convert local fits
@@ -374,11 +382,47 @@ namespace GF2
                                      && promoted.find( GidLid(gid1,lid1) ) == promoted.end() // prim1 needs to be active and not promotoed to send direction
                                     );
 
+                            // changed by Aron 08:15, 26/09/2014 to prevent many candidates, trust originals, don't add anything to them, just add to promoted ones
+                            if ( safe_mode )
+                            {
+                                bool deb = add0;
+                                if ( add0 )
+                                {
+                                    std::cout << "would add0, ";
+                                    if ( promoted.find( GidLid(gid0,lid0) ) != promoted.end() )
+                                        std::cout << "and not canceling due to safe mode, since promoted";
+                                    else
+                                        std::cout << "but canceling due to safe mode";
+                                }
+
+                                add0 &= promoted.find( GidLid(gid0,lid0) ) != promoted.end();
+                                if ( deb )
+                                    std::cout << "add0 is now " << (add0?"TRUE":"false") << std::endl;
+                            }
+
                             add1 &= (   (prim0.getTag(_PrimitiveT::STATUS) != _PrimitiveT::STATUS_VALUES::SMALL )      // prim0 (dir) needs to be active             to send    directions
                                      && (prim1.getTag(_PrimitiveT::STATUS) != _PrimitiveT::STATUS_VALUES::SMALL ) // prim1 (pos) needs to be active or promoted to receive directions
                                      && promoted.find( GidLid(gid0,lid0) ) == promoted.end() // prim0 needs to be active and not promotoed to send direction
                                     );
-                        }
+
+                            // changed by Aron 08:15, 26/09/2014 to prevent many candidates, trust originals, don't add anything to them, just add to promoted ones
+                            if ( safe_mode )
+                            {
+                                bool deb = add1;
+                                if ( add1 )
+                                {
+                                    std::cout << "would add1, ";
+                                    if ( promoted.find( GidLid(gid1,lid1) ) != promoted.end() )
+                                        std::cout << "and not canceling due to safe mode, since promoted";
+                                    else
+                                        std::cout << "but canceling due to safe mode";
+                                }
+
+                                add1 &= promoted.find( GidLid(gid1,lid1) ) != promoted.end();
+                                if ( deb )
+                                    std::cout << "add1 is now " << (add1?"TRUE":"false") << std::endl;
+                            } //...if safe_mode
+                        } //...small_mode==IGNORE
 
                         // store already copied pairs
                         {
@@ -552,6 +596,9 @@ namespace GF2
             pcl::console::parse_argument( argc, argv, "--patch-dist-limit", generatorParams.patch_dist_limit_mult ); // gets multiplied by scale
             pcl::console::parse_x_arguments( argc, argv, "--angle-gens", angle_gens );
             pcl::console::parse_argument( argc, argv, "--patch-pop-limit", generatorParams.patch_population_limit );
+            generatorParams.safe_mode = pcl::console::find_switch( argc, argv, "--safe-mode" );
+            if ( generatorParams.safe_mode )
+                std::cout << "[" << __func__ << "]: " << "__________________________\n__________________________RUNNING SAFE______________________\n_____________________________" << std::endl;
 
             // patchDistMode
             pcl::console::parse_argument( argc, argv, "--mode", mode_string );
@@ -574,30 +621,33 @@ namespace GF2
 
             // print usage
             {
-                std::cerr << "[" << __func__ << "]: " << "Usage:\t " << argv[0] << " --generate \n";
-                std::cerr << "\t --cloud " << cloud_path << "\n";
-                std::cerr << "\t -sc,--scale " << generatorParams.scale << "\n";
-                std::cerr << "\t -p,--prims" << input_prims_path << "\n";
-                std::cerr << "\t -a,--assoc" << associations_path << "\n";
-                std::cerr << "\t --small-thresh-mult " << generatorParams.small_thresh_mult << "\t get's multiplied to scale, and serves as big/small threshold for primitives\n";
-
-                // linkage mode (full_min, full_max, squared_min, repr_min)
-                std::cerr << "\t [--mode *" << generatorParams.printPatchDistMode() << "*\t";
-                for ( size_t m = 0; m != mode_opts.size(); ++m )
-                    std::cerr << "|" << mode_opts[m];
-                std::cerr << "]\n";
-
-                std::cerr << "\t [-al,--angle-limit " << generatorParams.angle_limit << "]\n";
-                std::cerr << "\t [-ald,--angle-limit-div " << generatorParams.angle_limit_div << "]\n";
-                std::cerr << "\t [--patch-dist-limit " << generatorParams.patch_dist_limit_mult << "]\n";
-                std::cerr << "\t [--angle-gens "; for(size_t vi=0;vi!=angle_gens.size();++vi)std::cerr<<angle_gens[vi]<<","; std::cerr << "]\n";
-                std::cerr << "\t [--patch-pop-limit " << generatorParams.patch_population_limit << "]\n";
-                std::cerr << "\t [--small-mode " << generatorParams.small_mode << "\t | 0: IGNORE, 1: RECEIVE_SIMILAR, 2: RECEIVE_ALL]\n";
-                std::cerr << "\t [--no-paral \n";
-                std::cerr << std::endl;
-
                 if ( !valid_input || pcl::console::find_switch(argc,argv,"--help") || pcl::console::find_switch(argc,argv,"-h") )
+                {
+                    std::cout << "[" << __func__ << "]: " << "Usage:\t " << argv[0] << " --generate \n";
+                    std::cout << "\t --cloud " << cloud_path << "\n";
+                    std::cout << "\t -sc,--scale " << generatorParams.scale << "\n";
+                    std::cout << "\t -p,--prims" << input_prims_path << "\n";
+                    std::cout << "\t -a,--assoc" << associations_path << "\n";
+                    std::cout << "\t --small-thresh-mult " << generatorParams.small_thresh_mult << "\t get's multiplied to scale, and serves as big/small threshold for primitives\n";
+
+                    // linkage mode (full_min, full_max, squared_min, repr_min)
+                    std::cout << "\t [--mode *" << generatorParams.printPatchDistMode() << "*\t";
+                    for ( size_t m = 0; m != mode_opts.size(); ++m )
+                        std::cout << "|" << mode_opts[m];
+                    std::cout << "]\n";
+
+                    std::cout << "\t [-al,--angle-limit " << generatorParams.angle_limit << "]\n";
+                    std::cout << "\t [-ald,--angle-limit-div " << generatorParams.angle_limit_div << "]\n";
+                    std::cout << "\t [--patch-dist-limit " << generatorParams.patch_dist_limit_mult << "]\n";
+                    std::cout << "\t [--angle-gens "; for(size_t vi=0;vi!=angle_gens.size();++vi)std::cout<<angle_gens[vi]<<","; std::cout << "]\n";
+                    std::cout << "\t [--patch-pop-limit " << generatorParams.patch_population_limit << "]\n";
+                    std::cout << "\t [--small-mode " << generatorParams.small_mode << "\t | 0: IGNORE, 1: RECEIVE_SIMILAR, 2: RECEIVE_ALL]\n";
+                    std::cout << "\t [--no-paral]\n";
+                    std::cout << "\t [--safe-mode]\n";
+                    std::cout << std::endl;
+
                     return EXIT_FAILURE;
+                }
             }
 
             if ( boost::filesystem::is_directory(cloud_path) )
@@ -655,7 +705,8 @@ namespace GF2
         {
             err = CandidateGenerator::generate< MyPrimitivePrimitiveAngleFunctor, MyPointPrimitiveDistanceFunctor, _PrimitiveT >
                                               ( primitives, patches, points, generatorParams.scale, generatorParams.angles, generatorParams
-                                                , generatorParams.small_thresh_mult);
+                                                , generatorParams.small_thresh_mult
+                                                , generatorParams.safe_mode );
 
             if ( err != EXIT_SUCCESS ) std::cerr << "[" << __func__ << "]: " << "generate exited with error! Code: " << err << std::endl;
         } //...generate
