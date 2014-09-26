@@ -13,6 +13,7 @@
 #   include "pcl/sample_consensus/sac_model_line.h"
 #   include "pcl/PointIndices.h"
 #   include "pcl/visualization/pcl_visualizer.h"
+#   include "pcl/surface/concave_hull.h"
 #endif
 
 namespace GF2
@@ -330,6 +331,7 @@ namespace GF2
                 , int                              const  viewport_id = 0
                 , Scalar                           const  stretch     = Scalar( 1. )
                 , int                              const  draw_mode   = 0               // this is needed in plane
+                , float                            const  hull_alpha  = 0. // this is needed in plane
                 )
             {
                 typedef Eigen::Matrix<Scalar,3,1> Position;
@@ -377,6 +379,70 @@ namespace GF2
                 err += draw( ps, v, plane_name, r, g, b, viewport_id );
 
                 return err;
+            } //...draw()
+
+            /*! \brief Extract convec hull and display
+             *  \tparam PointsT Concept: std::vector<pcl::PointXYZ>.
+             */
+            template < class PclCloudT, class _PointContainerT, class _IndicesContainerT> static inline int
+            getHull( PclCloudT                & plane_polygon_cloud // pcl::PointCloud<pcl::PointXYZ>::Ptr plane_polygon_cloud_ptr( new pcl::PointCloud<pcl::PointXYZ> );
+                   , LinePrimitive       const& plane
+                   , _PointContainerT    const& points
+                   , _IndicesContainerT  const* indices
+                   , float               const  alpha = 2.f
+                   , pcl::PolygonMesh         * out_mesh = NULL
+                   )
+            {
+                typedef typename PclCloudT::PointType PclPointT;
+
+                pcl::ConcaveHull<PclPointT>              concave_hull;                                   // object
+                //typename pcl::PointCloud<PclPointT>::Ptr cloud_hull( new pcl::PointCloud<PclPointT>() );
+                typename pcl::PointCloud<PclPointT> cloud_hull;
+                typename pcl::PointCloud<PclPointT> cloud_projected;
+                std::vector<pcl::Vertices>                   polygons;                               // output list indexing the points from cloud_hull, in 2D this is size 1
+                //pcl::PointCloud<PclPointT>::Ptr plane_polygon_cloud_ptr( new pcl::PointCloud<PclPointT> );
+
+                cloud_projected.resize(indices->size());
+
+                // get assigned points, project them to the plane and store as PCL cloud
+                int i = 0;
+                for ( typename _IndicesContainerT::const_iterator it = indices->begin(); it != indices->end(); ++i, ++it )
+                {
+                    cloud_projected.at(i).getVector3fMap() = plane.projectPoint(points[*it].pos()).template cast<float>();
+                }
+
+                concave_hull.setAlpha( alpha );
+                concave_hull.setInputCloud( cloud_projected.makeShared() );
+                concave_hull.reconstruct( cloud_hull, polygons );
+                int max_size = 0, max_id = 0;
+                for ( i = 0; i != polygons.size(); ++i )
+                {
+                    if ( polygons[i].vertices.size() >max_size)
+                    {
+                        max_size = polygons[i].vertices.size();
+                        max_id = i;
+                    }
+                }
+
+                plane_polygon_cloud.resize( polygons[max_id].vertices.size() );
+                i = 0;
+                for ( std::vector<uint32_t>::const_iterator it  = polygons[max_id].vertices.begin();
+                                                            it != polygons[max_id].vertices.end(); ++i, ++it )
+                {
+                    plane_polygon_cloud.at( i ) = cloud_hull.at(*it);
+                }
+
+                if ( out_mesh )
+                {
+                    // Perform reconstruction
+                    out_mesh->polygons = polygons;
+
+                    // Convert the PointCloud into a PCLPointCloud2
+                    pcl::toPCLPointCloud2 (cloud_hull, out_mesh->cloud);
+                }
+
+
+                return plane_polygon_cloud.size();
             }
 #endif // GF2_USE_PCL
 

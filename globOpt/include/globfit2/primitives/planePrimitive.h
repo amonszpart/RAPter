@@ -428,6 +428,69 @@ namespace GF2
             /*! \brief Extract convec hull and display
              *  \tparam PointsT Concept: std::vector<pcl::PointXYZ>.
              */
+            template < class PclCloudT, class _PointContainerT, class _IndicesContainerT> static inline int
+            getHull( PclCloudT                & plane_polygon_cloud // pcl::PointCloud<pcl::PointXYZ>::Ptr plane_polygon_cloud_ptr( new pcl::PointCloud<pcl::PointXYZ> );
+                   , PlanePrimitive      const& plane
+                   , _PointContainerT    const& points
+                   , _IndicesContainerT  const* indices
+                   , float               const  alpha = 2.f
+                   , pcl::PolygonMesh         * out_mesh = NULL
+                   )
+            {
+                typedef typename PclCloudT::PointType PclPointT;
+
+                pcl::ConcaveHull<PclPointT>              concave_hull;                                   // object
+                //typename pcl::PointCloud<PclPointT>::Ptr cloud_hull( new pcl::PointCloud<PclPointT>() );
+                typename pcl::PointCloud<PclPointT> cloud_hull;
+                typename pcl::PointCloud<PclPointT> cloud_projected;
+                std::vector<pcl::Vertices>                   polygons;                               // output list indexing the points from cloud_hull, in 2D this is size 1
+                //pcl::PointCloud<PclPointT>::Ptr plane_polygon_cloud_ptr( new pcl::PointCloud<PclPointT> );
+
+                cloud_projected.resize(indices->size());
+
+                // get assigned points, project them to the plane and store as PCL cloud
+                int i = 0;
+                for ( typename _IndicesContainerT::const_iterator it = indices->begin(); it != indices->end(); ++i, ++it )
+                {
+                    cloud_projected.at(i).getVector3fMap() = plane.projectPoint(points[*it].pos()).template cast<float>();
+                }
+
+                concave_hull.setAlpha( alpha );
+                concave_hull.setInputCloud( cloud_projected.makeShared() );
+                concave_hull.reconstruct( cloud_hull, polygons );
+                int max_size = 0, max_id = 0;
+                for ( i = 0; i != polygons.size(); ++i )
+                {
+                    if ( polygons[i].vertices.size() >max_size)
+                    {
+                        max_size = polygons[i].vertices.size();
+                        max_id = i;
+                    }
+                }
+
+                plane_polygon_cloud.resize( polygons[max_id].vertices.size() );
+                i = 0;
+                for ( std::vector<uint32_t>::const_iterator it  = polygons[max_id].vertices.begin();
+                                                            it != polygons[max_id].vertices.end(); ++i, ++it )
+                {
+                    plane_polygon_cloud.at( i ) = cloud_hull.at(*it);
+                }
+
+                if ( out_mesh )
+                {
+                    // Perform reconstruction
+                    out_mesh->polygons = polygons;
+
+                    // Convert the PointCloud into a PCLPointCloud2
+                    pcl::toPCLPointCloud2 (cloud_hull, out_mesh->cloud);
+                }
+
+                return plane_polygon_cloud.size();
+            }
+
+            /*! \brief Extract convec hull and display
+             *  \tparam PointsT Concept: std::vector<pcl::PointXYZ>.
+             */
             template <class _PointContainerT, class _IndicesContainerT> static inline int
             drawConvex( pcl::visualization::PCLVisualizer::Ptr v
                   , PlanePrimitive      const& plane
@@ -436,8 +499,10 @@ namespace GF2
                   , std::string plane_name
                   , double r, double g, double b
                   , int viewport_id = 0
+                  , float const alpha = 2.f
                   )
             {
+#if 0
                 pcl::ConcaveHull<pcl::PointXYZ>              concave_hull;                                   // object
                 //typename pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_hull( new pcl::PointCloud<pcl::PointXYZ>() );
                 typename pcl::PointCloud<pcl::PointXYZ> cloud_hull;
@@ -467,10 +532,21 @@ namespace GF2
                 }
 
 
-                // draw plane polygon
-                v->addPolygon<pcl::PointXYZ>( plane_polygon_cloud_ptr, r,g,b, plane_name, viewport_id );
-               // v->setShapeRenderingProperties( pcl::visualization::PCL_VISUALIZER_OPACITY, .9, plane_name);
-                v->setShapeRenderingProperties( pcl::visualization::PCL_VISUALIZER_REPRESENTATION, pcl::visualization::PCL_VISUALIZER_REPRESENTATION_SURFACE, plane_name );
+#endif
+                pcl::PointCloud<pcl::PointXYZ>::Ptr plane_polygon_cloud_ptr( new pcl::PointCloud<pcl::PointXYZ> );
+                if ( getHull(*plane_polygon_cloud_ptr, plane, cloud, indices, alpha) )
+                {
+                    // draw plane polygon
+                    v->addPolygon<pcl::PointXYZ>( plane_polygon_cloud_ptr, r,g,b, plane_name, viewport_id );
+
+                    // v->setShapeRenderingProperties( pcl::visualization::PCL_VISUALIZER_OPACITY, .9, plane_name);
+                    v->setShapeRenderingProperties( pcl::visualization::PCL_VISUALIZER_REPRESENTATION, pcl::visualization::PCL_VISUALIZER_REPRESENTATION_SURFACE, plane_name );
+                }
+                else
+                {
+                    std::cerr << "[" << __func__ << "]: " << "qhull returned 0 points for plane " << plane.toString() << "..." << std::endl;
+                    return EXIT_FAILURE;
+                }
 
                 return EXIT_SUCCESS;
             }
@@ -493,6 +569,7 @@ namespace GF2
                 , int                                   const  viewport_id  = 0
                 , Scalar                                const  stretch      = Scalar( 1. )
                 , int                                   const  draw_mode    = 0
+                , Scalar                                const  alpha        = 2.
                 )
             {
                 int err     = EXIT_SUCCESS;
@@ -533,7 +610,7 @@ namespace GF2
                     if ( draw_mode <= 1 ) // 0: classic, 1: classic axis_aligned, 2: qhull
                         err += draw( ps, v, plane_name, r, g, b, viewport_id );
                     else if ( draw_mode == 2 )
-                        err += drawConvex( v, plane, cloud, indices, plane_name, r, g, b, viewport_id );
+                        err += drawConvex( v, plane, cloud, indices, plane_name, r, g, b, viewport_id, alpha );
                     else
                     {
                         std::cerr << "can't recognize draw mode " << draw_mode << std::endl;

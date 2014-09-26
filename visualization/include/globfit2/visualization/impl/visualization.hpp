@@ -43,6 +43,8 @@ GF2::vis::showCli( int argc, char** argv )
                   << "\t[--stretch \t Elong primitives by multiplying their extents with this number]\n"
                   << "\t[--no-paral \t Don't add 0 and 180 to angles]\n"
                   << "\t[--no-scale \t Hide scale sphere]\n"
+                  << "\t[--hull-alpha \t Hull alpha]\n"
+                  << "\t[--save-poly \t Save convex polygons]\n"
                   << std::endl;
         return EXIT_SUCCESS;
     }
@@ -64,6 +66,9 @@ GF2::vis::showCli( int argc, char** argv )
     pcl::console::parse_argument( argc, argv, "--draw-mode", draw_mode );
     bool no_paral = pcl::console::find_switch( argc, argv, "--no-paral" );
     bool no_scale_sphere = pcl::console::find_switch( argc, argv, "--no-scale" );
+    bool save_poly = pcl::console::find_switch( argc, argv, "--save-poly" );
+    Scalar hull_alpha = 2.;
+    pcl::console::parse_argument( argc, argv, "--hull-alpha", hull_alpha);
 
 
     std::vector<int> gids;
@@ -205,6 +210,8 @@ GF2::vis::showCli( int argc, char** argv )
                                                                                , /*              stretch: */ stretch
                                                                                , /*            draw_mode: */ draw_mode
                                                                                , /*      no_scale_sphere: */ no_scale_sphere
+                                                                               , /*           hull_alpha: */ hull_alpha
+                                                                               , /*            save_poly: */ save_poly
                                                                                );
     return EXIT_SUCCESS;
 } // ... Solver::show()
