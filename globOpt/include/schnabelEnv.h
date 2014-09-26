@@ -3,19 +3,24 @@
 
 #include <vector>
 #include "pcl/point_cloud.h"
-#include "my_types.h"
+#include "globfit2/my_types.h"
 
-namespace am
+namespace GF2
 {
-    class PlanePrimitive;
+    //class PlanePrimitive;
+    typedef pcl::PointNormal MyPoint;
+    typedef pcl::PointCloud<MyPoint> MyCloud;
 
     class SchnabelEnv
     {
         public:
-            static int
-            run( std::vector<::am::PlanePrimitive>    &planes
-                 , pcl::PointCloud<MyPoint>::ConstPtr  cloud
-                 , int                                 min_support_arg = 300 );
+            template <typename PrimitiveT>
+            static inline int
+            run( std::vector<PrimitiveT>    &planes
+                 , pcl::PointCloud<GF2::MyPoint>::Ptr  cloud
+                 , float scale = 0.01
+                 , int                                 min_support_arg = 300
+                 , int show = 1 );
     };
 
 } // ns am

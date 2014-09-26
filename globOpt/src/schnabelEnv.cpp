@@ -2,9 +2,9 @@
 
 #include "pcl/visualization/pcl_visualizer.h"
 #include "pcltools/util.hpp" // smartgeometry
-#include "AMUtil2.h"
+//#include "AMUtil2.h"
 
-#include "primitives/planePrimitive.h"
+#include "globfit2/primitives/planePrimitive.h"
 
 // --- schnabel07 ---
 #include "PointCloud.h"
@@ -14,11 +14,14 @@
 #include "PlanePrimitiveShape.h"
 // --- END schnabel07 ---
 
-namespace am
+namespace GF2
 {
-    int SchnabelEnv::run( std::vector<am::PlanePrimitive>          &planes
-                          , pcl::PointCloud<MyPoint>::ConstPtr      cloud
-                          , int                                     min_support_arg )
+    template <typename PrimitiveT>
+    int SchnabelEnv::run( std::vector<PrimitiveT>          &planes
+                        , pcl::PointCloud<GF2::MyPoint>::Ptr      cloud
+                        , float scale
+                        , int                                     min_support_arg
+                          , int show )
     {
         pcl::visualization::PCLVisualizer::Ptr vptr( new pcl::visualization::PCLVisualizer() );
         {
@@ -31,11 +34,12 @@ namespace am
                                                   , cloud
                                                   , /*         indices: */ nullptr
                                                   , /*       normalize: */ true
-                                                  , /* K_neighbourhood: */ 10 );
+                                                  , /* K_neighbourhood: */ 20 );
 
         // show
-        vptr->addPointCloud( cloud );
+        vptr->addPointCloud<GF2::MyPoint>( cloud );
         vptr->addCoordinateSystem( 0.1, "coordsys", 0 );
+        vptr->setPointCloudRenderingProperties( pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 4.f );
 
         // Points
         Point pnts[ cloud->size() ];
@@ -46,7 +50,7 @@ namespace am
         PointCloud pc( pnts, cloud->size() );
 
         // Normals
-        pc.calcNormals( 0.01f );
+        pc.calcNormals( scale );
         for ( size_t i = 0; i != cloud->size(); ++i )
         {
             // error check
@@ -79,8 +83,8 @@ namespace am
         }
 
         // show normals
-        vptr->addPointCloudNormals<MyPoint,pcl::Normal>( cloud, normals, 10, 0.15, "cloud_normals2", 0 );
-        //vptr->spin();
+        vptr->addPointCloudNormals<GF2::MyPoint,pcl::Normal>( cloud, normals, 10, 0.15, "cloud_normals2", 0 );
+        vptr->spin();
 
         // options (schnabel)
         RansacShapeDetector::Options opt;
@@ -117,11 +121,16 @@ namespace am
                                             planePS->Internal().getPosition()[1],
                                             planePS->Internal().getPosition()[2] );
 
-                    planes.emplace_back( PlanePrimitive((Eigen::Vector4f() << n[0],n[1],n[2],dist).finished()) );
+                    //planes.emplace_back( PlanePrimitive((Eigen::Vector4f() << n[0],n[1],n[2],dist).finished()) );
+                    Eigen::Vector3f normal; normal << n[0],n[1],n[2];
+                    //planes.emplace_back( PlanePrimitive(Eigen::Vector3f::Zero() + normal * dist, normal) );
+                    planes.emplace_back( PrimitiveT(centroid.getVector3fMap(), normal) );
 
+                    char name[255];
+                    sprintf(name, "plane%d",i);
                     vptr->addPlane( *(planes.back().modelCoefficients()),
                                     centroid.x,centroid.y,centroid.z,
-                                    am::util::sprintf("plane%d",i), 0);
+                                    name, 0);
 
                     //                            vptr->addArrow( centroid,
                     //                                            pcl::PointXYZ(0.f,0.f,0.f),
@@ -142,7 +151,7 @@ namespace am
             }
         }
 
-        vptr->spinOnce();
+        vptr->spin();
 
         return EXIT_SUCCESS;
     }
