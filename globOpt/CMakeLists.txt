@@ -41,7 +41,12 @@ IF(WITH_GUROBI)
     ADD_DEFINITIONS(-DGF2_WITH_GUROBI)
 ENDIF()
 
+<<<<<<< HEAD
 SET( WITH_PEARL ON CACHE BINARY "Compile pearl executable.")
+=======
+SET( WITH_PEARL YES CACHE BINARY "Compile pearl executable." FORCE)
+SET( WITH_RSAC YES CACHE BINARY "Compile ransac executable." FORCE)
+>>>>>>> 9b871c5a5038c467e77718820e137c6418ea1ee7
 SET( WITH_PLYCONVERTER ON CACHE BINARY "Compile ply-converter executable.")
 SET( WITH_CORRESP ON CACHE BINARY "Correspondance miniprogram compilation.")
 
@@ -345,6 +350,34 @@ IF(WITH_CORRESP)
         boost_filesystem
     )
 ENDIF(WITH_CORRESP)
+
+## _____________________________________RSAC____________________________________________________
+IF(WITH_RSAC)
+    SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-local-typedefs " ) #-Wreturn-type # removed c++11
+    SET( RSAC_TARGET ransac)
+
+    INCLUDE_DIRECTORIES(
+        ${PATH_RSAC_ROOT}/include
+    )
+
+    ## Sources
+    SET( RSAC_SRC
+        src/comparison/ransac.cpp
+    )
+    SET( RSAC_H
+
+    )
+
+    ## Linking
+    add_executable( ${RSAC_TARGET} ${RSAC_SRC} ${RSAC_H})
+    TARGET_LINK_LIBRARIES( ${RSAC_TARGET}
+        ${GCO_LIBRARIES}
+        ${PCL_LIBRARIES}
+        boost_filesystem
+        boost_system
+        boost_thread
+    )
+ENDIF(WITH_RSAC)
 
 ## _______________________________________________________________________________________________
 #SET( TEST_TARGET test_bst)

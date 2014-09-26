@@ -29,6 +29,7 @@ namespace GF2 {
              *  \param[in] print_perf_angles    Show the angles in degrees, if below perfect_angle_limit.
              *  \param[in] stretch              Elong primitives beyond their extrema by multiplying their dimensions by this number (1 == don't elong, 1.2 == elong a bit)
              *  \param[in] draw_mode            Mode0: classic, Mode1: classic, axis aligned, Mode2: qhull
+             *  \param[in] hull_alpha           Alpha parameter for convex hull calculation
              *  \return             The visualizer for further display and manipulation
              */
             template <typename _Scalar> static inline vis::MyVisPtr
@@ -54,6 +55,8 @@ namespace GF2 {
                 , _Scalar              const  stretch               = 1.
                 , int                  const  draw_mode             = 0
                 , bool                 const  no_scale_sphere       = false
+                , _Scalar              const  hull_alpha            = 2.
+                , bool                 const  save_poly             = false
                 );
 
             //! \brief Shows a polygon that approximates the bounding ellipse of a cluster
@@ -77,6 +80,7 @@ namespace GF2 {
 #   include <pcl/visualization/pcl_visualizer.h>
 #   include <pcl/common/pca.h>
 #   include "globfit2/util/pcl_util.hpp" // pclutil::asPointXYZ
+#   include "pcl/PolygonMesh.h"
 #endif
 
 #include "globfit2/my_types.h"
@@ -110,6 +114,8 @@ namespace GF2
                                                            , _Scalar              const  stretch             /* = 1. */
                                                            , int                  const  draw_mode           /* = 0 */
                                                            , bool                 const  no_scale_sphere     /* = false */
+                                                           , _Scalar              const  hull_alpha          /* = 2. */
+                                                           , bool                 const  save_poly           /* = false */
                                                            )
     {
 #if 1
@@ -123,7 +129,7 @@ namespace GF2
                   << std::endl;
 
         const int primColourTag  = dir_colours ? PrimitiveT::DIR_GID      : PrimitiveT::GID;
-        const int pointColourTag = dir_colours ? PointPrimitiveT::DIR_GID : PointPrimitiveT::GID;
+        //const int pointColourTag = dir_colours ? PointPrimitiveT::DIR_GID : PointPrimitiveT::GID;
 
         // calc groups
         int max_gid = 0, nPrimitives = 0, max_dir_gid = 0, nbColour = 0;
@@ -315,6 +321,7 @@ namespace GF2
                                                           , /* viewport_id: */ 0
                                                           , /*     stretch: */ stretch /* = 1.2 */
                                                           , /*       qhull: */ draw_mode /* = 1, classic, axis aligned */
+                                                          , /*       alpha: */ hull_alpha
                                                           );
                 vptr->setShapeRenderingProperties( pcl::visualization::PCL_VISUALIZER_LINE_WIDTH, 4.0, line_name, 0 );
 
@@ -413,6 +420,15 @@ namespace GF2
                             }
                         }
                     }
+                }
+
+                if ( save_poly )
+                {
+                    MyCloud hull_cloud;
+                    pcl::PolygonMesh mesh;
+                    ::pcl::PCLPointCloud2 cloud2;
+                    PrimitiveT::getHull( hull_cloud, primitives[lid][lid1], points, &populations[gid], hull_alpha, &mesh );
+                    pcl::io::savePLYFile( "mesh.ply", mesh );
                 }
             } // ... lid1
 

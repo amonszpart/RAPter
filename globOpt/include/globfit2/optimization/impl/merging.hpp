@@ -132,6 +132,7 @@ Merging::mergeCli( int argc, char** argv )
         std::cerr << "\t[--adopt " << params.do_adopt << "]\n"
                   << "\t[--patch-pop-limit " << params.patch_population_limit << "]\n"
                   << "\t[--thresh-mult " << params.spatial_threshold_mult << "]\n"
+                  << "\t[--no-paral]\n"
                   << std::endl;
 
         if ( !valid_input || pcl::console::find_switch(argc,argv,"--help") || pcl::console::find_switch(argc,argv,"-h") )
@@ -157,7 +158,8 @@ Merging::mergeCli( int argc, char** argv )
     }
 
     // Read desired angles
-    processing::appendAnglesFromGenerators( params.angles, angle_gens, true );
+    bool no_paral = pcl::console::find_switch(argc,argv,"--no_paral");
+    processing::appendAnglesFromGenerators( params.angles, angle_gens, no_paral, true );
 
     // associations
     std::vector<std::pair<int,int> > points_primitives;

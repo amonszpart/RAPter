@@ -88,6 +88,7 @@ int pearlCli( int argc, char **argv )
                       << "\t -sc,--scale " << params.scale << "\n"
                       << "\t --pw " << params.lambdas(2) << "\n"
                       << "\t --cmp " << params.beta << "\n"
+                      << "\n\t Example: ../pearl --scale 0.03 --cloud cloud.ply -p patches.csv --pw 1000 -cmp 1000\n"
                       << "\n";
 
             return EXIT_FAILURE;
@@ -125,6 +126,7 @@ int pearlCli( int argc, char **argv )
                             , /* [in]    pearlParams: */ params
                             , /* [out] label_history: */ NULL
                             , /* [out]  prim_history: */ (std::vector<std::vector<PrimitiveT> >*) NULL
+                            //, /* [in]        patches: */ &initial_primitives
                             );
 
         PrimitiveMapT out_prims;

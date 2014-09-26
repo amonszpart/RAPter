@@ -362,6 +362,7 @@ Solver::datafit( int    argc
                   << "\t--cloud " << cloud_path << "\n"
                   << "\t--primitives " << primitives_path << "\n"
                   << "\t--a,--assoc " << associations_path << "\n"
+                  << "\t--no-paral\n"
                   << "\t[--angle-gens "; for(size_t i=0;i!=angle_gens.size();++i)std::cerr<<angle_gens[i]<<",";std::cerr<< "]\n";
         std::cerr << std::endl;
 
@@ -397,9 +398,10 @@ Solver::datafit( int    argc
     } //...read primitives
 
     // Read desired angles
+    bool no_paral = pcl::console::find_switch( argc, argv, "--no-paral");
     std::vector<Scalar> angles;
     {
-        processing::appendAnglesFromGenerators( angles, angle_gens, true );
+        processing::appendAnglesFromGenerators( angles, angle_gens, no_paral, true );
     } // ... read angles
 
 #if 0
