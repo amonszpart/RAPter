@@ -248,7 +248,7 @@ paletteLightColoursEigen( int min_count = 0 )
     colours_eigen [6] << 235.f, 192.f, 218.f;
 
     std::vector< ::Eigen::Vector3f > out;
-    while ( out.size() < min_count )
+    while ( static_cast<int>(out.size()) < min_count )
         out.insert( out.end(), colours_eigen.begin(), colours_eigen.end() );
 
     return out;
@@ -274,7 +274,7 @@ paletteMediumColoursEigen( int min_count = 0 )
     colours_eigen [6] << 215.f, 127.f, 180.f;
 
     std::vector< ::Eigen::Vector3f > out;
-    while ( out.size() < min_count )
+    while ( static_cast<int>(out.size()) < min_count )
         out.insert( out.end(), colours_eigen.begin(), colours_eigen.end() );
 
     return out;
@@ -300,7 +300,7 @@ paletteDarkColoursEigen( int min_count = 0 )
     colours_eigen [6] << 180.f, 056.f, 148.f;
 
     std::vector< ::Eigen::Vector3f > out;
-    while ( out.size() < min_count )
+    while ( static_cast<int>(out.size()) < min_count )
         out.insert( out.end(), colours_eigen.begin(), colours_eigen.end() );
 
     return out;
