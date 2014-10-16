@@ -203,6 +203,7 @@ SET( GLOBOPT_HPP_LIST
     include/globfit2/optimization/impl/solver.hpp
     include/globfit2/optimization/impl/problemSetup.hpp
     include/globfit2/optimization/impl/merging.hpp
+    include/globfit2/optimization/impl/candidateGenerator.hpp
     include/globfit2/io/impl/io.hpp
     include/globfit2/util/diskUtil.hpp
     include/globfit2/util/util.hpp
