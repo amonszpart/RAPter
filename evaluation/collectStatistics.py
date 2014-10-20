@@ -103,7 +103,9 @@ for it in range(itmin, itmax):
         primitiveCorres, primitiveCorresId = packages.io.readPrimitiveCorrespondancesFromFiles(mappingfile, gtlines, lines_it)
         
         precision, recall = test_relations.process(gtlines, gtassign, lines_it, assign_it, primitiveCorres, primitiveCorresId, False)
-        F = 2.*(precision * recall) / (precision + recall)
+        F = 0.
+        if precision != 0 and recall != 0:
+            F = 2.*(precision * recall) / (precision + recall)
         print it, sigma, F, precision, recall
     else:
         print it, sigma
