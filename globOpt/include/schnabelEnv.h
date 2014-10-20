@@ -8,16 +8,16 @@
 namespace GF2
 {
     //class PlanePrimitive;
-    typedef pcl::PointNormal MyPoint;
-    typedef pcl::PointCloud<MyPoint> MyCloud;
 
     class SchnabelEnv
     {
         public:
-            template <typename PrimitiveT>
+            template <class PclCloudT, typename PrimitiveT, class PidGidT, class PointContainerT >
             static inline int
             run( std::vector<PrimitiveT>    &planes
-                 , pcl::PointCloud<GF2::MyPoint>::Ptr  cloud
+                 , PidGidT                  &pidGid
+                 , PointContainerT          &points
+                 , typename PclCloudT::Ptr  &cloud
                  , float scale = 0.01
                  , int                                 min_support_arg = 300
                  , int show = 1 );

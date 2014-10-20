@@ -159,13 +159,32 @@ int ransacCli( int argc, char **argv )
 
             if ( params.modelType == pcl::SacModel::SACMODEL_PLANE )
             {
-                std::cerr << "[" << __func__ << "]: " << __FILE__ << ":" << __LINE__ << "]: UNFINISHED" << std::endl;
-                return -1;
-                pcl::SampleConsensusModelPlane<PclPointT>::Ptr model_p( new pcl::SampleConsensusModelPlane<PclPointT> (pcl_cloud) );
-                pcl::RandomSampleConsensus<PclPointT> ransac (model_p);
-                ransac.setDistanceThreshold (params.scale);
-                ransac.computeModel();
-                ransac.getInliers(inliers);
+                if ( params.algo == RansacParams<Scalar>::RANSAC )
+                {
+                    pcl::SampleConsensusModelPlane<PclPointT>::Ptr model( new pcl::SampleConsensusModelPlane<PclPointT> (pcl_cloud, populations[gid]) );
+                    pcl::RandomSampleConsensus<PclPointT> ransac (model);
+                    ransac.setDistanceThreshold (params.scale);
+                    if ( ransac.computeModel() )
+                    {
+                        ransac.getInliers(inliers);
+                        // save line
+                        if ( inliers.size() )
+                        {
+                            std::cout << "ret: " << ransac.model_coefficients_.transpose() << std::endl;
+
+                            Eigen::Matrix<Scalar,3,1> nrm = ransac.model_coefficients_.head<3>();
+                            nrm.normalize();
+                            GF2::containers::add( out_prims, gid, PrimitiveT( Eigen::Matrix<Scalar,3,1>::Zero() - nrm * ransac.model_coefficients_(3), nrm) )
+                                    .setTag( PrimitiveT::GID    , gid )
+                                    .setTag( PrimitiveT::DIR_GID, gid );
+                            std::cout << "created " << out_prims[gid].back().toString() << ", distO: " << out_prims[gid].back().getDistance( Eigen::Matrix<Scalar,3,1>::Zero() )  << std::endl;
+                        }
+                    }
+                    else
+                        inliers.clear();
+                }
+                else
+                    std::cerr << "unimplemented algorithm " << algo_str << std::endl;
             }
             else if (params.modelType == pcl::SacModel::SACMODEL_LINE )
             {
@@ -211,7 +230,9 @@ int ransacCli( int argc, char **argv )
         }
     }
 
+
     GF2::io::savePrimitives<PrimitiveT,typename _InnerPrimitiveContainerT::const_iterator>( out_prims, "./primitives.ransac.csv" );
+    GF2::io::writeAssociations<PointPrimitiveT>( points, "./points_primitives.ransac.csv" );
 
 
 #if 0
@@ -264,6 +285,7 @@ int main(int argc, char *argv[])
     {
         typedef GF2::PointPrimitive PointPrimitiveT;
         typedef GF2::PlanePrimitive PrimitiveT;
+        typedef pcl::PointNormal    PT;
 
         std::string cloud_path = "./cloud.ply";
         std::cout << "hello Schnabel\n";
@@ -293,27 +315,103 @@ int main(int argc, char *argv[])
         int err = EXIT_SUCCESS;
 
         std::vector<PointPrimitiveT> points;
-        GF2::MyCloud::Ptr   pcl_cloud( new GF2::MyCloud() );
+        pcl::PointCloud<PT>::Ptr   pcl_cloud( new pcl::PointCloud<PT> );
         if ( EXIT_SUCCESS == err )
         {
             err = GF2::io::readPoints<PointPrimitiveT>( points, cloud_path, &pcl_cloud );
             if ( err != EXIT_SUCCESS )  std::cerr << "[" << __func__ << "]: " << "readPoints returned error " << err << std::endl;
         } //...read points
+        pcl::PointCloud<pcl::PointXYZ> tmp;
+        for ( size_t pid = 0; pid != pcl_cloud->size(); ++pid )
+        {
+            tmp.push_back( pcl::PointXYZ( pcl_cloud->at(pid).x
+                                          , pcl_cloud->at(pid).y
+                                          , pcl_cloud->at(pid).z) );
+        }
+        pcl::visualization::PCLVisualizer::Ptr vptr( new pcl::visualization::PCLVisualizer() );
+        vptr->setBackgroundColor( .5, .6, .6 );
+        vptr->addPointCloud<pcl::PointXYZ>( tmp.makeShared(), "asdf");
+        vptr->setPointCloudRenderingProperties( pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 4.f );
+
+        vptr->spin();
+
+        for ( size_t i = 0; i != std::min(10UL,points.size()); ++i )
+        {
+            std::cout << "\tpoints[" << i << "]: " << points[i].toString() << "\n\tcloud[" << i << "]: " << pcl_cloud->at(i).getVector3fMap().transpose() << std::endl;
+        }
 
          std::vector<GF2::PlanePrimitive> planes;
-        err = GF2::SchnabelEnv::run( planes
-                            , pcl_cloud
-                            , scale
-                            , min_support_arg  );
+         typedef std::map<int,int> PidGidT;
+         PidGidT pidGid;
+
+        err = GF2::SchnabelEnv::run<pcl::PointCloud<PT> >( planes
+                                   , pidGid
+                                   , points
+                                   , pcl_cloud
+                                   , scale
+                                   , min_support_arg  );
         std::map< int, std::vector<GF2::PlanePrimitive> > out_prims;
         for ( int gid = 0; gid != planes.size(); ++gid )
         {
             GF2::containers::add( out_prims, gid, planes[gid] )
                     .setTag( PrimitiveT::GID    , gid )
                     .setTag( PrimitiveT::DIR_GID, gid );
+            std::cout << "added " << out_prims[gid].back().toString() << std::endl;
+        }
+#if 0
+        // assign points
+        std::cout << "starting assignment" << std::endl; fflush( stdout );
+        for ( int pid = 0; pid != points.size(); ++pid )
+        {
+            float min_dist = FLT_MAX, tmp; int min_gid = 0;
+            for ( int gid = 0; gid != planes.size(); ++gid )
+            {
+                tmp = planes[gid].getDistance( points[pid].pos() );
+                if ( (tmp < min_dist) && (tmp < scale) )
+                {
+                    min_dist = tmp;
+                    min_gid = gid;
+                }
+            }
+            pidGid[ pid ] = min_gid;
+            points[pid].setTag( PointPrimitiveT::GID, min_gid );
+        }
+        std::cout << "finishing assignment" << std::endl;
+#endif
+        // debug assignments
+        pcl::PointXYZ pnt, plane_pnt;
+        for ( int pid = 0; pid != points.size(); ++pid )
+        {
+            if ( !(pid % 1000) )
+            {
+                char name[255];
+                sprintf( name, "pointarrow%06d", pid );
+                pnt.getVector3fMap() = points[pid].pos();
+                const int gid = points[pid].getTag( PointPrimitiveT::GID );
+                plane_pnt.getVector3fMap() = out_prims[gid].at(0).pos();
+                vptr->addArrow( plane_pnt, pnt,  .1, .9, .5, false, name );
+            }
         }
 
+//        for ( PidGidT::const_iterator it = pidGid.begin(); it != pidGid.end(); ++it )
+//        {
+//            points[it->first].setTag( PointPrimitiveT::GID, it->second );
+//        }
+        for ( size_t i = 0; i != std::min(6UL,planes.size()); ++i )
+        {
+            char name[255];
+            sprintf( name, "plane%d", i );
+            vptr->addPlane( *(planes[i].modelCoefficients()), planes[i]. pos()(0), planes[i]. pos()(1), planes[i]. pos()(2), name );
+        }
+        vptr->addCoordinateSystem(0.5);
+        vptr->spin();
+
+        std::cout << " writing " << out_prims.size() << " primitives to ./primitives.schnabel.csv" << std::endl;
         GF2::io::savePrimitives<PrimitiveT,std::vector<GF2::PlanePrimitive>::const_iterator >( out_prims, "./primitives.schnabel.csv" );
+        GF2::io::writeAssociations<PointPrimitiveT>( points, "./points_primitives.schnabel.csv" );
+
+        return EXIT_SUCCESS;
+
 
     }
     else if ( GF2::console::find_switch(argc,argv,"--3D") )

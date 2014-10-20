@@ -406,6 +406,8 @@ int Merging::adoptPoints( _PointContainerT          & points
     } while (changed);
     std::cout << std::endl;
 
+    return EXIT_SUCCESS;
+
 #if 0
     // select unassigned points
     std::deque<int> orphan_pids;

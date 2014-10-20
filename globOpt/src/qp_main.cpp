@@ -14,6 +14,7 @@ int formulate( int argc, char** argv ); // problemSetup.cpp
 int solve    ( int argc, char** argv ); // solve.cpp
 int merge    ( int argc, char** argv ); // merge.cpp
 int datafit  ( int argc, char** argv ); // datafit.cpp
+int reassign (int argc, char** argv );
 
 int main( int argc, char *argv[] )
 {
@@ -75,6 +76,10 @@ int main( int argc, char *argv[] )
     else if ( GF2::console::find_switch(argc,argv,"--subsample") )
     {
         return subsample( argc, argv );
+    }
+    else if ( GF2::console::find_switch(argc,argv,"--reassign") )
+    {
+        return reassign( argc, argv );
     }
 //    else if ( GF2::console::find_switch(argc,argv,"--corresp") || GF2::console::find_switch(argc,argv,"--corresp3D") )
 //    {

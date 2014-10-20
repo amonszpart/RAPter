@@ -207,6 +207,7 @@ SET( GLOBOPT_HPP_LIST
     include/globfit2/optimization/impl/solver.hpp
     include/globfit2/optimization/impl/problemSetup.hpp
     include/globfit2/optimization/impl/merging.hpp
+    include/globfit2/optimization/impl/candidateGenerator.hpp
     include/globfit2/io/impl/io.hpp
     include/globfit2/util/diskUtil.hpp
     include/globfit2/util/util.hpp
@@ -247,6 +248,7 @@ SET( GLOBOPT_SRC_LIST
     src/solve.cpp
     src/merge.cpp
     src/datafit.cpp
+    src/reassign.cpp
     #src/optimization/candidateGenerator.cpp # cached compilation
     #src/optimization/qp/visualizer.cpp     # cached compilation
 )
