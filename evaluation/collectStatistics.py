@@ -10,6 +10,7 @@ import numpy as np
 from scipy.stats import norm,kstest,skewtest,kurtosistest,normaltest
 import os.path
 import unitTests.relations as test_relations
+import packages.relationGraph as relgraph
 
 compareToGt = False
 
@@ -51,6 +52,8 @@ if compareToGt:
     
     gtlines  = packages.processing.removeUnassignedPrimitives(gtlines, gtassign)
     gtassign = packages.processing.removeUnassignedPoint(gtlines, gtassign)
+    
+    gtgraph  = relgraph.RelationGraph(gtlines, gtassign)
     
     ############################################################################
     ## Process noise
@@ -102,7 +105,7 @@ for it in range(itmin, itmax):
         mappingfile  = projectdir+'/primitives_corresp_it'+str(it)+'.csv'
         primitiveCorres, primitiveCorresId = packages.io.readPrimitiveCorrespondancesFromFiles(mappingfile, gtlines, lines_it)
         
-        precision, recall = test_relations.process(gtlines, gtassign, lines_it, assign_it, primitiveCorres, primitiveCorresId, False)
+        precision, recall = test_relations.process(gtlines, gtassign, lines_it, assign_it, primitiveCorres, primitiveCorresId, [], gtgraph)
         F = 0.
         if precision != 0 and recall != 0:
             F = 2.*(precision * recall) / (precision + recall)
