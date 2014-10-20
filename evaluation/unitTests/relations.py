@@ -9,15 +9,22 @@ def process(primArray1, assignArray1,
             primArray2, assignArray2,
             primitiveCorres,
             primitiveCorresId,
-            verbose = True):
+            angles  = [],
+            graph1  = None,
+            graph2  = None,
+            verbose = False):
             
     def mprint(str, *args):
         if verbose: print(str % args)
 
     ################################################################################
     ## Build relation graphs
-    graph1 = relgraph.RelationGraph(primArray1, assignArray1)
-    graph2 = relgraph.RelationGraph(primArray2, assignArray2)
+    if graph1 == None:
+        graph1 = relgraph.RelationGraph(primArray1, assignArray1)
+    if graph2 == None:
+        graph2 = relgraph.RelationGraph(primArray2, assignArray2)
+    
+    useAngles = len(angles) != 0
 
     for e in graph2.G.edges_iter(data=True):
         e[-1]['matched']=0
@@ -37,7 +44,7 @@ def process(primArray1, assignArray1,
             # cUid can be used to access the connected component using
             # mprint (cUid, primitiveCorresId[cUid])
             for idx, cUid in enumerate(graph1.G.edge[p.uid]):
-                # now we are look for the connection starting from matched_p et going to primitiveCorresId[cUid]
+                # now we are looking for the connection starting from matched_p et going to primitiveCorresId[cUid]
                 # matched_p.uid, primitiveCorresId[cUid]
                 # 
                 # if we find it, we increment the matched field of the edges, and move to the next one
