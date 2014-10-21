@@ -45,6 +45,8 @@ gtassignfile = projectdir+'/gt/points_primitives.csv'
 compareToGt = os.path.isfile(projectfile) and os.path.isfile(gtlinesfile) and os.path.isfile(gtassignfile)
 
 sigma_ref = 1.
+angles = [0., 45., 90., 135., 180.]
+tolerance = 10.
 
 if compareToGt:
     
@@ -55,7 +57,7 @@ if compareToGt:
     gtlines  = packages.processing.removeUnassignedPrimitives(gtlines, gtassign)
     gtassign = packages.processing.removeUnassignedPoint(gtlines, gtassign)
     
-    gtgraph  = relgraph.RelationGraph(gtlines, gtassign)
+    gtgraph  = relgraph.RelationGraph(gtlines, gtassign, angles, tolerance)
     
     ############################################################################
     ## Process noise
@@ -95,14 +97,14 @@ for it in range(itmin, itmax):
     
     ################################################################################
     ## analyse angle distributions
-    graph_it  = relgraph.RelationGraph(lines_it, assign_it)
+    graph_it  = relgraph.RelationGraph(lines_it, assign_it, angles, tolerance)
     
-    angles = []
+    anglesDistrib = []
     def collectAngles(p1, p2):
-        angles.append(math.fmod(p1.angleInDegree(p2), 180.))
+        anglesDistrib.append(math.fmod(p1.angleInDegree(p2), 180.))
     graph_it.processConnectedNodes(collectAngles)
     
-    polarplot.generatePolarPlot(angles, linesfile_it)
+    polarplot.generatePolarPlot(anglesDistrib, linesfile_it)
     
 
     ################################################################################

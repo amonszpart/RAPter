@@ -5,9 +5,10 @@ This module provides an abstraction of the relationGraph using networkX
 
 import networkx as nx
 import packages.primitive as primitive
+import math
 
 class RelationGraph(object):
-    def __init__(self,primArray, assignArray):
+    def __init__(self,primArray, assignArray, angles = [], tolInDegr = 5.):
         self.G=nx.Graph()
         self.indexedPrimArray = {}
         
@@ -15,12 +16,25 @@ class RelationGraph(object):
         for p in primArray:
             self.G.add_node(p.uid, w=0)
             self.indexedPrimArray[p.uid] = p
+            
+        useAngles = len(angles) != 0
         
         # Then their relations
         for idx1, p1 in enumerate(primArray):
             for idx2, p2 in enumerate(primArray):
-                if (idx2 > idx1):           
-                    self.G.add_edge(p1.uid, p2.uid)
+                if (idx2 > idx1):
+                
+                    if useAngles:
+                        matched = False
+                        angle = p1.angleInDegree(p2)
+                        for a in angles:
+                            if abs(a-angle) <= tolInDegr:
+                                matched = True
+                                break
+                    
+                        if matched: self.G.add_edge(p1.uid, p2.uid)
+                    else:
+                        self.G.add_edge(p1.uid, p2.uid)
         
         # And finaly the node weights (number of samples)
         # assignArray[][0] = point id
