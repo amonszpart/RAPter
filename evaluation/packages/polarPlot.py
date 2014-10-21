@@ -15,7 +15,7 @@ from mpl_toolkits.axisartist import Subplot
 from mpl_toolkits.axisartist import SubplotHost, \
      ParasiteAxesAuxTrans
      
-def generatePolarPlot(anglesInDegrees, filename):
+def generatePolarPlot(anglesInDegrees, filename, N=180):
 
      
     class mFormatterDMS(object):     
@@ -130,8 +130,6 @@ def generatePolarPlot(anglesInDegrees, filename):
     fig.clf()
 
     #ax = axes([0.025,0.025,0.95,0.95], polar=True)
-
-    N = 60.
 
     preferred_angles = [90]
     best_num = 15
