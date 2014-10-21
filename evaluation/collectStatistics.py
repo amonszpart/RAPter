@@ -11,6 +11,8 @@ from scipy.stats import norm,kstest,skewtest,kurtosistest,normaltest
 import os.path
 import unitTests.relations as test_relations
 import packages.relationGraph as relgraph
+import packages.polarPlot as polarplot
+import math
 
 compareToGt = False
 
@@ -90,6 +92,18 @@ for it in range(itmin, itmax):
     #lines_it  = packages.processing.removeUnassignedPrimitives(lines_it, assign_it)
     #assign_it = packages.processing.removeUnassignedPoint(lines_it, assign_it)
     
+    
+    ################################################################################
+    ## analyse angle distributions
+    graph_it  = relgraph.RelationGraph(lines_it, assign_it)
+    
+    angles = []
+    def collectAngles(p1, p2):
+        angles.append(math.fmod(p1.angleInDegree(p2), 180.))
+    graph_it.processConnectedNodes(collectAngles)
+    
+    polarplot.generatePolarPlot(angles, linesfile_it)
+    
 
     ################################################################################
     ## Process noise
@@ -104,9 +118,7 @@ for it in range(itmin, itmax):
     if compareToGt:
         mappingfile  = projectdir+'/primitives_corresp_it'+str(it)+'.csv'
         primitiveCorres, primitiveCorresId = packages.io.readPrimitiveCorrespondancesFromFiles(mappingfile, gtlines, lines_it)
-        
-        graph_it  = relgraph.RelationGraph(lines_it, assign_it)
-        
+               
         precision, recall = test_relations.process(gtlines, gtassign, lines_it, assign_it, primitiveCorres, primitiveCorresId, [], gtgraph, graph_it)
         F = 0.
         if precision != 0 and recall != 0:
