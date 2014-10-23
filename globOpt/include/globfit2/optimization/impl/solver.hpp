@@ -282,7 +282,7 @@ Solver::solve( int    argc
                             // copy to output, only, if chosen
                             if ( int(round(x_out[prim_id])) > 0 )
                             {
-                                std::cout << "saving " << prims[l][l1].getTag(_PrimitiveT::GID) << ", " << prims[l][l1].getTag(_PrimitiveT::DIR_GID) << ", X: " << x_out[prim_id] << "\t, ";
+                                //std::cout << "saving " << prims[l][l1].getTag(_PrimitiveT::GID) << ", " << prims[l][l1].getTag(_PrimitiveT::DIR_GID) << ", X: " << x_out[prim_id] << "\t, ";
                                 prims[l][l1].setTag( _PrimitiveT::TAGS::STATUS, _PrimitiveT::STATUS_VALUES::ACTIVE );
                                 out_prims.back().push_back( prims[l][l1] );
                             }

@@ -94,6 +94,10 @@ namespace GF2 {
              */
             bool safe_mode = false;
 
+            /*! \brief Prevent variable explosion by limiting the number of output variables to this number. Default: 0, means unlimited.
+             */
+            int var_limit = 0;
+
 
             //_____________________________________________
             //____________________Parsers__________________

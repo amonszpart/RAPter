@@ -5,12 +5,14 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 SET( WORKSPACE_DIR "$ENV{HOME}/workspace" )
 SET( THIRD_PARTY_DIR "${WORKSPACE_DIR}/3rdparty" )
 
-SET( PCL_DIR "${THIRD_PARTY_DIR}/pcl-trunk2/install/share/pcl-1.7/"
-          CACHE FILEPATH "Folder containing \"PCLConfig.cmake\", usually \"{PCL_INSTALL_DIR}/share/pcl-1.7/\".")
+SET( PCL_DIR "${THIRD_PARTY_DIR}/pcl-trunk2/install/share/pcl-1.8/"
+          CACHE FILEPATH "Folder containing \"PCLConfig.cmake\", usually \"{PCL_INSTALL_DIR}/share/pcl-1.8/\"." FORCE)
 #SET( OpenCV_DIR "/home/bontius/workspace/3rdparty/opencv-trunk/install/share/OpenCV/"
 #        CACHE FILEPATH "Folder containing the OpenCVConfig.cmake file, usually \"{OPENCV_INSTALL_DIR}/share/OpenCV/\"" FORCE)
 #SET( PATH_PCLTOOLS_ROOT "/home/bontius/workspace/geometry-tools/PCLTools/"
 #        CACHE FILEPATH "Folder containing \"include\" directory from the SG PCLTools library. Can be downloaded from \"https://github.com/smartgeometry-ucl/geometry-tools/tree/master/PCLTools\".")
+
+#SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x" )
 
 # BUILD
 SET( dir ${CMAKE_CURRENT_SOURCE_DIR}/build/${CMAKE_BUILD_TYPE} )
@@ -36,6 +38,7 @@ INCLUDE_DIRECTORIES( ${OpenCV_INCLUDE_DIRS} )
 
 include_directories(
     include
+    /usr/include/eigen3
     ../globOpt/include
 )
 

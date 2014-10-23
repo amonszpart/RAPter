@@ -351,7 +351,7 @@ int main(int argc, char *argv[])
                                    , scale
                                    , min_support_arg  );
         std::map< int, std::vector<GF2::PlanePrimitive> > out_prims;
-        for ( int gid = 0; gid != planes.size(); ++gid )
+        for ( size_t gid = 0; gid != planes.size(); ++gid )
         {
             GF2::containers::add( out_prims, gid, planes[gid] )
                     .setTag( PrimitiveT::GID    , gid )
@@ -380,7 +380,7 @@ int main(int argc, char *argv[])
 #endif
         // debug assignments
         pcl::PointXYZ pnt, plane_pnt;
-        for ( int pid = 0; pid != points.size(); ++pid )
+        for ( int pid = 0; pid != static_cast<int>(points.size()); ++pid )
         {
             if ( !(pid % 1000) )
             {
@@ -400,7 +400,7 @@ int main(int argc, char *argv[])
         for ( size_t i = 0; i != std::min(6UL,planes.size()); ++i )
         {
             char name[255];
-            sprintf( name, "plane%d", i );
+            sprintf( name, "plane%lu", i );
             vptr->addPlane( *(planes[i].modelCoefficients()), planes[i]. pos()(0), planes[i]. pos()(1), planes[i]. pos()(2), name );
         }
         vptr->addCoordinateSystem(0.5);

@@ -218,7 +218,7 @@ Merging::mergeCli( int argc, char** argv )
 
     if (params.is3D){
     while(
-          mergeSameDirGids<_PrimitiveT, _PointPrimitiveT, typename PrimitiveMapT::mapped_type::const_iterator>
+          mergeSameDirGids<_PrimitiveT, _PointPrimitiveT, typename PrimitiveMapT::mapped_type/*::const_iterator*/>
           ( *out, points, *in, params.scale, params.spatial_threshold_mult * params.scale, params.parallel_limit, patchPatchDistFunct, DecideMergePlaneFunctor(), preserveSmallPatches ))
     {
         PrimitiveMapT* tmp = out;
@@ -227,7 +227,7 @@ Merging::mergeCli( int argc, char** argv )
     }
     }else {// 2D
         while(
-              mergeSameDirGids<_PrimitiveT, _PointPrimitiveT, typename PrimitiveMapT::mapped_type::const_iterator>
+              mergeSameDirGids<_PrimitiveT, _PointPrimitiveT, typename PrimitiveMapT::mapped_type/*::const_iterator*/>
               ( *out, points, *in, params.scale, params.spatial_threshold_mult * params.scale, params.parallel_limit, patchPatchDistFunct, DecideMergeLineFunctor(), preserveSmallPatches ))
         {
             PrimitiveMapT* tmp = out;
@@ -625,7 +625,7 @@ inline void merge( Container&        out_primitives, // [out] Container storing 
     // Compute arities
     merging::DirectionGroupArityFunctor<PrimitiveT> functor;
     processing::filterPrimitives<PrimitiveT,
-            typename Container::mapped_type::const_iterator > (out_primitives, functor);
+            typename Container::mapped_type/*::const_iterator*/ > (out_primitives, functor);
 //    std::cout << "compute Arity....DONE" << std::endl;
     int arity0 = functor._arities[did0];
     int arity1 = functor._arities[did1];
@@ -758,7 +758,8 @@ inline void merge( Container&        out_primitives, // [out] Container storing 
  */
 template < class    _PrimitiveT
          , class    _PointPrimitiveT
-         , class    _inner_const_iterator
+         //, class    _inner_const_iterator
+         , class    _InnerPrimitiveContainerT
          , class    _PrimitiveContainerT
          , class    _PointContainerT
          , typename _Scalar
@@ -775,6 +776,7 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
                              , bool preserveSmallPatches  )
 {
     typedef typename _PrimitiveContainerT::const_iterator      outer_const_iterator;
+    typedef typename _InnerPrimitiveContainerT::const_iterator      inner_const_iterator;
     typedef           std::vector<Eigen::Matrix<_Scalar,3,1> > ExtremaT;
     typedef           std::map   < int, ExtremaT>              LidExtremaT;
     typedef           std::map   < int, LidExtremaT >          GidLidExtremaT;
@@ -813,7 +815,7 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
             int gid  = -2; // (-1 is "unset")
             int lid = 0; // linear index of primitive in container (to keep track)
             // for all directions
-            for ( _inner_const_iterator inner_it  = containers::valueOf<_PrimitiveT>(outer_it).begin();
+            for ( inner_const_iterator inner_it  = containers::valueOf<_PrimitiveT>(outer_it).begin();
                                        (inner_it != containers::valueOf<_PrimitiveT>(outer_it).end());// we now handle error
                                       ++inner_it, ++lid )
             {
@@ -880,7 +882,7 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
     // estimate the maximum direction id, to be able to give new ids to refit primitives
     int max_dir_gid = 0;
     for ( outer_const_iterator outer_it  = primitives.begin(); (outer_it != primitives.end()); ++outer_it )
-        for ( _inner_const_iterator inner_it  = containers::valueOf<_PrimitiveT>(outer_it).begin();
+        for ( inner_const_iterator inner_it  = containers::valueOf<_PrimitiveT>(outer_it).begin();
                                    (inner_it != containers::valueOf<_PrimitiveT>(outer_it).end());
                                   ++inner_it )
             max_dir_gid = std::max( max_dir_gid, (*inner_it).getTag(_PrimitiveT::DIR_GID) );

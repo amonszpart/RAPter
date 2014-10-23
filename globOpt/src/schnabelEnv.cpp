@@ -157,7 +157,7 @@ namespace GF2
                     if ( show && i < 6)
                     {
                         char name[255];
-                        sprintf(name, "plane%d",i);
+                        sprintf(name, "plane%lu",i);
                         vptr->addPlane( *(planes.back().modelCoefficients()),
                                         centroid.x,centroid.y,centroid.z,
                                         name, 0);

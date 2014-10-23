@@ -2,9 +2,22 @@
 #define __GF2_CANDIDATEGENERATOR_H__
 
 #include "globfit2/parameters.h"                         // CandidateGeneratorParams
+#include <exception>
 
 namespace GF2
 {
+
+    class CandidateGeneratorException : public std::runtime_error
+    {
+            //using std::runtime_error::runtime_error;
+        public:
+            explicit CandidateGeneratorException( const std::string& __arg )
+                : std::runtime_error( __arg )
+            {
+                std::cerr << "[CandidateGeneratorException]: " << __arg << std::endl; fflush(stderr);
+            }
+    };
+
     class CandidateGenerator
     {
         public:
@@ -26,7 +39,8 @@ namespace GF2
              *
              *  \tparam _PointPrimitiveDistanceFunctorT Concept: \ref MyPointPrimitiveDistanceFunctor.
              *  \tparam _PrimitiveT                     Concept: \ref GF2::LinePrimitive2.
-             *  \param[in] smallThresh Decides, what primitive counts as small. Usually a multiple of scale (4x...0.1x)
+             *  \param[in] smallThresh  Decides, what primitive counts as small. Usually a multiple of scale (4x...0.1x)
+             *  \param[in] var_limit    How many output variables we are allowing. Default: 0, meaning no limit.
              *  \post Produces primitives with STATUS tag UNSET(-1) (new primitives) or ACTIVE(2) (previously selected primitives)
              */
             template <  class       PrimitivePrimitiveAngleFunctorT // concept: energyFunctors.h::PrimitivePrimitiveAngleFunctor
@@ -44,7 +58,8 @@ namespace GF2
                     , std::vector<Scalar>              const&  angles
                     , CandidateGeneratorParams<Scalar> const&  params
                     , Scalar                           const  smallThresh
-                    , bool                             const  safe_mode = false );
+                    , bool                             const  safe_mode = false
+                    , int                              const  var_limit = 0 );
 
     }; //...class CandidateGenerator
 } // ...ns::GF2

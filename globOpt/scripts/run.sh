@@ -52,26 +52,25 @@ fi
 anglegens="90"; # Desired angle generators in degrees. Default: 90.
 nbExtraIter=20;  # iteration count. Default: 2.
 dirbias="1";	# not-same-dir-id cost offset. Default: 0. Don't use, if freqweight is on.
-freqweight="100"; # dataterm = (freqweight / #instances) * datacost. Default: 0. 1 might be too strong...todo
+freqweight="1000"; # dataterm = (freqweight / #instances) * datacost. Default: 0. 1 might be too strong...todo
 adopt="0";      # Adopt points argument. Default: 0
 # In candidate generation, divide angle limit with this to match copies. Default: 1. Set to 10, if too many candidates (variables).
-cand_anglediv="5";# for 3D: "2.5";
+cand_anglediv="1";# for 3D: "2.5";
 # multiply scale by this number to get the segmentation (regionGrowing) spatial distance
-segmentScaleMultiplier="1.25";# for 3D: "2.5";
+segmentScaleMultiplier="1";# for 3D: "2.5";
 pwCostFunc="spatsqrt" # spatial cost function. TODO: reactivate sqrt (does not compile for now)
 
 visdefparam="--use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-rel --no-scale" #"--use-tags --no-clusters" #--ids
 firstConstrMode="patch" # what to add in the first run formulate. Default: 0 (everyPatchNeedsDirection), experimental: 2 (largePatchesNeedDirection).
 iterationConstrMode="patch" # what to add in the second iteration formulate. Default: 0 (everyPatchNeedsDirection), experimental: 2 (largePatchesNeedDirection).
 startAt=0
-smallThresh="128" # smallThresh * scale is the small threshold # 5 was good for most of the stuff, except big scenes (kinect, lanslevillard)
-smallThreshlimit="1"
-smallThreshDiv="1.3";
+smallThresh="64" # smallThresh * scale is the small threshold # 5 was good for most of the stuff, except big scenes (kinect, lanslevillard)
+smallThreshlimit="0"
+smallThreshDiv="2";
 
-safeMode="--safe-mode"; #"--safe-mode" # "--safe-mode" for new, or "" for old version
-variableLimit=1500; # 1300; # Safe mode gets turned on, and generate rerun, if candidates exceed this number (1300)
-premerge=1 # call merge after segmentation 0/1
-
+safeMode=""; #"--safe-mode"; #"--safe-mode" # "--safe-mode" for new, or "" for old version
+variableLimit=1100; # 1300; # Safe mode gets turned on, and generate rerun, if candidates exceed this number (1300)
+premerge=0 # call merge after segmentation 0/1
 
 echo "scale: $scale"
 echo "pw: $pw"
@@ -101,7 +100,7 @@ function save_args() {
 }
 
 # call it
-save_args $0 $@ "--freqweight" $freqweight "--angle-limit" $anglelimit "--segment-scale-mult" $segmentScaleMultiplier "--adopt" $adopt "--dirbias" $dirbias "--cand-anglediv" ${cand_anglediv} "--angle-gens" $anglegens "--cost-fn" $pwCostFunc "--small-thresh" $smallThresh "--small-thresh-limit" $smallThreshLimit
+save_args $0 $@ "--freqweight" $freqweight "--angle-limit" $anglelimit "--segment-scale-mult" $segmentScaleMultiplier "--adopt" $adopt "--dirbias" $dirbias "--cand-anglediv" ${cand_anglediv} "--angle-gens" $anglegens "--cost-fn" $pwCostFunc "--small-thresh" $smallThresh "--small-thresh-limit" $smallThreshLimit "smallThreshDiv" $smallThreshDiv
 
 #####
 # Check if the gt folder exists, in that case compute the primitive comparisons
@@ -119,11 +118,24 @@ fi
 function my_exec() {
 	echo "__________________________________________________________";
 	echo -e "\n\n[CALLING] $1";
-    eval $1;
+        eval $1;
   	if [ "$?" -ne "0" ]; then
 	    echo "Error detected ($?). ABORT."
 	    exit 1
   	fi
+}
+
+# won't halt, just report return value
+function my_exec2() {
+        echo "__________________________________________________________";
+        echo -e "\n\n[CALLING] $1";
+        eval $1;
+        ret=$?;
+        if [ "$ret" -ne "0" ]; then
+            echo "Call returned $ret"
+        fi
+
+        myresult=$ret;
 }
 
 function energies() {
@@ -161,7 +173,7 @@ input="patches.csv";
 assoc="points_primitives.csv";
 
 # show segment output
-my_exec "../globOptVis --show$flag3D --scale $scale --use-tags --pop-limit $poplimit -p patches.csv -a $assoc --normals 100  --no-clusters --title \"GlobOpt - Segment output\" --no-pop --no-rel &"
+#my_exec "../globOptVis --show$flag3D --scale $scale --use-tags --pop-limit $poplimit -p patches.csv -a $assoc --normals 100  --no-clusters --title \"GlobOpt - Segment output\" --no-pop --no-rel &"
 
 if [ $startAt -le 1 ]; then
 
@@ -178,8 +190,8 @@ if [ $premerge -ne 0 ]; then
 fi
 
 # Generate candidates. OUT: candidates_it0.csv. #small-mode : small patches don't receive any candidates
-my_exec "$executable --generate$flag3D -sc $scale -al $anglelimit -ald ${cand_anglediv} --small-mode 0 --patch-pop-limit $poplimit -p $input --assoc $assoc --angle-gens $anglegens --small-thresh-mult $smallThresh"
-if [ $(countLines patches.csv) -gt $variableLimit ]; then
+my_exec2 "$executable --generate$flag3D -sc $scale -al $anglelimit -ald ${cand_anglediv} --small-mode 0 --patch-pop-limit $poplimit -p $input --assoc $assoc --angle-gens $anglegens --small-thresh-mult $smallThresh"
+if [ ! -z $safeMode ] && [ $(countLines patches.csv) -gt $variableLimit ]; then
     echo ">>>>>>>>>>>>>>>>>>>>> RERUNNING WITH SAFE_MODE($(countLines patches.csv) > $variableLimit)";
     my_exec "$executable $safeMode --generate$flag3D -sc $scale -al $anglelimit -ald ${cand_anglediv} --small-mode 0 --patch-pop-limit $poplimit -p $input --assoc $assoc --angle-gens $anglegens --small-thresh-mult $smallThresh"
 fi
@@ -207,23 +219,34 @@ my_exec "$executable --merge$flag3D --scale $scale --adopt $adopt --prims primit
 #cp points_primitives.csv points_primitives_it0.csv
 
 # Show output of first merge.
-my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p primitives_merged_it0.csv -a points_primitives_it0.csv --title \"GlobOpt - Merged 1st iteration output\" $visdefparam  &"
+#my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p primitives_merged_it0.csv -a points_primitives_it0.csv --title \"GlobOpt - Merged 1st iteration output\" $visdefparam  &"
 my_exec "$executable --formulate$flag3D --energy --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --constr-mode $firstConstrMode --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $anglegens --candidates primitives_it0.bonmin.csv -a $assoc --freq-weight $freqweight --cost-fn $pwCostFunc"
 
 fi #startAt <= 1
 
+# if true, stay on the same level for one more iteration (too many variables)
+decrease_level=true;
+
 for c in $(seq 1 $nbExtraIter)
 do
-    
-    #smallThresh=$(($smallThresh / 2))
-    smallThresh=`../divide.py $smallThresh $smallThreshDiv`;
-    smallThresh=$smallThresh;
+    # decresase, unless there is more to do on the same level
+    if $decrease_level; then
+        smallThresh=`../divide.py $smallThresh $smallThreshDiv`;
+        smallThresh=$smallThresh;
+        echo "!!!!!!!!!!! decreased !!!!!!!!!!!!";
+    fi
+    # reset to false, meaning we will continue decreasing, unless generate flips it again
+    decrease_level=true
     
     if [ $smallThresh -lt $smallThreshlimit ]; then
         smallThresh=$smallThreshlimit
         #smallThresh=1
         adopt="1"
     fi
+
+    #if [ $c -ge 5 ]; then
+    #    adopt="1"
+    #fi
 
     echo "smallThreshMult: " $smallThresh
 	  echo "__________________________________________________________";
@@ -237,11 +260,21 @@ do
 
     if [ $c -ge $startAt ]; then
         # Generate candidates from output of first. OUT: candidates_it$c.csv. #small-mode 2: small patches receive all candidates
-        my_exec "$executable --generate$flag3D -sc $scale -al $anglelimit -ald ${cand_anglediv} --small-mode 0 --patch-pop-limit $poplimit --angle-gens $anglegens -p $input --assoc $assoc --small-thresh-mult $smallThresh"
-        if [ $(countLines candidates_it$c.csv) -gt $variableLimit ]; then
-            echo ">>>>>>>>>>>>>>>>>>>>> RERUNNING WITH SAFE_MODE ($(countLines candidates_it$c.csv) > $variableLimit)";
-            my_exec "$executable $safeMode --generate$flag3D -sc $scale -al $anglelimit -ald ${cand_anglediv} --small-mode 0 --patch-pop-limit $poplimit --angle-gens $anglegens -p $input --assoc $assoc --small-thresh-mult $smallThresh"
+        my_exec2 "$executable --generate$flag3D -sc $scale -al $anglelimit -ald ${cand_anglediv} --small-mode 0 --patch-pop-limit $poplimit --angle-gens $anglegens -p $input --assoc $assoc --small-thresh-mult $smallThresh --var-limit $variableLimit"
+        echo "CNT: $myresult"
+        if [ $myresult -ne "0" ]; then
+            decrease_level=false;
         fi
+
+        if $decrease_level; then
+            echo "decrease_level: TRUE";
+        else
+            echo "decrease_level: FALSE";
+        fi
+        #if [ ! -z $safeMode ] && [ $(countLines candidates_it$c.csv) -gt $variableLimit ]; then
+        #    echo ">>>>>>>>>>>>>>>>>>>>> RERUNNING WITH SAFE_MODE ($(countLines candidates_it$c.csv) > $variableLimit)";
+        #    my_exec "$executable $safeMode --generate$flag3D -sc $scale -al $anglelimit -ald ${cand_anglediv} --small-mode 0 --patch-pop-limit $poplimit --angle-gens $anglegens -p $input --assoc $assoc --small-thresh-mult $smallThresh"
+        #fi
 
         # Show candidates:
         # my_exec "../globOptVis --show --scale $scale -a $assoc --ids -p candidates_it$c.csv --pop-limit $poplimit &"
@@ -263,7 +296,7 @@ do
             my_exec "$executable --merge$flag3D --scale $scale --adopt $adopt --angle-gens $anglegens --prims primitives_it$c.bonmin.csv -a $assoc --patch-pop-limit $poplimit"
 
             # Show output of second iteration.
-            my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit 0 --angle-gens $anglegens --prims primitives_merged_it$c.csv -a points_primitives_it$c.csv --title \"GlobOpt - Merged $nextId iteration output\" $visdefparam &"
+            #my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit 0 --angle-gens $anglegens --prims primitives_merged_it$c.csv -a points_primitives_it$c.csv --title \"GlobOpt - Merged $nextId iteration output\" $visdefparam &"
         else
             my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p primitives_it$c.bonmin.csv -a $assoc --title \"GlobOpt - [Dir-Colours] $nextId iteration output\" $visdefparam --dir-colours --no-rel &"
         fi

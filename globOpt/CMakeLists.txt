@@ -7,8 +7,9 @@ SET( THIRD_PARTY_DIR "${WORKSPACE_DIR}/3rdparty" )
 
 SET( OpenCV_DIR "${THIRD_PARTY_DIR}/opencv-trunk/install/share/OpenCV/"
         CACHE FILEPATH "Folder containing the OpenCVConfig.cmake file, usually \"{OPENCV_INSTALL_DIR}/share/OpenCV/\"")
-SET( PCL_DIR "${THIRD_PARTY_DIR}/pcl-trunk2/install/share/pcl-1.7/"
-          CACHE FILEPATH "Folder containing \"PCLConfig.cmake\", usually \"{PCL_INSTALL_DIR}/share/pcl-1.7/\".")
+SET( PCL_DIR "${THIRD_PARTY_DIR}/pcl-trunk2/install/share/pcl-1.8/"
+        CACHE FILEPATH "Folder containing \"PCLConfig.cmake\", usually \"{PCL_INSTALL_DIR}/share/pcl-1.8/\"." FORCE )
+MESSAGE( STATUS "Pcl_DIR ${PCL_DIR}")
 
 SET( PATH_MOSEK_DIR  "${THIRD_PARTY_DIR}/mosek/7/tools/platform/linux64x86" )
 SET( PATH_BONMIN_DIR "${THIRD_PARTY_DIR}/CoinBonmin-stable/build/")

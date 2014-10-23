@@ -251,7 +251,8 @@ namespace GF2 {
          *  \param[in] functor           An instance of the functor that should be called for each primitive.
          */
         template < class _PrimitiveT
-                 , typename _inner_const_iterator
+                 //, typename _inner_const_iterator
+                 , typename _InnerPrimitiveContainerT
                  , class _FunctorT
                  , class _PrimitiveContainerT
                  >
@@ -259,7 +260,8 @@ namespace GF2 {
                             , _FunctorT                  & functor
                             )
         {
-            typedef typename _PrimitiveContainerT::const_iterator outer_const_iterator;
+            typedef typename _PrimitiveContainerT::const_iterator       outer_const_iterator;
+            typedef typename _InnerPrimitiveContainerT::const_iterator  inner_const_iterator;
 
             int ret = 0;
 
@@ -269,7 +271,7 @@ namespace GF2 {
                                      ++outer_it )
             {
                 int lid = 0;
-                for ( _inner_const_iterator inner_it  = containers::valueOf<_PrimitiveT>(outer_it).begin();
+                for (  inner_const_iterator inner_it  = containers::valueOf<_PrimitiveT>(outer_it).begin();
                                             inner_it != containers::valueOf<_PrimitiveT>(outer_it).end();
                                           ++inner_it, ++lid )
                 {

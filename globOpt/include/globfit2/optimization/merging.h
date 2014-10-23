@@ -42,12 +42,14 @@ class Merging
 
         /*! \brief Merges adjacent patches that have the same direction ID or are almost parallel.
          *  \tparam _PatchPatchDistanceFunctorT  Concept: \ref GF2::RepresentativeSqrPatchPatchDistanceFunctorT.
+         *  \tparam _InnerPrimitiveContainerT    Concept: std::vector<_PrimitiveT>
          *  \param[in] patchPatchDistFunct       Distance functor between two patches, to define adjacency.
          *  \param[in] spatial_threshold         Two extrema should be at least this close to be merged. Concept: \ref MergeParams::spatial_threshold_mult == 3 * scale.
          */
         template < class    _PrimitiveT
                  , class    _PointPrimitiveT
-                 , class    _inner_const_iterator
+                 //, class    _inner_const_iterator
+                 , class    _InnerPrimitiveContainerT
                  , class    _PrimitiveContainerT
                  , class    _PointContainerT
                  , typename _Scalar

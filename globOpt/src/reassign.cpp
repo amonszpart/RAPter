@@ -73,13 +73,13 @@ int reassign( int argc, char** argv )
 
     // assign points
     std::cout << "starting assignment" << std::endl; fflush( stdout );
-    for ( int pid = 0; pid != points.size(); ++pid )
+    for ( size_t pid = 0; pid != points.size(); ++pid )
     {
         float min_dist = FLT_MAX, tmp; int min_gid = 0;
-        for ( int lid = 0; lid != planes.size(); ++lid )
+        for ( size_t lid = 0; lid != planes.size(); ++lid )
         {
             int gid = -2;
-            for ( int lid1 = 0; lid1 != planes[lid].size(); ++lid1 )
+            for ( size_t lid1 = 0; lid1 != planes[lid].size(); ++lid1 )
             {
                 if ( !lid1 ) gid = planes[lid][lid1].getTag(PrimitiveT::GID);
 

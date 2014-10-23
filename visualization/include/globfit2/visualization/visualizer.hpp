@@ -202,7 +202,7 @@ namespace GF2
 
         //pcl::visualization::PCLVisualizer::Ptr vptr( new pcl::visualization::PCLVisualizer() );
         vis::MyVisPtr vptr( new pcl::visualization::PCLVisualizer(title) );
-        vptr->setBackgroundColor( 1, 1, 1 );
+        vptr->setBackgroundColor( .1, .1, .1 );
         MyCloud::Ptr cloud( new MyCloud );
         pcl::PointCloud<pcl::Normal>::Ptr normals( new pcl::PointCloud<pcl::Normal> );
         {
@@ -228,9 +228,9 @@ namespace GF2
                 //}
 
                 MyPoint pnt;
-                pnt.x = ((Eigen::Matrix<_Scalar,3,1> )points[pid])(0); // convert PointPrimitive to Eigen::Matrix, and get (0)
-                pnt.y = ((Eigen::Matrix<_Scalar,3,1> )points[pid])(1);
-                pnt.z = ((Eigen::Matrix<_Scalar,3,1> )points[pid])(2);
+                pnt.x = points[pid].template pos()(0);//((Eigen::Matrix<_Scalar,3,1> )points[pid])(0); // convert PointPrimitive to Eigen::Matrix, and get (0)
+                pnt.y = points[pid].template pos()(1);//  ((Eigen::Matrix<_Scalar,3,1> )points[pid])(1);
+                pnt.z = points[pid].template pos()(2); // ((Eigen::Matrix<_Scalar,3,1> )points[pid])(2);
                 pnt.r = colour(0);
                 pnt.g = colour(1);
                 pnt.b = colour(2);
@@ -271,6 +271,9 @@ namespace GF2
         processing::getPopulations( populations, points );
 
         Eigen::Matrix<_Scalar,Eigen::Dynamic,1> area(1,1);
+
+        pcl::PolygonMesh mesh_accum, plane_mesh;
+        MyCloud plane_mesh_cloud; // cloud to save points, and then add back to mesh in the end
 
         for ( size_t lid = 0; lid != primitives.size(); ++lid )
             for ( size_t lid1 = 0; lid1 != primitives[lid].size(); ++lid1 )
@@ -422,13 +425,67 @@ namespace GF2
                     }
                 }
 
-                if ( save_poly )
+                if ( save_poly && (PrimitiveT::EmbedSpaceDim == 3) )
                 {
-                    MyCloud hull_cloud;
-                    pcl::PolygonMesh mesh;
-                    ::pcl::PCLPointCloud2 cloud2;
-                    PrimitiveT::getHull( hull_cloud, primitives[lid][lid1], points, &populations[gid], hull_alpha, &mesh );
-                    pcl::io::savePLYFile( "mesh.ply", mesh );
+                    if ( draw_mode == 2 ) // qhull is on
+                    {
+                        MyCloud hull_cloud;
+                        pcl::PolygonMesh mesh;
+                        //::pcl::PCLPointCloud2 cloud2;
+                        if ( PrimitiveT::getHull( hull_cloud, primitives[lid][lid1], points, &populations[gid], hull_alpha, &mesh ) )
+                        {
+                            std::cout << "mesh.cloud has " << mesh.cloud.width << " x " << mesh.cloud.height << " points";
+                            const int pid_offs = mesh_accum.cloud.width;
+                            pcl::concatenatePointCloud( mesh_accum.cloud, mesh.cloud, mesh_accum.cloud );
+                            mesh_accum.polygons.resize( mesh_accum.polygons.size() + 1 );
+                            for ( int i = 0; i != mesh.polygons.size(); ++i )
+                            {
+
+                                std::cout<<"mesh.polygons["<<i<<"].vertices:";
+                                for(size_t vi=0;vi!=mesh.polygons[i].vertices.size();++vi)
+                                {
+                                    mesh_accum.polygons.back().vertices.push_back( pid_offs + mesh.polygons[i].vertices[vi] );
+                                    std::cout << mesh.polygons[i].vertices[vi] << "(" << pid_offs + mesh.polygons[i].vertices[vi] <<"), "; fflush(stdout);
+                                }
+                                std::cout << "\n";
+                            }
+                        }
+                    }
+
+                    // simple planes
+                    std::vector<Eigen::Vector3f> minMax;
+                    int err2 = primitives[lid][lid1].template getExtent<PointPrimitiveT>( minMax
+                                                           , points
+                                                           , scale
+                                                           , &(populations[gid])
+                                                           , /* force_axis_aligned: */ true /*true*/ );
+                    if ( err2 == EXIT_SUCCESS )
+                    {
+                        plane_mesh.polygons.resize( plane_mesh.polygons.size() + 1 );
+                        const int pid_offs = plane_mesh_cloud.size();
+                        for ( int i = 0; i != minMax.size(); ++i )
+                        {
+                            MyPoint pnt;
+                            pnt.getVector3fMap() = minMax[i];
+                            plane_mesh_cloud.push_back( pnt );
+                            plane_mesh      .polygons.back().vertices.push_back( pid_offs + i );
+                        }
+                    }
+                }
+                else
+                {
+//                    PrimitiveT::template draw<PointPrimitiveT>( /*   primitive: */ primitives[lid][lid1]
+//                                                              , /*      points: */ points
+//                                                              , /*   threshold: */ scale
+//                                                              , /*     indices: */ use_tags ? &indices : NULL
+//                                                              , /*      viewer: */ vptr
+//                                                              , /*   unique_id: */ line_name
+//                                                              , /*      colour: */ prim_colour(0), prim_colour(1), prim_colour(2)
+//                                                              , /* viewport_id: */ 0
+//                                                              , /*     stretch: */ stretch /* = 1.2 */
+//                                                              , /*       qhull: */ draw_mode /* = 1, classic, axis aligned */
+//                                                              , /*       alpha: */ hull_alpha
+//                                                              );
                 }
             } // ... lid1
 
@@ -440,10 +497,23 @@ namespace GF2
             vptr->addSphere( pcl::PointXYZ(0,0,0), scale, "scale_sphere", 0 );
         }
 
+        if ( save_poly && (PrimitiveT::EmbedSpaceDim == 3) )
+        {
+            if ( draw_mode == 2 )
+            {
+                std::cout << "mesh_accum.size: " << mesh_accum.cloud.width << ", and " << mesh_accum.polygons.size() << " polygons" << std::endl;
+                pcl::io::savePLYFile( "mesh.ply", mesh_accum );
+            }
+            pcl::toPCLPointCloud2( plane_mesh_cloud, plane_mesh.cloud );
+            std::cout << "plane_mesh.size: " << plane_mesh.cloud.width << ", and " << plane_mesh.polygons.size() << " polygons" << std::endl;
+            pcl::io::savePLYFile( "plane_mesh.ply", plane_mesh );
+        }
+
         if ( spin )
             vptr->spin();
         else
             vptr->spinOnce();
+
 
         return vptr;
 #endif
