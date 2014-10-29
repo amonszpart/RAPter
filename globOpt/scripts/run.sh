@@ -66,14 +66,15 @@ cand_anglediv="1";# for 3D: "2.5";
 segmentScaleMultiplier="1";# for 3D: "2.5";
 pwCostFunc="spatsqrt" # spatial cost function. TODO: reactivate sqrt (does not compile for now)
 
-visdefparam="--use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-rel --no-scale" #"--use-tags --no-clusters" #--ids
+visdefparam="--angle-gens $anglegens --use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-rel --no-scale" #"--use-tags --no-clusters" #--ids
 firstConstrMode="patch" # what to add in the first run formulate. Default: 0 (everyPatchNeedsDirection), experimental: 2 (largePatchesNeedDirection).
 iterationConstrMode="patch" # what to add in the second iteration formulate. Default: 0 (everyPatchNeedsDirection), experimental: 2 (largePatchesNeedDirection).
 startAt=0
+
 #moved to argument 6
 #smallThresh="256" # smallThresh * scale is the small threshold # 5 was good for most of the stuff, except big scenes (kinect, lanslevillard)
-smallThreshlimit="0"
-smallThreshDiv="2";
+smallThreshlimit="0" #last threshold
+smallThreshDiv="2"; #stepsize
 
 safeMode=""; #"--safe-mode"; #"--safe-mode" # "--safe-mode" for new, or "" for old version
 variableLimit=1100; # 1300; # Safe mode gets turned on, and generate rerun, if candidates exceed this number (1300)

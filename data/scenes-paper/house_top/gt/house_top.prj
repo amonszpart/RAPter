@@ -1,0 +1,25 @@
+<!DOCTYPE house_top>
+<scene name="house_top">
+ <primitives>
+  <primitive dim="-0.99091 0" dir="0 -1 0" uid="0" did="0" pos="0.00909 1 0"/>
+  <primitive dim="-1 0" dir="-1 0 0" uid="1" did="0" pos="1 1 0"/>
+  <primitive dim="-0.99091 0" dir="0 1 0" uid="2" did="0" pos="1 0 0"/>
+  <primitive dim="-1 0" dir="1 0 0" uid="3" did="0" pos="0.00909 0 0"/>
+  <primitive dim="-0.3 0" dir="0 -1 0" uid="4" did="0" pos="0.00909 0.80545 0"/>
+  <primitive dim="-0.22909 0" dir="-1 0 0" uid="5" did="0" pos="0.30909 0.80545 0"/>
+  <primitive dim="-0.0564 0" dir="-1 0 0" uid="7" did="0" pos="0.31273 0.47273 0"/>
+  <primitive dim="-0.30364 0" dir="0 1 0" uid="8" did="0" pos="0.31273 0.41633 0"/>
+  <primitive dim="-0.52728 0" dir="0 1 0" uid="10" did="0" pos="0.99455 0.45091 0"/>
+  <primitive dim="-0.30909 0" dir="-1 0 0" uid="11" did="0" pos="0.46727 0.45091 0"/>
+  <primitive dim="-0.28546 0" dir="-1 0 0" uid="13" did="0" pos="0.31273 0.29455 0"/>
+  <primitive dim="-0.34363 0" dir="0 1 0" uid="15" did="0" pos="0.98545 0.31636 0"/>
+  <primitive dim="-0.17091 0" dir="-1 0 0" uid="16" did="0" pos="0.64182 0.31636 0"/>
+  <primitive dim="-0.35454 0" dir="0 -1 0" uid="17" did="0" pos="0.64182 0.14545 0"/>
+ </primitives>
+ <samplers>
+  <sampler x="0.37" y="0.5" z="0" typeId="1" nbSamples="800" occlusion="1"/>
+ </samplers>
+ <displacements>
+  <kernel typeId="1" distributionMean="0" enabled="1" distributionStdDev="0.09"/>
+ </displacements>
+</scene>

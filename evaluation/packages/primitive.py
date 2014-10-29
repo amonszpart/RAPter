@@ -4,6 +4,7 @@ This module is the Python counterpart of the C++ LinePrimitive and and PlanePrim
 See C++ GlobOpt project for more details on Primitives
 """
 import numpy as np
+from math import atan2, pi
 
 class Primitive(object):
 
@@ -19,6 +20,13 @@ class Primitive(object):
     
     def distanceTo(self, pos) :
         return np.dot(pos-self.pos, self.normal)
+        
+    def angleInRadian(self, other) :
+        return atan2( np.linalg.norm(np.cross( self.normal, other.normal )), 
+                      np.dot(self.normal, other.normal ))
+        
+    def angleInDegree(self, other) :
+        return self.angleInRadian(other) / pi * 180.
         
 def readPrimitivesFromFile(path):
     f = open(path, 'r')

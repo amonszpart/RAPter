@@ -45,6 +45,13 @@
 [09/25/14 00:06:37] ../../../globOpt/scripts/run.sh 0.03 0.4 1 40 --freqweight 10 --angle-limit 0.4 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 60 --cost-fn spatsqrt --small-thresh 10 --small-thresh-limit 
 [09/25/14 00:06:59] ../../../globOpt/scripts/run.sh 0.03 0.4 1 40 --freqweight 10 --angle-limit 0.4 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 --cost-fn spatsqrt --small-thresh 10 --small-thresh-limit 
 [09/25/14 00:07:10] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 40 --freqweight 10 --angle-limit 0.4 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 --cost-fn spatsqrt --small-thresh 10 --small-thresh-limit 
+<<<<<<< HEAD
+[09/25/14 18:27:36] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 40 --freqweight 10 --angle-limit 0.4 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angl --freqweight 5 --angle-limit 0.4 --segment-scale-mult 1. --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 --cost-fn spatsqrt --small-thresh 10 --small-thresh-limit 
+[09/25/14 18:27:51] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 40 --freqweight 5 --angle-limit 0.4 --segment-scale-mult 1. --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 --cost-fn spatsqrt --small-thresh 10 --small-thresh-limit 
+[09/25/14 18:28:49] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 40 --freqweight 5 --angle-limit 0.4 --segment-scale-mult 1. --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 --cost-fn spatsqrt --small-thresh 4 --small-thresh-limit 
+[09/25/14 18:29:22] ../../../globOpt/scripts/run.sh 0.03 0.4 1 40 --freqweight 5 --angle-limit 0.4 --segment-scale-mult 1. --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 --cost-fn spatsqrt --small-thresh 4 --small-thresh-limit 
+[09/25/14 18:30:12] ../../../globOpt/scripts/run.sh 0.03 0.4 1 40 --freqweight 5 --angle-limit 0.4 --segment-scale-mult 1. --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 --cost-fn spatsqrt --small-thresh 1 --small-thresh-limit 
+=======
 [09/25/14 20:30:27] ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 40 --freqweight 10 --angle-limit 0.4 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 --cost-fn spatsqrt --small-thresh 12 --small-thresh-limit 
 [09/25/14 20:31:02] ../../../globOpt/scripts/run.sh 0.01 0.4 0.1 40 --freqweight 10 --angle-limit 0.4 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 --cost-fn spatsqrt --small-thresh 12 --small-thresh-limit 
 [09/25/14 20:31:09] ../../../globOpt/scripts/run.sh 0.02 0.2 0.1 40 --freqweight 10 --angle-limit 0.2 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 --cost-fn spatsqrt --small-thresh 12 --small-thresh-limit 
@@ -65,3 +72,4 @@
 [09/25/14 21:53:47] ../../../globOpt/scripts/run.sh 0.03 0.3 2 40 --freqweight 10 --angle-limit 0.3 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 --cost-fn spatsqrt --small-thresh 2 --small-thresh-limit 
 [09/25/14 21:54:41] ../../../globOpt/scripts/run.sh 0.03 0.3 1.5 40 --freqweight 10 --angle-limit 0.3 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 --cost-fn spatsqrt --small-thresh 2 --small-thresh-limit 
 [09/25/14 21:57:01] ../../../globOpt/scripts/run.sh 0.04 0.4 2 40 --freqweight 10 --angle-limit 0.4 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 90 --cost-fn spatsqrt --small-thresh 2 --small-thresh-limit 
+>>>>>>> 9b871c5a5038c467e77718820e137c6418ea1ee7
