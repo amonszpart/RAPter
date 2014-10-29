@@ -13,81 +13,109 @@ template <class PrimitiveT>
 int
 GF2::vis::showCli( int argc, char** argv )
 {
-    typedef std::vector< std::vector< PrimitiveT> > PrimitiveContainerT;
+    typedef          std::vector< std::vector< PrimitiveT> >              PrimitiveContainerT;
+    typedef typename GF2::Visualizer<PrimitiveContainerT,PointContainerT> MyVisT;
+    typedef typename MyVisT::Colour                                       Colour;
 
     if ( pcl::console::find_switch(argc,argv,"--help") || pcl::console::find_switch(argc,argv,"-h") )
     {
-        std::cout << "[" << __func__ << "]: " << "Usage: " << argv[0] << " --show[3d]\n"
-                  << "\t--dir \tthe directory containing the files to display\n"
-                  << "\t-p,--prims \tthe primitives file name in \"dir\"\n"
-                  << "\t--cloud \tthe cloud file name in \"dir\"\n"
-                  << "\t[--scale \talgorithm parameter]\n"
-                  << "\t[-a,--assoc \tpoint to line associations]\n"
-                  << "\t[--no-rel \tdon't show perfect relationships as gray lines]\n"
-                  << "\t[--use-tags \tuse associations to create line segments]\n"
-                  << "\t[--ids \tshow point GID-s and line GIDs]\n"
-                  << "\t[--no-clusters \tdon't show the \"ellipses\"]\n"
-                  << "\t[--pop-limit \tpoplation limit for small patches]\n"
-                  << "\t[--pids \tdisplay point ids]\n"
-                  << "\t[--title \t window title]\n"
-                  << "\t[--normals i\t show every i-th normal. 0: no normals, 1: every normal]\n"
-                  << "\t[--angle-gens \t comma separated angle generators. I.e.: 36,90]\n"
-                  << "\t[--no-pop \t Don't show cluster point counts]\n"
-                  << "\t[--print-angles \t Print angles on relation lines]\n"
-                  << "\t[--perfect-angle 0.5\t Threshold in degrees, under which a gray line is shown indicating 'perfect relationship']\n"
-                  << "\t[--dir-colours \t colourcode direction IDs']\n"
-                  << "\t[--gids \t Show only specific gids (comma separated)]\n"
-                  << "\t[--statuses \t Show only specific statuses (comma separated)]"
-                  << "\t[--hide-pts,--no-pts \t Hide point cloud (display only primitives)]"
-                  << "\t[--draw-mode \t 0: classic, 1: axis aligned, 2: qhull]\n"
-                  << "\t[--stretch \t Elong primitives by multiplying their extents with this number]\n"
-                  << "\t[--no-paral \t Don't add 0 and 180 to angles]\n"
-                  << "\t[--no-scale \t Hide scale sphere]\n"
-                  << "\t[--hull-alpha \t Hull alpha]\n"
-                  << "\t[--save-poly \t Save convex polygons]\n"
+        std::cout << "[" << __func__ << "]: " << "Usage: " << argv[0] << " --show[3D]\n"
+                  << "\t--dir \t\t\t The directory containing the files to display\n"
+                  << "\t--prims, -p \t\t The primitives file name in \"dir\"\n"
+                  << "\t--cloud \t\t The cloud file name in \"dir\"\n"
+                  << "\t[ --scale \t\t Algorithm parameter ]\n"
+                  << "\t[ --assoc, -a \t\t Point to line associations ]\n\n"
+
+                  << "\t[ --angle-gens \t\t comma separated angle generators. I.e.: 36,90 ]\n"
+                  << "\t[ --pop-limit \t\t Poplation limit for small patches ]\n"
+                  << "\t[ --point-size \t\t Point render size (6.0) ]\n"
+                  << "\t[ --bg-colour \t\t Visualizer background colour i.e. 0.1,0.1,0.1 ]\n"
+                  << "\t[ --dir-colours \t colourcode direction IDs' ]\n"
+                  << "\t[ --draw-mode \t\t 0: classic, 1: axis aligned, 2: qhull\n"
+                  << "\t              \t\t 4: reprojected, 8: hide primitives, 16: hide unassigned points;  i.e. 28=4+8+16 ]\n"
+                  << "\t[ --hull-alpha \t\t QHull alpha parameter ]\n\n"
+
+                  << "\t[ --hide-pts,--no-pts \t Hide point cloud (display only primitives) ]\n"
+                  << "\t[ --no-rel \t\t Don't show perfect relationships as gray lines ]\n"
+                  << "\t[ --use-tags \t\t Use associations to create line segments ]\n"
+                  << "\t[ --ids \t\t Show point GID-s and line GIDs ]\n"
+                  << "\t[ --no-clusters \tDon't show the \"ellipses\" ]\n"
+                  << "\t[ --pids \t\t Display point ids ]\n"
+                  << "\t[ --no-pop \t\t Don't show cluster point counts ]\n"
+                  << "\t[ --no-paral \t\t Don't add 0 and 180 to angles - unused ]\n"
+                  << "\t[ --no-scale \t\t Hide scale sphere ]\n"
+                  << "\t[ --print-angles \t Print angles on relation lines ]\n"
+                  << "\t[ --perfect-angle 0.5\t Threshold in degrees, under which a gray line is shown indicating 'perfect relationship' ]\n\n"
+                  << "\t[ --stretch \t\t Elong primitives by multiplying their extents with this number ]\n"
+
+                  << "\t[ --title \t\t Window title ]\n"
+                  << "\t[ --normals i\t\t show every i-th normal. 0: no normals, 1: every normal ]\n\n"
+
+                  << "\t[ --gids \t\t Show only specific gids (comma separated) ]\n"
+                  << "\t[ --statuses \t\t Show only specific statuses (comma separated) ]\n\n"
+
+                  << "\t[ --save-poly \t\t Save polygons ]\n"
                   << std::endl;
         return EXIT_SUCCESS;
     }
+
+    // ------------------
 
     // show every show_normals-th normal. 0 means no normals, 1 means every normal, 2 for every second normal, etc.
     int show_normals = 0;
     pcl::console::parse_argument( argc, argv, "--normals", show_normals );
 
-    bool show_pids = pcl::console::find_switch( argc, argv, "--pids" );
-    bool show_pop = !pcl::console::find_switch( argc, argv, "--no-pop" );
-    bool print_angles = pcl::console::find_switch( argc, argv, "--print-angles" );
-    float perfect_angle_limit = 10.e-5;
+    bool    show_pids           = pcl::console::find_switch( argc, argv, "--pids" );
+    bool    show_pop            = !pcl::console::find_switch( argc, argv, "--no-pop" );
+    bool    print_angles        = pcl::console::find_switch( argc, argv, "--print-angles" );
+
+    float   perfect_angle_limit = 10.e-5;
     pcl::console::parse_argument( argc, argv, "--perfect-angle", perfect_angle_limit );
-    bool dir_colours = pcl::console::find_switch( argc, argv, "--dir-colours" );
-    bool hide_points = pcl::console::find_switch( argc, argv, "--hide-pts" ) || pcl::console::find_switch( argc, argv, "--no-pts" );
+
+    bool    dir_colours         = pcl::console::find_switch( argc, argv, "--dir-colours" );
+    bool    hide_points         = pcl::console::find_switch( argc, argv, "--hide-pts" ) || pcl::console::find_switch( argc, argv, "--no-pts" );
+
     Scalar stretch(1.);
     pcl::console::parse_argument( argc, argv, "--stretch", stretch );
-    int draw_mode = 1;
-    pcl::console::parse_argument( argc, argv, "--draw-mode", draw_mode );
-    bool no_paral = pcl::console::find_switch( argc, argv, "--no-paral" );
-    bool no_scale_sphere = pcl::console::find_switch( argc, argv, "--no-scale" );
-    bool save_poly = pcl::console::find_switch( argc, argv, "--save-poly" );
-    Scalar hull_alpha = 2.;
-    pcl::console::parse_argument( argc, argv, "--hull-alpha", hull_alpha);
 
+    int     draw_mode           = MyVisT::DRAW_MODE::AXIS_ALIGNED;
+    pcl::console::parse_argument( argc, argv, "--draw-mode", draw_mode );
+
+    bool    no_paral            = pcl::console::find_switch( argc, argv, "--no-paral" );
+    bool    no_scale_sphere     = pcl::console::find_switch( argc, argv, "--no-scale" );
+    bool    save_poly           = pcl::console::find_switch( argc, argv, "--save-poly" );
+
+    Scalar  hull_alpha          = 2.;
+    pcl::console::parse_argument( argc, argv, "--hull-alpha", hull_alpha);
 
     std::vector<int> gids;
     pcl::console::parse_x_arguments( argc, argv, "--gids", gids );
+
     std::vector<int> statuses;
     pcl::console::parse_x_arguments( argc, argv, "--statuses", statuses );
+
+    Colour bg_colour(.1,.1,.1);
+    std::vector<float> bg_colours;
+    pcl::console::parse_x_arguments( argc, argv, "--bg-colour", bg_colours );
+    if ( bg_colours.size() == 3 ) { bg_colour(0) = bg_colours[0]; bg_colour(1) = bg_colours[1]; bg_colour(2) = bg_colours[2]; }
 
     std::string title = "";
     pcl::console::parse_argument( argc, argv, "--title", title );
 
-    int pop_limit = 10;
+    int     pop_limit           = 10;
     pcl::console::parse_argument( argc, argv, "--pop-limit", pop_limit );
 
-    std::string dir = ".";
+    std::string dir             = ".";
     if ( pcl::console::parse_argument( argc, argv, "--dir", dir) < 0 )
     {
         std::cerr << "[" << __func__ << "]: " << "no directory specified by --dir ...assuming local \".\"" << std::endl;
-        //return EXIT_FAILURE;
     }
+
+    Scalar point_size = 6.;
+    pcl::console::parse_argument( argc, argv, "--point-size", point_size );
+
+    // ------------------
+
     int err = EXIT_SUCCESS;
 
     std::string primitives_file;
@@ -97,8 +125,8 @@ GF2::vis::showCli( int argc, char** argv )
         return EXIT_FAILURE;
     }
 
-    PrimitiveContainerT lines;
-    err = GF2::io::readPrimitives<PrimitiveT, typename PrimitiveContainerT::value_type>( lines, dir + "/" + primitives_file );
+    PrimitiveContainerT primitives;
+    err = GF2::io::readPrimitives<PrimitiveT, typename PrimitiveContainerT::value_type>( primitives, dir + "/" + primitives_file );
     if ( EXIT_SUCCESS != err )
     {
         std::cerr << "[" << __func__ << "]: " << "failed to read " << dir + "/" + primitives_file << "...exiting" << std::endl;
@@ -152,11 +180,6 @@ GF2::vis::showCli( int argc, char** argv )
 
     std::vector<Scalar> angles;
     processing::appendAnglesFromGenerators( angles, angle_gens, no_paral, true );
-//    {
-//        angles[0] = 0;
-//        angles[1] = M_PI_2;
-//        angles[2] = M_PI;
-//    }
 
     // tags = point colours
     char use_tags = pcl::console::find_switch( argc, argv, "--use-tags" );
@@ -188,10 +211,11 @@ GF2::vis::showCli( int argc, char** argv )
         }
     }
 
-    GF2::Visualizer<PrimitiveContainerT,PointContainerT>::template show<Scalar>( lines
+    GF2::Visualizer<PrimitiveContainerT,PointContainerT>::template show<Scalar>( primitives
                                                                                , points
                                                                                , scale
-                                                                               , /*               colour: */ (Eigen::Vector3f() << 1,0,0).finished()
+                                                                               , /*               colour: */ (Eigen::Vector3f() << 1,0,0).finished() // probably unused
+                                                                               , /*            bg_colour: */ bg_colour
                                                                                , /*                 spin: */ true
                                                                                , /*          connections: */ dont_show_rels ? NULL : &angles
                                                                                , /*             show_ids: */ show_ids
@@ -212,6 +236,7 @@ GF2::vis::showCli( int argc, char** argv )
                                                                                , /*      no_scale_sphere: */ no_scale_sphere
                                                                                , /*           hull_alpha: */ hull_alpha
                                                                                , /*            save_poly: */ save_poly
+                                                                               , /*           point_size: */ point_size
                                                                                );
     return EXIT_SUCCESS;
 } // ... Solver::show()

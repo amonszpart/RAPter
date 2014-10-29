@@ -16,9 +16,15 @@ namespace GF2 {
     template <class PrimitiveContainerT, class PointContainerT>
     class Visualizer
     {
-            typedef pcl::PointXYZRGB         MyPoint;
-            typedef pcl::PointCloud<MyPoint> MyCloud;
+            typedef pcl::PointXYZRGB            MyPCLPoint;
+            typedef pcl::PointCloud<MyPCLPoint> MyPCLCloud;
+
         public:
+            typedef Eigen::Vector3f             Colour;
+
+            // tested draw_modes: 0, 1, 2, 4 (REPROJECT), 12 (REPROJECT | HIDE_PRIMITIVES), 28 ( REPROJECT | HIDE_PRIMITIVES | HIDE_UNASSIGNED_PTS )
+            enum DRAW_MODE { SIMPLE = 0, AXIS_ALIGNED = 1, QHULL = 2, REPROJECT = 4
+                           , HIDE_PRIMITIVES = 8, HIDE_UNASSIGNED_PTS = 16 };
             /*! \brief                          Visualize lines and points
              *  \tparam _Scalar                 Floating point type used in points to store data. Concept: typename PointContainerT::value_type::Scalar.
              *  \param spin                     Halts execution and allows interactive viewing, if true
@@ -36,7 +42,8 @@ namespace GF2 {
             show( PrimitiveContainerT  const& primitives
                 , PointContainerT      const& points
                 , _Scalar              const  scale
-                , Eigen::Vector3f      const& colour                = (Eigen::Vector3f() << 0.f, 0.f, 1.f).finished()
+                , Colour               const& colour                = (Colour() << 0.f, 0.f, 1.f).finished()
+                , Colour               const& bg_colour             = (Colour() << .1f, .1f, .1f).finished()
                 , bool                 const  spin                  = true
                 , std::vector<_Scalar> const* angles                = NULL
                 , bool                 const  show_ids              = false
@@ -57,12 +64,13 @@ namespace GF2 {
                 , bool                 const  no_scale_sphere       = false
                 , _Scalar              const  hull_alpha            = 2.
                 , bool                 const  save_poly             = false
+                , _Scalar              const  point_size            = 6.0
                 );
 
             //! \brief Shows a polygon that approximates the bounding ellipse of a cluster
             template <typename _Scalar> static inline int
             drawEllipse( vis::MyVisPtr                             vptr
-                       , MyCloud::Ptr                              cloud
+                       , MyPCLCloud::Ptr                              cloud
                        , std::vector<int>                   const& indices
                        , _Scalar                            const  scale
                        , int                                const  prim_tag
@@ -95,7 +103,8 @@ namespace GF2
     Visualizer<PrimitiveContainerT,PointContainerT>::show( PrimitiveContainerT    const& primitives
                                                            , PointContainerT      const& points
                                                            , _Scalar              const  scale
-                                                           , Eigen::Vector3f      const& colour              /* = {0,0,1} */
+                                                           , Colour               const& colour              /* = {0,0,1} */
+                                                           , Colour               const& bg_colour
                                                            , bool                 const  spin                /* = true */
                                                            , std::vector<_Scalar> const* angles              /* = NULL */
                                                            , bool                 const  show_ids            /* = false */
@@ -116,144 +125,222 @@ namespace GF2
                                                            , bool                 const  no_scale_sphere     /* = false */
                                                            , _Scalar              const  hull_alpha          /* = 2. */
                                                            , bool                 const  save_poly           /* = false */
+                                                           , _Scalar              const  point_size          /* = 6.0 */
                                                            )
     {
-#if 1
-        typedef typename PrimitiveContainerT::value_type::value_type PrimitiveT;
-        typedef typename PointContainerT::value_type PointPrimitiveT;
+        // TYPEDEFS
+        typedef typename PrimitiveContainerT::value_type::value_type    PrimitiveT;
+        typedef typename PointContainerT::value_type                    PointPrimitiveT;
+        typedef          Eigen::Matrix<_Scalar,3,1>                     Position;
+        typedef          std::pair< int, int     >                      LidLid1;
+        typedef          std::map < int, LidLid1 >                      GidLidLid1Map;
 
+        // --------------------------------------------------------------------
+        // CONSTs
         const Eigen::Matrix<double,3,1> gray          ( (Eigen::Matrix<double,3,1>()<<.6,.6,.5).finished() );
         const _Scalar                   deg_multiplier( _Scalar(180.) / M_PI );
+        const _Scalar                   text_size = scale/0.05 * 0.015;
 
         std::cout << "[" << __func__ << "]: " << "scale: " << scale
                   << std::endl;
 
-        const int primColourTag  = dir_colours ? PrimitiveT::DIR_GID      : PrimitiveT::GID;
-        //const int pointColourTag = dir_colours ? PointPrimitiveT::DIR_GID : PointPrimitiveT::GID;
+        // --------------------------------------------------------------------
 
-        // calc groups
-        int max_gid = 0, nPrimitives = 0, max_dir_gid = 0, nbColour = 0;
-        std::map< int, std::pair<int,int> > gid2lidLid1;
-        std::map< int, int >  id2ColId;
-        for ( size_t pid = 0; pid != points.size(); ++pid )
-            max_gid = std::max( max_gid, points[pid].getTag(PointPrimitiveT::GID) );
-        for ( size_t lid = 0; lid != primitives.size(); ++lid )
-            for ( size_t lid1 = 0; lid1 != primitives[lid].size(); ++lid1 )
+        // every direction or every patch gets its own colour
+        const int primColourTag = dir_colours ? PrimitiveT::DIR_GID : PrimitiveT::GID;
+        // primitives are prepared for draw_modes: SIMPLE, AXIS_ALIGNED, QHULL, so we need to remove the rest of the flags
+        const int old_draw_mode = draw_mode & (SIMPLE | AXIS_ALIGNED | QHULL);
+        std::cout << "old_draw_mode: " << old_draw_mode << std::endl;
+
+        // --------------------------------------------------------------------
+
+        int max_gid     = 0, max_dir_gid = 0,
+            nPrimitives = 0, nbColour    = 0;
+        GidLidLid1Map gid2lidLid1;    // maps gid to a primitve (assuming only one per patch...)
+        std::map< int, int                > id2ColId;       // maps gid to a colour id
+
+        // get the highest gid from points OR primitives, store into max_gid
+        {
+            for ( size_t pid = 0; pid != points.size(); ++pid )
+                max_gid = std::max( max_gid, points[pid].getTag(PointPrimitiveT::GID) );
+
+            for ( size_t lid = 0; lid != primitives.size(); ++lid )
             {
-                if (primitives[lid][lid1].getTag(PrimitiveT::STATUS) != PrimitiveT::SMALL){
+                for ( size_t lid1 = 0; lid1 != primitives[lid].size(); ++lid1 )
+                {
+                    if ( primitives[lid][lid1].getTag(PrimitiveT::STATUS) != PrimitiveT::SMALL ) // TODO: use filter status
+                    {
+                        max_gid     = std::max( max_gid    , primitives[lid][lid1].getTag(PrimitiveT::GID    ) );
+                        max_dir_gid = std::max( max_dir_gid, primitives[lid][lid1].getTag(PrimitiveT::DIR_GID) );
 
-                    max_gid     = std::max( max_gid    , primitives[lid][lid1].getTag(PrimitiveT::GID    ) );
-                    max_dir_gid = std::max( max_dir_gid, primitives[lid][lid1].getTag(PrimitiveT::DIR_GID) );
+                        // this id has not been referenced to a color previously
+                        if ( id2ColId.find(primitives[lid][lid1].getTag(primColourTag)) == id2ColId.end())
+                        {
+                            id2ColId[ primitives[lid][lid1].getTag(primColourTag) ] = nbColour;
+                            ++nbColour;
+                        }
+                        gid2lidLid1[ primitives[lid][lid1].getTag(PrimitiveT::GID) ] = std::pair<int,int>(lid,lid1);
 
-                    // this id has not been referenced to a color previously
-                    if (id2ColId.find(primitives[lid][lid1].getTag(primColourTag)) == id2ColId.end()){
-                        id2ColId  [ primitives[lid][lid1].getTag(primColourTag) ] = nbColour;
-                        nbColour++;
+                        ++nPrimitives;
                     }
-                    gid2lidLid1[primitives[lid][lid1].getTag(PrimitiveT::GID)] = std::pair<int,int>(lid,lid1);
-
-                    ++nPrimitives;
                 }
             }
-        std::cout << "[" << __func__ << "]: "
-                  << "points: "         << points.size()
-                  << ", primitives: "   << nPrimitives
-                  << ", max_gid: "      << max_gid
-                  << ", max_dir_gid: "  << max_dir_gid
-                  << ", pop-limit: "    << pop_limit
-                  << ", filter-gids.size(): " << (filter_gids ? filter_gids->size() : 0)
-                  << std::endl;
+        } // max_gid, max_dir_gid, id2ColId, gid2lidLid1
 
+        // --------------------------------------------------------------------
+
+        // log
+        {
+            std::cout << "[" << __func__ << "]: "
+                      << "points: "         << points.size()
+                      << ", primitives: "   << nPrimitives
+                      << ", max_gid: "      << max_gid
+                      << ", max_dir_gid: "  << max_dir_gid
+                      << ", pop-limit: "    << pop_limit
+                      << ", filter-gids.size(): " << (filter_gids ? filter_gids->size() : 0)
+                      << std::endl;
+        }
+
+        // --------------------------------------------------------------------
 
         // Check if we can use color palette
-        const int paletteRequiredSize = id2ColId.size()+1; // set this to 0, if you only want 7 colours
-
-        bool usePalette =  id2ColId.size() < util::paletteLightColoursEigen(paletteRequiredSize).size();
+        const int paletteRequiredSize = id2ColId.size() + 1; // set this to 0, if you only want 7 colours
+        // Defaults to true, since util replicates colours
+        bool usePalette = id2ColId.size() < util::paletteLightColoursEigen(paletteRequiredSize).size();
         std::vector<Eigen::Vector3f> pointColours, primColours;
-        Eigen::Vector3f unusedPointColour, unusedPrimColour;
-
-        if ( usePalette )
+        Eigen::Vector3f              unusedPointColour, unusedPrimColour;
+        // Choose, and fill colour palette
         {
-            cout << "Switching to nicer color palette" << endl;
-
-            pointColours = util::paletteLightColoursEigen(paletteRequiredSize);
-            primColours  = util::paletteDarkColoursEigen(paletteRequiredSize);
-
-            unusedPointColour = util::paletteLightNeutralColour();
-            unusedPrimColour  = util::paletteDarkNeutralColour();
-
-        }
-        else
-        {
-            cout << " NOT Switching to nicer color palette, need " << id2ColId.size() << " colours" << endl;
-            pointColours = util::nColoursEigen( /*           count: */ nbColour
-                                                , /*         scale: */ 255.f
-                                                , /*       shuffle: */ true
-                                                , /* min_hsv_value: */ 70.f );
-            primColours = pointColours;
-            for ( size_t cid = 0; cid != pointColours.size(); ++cid )
+            if ( usePalette )
             {
-                pointColours[cid](0) = std::min( pointColours[cid](0) * 1.6, 255.);
-                pointColours[cid](1) = std::min( pointColours[cid](1) * 1.6, 255.);
-                pointColours[cid](2) = std::min( pointColours[cid](2) * 1.6, 255.);
-            }
-            unusedPointColour = unusedPrimColour = Eigen::Vector3f::Zero();
-        }
+                cout << "Switching to nicer color palette" << endl;
 
-        //pcl::visualization::PCLVisualizer::Ptr vptr( new pcl::visualization::PCLVisualizer() );
+                pointColours = util::paletteLightColoursEigen(paletteRequiredSize);
+                primColours  = util::paletteDarkColoursEigen(paletteRequiredSize);
+
+                unusedPointColour = util::paletteLightNeutralColour();
+                unusedPrimColour  = util::paletteDarkNeutralColour();
+
+            }
+            else
+            {
+                cout << " NOT Switching to nicer color palette, need " << id2ColId.size() << " colours" << endl;
+                pointColours = util::nColoursEigen( /*           count: */ nbColour
+                                                    , /*         scale: */ 255.f
+                                                    , /*       shuffle: */ true
+                                                    , /* min_hsv_value: */ 70.f );
+                primColours = pointColours;
+                for ( size_t cid = 0; cid != pointColours.size(); ++cid )
+                {
+                    pointColours[cid](0) = std::min( pointColours[cid](0) * 1.6, 255.);
+                                           pointColours[cid](1) = std::min( pointColours[cid](1) * 1.6, 255.);
+                                                                  pointColours[cid](2) = std::min( pointColours[cid](2) * 1.6, 255.);
+                }
+                unusedPointColour = unusedPrimColour = Eigen::Vector3f::Zero();
+            }
+        } // colours
+
+        // --------------------------------------------------------------------
+
+        // init visualizer
         vis::MyVisPtr vptr( new pcl::visualization::PCLVisualizer(title) );
-        vptr->setBackgroundColor( .1, .1, .1 );
-        MyCloud::Ptr cloud( new MyCloud );
+        vptr->setBackgroundColor( bg_colour(0), bg_colour(1), bg_colour(2) );
+
+        // --------------------------------------------------------------------
+
+        // create PCL pointcloud from input "points"
+        MyPCLCloud::Ptr                      cloud  ( new MyPCLCloud );
         pcl::PointCloud<pcl::Normal>::Ptr normals( new pcl::PointCloud<pcl::Normal> );
         {
             cloud->reserve( points.size() );
+
+            // Allocate PCL point
+            MyPCLPoint pnt;
+
+            // for each point in input
             for ( size_t pid = 0; pid != points.size(); ++pid )
             {
+                const int                     point_gid      = points[pid].getTag(PointPrimitiveT::GID); // which patch is the point assigned to
+                GidLidLid1Map::const_iterator gidLidIterator = gid2lidLid1.find( point_gid );            // which primitive is in this patch ( only one...:( )
+                LidLid1                       lidLid1(-1,-1);                                            // exact indices of primitive
+                Colour                        point_colour   = unusedPointColour;                        // point colour
 
-                Eigen::Vector3f colour = unusedPointColour;
+                // get primitive of point
+                if ( gidLidIterator != gid2lidLid1.end() )
+                    lidLid1 = gidLidIterator->second;
 
-                if ( gid2lidLid1.find(points[pid].getTag(PointPrimitiveT::GID)) != gid2lidLid1.end() )
+                // retrieve point colour
+                if ( gidLidIterator != gid2lidLid1.end() )
                 {
-                    std::pair<int,int> lid =  gid2lidLid1[points[pid].getTag(PointPrimitiveT::GID)];
-                    const int mid = primitives[lid.first][lid.second].getTag(primColourTag);
-                    if ( id2ColId.find(mid) != id2ColId.end() )
+                    const int mid = primitives[ lidLid1.first ][ lidLid1.second ].getTag( primColourTag );
+                    if ( id2ColId.find( mid ) != id2ColId.end() )
                     {
-                        colour = pointColours[id2ColId[mid]];
+                        point_colour = pointColours[id2ColId[mid]];
                     }
                 }
-                // skip, if filtering is on, and this gid is not in the filter
-                //if ( filter_gids && (filter_gids->find(primitives[points[pid]].getTag(PrimitiveT::GID)) == filter_gids->end()) )
-                //{
-                //    continue;
-                //}
 
-                MyPoint pnt;
-                pnt.x = points[pid].template pos()(0);//((Eigen::Matrix<_Scalar,3,1> )points[pid])(0); // convert PointPrimitive to Eigen::Matrix, and get (0)
-                pnt.y = points[pid].template pos()(1);//  ((Eigen::Matrix<_Scalar,3,1> )points[pid])(1);
-                pnt.z = points[pid].template pos()(2); // ((Eigen::Matrix<_Scalar,3,1> )points[pid])(2);
-                pnt.r = colour(0);
-                pnt.g = colour(1);
-                pnt.b = colour(2);
+                // skip, if gid filtering is on, and this gid is not in the filter
+                if ( filter_gids && (filter_gids->find( point_gid ) == filter_gids->end()) )
+                    continue;
+
+                // Set PCL point position
+                if ( draw_mode & DRAW_MODE::REPROJECT ) // reprojected draw
+                {
+                    // cache point position
+                    Position const& pos = points[pid].template pos();
+
+                    // check, if point is assigned to existing patch
+                    if ( gidLidIterator != gid2lidLid1.end() )
+                        pnt.getVector3fMap() = primitives[ lidLid1.first ][ lidLid1.second ].projectPoint( pos );
+                    // show point unprojected, NOT HIDE_UNASSIGNED_PTS
+                    else if ( !(draw_mode & HIDE_UNASSIGNED_PTS) )
+                        pnt.getVector3fMap() = pos;
+                }
+                else                            // regular draw
+                {
+                    pnt.getVector3fMap() = points[pid].template pos();
+                }
+
+                // Set PCL point colour
+                pnt.r = point_colour( 0 );
+                pnt.g = point_colour( 1 );
+                pnt.b = point_colour( 2 );
+
+                // Add PCL point
                 cloud->push_back( pnt );
 
-                pcl::Normal normal;
-                normal.normal_x = points[pid].template dir()(0);
-                normal.normal_y = points[pid].template dir()(1);
-                normal.normal_z = points[pid].template dir()(2);
-                normals->push_back( normal );
-            }
-        }
-        if (! hide_points)
+                // Add point normal, will be used, if needed
+                if ( show_normals )
+                {
+                    pcl::Normal normal;
+                    normal.normal_x = points[pid].template dir()(0);
+                    normal.normal_y = points[pid].template dir()(1);
+                    normal.normal_z = points[pid].template dir()(2);
+                    normals->push_back( normal );
+                } // ...show normals
+            } //...for points
+        } //...add PCL pointcloud
+
+        // --------------------------------------------------------------------
+
+        if ( !hide_points )
             vptr->addPointCloud( cloud, "cloud", 0 );
+
+        // --------------------------------------------------------------------
+
         if ( show_normals )
         {
-            vptr->addPointCloudNormals<MyPoint,pcl::Normal>( cloud
-                                                             , normals
-                                                             , /* level: */ show_normals
-                                                             , /* scale: */ 0.02f
-                                                             , /* cloud_name: */ "normal_cloud"
-                                                             , /* vid: */ 0 );
+            vptr->addPointCloudNormals<MyPCLPoint,pcl::Normal>( /*  point_cloud: */ cloud
+                                                              , /* normal_cloud: */ normals
+                                                              , /*        level: */ show_normals // show every level-th normal
+                                                              , /*        scale: */ 0.02f
+                                                              , /*   cloud_name: */ "normal_cloud"
+                                                              , /*  viewport_id: */ 0 );
         }
+
+        // --------------------------------------------------------------------
+
+        // show point ids (takes quite long time)
         if ( show_pids )
         {
             for ( int pid = 0; pid != points.size(); ++pid )
@@ -264,284 +351,292 @@ namespace GF2
                 vptr->addText3D( ptext, cloud->at(pid), 0.005, cloud->at(pid).r/255.f, cloud->at(pid).g/255.f, cloud->at(pid).b/255.f, pname, 0 );
             }
         }
-        vptr->setPointCloudRenderingProperties( pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 6.0, "cloud", 0 );
+
+        // --------------------------------------------------------------------
+
+        // set point size
+        if ( !hide_points )
+            vptr->setPointCloudRenderingProperties( pcl::visualization::PCL_VISUALIZER_POINT_SIZE, point_size, "cloud", 0 );
+
+        // --------------------------------------------------------------------
 
         // count populations
         GidPidVectorMap populations; // populations[patch_id] = all points with GID==patch_id
         processing::getPopulations( populations, points );
 
-        Eigen::Matrix<_Scalar,Eigen::Dynamic,1> area(1,1);
+        // spatial significance cache variable
+        Eigen::Matrix<_Scalar,Eigen::Dynamic,1> area( 1, 1 );
 
-        pcl::PolygonMesh mesh_accum, plane_mesh;
-        MyCloud plane_mesh_cloud; // cloud to save points, and then add back to mesh in the end
+        // --------------------------------------------------------------------
 
-        for ( size_t lid = 0; lid != primitives.size(); ++lid )
-            for ( size_t lid1 = 0; lid1 != primitives[lid].size(); ++lid1 )
-            {
-                if ( filter_status && (*filter_status).find(primitives[lid][lid1].getTag(PrimitiveT::STATUS)) == (*filter_status).end() )
-                    continue;
+        pcl::PolygonMesh hull_mesh_accum, plane_mesh;
+        MyPCLCloud plane_mesh_cloud;                   // cloud to save points, and then add back to mesh in the end
 
-                char line_name[64];
-                sprintf( line_name, "line_%04lu_%04lu", lid, lid1 );
-                const int gid     = primitives[lid][lid1].getTag( PrimitiveT::GID     );
-                const int dir_gid = primitives[lid][lid1].getTag( PrimitiveT::DIR_GID );
+        // --------------------------------------------------------------------
 
-                if (primitives[lid][lid1].getTag(PrimitiveT::STATUS) == PrimitiveT::SMALL) continue;
-
-                //if ( filter_gids && (filter_gids->find(gid) == filter_gids->end()) )
-                //{
-                //    continue;
-                //}
-
-//                if ( lid != gid )
-//                { std::cout << "!!\tstarting " << line_name << ": " << lid << ", " << lid1 << ", " << gid << ", " << dir_gid << std::endl; fflush(stdout); }
-//                else
-//                { std::cout << "starting " << line_name << ": " << lid << ", " << lid1 << ", " << gid << ", " << dir_gid << std::endl; fflush(stdout); }
-
-//                if ( strcmp(line_name,"line_2_11") == 0 )
-//                { std::cout << "!!!\t\tequal " << line_name << ": " << lid << ", " << lid1 << ", " << gid << ", " << dir_gid << std::endl; fflush(stdout); }
-
-                Eigen::Matrix<_Scalar,3,1> prim_colour = primColours[id2ColId[dir_colours ? dir_gid : gid]] / 255.;
-
-                // if use tags, collect GID tagged point indices
-                std::vector<int> indices;
-                if ( use_tags )
+        // draw primitives
+        if ( !(draw_mode & DRAW_MODE::HIDE_PRIMITIVES) )
+        {
+            for ( size_t lid = 0; lid != primitives.size(); ++lid )
+                for ( size_t lid1 = 0; lid1 != primitives[lid].size(); ++lid1 )
                 {
-                    for ( int pid = 0; pid != points.size(); ++pid )
-                        if ( points[pid].getTag(PointPrimitiveT::GID) == gid )
-                            indices.push_back( pid );
-                    if ( use_tags == 1 ) // mode2 means no ellipses
-                        drawEllipse( vptr, cloud, indices, scale, gid, prim_colour );
+                    // caching
+                    const int gid     = primitives[lid][lid1].getTag( PrimitiveT::GID     );
+                    const int dir_gid = primitives[lid][lid1].getTag( PrimitiveT::DIR_GID );
 
-                } //...if use_tags
-                PrimitiveT::template draw<PointPrimitiveT>( /*   primitive: */ primitives[lid][lid1]
-                                                          , /*      points: */ points
-                                                          , /*   threshold: */ scale
-                                                          , /*     indices: */ use_tags ? &indices : NULL
-                                                          , /*      viewer: */ vptr
-                                                          , /*   unique_id: */ line_name
-                                                          , /*      colour: */ prim_colour(0), prim_colour(1), prim_colour(2)
-                                                          , /* viewport_id: */ 0
-                                                          , /*     stretch: */ stretch /* = 1.2 */
-                                                          , /*       qhull: */ draw_mode /* = 1, classic, axis aligned */
-                                                          , /*       alpha: */ hull_alpha
-                                                          );
-                vptr->setShapeRenderingProperties( pcl::visualization::PCL_VISUALIZER_LINE_WIDTH, 4.0, line_name, 0 );
+                    // status filtering
+                    if ( filter_status && (*filter_status).find(primitives[lid][lid1].getTag(PrimitiveT::STATUS)) == (*filter_status).end() )
+                        continue;
+                    // WTF? // TODO remove
+                    if (primitives[lid][lid1].getTag(PrimitiveT::STATUS) == PrimitiveT::SMALL)
+                        continue;
 
-                // store line size in "area"
-                if ( show_pop || show_ids )
-                {
-                    primitives[lid][lid1].getSpatialSignificance( /* [out] sqrt(max(eigval)): */ area
-                                                                , /* [in]             points: */ points
-                                                                , /* [in]              scale: */ scale
-                                                                , /* [in]            indices: */ &(populations[gid]) );
-                }
-
-                if ( show_pop && !lid1 ) // only once per cluster
-                {
-                    char popstr[255];
-                    //sprintf( popstr, "%d", populations[gid] );
-                    sprintf( popstr, "%2.4f", area(0) );
-                    vptr->addText3D( popstr, pclutil::asPointXYZ( primitives[lid][lid1].template pos() )
-                                     , 0.015, prim_colour(0), prim_colour(1), prim_colour(2), line_name + std::string("_pop"), 0 );
-                }
-
-                // show line gid and dir gid
-                if ( show_ids )
-                {
-                    char gid_name[255],gid_text[255];
-                    sprintf( gid_name, "primgid%d_%d", gid, dir_gid  );
-                    sprintf( gid_text, "(%2.4f),%d,%d,%d", area(0), gid, dir_gid, primitives[lid][lid1].getTag(PrimitiveT::STATUS) );
-                    Eigen::Matrix<_Scalar,3,1> pos = primitives[lid][lid1].template pos();// + (Eigen::Matrix<_Scalar,3,1>() << scale, scale, 0.).finished();
-                    vptr->addText3D( gid_text
-                                   , pclutil::asPointXYZ( pos )
-                                   , 0.015 //0.02
-                                   , prim_colour(0)/2., prim_colour(1)/2., prim_colour(2)/2., gid_name, 0 );
-                    if ( show_pop )
+                    // GID filtering
+                    if ( filter_gids && (filter_gids->find(gid) == filter_gids->end()) )
                     {
-                        vptr->removeText3D( line_name + std::string("_pop"), 0 );
+                        continue;
                     }
-                }
 
-                // draw connections
-                if ( angles )
-                {
-                    if ( populations[gid].size() > pop_limit )
+                    // unique primitive name
+                    char line_name[64];
+                    sprintf( line_name, "line_%04lu_%04lu", lid, lid1 );
+
+                    // cache colour
+                    Colour prim_colour = primColours[ id2ColId[primColourTag] ] / 255.;
+
+                    // use assignments: if use tags, collect GID tagged point indices
+                    std::vector<int> indices;
+                    if ( use_tags )
+                    {
+                        for ( int pid = 0; pid != points.size(); ++pid )
+                            if ( points[pid].getTag(PointPrimitiveT::GID) == gid )
+                                indices.push_back( pid );
+                        if ( use_tags == 1 ) // mode2 means no ellipses
+                            drawEllipse( vptr, cloud, indices, scale, gid, prim_colour );
+
+                    } //...if use_tags
+
+                    // DRAW
+                    PrimitiveT::template draw<PointPrimitiveT>( /*   primitive: */ primitives[lid][lid1]
+                                                              , /*      points: */ points
+                                                              , /*   threshold: */ scale
+                                                              , /*     indices: */ use_tags ? &indices : NULL
+                                                              , /*      viewer: */ vptr
+                                                              , /*   unique_id: */ line_name
+                                                              , /*      colour: */ prim_colour(0), prim_colour(1), prim_colour(2)
+                                                              , /* viewport_id: */ 0
+                                                              , /*     stretch: */ stretch /* = 1.2 */
+                                                              , /*       qhull: */ old_draw_mode /* = 1, classic, axis aligned */
+                                                              , /*       alpha: */ hull_alpha
+                                                              );
+                    // commented on 29/10/2014 by Aron, reason: should be in lineprimitive::draw
+                    // vptr->setShapeRenderingProperties( pcl::visualization::PCL_VISUALIZER_LINE_WIDTH, 4.0, line_name, 0 );
+
+                    // store line size in "area"
+                    if ( show_pop || show_ids )
+                    {
+                        primitives[lid][lid1].getSpatialSignificance( /* [out] sqrt(max(eigval)): */ area
+                                                                    , /* [in]             points: */ points
+                                                                    , /* [in]              scale: */ scale
+                                                                    , /* [in]            indices: */ &(populations[gid]) );
+                    }
+
+                    // show patch size (spatial significance)
+                    if ( show_pop && !lid1 ) // only once per cluster
+                    {
+                        char popstr[255];
+                        sprintf( popstr, "%2.4f", area(0) );
+                        vptr->addText3D( popstr, pclutil::asPointXYZ( primitives[lid][lid1].template pos() )
+                                         , text_size, prim_colour(0), prim_colour(1), prim_colour(2), line_name + std::string("_pop"), 0 );
+                    }
+
+                    // show GID and DIR_GID
+                    if ( show_ids )
+                    {
+                        char gid_name[255],gid_text[255];
+                        sprintf( gid_name, "primgid%d_%d", gid, dir_gid  );
+                        sprintf( gid_text, "(%2.4f),%d,%d,%d", area(0), gid, dir_gid, primitives[lid][lid1].getTag(PrimitiveT::STATUS) );
+                        Position const& pos = primitives[lid][lid1].template pos();
+                        vptr->addText3D( gid_text
+                                       , pclutil::asPointXYZ( pos )
+                                       , text_size //0.015
+                                       , prim_colour(0)/2., prim_colour(1)/2., prim_colour(2)/2., gid_name, 0 );
+                        if ( show_pop )
+                            vptr->removeText3D( line_name + std::string("_pop"), 0 );
+                    }
+
+                    // draw connections
+                    if ( angles )
+                    {
+                        if ( populations[gid].size() > pop_limit )
+                        {
+                            for ( size_t lid2 = lid; lid2 != primitives.size(); ++lid2 )
+                            {
+                                if ( populations[ primitives[lid2].at(0).getTag(PrimitiveT::GID) ].size() < pop_limit )
+                                    continue;
+
+                                for ( size_t lid3 = lid1; lid3 < primitives[lid2].size(); ++lid3 )
+                                {
+                                    if ( (lid == lid2) && (lid1 == lid3) ) continue;
+
+                                    _Scalar angle = MyPrimitivePrimitiveAngleFunctor::eval( primitives[lid][lid1], primitives[lid2][lid3], *angles );
+                                    if ( (angle < perfect_angle_limit) )
+                                    {
+                                        char name[255];
+                                        sprintf( name, "conn_l%lu%lu_l%lu%lu", lid, lid1, lid2, lid3 );
+                                        vptr->addLine( pclutil::asPointXYZ( primitives[lid][lid1].pos() )
+                                                       , pclutil::asPointXYZ( primitives[lid2][lid3].pos() )
+                                                       , gray(0), gray(1), gray(2), name, 0 );
+                                        vptr->setShapeRenderingProperties( pcl::visualization::PCL_VISUALIZER_OPACITY, 0.7, name, 0 );
+
+                                        pcl::PointXYZ line_center;
+                                        line_center.getVector3fMap() = (primitives[lid][lid1].pos() + primitives[lid2][lid3].pos()) / _Scalar(2.);
+
+                                        if ( print_perf_angles )
+                                        {
+                                            char ang_str[255];
+                                            sprintf( ang_str, "%.2f°", angle * deg_multiplier );
+                                            vptr->addText3D( ang_str
+                                                             , line_center, text_size, gray(0)+.1, gray(1)+.1, gray(2)+.1
+                                                             , name + std::string("_ang"), 0 );
+                                        }
+                                    } //... if angle close enough
+                                } //...for lid3
+                            } //...for lid2
+                        } //...if populations
+                    } //...if angles
+
+                    // red lines for same group id
+                    if ( angles )
                     {
                         for ( size_t lid2 = lid; lid2 != primitives.size(); ++lid2 )
                         {
-                            if ( populations[ primitives[lid2].at(0).getTag(PrimitiveT::GID) ].size() < pop_limit )
-                                continue;
-
                             for ( size_t lid3 = lid1; lid3 < primitives[lid2].size(); ++lid3 )
                             {
                                 if ( (lid == lid2) && (lid1 == lid3) ) continue;
 
-                                _Scalar angle = MyPrimitivePrimitiveAngleFunctor::eval( primitives[lid][lid1], primitives[lid2][lid3], *angles );
-                                if ( (angle < perfect_angle_limit) )
+                                if ( primitives[lid2][lid3].getTag(PrimitiveT::DIR_GID) == primitives[lid][lid1].getTag(PrimitiveT::DIR_GID) )
                                 {
                                     char name[255];
-                                    sprintf( name, "conn_l%lu%lu_l%lu%lu", lid, lid1, lid2, lid3 );
+                                    sprintf( name, "same_l%lu%lu_l%lu%lu", lid, lid1, lid2, lid3 );
                                     vptr->addLine( pclutil::asPointXYZ( primitives[lid][lid1].pos() )
                                                    , pclutil::asPointXYZ( primitives[lid2][lid3].pos() )
-                                                   , gray(0), gray(1), gray(2), name, 0 );
+                                                   , 1., .0, .0, name, 0 );
                                     vptr->setShapeRenderingProperties( pcl::visualization::PCL_VISUALIZER_OPACITY, 0.7, name, 0 );
-
-                                    pcl::PointXYZ line_center;
-                                    line_center.getVector3fMap() = (primitives[lid][lid1].pos() + primitives[lid2][lid3].pos()) / _Scalar(2.);
-
-                                    if ( print_perf_angles )
-                                    {
-                                        char ang_str[255];
-                                        sprintf( ang_str, "%.2f°", angle * deg_multiplier );
-                                        vptr->addText3D( ang_str
-                                                         , line_center, 0.015, gray(0)+.1, gray(1)+.1, gray(2)+.1, name + std::string("_ang"), 0 );
-                                    }
-                                } //... if angle close enough
-                            } //...for lid3
-                        } //...for lid2
-                    } //...if populations
-                } //...if angles
-
-                // red lines for same group
-                if ( angles )
-                {
-                    for ( size_t lid2 = lid; lid2 != primitives.size(); ++lid2 )
-                    {
-                        for ( size_t lid3 = lid1; lid3 < primitives[lid2].size(); ++lid3 )
-                        {
-                            if ( (lid == lid2) && (lid1 == lid3) ) continue;
-
-                            if ( primitives[lid2][lid3].getTag(PrimitiveT::DIR_GID) == primitives[lid][lid1].getTag(PrimitiveT::DIR_GID) )
-                            {
-                                char name[255];
-                                sprintf( name, "same_l%lu%lu_l%lu%lu", lid, lid1, lid2, lid3 );
-                                vptr->addLine( pclutil::asPointXYZ( primitives[lid][lid1].pos() )
-                                               , pclutil::asPointXYZ( primitives[lid2][lid3].pos() )
-                                               , 1., .0, .0, name, 0 );
-                                vptr->setShapeRenderingProperties( pcl::visualization::PCL_VISUALIZER_OPACITY, 0.7, name, 0 );
-                            }
-                        }
-                    }
-                }
-
-                if ( save_poly && (PrimitiveT::EmbedSpaceDim == 3) )
-                {
-                    if ( draw_mode == 2 ) // qhull is on
-                    {
-                        MyCloud hull_cloud;
-                        pcl::PolygonMesh mesh;
-                        //::pcl::PCLPointCloud2 cloud2;
-                        if ( PrimitiveT::getHull( hull_cloud, primitives[lid][lid1], points, &populations[gid], hull_alpha, &mesh ) )
-                        {
-                            std::cout << "mesh.cloud has " << mesh.cloud.width << " x " << mesh.cloud.height << " points";
-                            const int pid_offs = mesh_accum.cloud.width;
-                            pcl::concatenatePointCloud( mesh_accum.cloud, mesh.cloud, mesh_accum.cloud );
-                            mesh_accum.polygons.resize( mesh_accum.polygons.size() + 1 );
-                            for ( int i = 0; i != mesh.polygons.size(); ++i )
-                            {
-
-                                std::cout<<"mesh.polygons["<<i<<"].vertices:";
-                                for(size_t vi=0;vi!=mesh.polygons[i].vertices.size();++vi)
-                                {
-                                    mesh_accum.polygons.back().vertices.push_back( pid_offs + mesh.polygons[i].vertices[vi] );
-                                    std::cout << mesh.polygons[i].vertices[vi] << "(" << pid_offs + mesh.polygons[i].vertices[vi] <<"), "; fflush(stdout);
                                 }
-                                std::cout << "\n";
                             }
                         }
-                    }
+                    } //...red lines for same ids
 
-                    // simple planes
-                    std::vector<Eigen::Vector3f> minMax;
-                    int err2 = primitives[lid][lid1].template getExtent<PointPrimitiveT>( minMax
-                                                           , points
-                                                           , scale
-                                                           , &(populations[gid])
-                                                           , /* force_axis_aligned: */ true /*true*/ );
-                    if ( err2 == EXIT_SUCCESS )
+                    // Polygon export
+                    if ( save_poly && (PrimitiveT::EmbedSpaceDim == 3) )
                     {
-                        plane_mesh.polygons.resize( plane_mesh.polygons.size() + 1 );
-                        const int pid_offs = plane_mesh_cloud.size();
-                        for ( int i = 0; i != minMax.size(); ++i )
+                        // (1) QHULL
+                        if ( draw_mode & DRAW_MODE::QHULL )
                         {
-                            MyPoint pnt;
-                            pnt.getVector3fMap() = minMax[i];
-                            plane_mesh_cloud.push_back( pnt );
-                            plane_mesh      .polygons.back().vertices.push_back( pid_offs + i );
-                        }
-                    }
-                }
-                else
-                {
-//                    PrimitiveT::template draw<PointPrimitiveT>( /*   primitive: */ primitives[lid][lid1]
-//                                                              , /*      points: */ points
-//                                                              , /*   threshold: */ scale
-//                                                              , /*     indices: */ use_tags ? &indices : NULL
-//                                                              , /*      viewer: */ vptr
-//                                                              , /*   unique_id: */ line_name
-//                                                              , /*      colour: */ prim_colour(0), prim_colour(1), prim_colour(2)
-//                                                              , /* viewport_id: */ 0
-//                                                              , /*     stretch: */ stretch /* = 1.2 */
-//                                                              , /*       qhull: */ draw_mode /* = 1, classic, axis aligned */
-//                                                              , /*       alpha: */ hull_alpha
-//                                                              );
-                }
-            } // ... lid1
+                            MyPCLCloud hull_cloud;
+                            pcl::PolygonMesh mesh;
+                            if ( PrimitiveT::getHull( hull_cloud, primitives[lid][lid1], points, &populations[gid], hull_alpha, &mesh ) )
+                            {
+                                std::cout << "mesh.cloud has " << mesh.cloud.width << " x " << mesh.cloud.height << " points";
+                                const int pid_offs = hull_mesh_accum.cloud.width;
+                                pcl::concatenatePointCloud( hull_mesh_accum.cloud, mesh.cloud, hull_mesh_accum.cloud );
+                                hull_mesh_accum.polygons.resize( hull_mesh_accum.polygons.size() + 1 );
+                                for ( int i = 0; i != mesh.polygons.size(); ++i )
+                                {
+
+                                    std::cout<<"mesh.polygons["<<i<<"].vertices:";
+                                    for(size_t vi=0;vi!=mesh.polygons[i].vertices.size();++vi)
+                                    {
+                                        hull_mesh_accum.polygons.back().vertices.push_back( pid_offs + mesh.polygons[i].vertices[vi] );
+                                        std::cout << mesh.polygons[i].vertices[vi] << "(" << pid_offs + mesh.polygons[i].vertices[vi] <<"), "; fflush(stdout);
+                                    }
+                                    std::cout << "\n";
+                                }
+                            }
+                        } //...(1) QHull
+
+                        // (2) Planes
+                        {
+                            std::vector<Position> minMax;
+                            int err2 = primitives[lid][lid1].template getExtent<PointPrimitiveT>( /*             extent: */ minMax
+                                                                                                , /*             points: */ points
+                                                                                                , /*              scale: */ scale
+                                                                                                , /*            indices: */ &(populations[gid])
+                                                                                                , /* force_axis_aligned: */ draw_mode & DRAW_MODE::AXIS_ALIGNED );
+                            // if extent exists
+                            if ( err2 == EXIT_SUCCESS )
+                            {
+                                plane_mesh.polygons.resize( plane_mesh.polygons.size() + 1 );
+                                const int pid_offs = plane_mesh_cloud.size();
+                                for ( int i = 0; i != minMax.size(); ++i )
+                                {
+                                    MyPCLPoint pnt;
+                                    pnt.getVector3fMap() = minMax[i];
+                                    plane_mesh_cloud.push_back( pnt );
+                                    plane_mesh      .polygons.back().vertices.push_back( pid_offs + i );
+                                }
+                            }
+                        } //...(2) Planes
+                    } //...polygon export
+                } //...lid1
+        } //...if (!draw_mode & HIDE_PRIMITIVES)
+
+        // --------------------------------------------------------------------
 
         if ( !no_scale_sphere )
         {
-            MyPoint min_pt, max_pt;
+            MyPCLPoint min_pt, max_pt;
             pcl::getMinMax3D( *cloud, min_pt, max_pt );
 
             vptr->addSphere( pcl::PointXYZ(0,0,0), scale, "scale_sphere", 0 );
         }
 
+        // --------------------------------------------------------------------
+
         if ( save_poly && (PrimitiveT::EmbedSpaceDim == 3) )
         {
-            if ( draw_mode == 2 )
+            if ( draw_mode & DRAW_MODE::QHULL )
             {
-                std::cout << "mesh_accum.size: " << mesh_accum.cloud.width << ", and " << mesh_accum.polygons.size() << " polygons" << std::endl;
-                pcl::io::savePLYFile( "mesh.ply", mesh_accum );
+                std::cout << "mesh_accum.size: " << hull_mesh_accum.cloud.width << ", and " << hull_mesh_accum.polygons.size() << " polygons" << std::endl;
+                pcl::io::savePLYFile( "mesh.ply", hull_mesh_accum );
             }
             pcl::toPCLPointCloud2( plane_mesh_cloud, plane_mesh.cloud );
             std::cout << "plane_mesh.size: " << plane_mesh.cloud.width << ", and " << plane_mesh.polygons.size() << " polygons" << std::endl;
             pcl::io::savePLYFile( "plane_mesh.ply", plane_mesh );
         }
 
+        // --------------------------------------------------------------------
+
         if ( spin )
             vptr->spin();
         else
             vptr->spinOnce();
 
-
         return vptr;
-#endif
-        return vis::MyVisPtr();
     } // ...Visualizer::show()
 
     template <class PrimitiveContainerT, class PointContainerT>
     template <typename _Scalar> int
     Visualizer<PrimitiveContainerT,PointContainerT>::drawEllipse( vis::MyVisPtr                             vptr
-                                                                , MyCloud::Ptr                              cloud
+                                                                , MyPCLCloud::Ptr                              cloud
                                                                 , std::vector<int>                   const& indices
                                                                 , _Scalar                            const  scale
                                                                 , int                                const  prim_tag
                                                                 , Eigen::Matrix<_Scalar,3,1>         const& prim_colour
                                                                 )
     {
-#if 1
         typedef typename PrimitiveContainerT::value_type::value_type PrimitiveT;
         typedef typename PointContainerT::value_type PointT;
 
-        pcl::PCA<MyPoint> pca;
+        pcl::PCA<MyPCLPoint> pca;
         pca.setInputCloud( cloud );
         pcl::PointIndices::Ptr indices_ptr( new pcl::PointIndices() );
         indices_ptr->indices = indices;
         pca.setIndices( indices_ptr );
 
         const _Scalar min_dim1 = scale * 0.25f;
-        MyCloud::Ptr poly( new MyCloud );
+        MyPCLCloud::Ptr poly( new MyPCLCloud );
         Eigen::Matrix<_Scalar,3,1> centroid( Eigen::Matrix<_Scalar,3,1>::Zero() );
         Eigen::Matrix<_Scalar,2,1> dims; dims << 0, 0;
         Eigen::Matrix<_Scalar,3,3> eigen_vectors( Eigen::Matrix<_Scalar,3,3>::Zero() );
@@ -553,7 +648,7 @@ namespace GF2
             for ( int pid_id = 0; pid_id != indices.size(); ++pid_id )
             {
                 const int pid = indices[ pid_id ];
-                MyPoint pnt;
+                MyPCLPoint pnt;
                 pca.project( cloud->at(pid), pnt );
                 if ( std::abs(pnt.x) > dims(0) ) dims(0) = std::abs(pnt.x);
                 if ( std::abs(pnt.y) > dims(1) ) dims(1) = std::abs(pnt.y);
@@ -576,7 +671,7 @@ namespace GF2
 
         if ( indices.size() > 1 )
         {
-            MyPoint tmp;
+            MyPCLPoint tmp;
             for ( int dir = -1; dir <= 1; dir += 2 )
                 for ( int dim = 0; dim != 2; ++dim )
                 {
@@ -584,10 +679,10 @@ namespace GF2
                     poly->push_back( tmp );
                 }
 
-                vptr->addPolygon<MyPoint>( poly
-                                         , prim_colour(0), prim_colour(1), prim_colour(2)
-                                         , poly_name
-                                         , 0 );
+                vptr->addPolygon<MyPCLPoint>( poly
+                                            , prim_colour(0), prim_colour(1), prim_colour(2)
+                                            , poly_name
+                                            , 0 );
 //            vptr->addText3D( poly_name, poly->at(0), 0.01,  prim_colour(0), prim_colour(1), prim_colour(2)
 //            , std::string(poly_name)+"text", 0 );
         }
@@ -601,7 +696,6 @@ namespace GF2
             vptr->addCircle( circle_coeffs, poly_name, 0 );
         }
 
-#endif
         return 0;
     } // ... Visulazier::drawEllipse
 } // ns gf2

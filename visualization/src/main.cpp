@@ -17,5 +17,6 @@ int main(int argc, char *argv[])
     else
     {
         std::cerr << "[" << __func__ << "]: " << "unrecognized cli option" << std::endl;
+        std::cout << "usage: " << "--show[3D] --help" << std::endl;
     }
 }
