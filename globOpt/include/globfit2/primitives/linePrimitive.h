@@ -379,6 +379,8 @@ namespace GF2
 
                 err += draw( ps, v, plane_name, r, g, b, viewport_id );
 
+                v->setShapeRenderingProperties( pcl::visualization::PCL_VISUALIZER_LINE_WIDTH, 4.0, plane_name, 0 );
+
                 return err;
             } //...draw()
 

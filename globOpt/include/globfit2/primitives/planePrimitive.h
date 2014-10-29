@@ -372,7 +372,6 @@ namespace GF2
         Eigen::Matrix<Scalar,4,4> frame; // 3 major vectors as columns, and the fourth is the centroid
         {
             processing::PCA<_IndicesContainerT>( frame, on_plane_cloud, /* indices: */ NULL ); // no indices needed, already full cloud
-//                    std::cout << "frame: " << frame << std::endl;
 
             if ( force_axis_aligned )
             {
@@ -388,35 +387,79 @@ namespace GF2
                 frame.col(1).head<3>() = frame.col(2).head<3>().cross( frame.col(0).head<3>() ).normalized();
             }
         }
-//                std::cout << "frame2: " << frame << std::endl;
+
+#if 1
+        Scalar step = Scalar(1. * M_PI) / Scalar(180.);
+
+        Scalar limits[2] = { Scalar(0.), M_PI/Scalar(2.) };
+        for ( int it = 0; it != 2; ++it, step /= Scalar(10.) )
+        {
+            std::pair <Scalar,Scalar> min_volume; // <ang, volume>
+            min_volume.first  = Scalar(-1.);
+            min_volume.second = Scalar(FLT_MAX);
+            int i = 0;
+            for ( Scalar ang = limits[0]; ang < limits[1]; ang += step, ++i )
+            {
+//                std::cout << "rot by " << ang << ", step: " << step << std::endl;
+                // rotated frame
+                Eigen::Matrix4f tmp_frame = frame;
+
+                // rotate frame around up_vector by ang
+                Eigen::AngleAxisf rot( ang, tmp_frame.block<3,1>(0,2) );
+                tmp_frame.block<3,1>(0,0) = rot * tmp_frame.block<3,1>(0,0);
+                tmp_frame.block<3,1>(0,1) = rot * tmp_frame.block<3,1>(0,1);
+
+                // calculate volume
+                _PointContainerT local_cloud;
+                processing::cloud2Local<_PointPrimitiveT,_IndicesContainerT>( local_cloud, frame, on_plane_cloud, /* indices: */ NULL ); // no indices needed, it's already a full cloud
+
+                _PointPrimitiveT min_pt, max_pt;
+                processing::getMinMax3D<_IndicesContainerT>( min_pt, max_pt, local_cloud, /* indices: */ NULL );
+
+                Eigen::Vector3f diag    = max_pt.template pos() - min_pt.template pos();
+                float           volume  = diag(0) * diag(1) * diag(2);
+                // select min
+                if ( volume < min_volume.second )
+                {
+                    min_volume.first  = ang;
+                    min_volume.second = volume;
+                }
+            }
+
+//            if ( true )
+//                std::cout << "min_volume.first (angle): " << min_volume.first << " radians "
+//                          << min_volume.first * Scalar(180.)/Scalar(M_PI) << " degrees, "  << min_volume.second << " volume" << std::endl;
+
+            // selected apply rotation
+            Eigen::AngleAxisf rot( min_volume.first, frame.block<3,1>(0,2) );
+            frame.block<3,1>(0,0) = rot * frame.block<3,1>(0,0);
+            frame.block<3,1>(0,1) = rot * frame.block<3,1>(0,1);
+
+            // modify lookup around chosen angle for next iteration
+            limits[0] = -step/2.f;
+            limits[1] = limits[0] + step;
+        }
+#endif
 
         _PointContainerT local_cloud;
         processing::cloud2Local<_PointPrimitiveT,_IndicesContainerT>( local_cloud, frame, on_plane_cloud, /* indices: */ NULL ); // no indices needed, it's already a full cloud
-//                for ( int pid = 0; pid != local_cloud.size(); ++pid )
-//                {
-//                    std::cout << "on_plane_cloud[" << pid << "]: " << on_plane_cloud[pid].toString() << std::endl;
-//                    std::cout << "local_cloud[" << pid << "]: " << local_cloud[pid].toString() << std::endl;
-//                }
 
         _PointPrimitiveT min_pt, max_pt;
         processing::getMinMax3D<_IndicesContainerT>( min_pt, max_pt, local_cloud, /* indices: */ NULL );
-//                std::cout << "min_pt: " << min_pt.toString()
-//                          << ", max_pt: " << max_pt.toString() << std::endl;
 
         minMax.resize( 4 );
         minMax[0]    = minMax[1] = min_pt.template pos();
         minMax[1](1)             = max_pt.template pos()(1);
         minMax[2]    = minMax[3] = max_pt.template pos();
         minMax[3](1)             = min_pt.template pos()(1);
-//                for ( int d = 0; d != minMax.size(); ++d )
-//                std::cout << "minMax[" << d << "]: " << minMax[d].transpose() << std::endl;
 
         for ( int d = 0; d != 4; ++d )
         {
             // to world
             minMax[d] = (frame * (Eigen::Matrix<Scalar,4,1>() << minMax[d], Scalar(1)).finished()).template head<3>();
-//                    std::cout << "minMax2[" << d << "]: " << minMax[d].transpose() << std::endl;
         }
+
+
 
         return EXIT_SUCCESS;
 #           else

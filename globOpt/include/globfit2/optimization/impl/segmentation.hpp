@@ -48,6 +48,7 @@ Segmentation::orientPoints( _PointContainerT          &points
     std::vector<_PrimitiveT> fit_lines;
     std::vector<int        > point_ids;
     {
+        if ( verbose ) std::cout << "[" << __func__ << "]: " << "calling fit local" << std::endl;
         fitLocal( /* [out]       lines: */ fit_lines
                , /*            points: */ cloud
                , /*           indices: */ NULL
@@ -99,7 +100,7 @@ Segmentation:: fitLocal( _PrimitiveContainerT        & primitives
                                        , /* [in]  pointCloud: */ cloud
                                        , /* [in]     indices: */ indices
                                        , /* [out]  sqr_dists: */ &sqr_dists
-                                       , /* [in]        nn_K: */ K              // 5
+                                       , /* [in]        nn_K: */ K              // 15
                                        , /* [in]      radius: */ radius         // 0.02f
                                        , /* [in] soft_radius: */ soft_radius    // true
                                        );

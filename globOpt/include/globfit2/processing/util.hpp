@@ -604,6 +604,9 @@ namespace GF2 {
                 else
                     found_points_count = tree->nearestKSearch( searchPoint,      K, neighbour_indices[pid], sqr_dists    );
 
+                if ( found_points_count > 1000 )
+                    std::cerr << "[" << __func__ << "]: " << "[WARNING] Found too many neighbours(" << found_points_count << "), decrease scale!" << std::endl;
+
                 if ( (found_points_count <2 ) && (soft_radius) )
                     found_points_count = tree->nearestKSearch( searchPoint,      3, neighbour_indices[pid], sqr_dists    );
 

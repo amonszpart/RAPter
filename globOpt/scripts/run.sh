@@ -4,8 +4,8 @@ executable="../glob_opt";
 ###############################################
 
 function print_usage() {
-        echo "usage: run.sh scale anglelimit pairwisecost [pop-limit] [3D]"
-        echo "example: run.sh 0.03 0.2 1 25 3D"
+        echo "usage:\t run.sh scale anglelimit pairwisecost [pop-limit] [3D] [smallThreshStart]"
+        echo "example:\t run.sh 0.03 0.2 1 25 3D 64"
         echo "showPearl: ../globOptVis --show --scale 0.05 --pop-limit 0 -p primitives.pearl.csv -a points_primitives.pearl.csv --title \"Pearl\" --use-tags --no-clusters --no-pop"
 }
 
@@ -47,6 +47,12 @@ else
 	flag3D="";
 fi
 
+if [ -n "$6" ]; then
+        smallThresh=$6;
+else
+        smallThresh="64";
+fi
+
 #d=`../divide.py 2 3`;
 
 anglegens="90"; # Desired angle generators in degrees. Default: 90.
@@ -64,13 +70,14 @@ visdefparam="--use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --n
 firstConstrMode="patch" # what to add in the first run formulate. Default: 0 (everyPatchNeedsDirection), experimental: 2 (largePatchesNeedDirection).
 iterationConstrMode="patch" # what to add in the second iteration formulate. Default: 0 (everyPatchNeedsDirection), experimental: 2 (largePatchesNeedDirection).
 startAt=0
-smallThresh="64" # smallThresh * scale is the small threshold # 5 was good for most of the stuff, except big scenes (kinect, lanslevillard)
+#moved to argument 6
+#smallThresh="256" # smallThresh * scale is the small threshold # 5 was good for most of the stuff, except big scenes (kinect, lanslevillard)
 smallThreshlimit="0"
 smallThreshDiv="2";
 
 safeMode=""; #"--safe-mode"; #"--safe-mode" # "--safe-mode" for new, or "" for old version
 variableLimit=1100; # 1300; # Safe mode gets turned on, and generate rerun, if candidates exceed this number (1300)
-premerge=0 # call merge after segmentation 0/1
+premerge=1 # call merge after segmentation 0/1
 
 echo "scale: $scale"
 echo "pw: $pw"
