@@ -2,10 +2,104 @@
 #define PRIMITIVE_H
 
 #include "Eigen/Core"
+#include "convexHull2D.h"
 #include <iostream>
 
 
 namespace InputGen{
+
+namespace internal_primitive{
+template <typename _Scalar>
+struct Types{
+    typedef Eigen::Matrix<_Scalar, 3, 1> primitive_vec;
+    typedef Eigen::Matrix<_Scalar, 2, 1> primitive_vec2;
+};
+}
+
+
+template <typename _Scalar>
+struct PiecewiseLinear{
+    typedef typename internal_primitive::Types<_Scalar>::primitive_vec vec;
+    virtual bool isInside ( const vec& v ) const = 0;
+
+};
+
+template <typename _Scalar, class Derived>
+struct PiecewiseLinearCRTP{
+    typedef _Scalar Scalar;
+    typedef typename internal_primitive::Types<_Scalar>::primitive_vec vec;
+
+    virtual bool isInside ( const vec& v ) const
+    { return (static_cast<Derived*>(this))->_isInside(v); }
+};
+
+template <typename _Scalar>
+struct AbstractPlanarPolygon{
+    typedef typename internal_primitive::Types<_Scalar>::primitive_vec vec;
+    virtual void setVertex(vec& v, int index) = 0;
+};
+
+template <typename _Scalar, int _NbPoly>
+struct PlanarConvexPolygon :
+        public PiecewiseLinearCRTP<_Scalar, PlanarConvexPolygon<_Scalar, _NbPoly> >,
+        public AbstractPlanarPolygon<_Scalar>
+{
+    enum { NbPoly=_NbPoly };
+    typedef PiecewiseLinearCRTP<_Scalar, PlanarConvexPolygon<_Scalar, _NbPoly> > Base;
+    typedef typename Base::vec vec;
+    typedef _Scalar Scalar;
+
+    inline PlanarConvexPolygon(): Base() {
+        static_assert( NbPoly >= 3, "PlanarPolygon requires at least 3 vertices");
+    }
+
+    virtual void setVertex(vec& v, int index){
+        if (index < NbPoly) {
+            _vertices[index] = v;
+            recomputeHull();
+        }
+    }
+
+protected:
+    typedef ConvexHull2D<typename internal_primitive::Types<_Scalar>::primitive_vec2> ConvexHull;
+
+    bool inline _isInside(const vec &v) { return _hull.isInside(v); }
+    void inline recomputeHull(){
+        // we check we have different points in the cloud
+        if (_vertices[0] != _vertices[1] &&
+            _vertices[0] != _vertices[2] ){
+
+            // estimate plane direction using the three first coordinates
+            vec n = _vertices[0].cross(_vertices[1]).normalized();
+
+            // compute centroid
+            vec center (vec::Zero());
+            std::for_each(_vertices.begin(), _vertices.end(), [&center] (const vec& p){ center+=p; });
+            center /= _Scalar(_vertices.size());
+
+            // iterate over all points, move them in the local frame, project, and add to the convex hull
+            std::vector< typename ConvexHull::Point > projectedSet;
+            projectedSet.reserve(_vertices.size());
+            std::for_each(_vertices.begin(), _vertices.end(), [&center, &projectedSet, n] (const vec& p)
+            {
+                projectedSet.push_back(((p - center)   // get q = p expressed in local space
+                                        .dot(n)        // get orthogonal distance to the plane
+                                        * -n           // get dq = proj(q) - q
+                                        + (p - center) // get proj(q)
+                                        ).head(2).eval()     // extract two first coordinates, the third one being = 0
+                                        );
+            });
+
+            _hull.compute(projectedSet);
+        }
+    }
+
+    //! \brief Array containing points, all expected to lie on a plane
+    std::array<vec, NbPoly> _vertices;
+
+    ConvexHull _hull;
+};
+
 
 /*!
  * \brief Plane or line primitive.
@@ -17,8 +111,8 @@ class LinearPrimitive{
 
 public:
     typedef _Scalar Scalar;
-    typedef Eigen::Matrix<Scalar, 3, 1> vec;
-    typedef Eigen::Matrix<Scalar, 2, 1> vec2;
+    typedef typename internal_primitive::Types<_Scalar>::primitive_vec  vec;
+    typedef typename internal_primitive::Types<_Scalar>::primitive_vec2 vec2;
 
     //! \brief Plane or line type.
     enum TYPE {
@@ -34,6 +128,8 @@ private:
     uint _uid;    //! <\brief unique identifier
     int  _did;    //! <\brief direction id, can be shared with other lines
     LinearPrimitive<_Scalar>::TYPE _type; //! <\brief Current instance type
+
+    std::vector<PiecewiseLinear<_Scalar>*> _pieceWiseElements;
 
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -75,16 +171,23 @@ public:
     inline int& did()       { return _did; }
     inline int  did() const { return _did; }
 
-    // Test if
-    bool areCompatible(const LinearPrimitive<_Scalar>& other){
-
-    }
-
     template<template <typename> class DisplayFunctor >
     void displayAsLine() const {
         DisplayFunctor<Scalar>::displayVertex(_coord.data());
         //DisplayFunctor<Scalar>::displayVertex((_coord+0.1*_dir).eval().data());
         DisplayFunctor<Scalar>::displayVertex((_coord+getTangentVector()*_dim(0)).eval().data());
+    }
+
+    // check if the current sample v is inside the primitive
+    inline bool isInside(const vec &v) const{
+        if (_pieceWiseElements.empty()) return true; // we don't care and assume the sampling is ok
+
+        return std::find_if( _pieceWiseElements.cbegin(),
+                             _pieceWiseElements.cend(),
+                             [ &v ] (const PiecewiseLinear<_Scalar>*e) {
+            return e->isInside(v);
+        }) != _pieceWiseElements.cend();
+
     }
 
 
