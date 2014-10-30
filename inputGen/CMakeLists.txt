@@ -27,11 +27,13 @@ SET(inputGen_HEADERS
   include/types.h
   include/typesGL.h
   include/project.h
-  include/primitive.h)
+  include/primitive.h
+  include/convexHull2D.h)
 SET(inputGen_IMPL
   include/impl/randomdisplacement.hpp
   include/impl/biasdisplacement.hpp
-  include/impl/sampler.hpp)
+  include/impl/sampler.hpp
+  include/impl/convexHull2D.hpp)
 SET(inputGen_FORMS
   ui/mainwindow.ui
   ui/mergedialog.ui
