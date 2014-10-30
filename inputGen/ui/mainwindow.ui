@@ -48,6 +48,7 @@
       <string>Import</string>
      </property>
      <addaction name="actionLoad_SVG"/>
+     <addaction name="action3D_Mesh"/>
     </widget>
     <addaction name="menuSave"/>
     <addaction name="actionLoad_Project"/>
@@ -139,6 +140,11 @@
   <action name="actionExtrude">
    <property name="text">
     <string>Extrude</string>
+   </property>
+  </action>
+  <action name="action3D_Mesh">
+   <property name="text">
+    <string>3D Mesh</string>
    </property>
   </action>
  </widget>
