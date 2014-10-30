@@ -17,6 +17,19 @@ public:
     virtual void display() const = 0;
     virtual VisibleSampler<_Scalar, _DisplayFunctor, _Primitive>* copy() = 0;
 
+protected:
+
+    template <class _SampleContainer, class _Sample>
+    inline static
+    bool
+    addSample(_SampleContainer& scontainer,
+              const _Sample& sample,
+              const Primitive& prim) {
+        if(prim.isInside( sample ) ) // implicit cast should work here
+            scontainer.push_back(sample);
+            return true;
+    }
+
 };
 
 //! Basic sampler, sampling the primitive regularly
@@ -30,6 +43,7 @@ struct PrimitiveSampler : public VisibleSampler<
     typedef _Scalar Scalar;
     typedef _Primitive Primitive;
     typedef _DisplayFunctor<_Scalar> DisplayFunctor;
+    typedef VisibleSampler< _Scalar, _DisplayFunctor, _Primitive> Base;
 
     ///// parameters
     Scalar spacing;
@@ -68,6 +82,7 @@ struct PunctualSampler : public VisibleSampler<
     typedef _Primitive Primitive;
     typedef typename _Primitive::vec vec;
     typedef _DisplayFunctor<_Scalar> DisplayFunctor;
+    typedef VisibleSampler< _Scalar, _DisplayFunctor, _Primitive> Base;
 
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 

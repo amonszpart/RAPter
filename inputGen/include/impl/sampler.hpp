@@ -18,7 +18,7 @@ PrimitiveSampler<_Scalar, T, _Primitive>::generateSamples(
     typename PrimitiveContainer::const_iterator it;
 
     // Iterate over all the primitives and generate samples using uniform spacing
-    for(it = pcontainer.begin(); it != pcontainer.end(); it++){
+    for(it = pcontainer.cbegin(); it != pcontainer.cend(); it++){
 
         unsigned int nbSampleX = int(std::abs((*it).dim()(0)) / spacing);
         unsigned int nbSampleY = int(std::abs((*it).dim()(1)) / spacing);
@@ -30,29 +30,46 @@ PrimitiveSampler<_Scalar, T, _Primitive>::generateSamples(
         vec orthoVec   = (*it).normal().cross(tangentVec);
 
         if (nbSampleX == 0 && nbSampleY == 0) // generate a single sample at the primitive midpoint
-            scontainer.push_back(Sample(midPoint, (*it).normal(), primitiveUID));
+            Base::addSample( scontainer,
+                             Sample(midPoint, (*it).normal(), primitiveUID),
+                             *it);
         else{
 
             if(nbSampleY == 0){
-                scontainer.push_back(Sample(midPoint, (*it).normal(), primitiveUID));
+                Base::addSample( scontainer,
+                                 Sample(midPoint, (*it).normal(), primitiveUID),
+                                 *it);
             }else{
                 for (unsigned int j = 1; j< nbSampleY/2+1; j++){
                     vec offsetY = Scalar(j)*spacing*orthoVec;
-                    scontainer.push_back(Sample(midPoint + offsetY, (*it).normal(), primitiveUID));
+                    Base::addSample( scontainer,
+                                     Sample(midPoint + offsetY, (*it).normal(), primitiveUID),
+                                     *it);
                 }
             }
             for (unsigned int i = 1; i< nbSampleX/2+1; i++){
                 vec offsetX = Scalar(i)*spacing*tangentVec;
-                scontainer.push_back(Sample(midPoint + offsetX, (*it).normal(), primitiveUID));
-                scontainer.push_back(Sample(midPoint - offsetX, (*it).normal(), primitiveUID));
+                Base::addSample( scontainer,
+                                 Sample(midPoint + offsetX, (*it).normal(), primitiveUID),
+                                 *it);
+                Base::addSample( scontainer,
+                                 Sample(midPoint - offsetX, (*it).normal(), primitiveUID),
+                                 *it);
 
                 for (unsigned int j = 1; j< nbSampleY/2+1; j++){
                     vec offsetY = Scalar(j)*spacing*orthoVec;
-                    scontainer.push_back(Sample(midPoint + offsetX + offsetY, (*it).normal(), primitiveUID));
-                    scontainer.push_back(Sample(midPoint + offsetX - offsetY, (*it).normal(), primitiveUID));
-
-                    scontainer.push_back(Sample(midPoint - offsetX + offsetY, (*it).normal(), primitiveUID));
-                    scontainer.push_back(Sample(midPoint - offsetX - offsetY, (*it).normal(), primitiveUID));
+                    Base::addSample( scontainer,
+                                     Sample(midPoint + offsetX + offsetY, (*it).normal(), primitiveUID),
+                                     *it);
+                    Base::addSample( scontainer,
+                                     Sample(midPoint + offsetX - offsetY, (*it).normal(), primitiveUID),
+                                     *it);
+                    Base::addSample( scontainer,
+                                     Sample(midPoint - offsetX + offsetY, (*it).normal(), primitiveUID),
+                                     *it);
+                    Base::addSample( scontainer,
+                                     Sample(midPoint - offsetX - offsetY, (*it).normal(), primitiveUID),
+                                     *it);
                 }
                 // \FIXME There is here a case not covered, when nbSampleX == 0 and nbSampleY != 0
             }
@@ -128,14 +145,18 @@ PunctualSampler<_Scalar, T, _Primitive>::generateSamples(
                                 found        = true;
                             }
                         }else
-                            scontainer.push_back(Sample(inter, alpha*alpha* -d, primitiveUID));
+                            Base::addSample( scontainer,
+                                             Sample(inter, alpha*alpha* -d, primitiveUID),
+                                             *it);
                     }
                 }
             }
         }
 
         if (this->occlusion && found){
-            scontainer.push_back(Sample((alphaRef*d) + this->pos, alphaRef*alphaRef*-d, primitiveUID));
+            Base::addSample( scontainer,
+                             Sample((alphaRef*d) + this->pos, alphaRef*alphaRef*-d, primitiveUID),
+                             *it);
         }
 
 
