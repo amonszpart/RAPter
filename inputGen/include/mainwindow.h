@@ -27,6 +27,8 @@ private slots:
 
     void on_actionExtrude_triggered();
 
+    void on_action3D_Mesh_triggered();
+
 private:
     void writeSamples(QString path);
     void writePrimitives(QString path);

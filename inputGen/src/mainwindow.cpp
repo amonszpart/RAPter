@@ -15,6 +15,7 @@
 
 #include "primitive.h"
 #include "types.h"
+#include "rply-1.1.3/rply.h"
 
 using std::cout;
 using std::endl;
@@ -683,5 +684,118 @@ void MainWindow::writeSamples(QString path){
         }
 
         outfile.close();
+    }
+}
+
+
+namespace MeshLoader {
+typedef InputGen::Application::Scalar Scalar;
+InputGen::Application::Primitive::vec currentVec;
+std::vector <InputGen::Application::Primitive::vec>  positions;
+InputGen::AbstractPlanarPolygon<Scalar>* currentPWL;
+std::vector<InputGen::PiecewiseLinear<Scalar>*> pwlArray;
+
+struct Face {
+    int *ids;
+    const unsigned int size;
+
+    inline Face(unsigned int s) : size(s), ids(new int[size]) {}
+    virtual ~Face() { delete ids; }
+};
+
+Face* currentFace;
+std::vector<Face*> faces;
+
+template <int dim>
+static int vertex_cb(p_ply_argument argument) {
+    currentVec(dim) = ply_get_argument_value(argument);
+
+    if (dim == 2)
+        positions.push_back(currentVec);
+
+    return 1;
+}
+
+static int face_cb(p_ply_argument argument) {
+    long length, value_index;
+    ply_get_argument_property(argument, NULL, &length, &value_index);
+
+    if (value_index == 0){
+        currentFace = new Face(length);
+    }
+
+    if (value_index >= 0 && value_index < length)
+        currentFace->ids[value_index] = ply_get_argument_value(argument);
+
+    if (value_index == length-1)
+        faces.push_back(currentFace);
+    return 1;
+}
+}
+
+#include <locale.h>
+
+void MainWindow::on_action3D_Mesh_triggered()
+{
+
+    using InputGen::Application::Scalar;
+
+    QSettings settings;
+    QString defaultPath = settings.value("Path/plyOpen").toString();
+
+    QString path =
+            QFileDialog::getOpenFileName(this,
+                                         tr("Load ply file (quads)"),
+                                         defaultPath,
+                                         "Ply quad file (*.ply)");
+
+    if (! path.isNull()){
+
+        settings.setValue("Path/plyOpen", path);
+
+        MeshLoader::currentPWL = NULL;
+        MeshLoader::positions.clear();
+        MeshLoader::pwlArray.clear();
+        MeshLoader::currentFace = NULL;
+        MeshLoader::faces.clear();
+
+        /* Save application locale */
+        const char *old_locale = setlocale(LC_NUMERIC, NULL);
+        /* Change to PLY standard */
+        setlocale(LC_NUMERIC, "C");
+
+        long nvertices, ntriangles;
+        p_ply ply = ply_open(path.toStdString().c_str(), NULL, 0, NULL);
+        if (ply) {
+            if (ply_read_header(ply)) {
+                nvertices = ply_set_read_cb(ply, "vertex", "x", MeshLoader::vertex_cb<0>, NULL, 0);
+                ply_set_read_cb(ply, "vertex", "y", MeshLoader::vertex_cb<1>, NULL, 0);
+                ply_set_read_cb(ply, "vertex", "z", MeshLoader::vertex_cb<2>, NULL, 1);
+                ntriangles = ply_set_read_cb(ply, "face", "vertex_indices", MeshLoader::face_cb, NULL, 0);
+                printf("%ld\n%ld\n", nvertices, ntriangles);
+                std::cout<<std::flush;
+                if (ply_read(ply)) {
+                    ply_close(ply);
+                }
+            }
+        }
+        /* Restore application locale when done */
+        setlocale(LC_NUMERIC, old_locale);
+
+        std::cout << "Vertices: " << std::endl;
+        std::for_each(MeshLoader::positions.cbegin(),
+                      MeshLoader::positions.cend(),
+                      [] (const InputGen::Application::Primitive::vec& p)
+        { std::cout << p.transpose() << std::endl; });
+
+        std::cout << "Faces: " << std::endl;
+        std::for_each(MeshLoader::faces.begin(),
+                      MeshLoader::faces.end(),
+                      [] (MeshLoader::Face* f)
+        {
+            for (unsigned int i = 0; i!= f->size; i++)
+                std::cout << f->ids[i] << " ";
+            std::cout << std::endl;
+        });
     }
 }
