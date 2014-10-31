@@ -28,6 +28,9 @@ public:
     inline ConvexHull2D(const Container& inputSet)
     { compute(inputSet); }
 
+    inline ConvexHull2D()
+    { }
+
 
     /*!
      * Returns a list of points on the convex hull in counter-clockwise order.

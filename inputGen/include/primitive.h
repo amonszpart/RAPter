@@ -21,81 +21,114 @@ template <typename _Scalar>
 struct PiecewiseLinear{
     typedef typename internal_primitive::Types<_Scalar>::primitive_vec vec;
     virtual bool isInside ( const vec& v ) const = 0;
+    virtual vec getNormal() const = 0;
+    virtual vec getCenter() const = 0;
+    virtual _Scalar getHeight() const = 0; // get height along the normal direction
 
+    virtual bool isCompatible(const PiecewiseLinear<_Scalar>& other) const {
+        return std::abs(getNormal().dot(other.getNormal())) >= _Scalar(1) - Eigen::NumTraits<_Scalar>::dummy_precision() &&
+                getHeight() == other.getHeight();
+    }
 };
 
 template <typename _Scalar, class Derived>
-struct PiecewiseLinearCRTP{
+struct PiecewiseLinearCRTP : public PiecewiseLinear<_Scalar>{
     typedef _Scalar Scalar;
     typedef typename internal_primitive::Types<_Scalar>::primitive_vec vec;
 
     virtual bool isInside ( const vec& v ) const
-    { return (static_cast<Derived*>(this))->_isInside(v); }
-};
-
-template <typename _Scalar>
-struct AbstractPlanarPolygon{
-    typedef typename internal_primitive::Types<_Scalar>::primitive_vec vec;
-    virtual void setVertex(vec& v, int index) = 0;
+    { return (static_cast<const Derived*>(this))->_isInside(v); }
 };
 
 template <typename _Scalar, int _NbPoly>
 struct PlanarConvexPolygon :
-        public PiecewiseLinearCRTP<_Scalar, PlanarConvexPolygon<_Scalar, _NbPoly> >,
-        public AbstractPlanarPolygon<_Scalar>
+        public PiecewiseLinearCRTP<_Scalar, PlanarConvexPolygon<_Scalar, _NbPoly> >
 {
     enum { NbPoly=_NbPoly };
     typedef PiecewiseLinearCRTP<_Scalar, PlanarConvexPolygon<_Scalar, _NbPoly> > Base;
     typedef typename Base::vec vec;
     typedef _Scalar Scalar;
 
-    inline PlanarConvexPolygon(): Base() {
+    template<typename VertexContainer>
+    inline PlanarConvexPolygon(int* ids = NULL, const VertexContainer& vertices = std::vector<vec>()): Base() {
         static_assert( NbPoly >= 3, "PlanarPolygon requires at least 3 vertices");
-    }
 
-    virtual void setVertex(vec& v, int index){
-        if (index < NbPoly) {
-            _vertices[index] = v;
+        if (ids != NULL && vertices.size() != 0){
+            for (int i = 0; i!= NbPoly; ++i)
+                _vertices[i] = vertices[ids[i]];
             recomputeHull();
         }
     }
 
-protected:
+
+
+//    virtual void setVertex(vec& v, int index){
+//        if (index < NbPoly) {
+//            _vertices[index] = v;
+//            recomputeHull();
+//        }
+//    }
+
+    virtual vec getNormal() const { return _vertices[0].cross(_vertices[1]).normalized(); }
+    virtual Scalar getHeight() const { return _gcenter.dot(getNormal()); }
+    virtual vec getCenter() const { return _gcenter; }
+
+
+
     typedef ConvexHull2D<typename internal_primitive::Types<_Scalar>::primitive_vec2> ConvexHull;
 
-    bool inline _isInside(const vec &v) { return _hull.isInside(v); }
+    bool inline _isInside(const vec &v) const { return _hull.isInside(moveToLocalAndProject(v, getNormal())); }
+
+protected:
+
+    inline
+    typename ConvexHull::Point
+    moveToLocalAndProject(const vec &p, const vec& n) const {
+//        vec proj = (p - _gcenter)       // get q = p expressed in local space
+//                .dot(n)              // get orthogonal distance to the plane
+//                * -n                 // get dq = proj(q) - q
+//                + (p - _gcenter)     // get proj(q)
+//                ;
+//        std::cout << p.transpose() << " -> " << proj.transpose()
+//                  << (_hull.isInside(proj.head(2)) ? " GOOD ! ": "")
+//                  << std::endl;
+        return ((p - _gcenter)       // get q = p expressed in local space
+                .dot(n)              // get orthogonal distance to the plane
+                * -n                 // get dq = proj(q) - q
+                + (p - _gcenter)     // get proj(q)
+                ).head(2).eval();    // extract two first coordinates, the third one being = 0
+    }
+
     void inline recomputeHull(){
         // we check we have different points in the cloud
         if (_vertices[0] != _vertices[1] &&
             _vertices[0] != _vertices[2] ){
 
             // estimate plane direction using the three first coordinates
-            vec n = _vertices[0].cross(_vertices[1]).normalized();
+            vec n = getNormal();
 
             // compute centroid
-            vec center (vec::Zero());
-            std::for_each(_vertices.begin(), _vertices.end(), [&center] (const vec& p){ center+=p; });
-            center /= _Scalar(_vertices.size());
+            vec _gcenter (vec::Zero());
+            std::for_each(_vertices.begin(), _vertices.end(), [&_gcenter] (const vec& p){ _gcenter+=p; });
+            _gcenter /= _Scalar(_vertices.size());
 
             // iterate over all points, move them in the local frame, project, and add to the convex hull
             std::vector< typename ConvexHull::Point > projectedSet;
             projectedSet.reserve(_vertices.size());
-            std::for_each(_vertices.begin(), _vertices.end(), [&center, &projectedSet, n] (const vec& p)
+            std::for_each(_vertices.begin(), _vertices.end(), [&_gcenter, &projectedSet, &n, this] (const vec& p)
             {
-                projectedSet.push_back(((p - center)   // get q = p expressed in local space
-                                        .dot(n)        // get orthogonal distance to the plane
-                                        * -n           // get dq = proj(q) - q
-                                        + (p - center) // get proj(q)
-                                        ).head(2).eval()     // extract two first coordinates, the third one being = 0
-                                        );
+                projectedSet.push_back( this->moveToLocalAndProject (p, n) );
             });
 
             _hull.compute(projectedSet);
+        }else {
+            _gcenter = vec::Zero();
         }
     }
 
     //! \brief Array containing points, all expected to lie on a plane
     std::array<vec, NbPoly> _vertices;
+    vec _gcenter;
 
     ConvexHull _hull;
 };
@@ -131,6 +164,27 @@ private:
 
     std::vector<PiecewiseLinear<_Scalar>*> _pieceWiseElements;
 
+    inline void _synchInternalStateFromPWElements(){
+        if (_pieceWiseElements.empty()) return;
+
+        // midpoint center
+        vec midPoint = vec::Zero();
+        std::for_each(_pieceWiseElements.begin(), _pieceWiseElements.end(), [&midPoint] (const PiecewiseLinear<_Scalar>* pwl){
+            midPoint+=pwl->getCenter(); // this is not exact, it would be better to take the bbox and then the center
+        });
+        midPoint /= _Scalar(_pieceWiseElements.size());
+
+        // normal
+        _normal = _pieceWiseElements.front()->getNormal();
+
+        // just check: we assume that the scene is in the bounding box, so we just create a dummy size of 1,1.
+        _coord = - Scalar(0.5) * getTangentVector() + midPoint;
+
+        _dim << 1,1;
+
+        // local dimensions (using hull)
+    }
+
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -143,6 +197,19 @@ public:
           _uid(uid),
           _did(did==-1 ? uid : did),
           _type(type) { }
+
+    inline LinearPrimitive(PiecewiseLinear<_Scalar>* element,
+                           int uid = LinearPrimitive<_Scalar>::getUID(),
+                           int did = -1)
+        : _coord(vec::Zero()),
+          _normal(vec(1,0,0)),
+          _dim(vec2::Zero()),
+          _uid(uid),
+          _did(did==-1 ? uid : did),
+          _type(LinearPrimitive<_Scalar>::PLANE_3D)
+    {
+        addPiecewiseElement(element);
+    }
 
     //! \brief Line or plane \see #TYPE
     inline LinearPrimitive<_Scalar>::TYPE  type() const { return _type; }
@@ -187,7 +254,25 @@ public:
                              [ &v ] (const PiecewiseLinear<_Scalar>*e) {
             return e->isInside(v);
         }) != _pieceWiseElements.cend();
+    }
 
+    const std::vector<PiecewiseLinear<_Scalar>*>& piecewiseElements() const { return _pieceWiseElements; }
+    bool addPiecewiseElement(PiecewiseLinear<_Scalar>* e) {
+        bool valid = true;
+
+        if (! _pieceWiseElements.empty()){
+            // test against existing primitives, valid only if we have at least one primitive compatible
+            valid =  find_if( _pieceWiseElements.cbegin(), _pieceWiseElements.cend(),
+                              [&e](const PiecewiseLinear<_Scalar>* ref ) { return ref->isCompatible(*e);})
+                    != _pieceWiseElements.end();
+        }
+
+        if(valid){
+            _pieceWiseElements.push_back(e);
+            _synchInternalStateFromPWElements();
+        }
+
+        return valid;
     }
 
 
@@ -195,7 +280,11 @@ public:
     inline vec getTangentVector() const {
         // rotation of the normal vector around z axis
         //if (_type == LINE_2D)
+        if(_normal(0) != _normal(1))
             return vec(_normal(1), -_normal(0), 0);
+        else
+            return vec(_normal(2), 0, -_normal(0));
+
         //else{
         //    std::cerr << "Invalid request in " << __FILE__ << ":" << __LINE__ << std::endl;
         //    return vec::Zero();

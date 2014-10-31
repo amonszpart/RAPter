@@ -692,7 +692,7 @@ namespace MeshLoader {
 typedef InputGen::Application::Scalar Scalar;
 InputGen::Application::Primitive::vec currentVec;
 std::vector <InputGen::Application::Primitive::vec>  positions;
-InputGen::AbstractPlanarPolygon<Scalar>* currentPWL;
+InputGen::PiecewiseLinear<Scalar>* currentPWL;
 std::vector<InputGen::PiecewiseLinear<Scalar>*> pwlArray;
 
 struct Face {
@@ -738,7 +738,7 @@ static int face_cb(p_ply_argument argument) {
 void MainWindow::on_action3D_Mesh_triggered()
 {
 
-    using InputGen::Application::Scalar;
+    typedef InputGen::Application::Scalar Scalar;
 
     QSettings settings;
     QString defaultPath = settings.value("Path/plyOpen").toString();
@@ -766,6 +766,8 @@ void MainWindow::on_action3D_Mesh_triggered()
 
         long nvertices, ntriangles;
         p_ply ply = ply_open(path.toStdString().c_str(), NULL, 0, NULL);
+
+        bool ok = false;
         if (ply) {
             if (ply_read_header(ply)) {
                 nvertices = ply_set_read_cb(ply, "vertex", "x", MeshLoader::vertex_cb<0>, NULL, 0);
@@ -776,26 +778,57 @@ void MainWindow::on_action3D_Mesh_triggered()
                 std::cout<<std::flush;
                 if (ply_read(ply)) {
                     ply_close(ply);
+                    ok = true;
                 }
             }
         }
         /* Restore application locale when done */
         setlocale(LC_NUMERIC, old_locale);
 
-        std::cout << "Vertices: " << std::endl;
-        std::for_each(MeshLoader::positions.cbegin(),
-                      MeshLoader::positions.cend(),
-                      [] (const InputGen::Application::Primitive::vec& p)
-        { std::cout << p.transpose() << std::endl; });
+        if (ok){
+            _project->clear();
 
-        std::cout << "Faces: " << std::endl;
-        std::for_each(MeshLoader::faces.begin(),
-                      MeshLoader::faces.end(),
-                      [] (MeshLoader::Face* f)
-        {
-            for (unsigned int i = 0; i!= f->size; i++)
-                std::cout << f->ids[i] << " ";
-            std::cout << std::endl;
-        });
+//            std::cout << "Vertices: " << std::endl;
+//            std::for_each(MeshLoader::positions.cbegin(),
+//                          MeshLoader::positions.cend(),
+//                          [] (const InputGen::Application::Primitive::vec& p)
+//            { std::cout << p.transpose() << std::endl; });
+
+//            std::cout << "Faces: " << std::endl;
+//            std::for_each(MeshLoader::faces.begin(),
+//                          MeshLoader::faces.end(),
+//                          [] (MeshLoader::Face* f)
+//            {
+//                for (unsigned int i = 0; i!= f->size; i++)
+//                    std::cout << f->ids[i] << " ";
+//                std::cout << std::endl;
+//            });
+
+            while (! MeshLoader::faces.empty()){
+                MeshLoader::Face* face = MeshLoader::faces.back(); MeshLoader::faces.pop_back();
+                InputGen::PiecewiseLinear<Scalar>* poly = NULL;
+
+#warning This is very ugly and we only support triangle and quad, improve if needed !
+                if(face->size == 3) poly = new InputGen::PlanarConvexPolygon<Scalar, 3>(face->ids, MeshLoader::positions);
+                if(face->size == 4) poly = new InputGen::PlanarConvexPolygon<Scalar, 4>(face->ids, MeshLoader::positions);
+
+                if (poly == NULL){
+                    std::cerr << "Skipping unsupported polygon type: " << face->size << endl;
+                    delete face;
+                    face = NULL;
+                }
+
+                // check if this face can be inserted in one of the existing primitives
+                if (poly != NULL){
+                    for (InputGen::Application::Project::PrimitiveContainer::iterator it = _project->primitives.begin();
+                         it != _project->primitives.end(); ++it){
+                        if( (*it).addPiecewiseElement(dynamic_cast<InputGen::PiecewiseLinear<Scalar>* >(poly)) ) { poly = NULL; break; }
+                    }
+                }
+                if (poly != NULL){
+                    _project->primitives.push_back(InputGen::LinearPrimitive<Scalar>(dynamic_cast<InputGen::PiecewiseLinear<Scalar>* >(poly)));
+                }
+            }
+        }
     }
 }
