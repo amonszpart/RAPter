@@ -151,7 +151,7 @@ namespace GF2
                     Eigen::Vector3f normal; normal << n[0],n[1],n[2];
                     //planes.emplace_back( PlanePrimitive(Eigen::Vector3f::Zero() + normal * dist, normal) );
                     planes.emplace_back( PrimitiveT(centroid.getVector3fMap(), normal) );
-                    planes.back()()(2) *= 2.;
+                    //planes.back()()(2) *= 2.;
                     std::cout << "dist to orig: " << planes.back().getDistance( Eigen::Vector3f::Zero() ) << std::endl;
 
                     if ( show && i < 6)
@@ -189,7 +189,7 @@ namespace GF2
             vptr->spinOnce();
 
         // assign points
-#if 1
+#if 0
         std::cout << "starting assignment" << std::endl; fflush( stdout );
         for ( int pid = 0; pid != points.size(); ++pid )
         {
