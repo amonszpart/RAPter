@@ -358,7 +358,7 @@ Segmentation::regionGrow( _PointContainerT                       & points
         for ( size_t pid = 0; pid != points.size(); ++pid )
         {
             pcl::PointXYZ pnt;
-            pnt.x = points[pid].template pos()(0); // convert PointPrimitive to Eigen::Matrix, and get (0)
+            pnt.x = points[pid].template pos()(0);
             pnt.y = points[pid].template pos()(1);
             pnt.z = points[pid].template pos()(2);
             ann_cloud->push_back( pnt );
@@ -424,11 +424,8 @@ Segmentation::regionGrow( _PointContainerT                       & points
                     ang_diff = M_PI - ang_diff;
 
                 // location from point, but direction is the representative's
-                //_PointPrimitiveT p1_proxy(points[prid].template pos(), patches.back().template dir());
-                //PatchT p2_proxy; p2_proxy.push_back( segmentation::PidLid(pid2,-1) ); p2_proxy.update( points );
 #warning TODO: spatial thresh is not necessary here
                 if ( (dist_diff < patchPatchDistanceFunctor.getSpatialThreshold()) && (ang_diff < patchPatchDistanceFunctor.getAngularThreshold()) ) // original condition
-                //if ( patchPatchDistanceFunctor.template eval<_PointPrimitiveT>(p1_proxy, p2_proxy, points, NULL) < patchPatchDistanceFunctor.getThreshold() )
                 {
                     patches.back().push_back( segmentation::PidLid(pid2,-1) );
                     patches.back().updateWithPoint( points[pid2] );
@@ -436,16 +433,6 @@ Segmentation::regionGrow( _PointContainerT                       & points
                     // enqueue for visit
                     starting_cands.push_front( pid2 );
                 }
-//                else if (ang_diff > patchPatchDistanceFunctor.getAngularThreshold() && (dist_diff < patchPatchDistanceFunctor.getSpatialThreshold()) )
-//                {
-//                    std::cout << "not merging: \n"
-//                              << "\t repr.dir:" << patches.back().getRepresentative().template dir().transpose()
-//                              << "vs. pnt.dir: " << points[pid2].template dir().transpose()
-//                              << "-> angdiff: " << ang_diff << " >= " << patchPatchDistanceFunctor.getAngularThreshold()
-//                              << "\n\t pntdiff :" << (points[pid2].template pos() - points[pid].template pos()).norm()
-//                              << "\t dist: " << sqrt(sqr_dists[pid_id])
-//                              << std::endl;
-//                }
             }
         }
 
