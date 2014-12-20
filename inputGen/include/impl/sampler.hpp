@@ -109,7 +109,8 @@ PunctualSampler<_Scalar, T, _Primitive>::generateSamples(
 
         _Scalar alphaRef = std::numeric_limits<Scalar>::max();
         uint primitiveUID = 0;
-        bool found = false;
+
+        typename PrimitiveContainer::const_iterator itFound = pcontainer.end();
 
         // Iterate over all the primitives, compute the intersection with the ray, create a sample on the closest primitive
         for(it = pcontainer.begin(); it != pcontainer.end(); it++){
@@ -141,8 +142,8 @@ PunctualSampler<_Scalar, T, _Primitive>::generateSamples(
                         if (this->occlusion){
                             if (alpha < alphaRef){
                                 alphaRef     = alpha;
+                                itFound      = it;
                                 primitiveUID = (*it).uid();
-                                found        = true;
                             }
                         }else
                             Base::addSample( scontainer,
@@ -153,10 +154,10 @@ PunctualSampler<_Scalar, T, _Primitive>::generateSamples(
             }
         }
 
-        if (this->occlusion && found){
+        if (this->occlusion && itFound != pcontainer.end()){
             Base::addSample( scontainer,
                              Sample((alphaRef*d) + this->pos, alphaRef*alphaRef*-d, primitiveUID),
-                             *it);
+                             *itFound);
         }
 
 
