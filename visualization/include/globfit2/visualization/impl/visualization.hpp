@@ -47,6 +47,7 @@ GF2::vis::showCli( int argc, char** argv )
                   << "\t[ --print-angles \t Print angles on relation lines ]\n"
                   << "\t[ --perfect-angle 0.5\t Threshold in degrees, under which a gray line is shown indicating 'perfect relationship' ]\n\n"
                   << "\t[ --stretch \t\t Elong primitives by multiplying their extents with this number ]\n"
+                  << "\t[ --hide-empty \t\t Don't show empty primitives' ]\n"
 
                   << "\t[ --title \t\t Window title ]\n"
                   << "\t[ --normals i\t\t show every i-th normal. 0: no normals, 1: every normal ]\n\n"
@@ -84,6 +85,8 @@ GF2::vis::showCli( int argc, char** argv )
     bool    no_paral            = pcl::console::find_switch( argc, argv, "--no-paral" );
     bool    no_scale_sphere     = pcl::console::find_switch( argc, argv, "--no-scale" );
     bool    save_poly           = pcl::console::find_switch( argc, argv, "--save-poly" );
+    bool    show_empty          = !pcl::console::find_switch( argc, argv, "--hide-empty" );
+
 
     Scalar  hull_alpha          = 2.;
     pcl::console::parse_argument( argc, argv, "--hull-alpha", hull_alpha);
@@ -237,6 +240,7 @@ GF2::vis::showCli( int argc, char** argv )
                                                                                , /*           hull_alpha: */ hull_alpha
                                                                                , /*            save_poly: */ save_poly
                                                                                , /*           point_size: */ point_size
+                                                                               , /*           show_empty: */ show_empty
                                                                                );
     return EXIT_SUCCESS;
 } // ... Solver::show()

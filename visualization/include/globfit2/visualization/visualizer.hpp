@@ -60,11 +60,12 @@ namespace GF2 {
                 , std::set<int>        const* filter_gids           = NULL
                 , std::set<int>        const* filter_status         = NULL
                 , _Scalar              const  stretch               = 1.
-                , int                  const  draw_mode             = 0
+                , int                  const  draw_mode             = DRAW_MODE::SIMPLE
                 , bool                 const  no_scale_sphere       = false
                 , _Scalar              const  hull_alpha            = 2.
                 , bool                 const  save_poly             = false
                 , _Scalar              const  point_size            = 6.0
+                , bool                 const  skip_empty            = false
                 );
 
             //! \brief Shows a polygon that approximates the bounding ellipse of a cluster
@@ -126,6 +127,7 @@ namespace GF2
                                                            , _Scalar              const  hull_alpha          /* = 2. */
                                                            , bool                 const  save_poly           /* = false */
                                                            , _Scalar              const  point_size          /* = 6.0 */
+                                                           , bool                 const  skip_empty          /* = false */
                                                            )
     {
         // TYPEDEFS
@@ -381,15 +383,17 @@ namespace GF2
                 for ( size_t lid1 = 0; lid1 != primitives[lid].size(); ++lid1 )
                 {
                     // caching
-                    const int gid     = primitives[lid][lid1].getTag( PrimitiveT::GID     );
-                    const int dir_gid = primitives[lid][lid1].getTag( PrimitiveT::DIR_GID );
+                    PrimitiveT const& prim = primitives[lid][lid1];
+                    const int gid     = prim.getTag( PrimitiveT::GID     );
+                    const int dir_gid = prim.getTag( PrimitiveT::DIR_GID );
 
                     // status filtering
                     if ( filter_status && (*filter_status).find(primitives[lid][lid1].getTag(PrimitiveT::STATUS)) == (*filter_status).end() )
                         continue;
+
                     // WTF? // TODO remove
-                    if (primitives[lid][lid1].getTag(PrimitiveT::STATUS) == PrimitiveT::SMALL)
-                        continue;
+                    //if (primitives[lid][lid1].getTag(PrimitiveT::STATUS) == PrimitiveT::SMALL)
+                    //    continue;
 
                     // GID filtering
                     if ( filter_gids && (filter_gids->find(gid) == filter_gids->end()) )
@@ -402,7 +406,10 @@ namespace GF2
                     sprintf( line_name, "line_%04lu_%04lu", lid, lid1 );
 
                     // cache colour
-                    Colour prim_colour = primColours[ id2ColId[primColourTag] ] / 255.;
+                    const int colour_id = prim.getTag( primColourTag );
+                    Colour prim_colour = primColours[ id2ColId[colour_id] ] / 255.;
+                    std::cout << "reading colour " << prim_colour.transpose() << " as id2ColId[" << primColourTag << "] = "
+                              << id2ColId[primColourTag] << std::endl;
 
                     // use assignments: if use tags, collect GID tagged point indices
                     std::vector<int> indices;
@@ -411,6 +418,10 @@ namespace GF2
                         for ( int pid = 0; pid != points.size(); ++pid )
                             if ( points[pid].getTag(PointPrimitiveT::GID) == gid )
                                 indices.push_back( pid );
+
+                        // don't show unpopulated primitives
+                        if ( skip_empty && !indices.size() ) continue;
+
                         if ( use_tags == 1 ) // mode2 means no ellipses
                             drawEllipse( vptr, cloud, indices, scale, gid, prim_colour );
 

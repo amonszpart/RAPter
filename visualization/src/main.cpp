@@ -4,8 +4,12 @@
 #include "globfit2/visualization/visualization.h"
 #include "globfit2/globOpt_types.h"
 
+#include "globfit2/visualization/mst.hpp"
+
 int main(int argc, char *argv[])
 {
+    //return GF2::mstMain<float>();
+
     if ( pcl::console::find_switch(argc,argv,"--show") )
     {
         return GF2::vis::showCli<GF2::_2d::PrimitiveT>( argc, argv );
