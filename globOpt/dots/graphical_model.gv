@@ -1,0 +1,52 @@
+digraph asdf{
+    graph[pad=1.0,1.0,forcelabels=true];
+
+    labelloc="b";
+    labeljust="r";
+    subgraph cluster_cons_dir
+    {
+        label="r";
+        labelloc="b";
+        cons_dir [label="consensus dir"];
+       
+        subgraph cluster_instances
+        {
+            label="l";
+            nr_lines [ label="lines"];
+            subgraph cluster_assoc {
+                label="q";
+                assoc [ label="assoc. q to instance l"];
+                rankdir="LR";
+                subgraph cluster_angle {
+                    label="i";
+                    angle [ label="angle at p_i"];
+                }
+                subgraph cluster_anglej {
+                    label="";
+                    anglej [ label="angle at p_j"];
+                }
+            }
+        }
+    }
+
+    scene_simplicity -> cons_dir;
+    cons_dir -> "nr_lines";
+    nr_lines -> assoc;
+    assoc -> angle;
+    k -> nr_lines;
+    scale -> assoc;
+    falloff -> angle;
+    pi -> angle;
+    pj -> angle;
+    anglej -> angle;
+    pj -> anglej;
+    pi -> anglej;
+    variants->nr_lines;
+
+    k [label="k"];
+    scale [label="",xlabel="scale", shape="ellipse", fixedsize=true, width=.1,height=.1];
+    falloff [label="",xlabel="falloff", shape="ellipse", fixedsize=true, width=.1,height=.1];
+    pi [label="",xlabel="p_i", shape="ellipse", fixedsize=true, width=.1,height=.1];
+    pj [label="",xlabel="p_j", shape="ellipse", fixedsize=true, width=.1,height=.1, xlp="-0.5"];
+    variants [label="#variants",xlabel="", shape="ellipse", fixedsize=true, width=.1,height=.1, lblstyle="pos=0.8,below"];
+}

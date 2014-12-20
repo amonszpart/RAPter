@@ -1,0 +1,18 @@
+digraph{
+    v1 -> v2 [label="0",color="red"];
+    v1 -> v3 [label="0"];
+    v1 -> v4 [label="90"];
+    v1 -> v5 [label="90"];
+    v2 -> v3 [label="0"];
+    v2 -> v4 [label="90",color="red"];
+    v2 -> v5 [label="90"];
+    v3 -> v4 [label="90"];
+    v3 -> v5 [label="90"];
+    v4 -> v5 [label="0"];
+
+    v1 [label="|", pos="0,1!"];
+    v2 [label="|", pos="2.5,1.5!"];
+    v3 [label="|", pos="5,1!"];
+    v4 [label="_", pos="3,-1!"];
+    v5 [label="_", pos="3,3!"];
+}

@@ -1,0 +1,196 @@
+digraph "unix" {
+	rankdir = "LR"
+	
+	subgraph cluster0 {
+		p1 [label="P1" pos="0,0!"];
+		p2 [label="P2" pos="1,0.5!"];
+		p3 [label="P3" pos="2,0!"];
+		p4 [label="P4" pos="3,0!"];
+		p5 [label="P5" pos="3.5,-1!"];
+		p6 [label="P6" pos="3,-2!"];
+		p7 [label="P7" pos="3.5,-3!"];
+
+		label="t0";
+	}
+
+	subgraph cluster1 {
+		p1t1 [label="P1" pos="0,0!"];
+		p2t1 [label="P2" pos="2,0.5!"];
+		p3t1 [label="P3" pos="4,0!"];
+		p4t1 [label="P4" pos="6,0!"];
+		p5t1 [label="P5" pos="6.5,-1!"];
+		p6t1 [label="P6" pos="6,-2!"];
+		p7t1 [label="P7" pos="6.5,-3!"];
+
+		//p1t1->p2t1 [arrowhead="both" color="red"];
+		p1t1->p12t1 [style="dashed" arrowhead="none" color="red"];
+		p2t1->p12t1 [style="dashed" arrowhead="none" color="red"];
+		p12t1 [label="P12" color="red"];
+
+		//p2t1->p3t1 [arrowhead="both" color="green"];
+		p2t1->p23t1 [style="dashed" arrowhead="none" color="green"];
+		p3t1->p23t1 [style="dashed" arrowhead="none" color="green"];
+		p23t1 [label="P23" color="green"];
+
+		//p3t1->p4t1 [arrowhead="both" color="yellow"];
+		p3t1->p34t1 [style="dashed" arrowhead="none" color="yellow"];
+		p4t1->p34t1 [style="dashed" arrowhead="none" color="yellow"];
+		p34t1 [label="P34" color="yellow"];
+
+		//p4t1->p5t1 [arrowhead="both" color="chocolate4"];
+		p4t1->p45t1 [style="dashed" arrowhead="none" color="chocolate4"];
+		p5t1->p45t1 [style="dashed" arrowhead="none" color="chocolate4"];
+		p45t1 [label="P45" color="chocolate4"];
+
+		//p5t1->p6t1 [arrowhead="both" color="chartreuse"];
+		p5t1->p56t1 [style="dashed" arrowhead="none" color="chartreuse"];
+		p6t1->p56t1 [style="dashed" arrowhead="none" color="chartreuse"];
+		p56t1 [label="P56" color="chartreuse"];
+
+		//p6t1->p7t1 [arrowhead="both" color="darkorchid1"];
+		p6t1->p67t1 [style="dashed" arrowhead="none" color="darkorchid1"];
+		p7t1->p67t1 [style="dashed" arrowhead="none" color="darkorchid1"];
+		p67t1 [label="P67" color="darkorchid1"];
+
+		label="t1";
+	}
+
+	subgraph cluster2 {
+		label="t2";
+		p1t2 [label="P1" pos="0,0!"];
+		p2t2 [label="P2" pos="2,0.5!"];
+		p3t2 [label="P3" pos="4,0!"];
+		p4t2 [label="P4" pos="6,0!"];
+		p5t2 [label="P5" pos="6.5,-1!"];
+		p6t2 [label="P6" pos="6,-2!"];
+		p7t2 [label="P7" pos="6.5,-3!"];
+
+		//p1t2->p2t2 [arrowhead="both" color="red"];
+		p1t2->p12t2 [style="dashed" arrowhead="none" color="red"];
+		p2t2->p12t2 [style="dashed" arrowhead="none" color="red"];
+		p12t2 [label="P12" color="red"];
+
+		//p2t2->p3t2 [arrowhead="both" color="green"];
+		p2t2->p23t2 [style="dashed" arrowhead="none" color="green"];
+		p3t2->p23t2 [style="dashed" arrowhead="none" color="green"];
+		p23t2 [label="P23" color="green"];
+
+		//p3t2->p4t2 [arrowhead="both" color="yellow"];
+		p3t2->p34t2 [style="dashed" arrowhead="none" color="yellow"];
+		p4t2->p34t2 [style="dashed" arrowhead="none" color="yellow"];
+		p34t2 [label="P34" color="yellow"];
+
+		//p4t2->p5t2 [arrowhead="both" color="chocolate4"];
+		p4t2->p45t2 [style="dashed" arrowhead="none" color="chocolate4"];
+		p5t2->p45t2 [style="dashed" arrowhead="none" color="chocolate4"];
+		p45t2 [label="P45" color="chocolate4"];
+
+		//p5t2->p6t2 [arrowhead="both" color="chartreuse"];
+		p5t2->p56t2 [style="dashed" arrowhead="none" color="chartreuse"];
+		p6t2->p56t2 [style="dashed" arrowhead="none" color="chartreuse"];
+		p56t2 [label="P56" color="chartreuse"];
+
+		//p6t2->p7t2 [arrowhead="both" color="darkorchid1"];
+		p6t2->p67t2 [style="dashed" arrowhead="none" color="darkorchid1"];
+		p7t2->p67t2 [style="dashed" arrowhead="none" color="darkorchid1"];
+		p67t2 [label="P67" color="darkorchid1"];
+
+		//p12t2->p3t2 [arrowhead="both" color="orange"];
+		p12t2->p123t2 [style="dashed" arrowhead="none" color="orange"];
+		p3t2 ->p123t2 [style="dashed" arrowhead="none" color="orange"];
+		p123t2 [label="P123" color="orange"];
+
+		//p23t2->p4t2 [arrowhead="both" color="darkgreen"];
+		p23t2->p234t2 [style="dashed" arrowhead="none" color="darkgreen"];
+		p4t2 ->p234t2 [style="dashed" arrowhead="none" color="darkgreen"];
+		p234t2 [label="P234" color="darkgreen"];
+
+		//p45t2->p6t2 [arrowhead="both" color="darkorchid4"];
+		p45t2->p456t2 [style="dashed" arrowhead="none" color="darkorchid4"];
+		p6t2 ->p456t2 [style="dashed" arrowhead="none" color="darkorchid4"];
+		p456t2 [label="P456" color="darkorchid4"];
+
+		//p56t2->p5t2 [arrowhead="both" color="darkorchid4"];
+		p56t2->p567t2 [style="dashed" arrowhead="none" color="cyan4"];
+		p5t2 ->p567t2 [style="dashed" arrowhead="none" color="cyan4"];
+		p567t2 [label="P567" color="cyan4"];
+	}
+
+	subgraph cluster3 {
+		label="t3";
+
+		p1t3 [label="P1" pos="0,0!"];
+		p2t3 [label="P2" pos="2,0.5!"];
+		p3t3 [label="P3" pos="4,0!"];
+		p4t3 [label="P4" pos="6,0!"];
+		p5t3 [label="P5" pos="6.5,-1!"];
+		p6t3 [label="P6" pos="6,-2!"];
+		p7t3 [label="P7" pos="6.5,-3!"];
+
+		//p1t3->p2t3 [arrowhead="both" color="red"];
+		p1t3->p12t3 [style="dashed" arrowhead="none" color="red"];
+		p2t3->p12t3 [style="dashed" arrowhead="none" color="red"];
+		p12t3 [label="P12" color="red"];
+
+		//p2t3->p3t3 [arrowhead="both" color="green"];
+		p2t3->p23t3 [style="dashed" arrowhead="none" color="green"];
+		p3t3->p23t3 [style="dashed" arrowhead="none" color="green"];
+		p23t3 [label="P23" color="green"];
+
+		//p3t3->p4t3 [arrowhead="both" color="yellow"];
+		p3t3->p34t3 [style="dashed" arrowhead="none" color="yellow"];
+		p4t3->p34t3 [style="dashed" arrowhead="none" color="yellow"];
+		p34t3 [label="P34" color="yellow"];
+
+		//p4t3->p5t3 [arrowhead="both" color="chocolate4"];
+		p4t3->p45t3 [style="dashed" arrowhead="none" color="chocolate4"];
+		p5t3->p45t3 [style="dashed" arrowhead="none" color="chocolate4"];
+		p45t3 [label="P45" color="chocolate4"];
+
+		//p5t3->p6t3 [arrowhead="both" color="chartreuse"];
+		p5t3->p56t3 [style="dashed" arrowhead="none" color="chartreuse"];
+		p6t3->p56t3 [style="dashed" arrowhead="none" color="chartreuse"];
+		p56t3 [label="P56" color="chartreuse"];
+
+		//p6t3->p7t3 [arrowhead="both" color="darkorchid1"];
+		p6t3->p67t3 [style="dashed" arrowhead="none" color="darkorchid1"];
+		p7t3->p67t3 [style="dashed" arrowhead="none" color="darkorchid1"];
+		p67t3 [label="P67" color="darkorchid1"];
+
+		//p12t3->p3t3 [arrowhead="both" color="orange"];
+		p12t3->p123t3 [style="dashed" arrowhead="none" color="orange"];
+		p3t3 ->p123t3 [style="dashed" arrowhead="none" color="orange"];
+		p123t3 [label="P123" color="orange"];
+
+		//p23t3->p4t3 [arrowhead="both" color="darkgreen"];
+		p23t3->p234t3 [style="dashed" arrowhead="none" color="darkgreen"];
+		p4t3 ->p234t3 [style="dashed" arrowhead="none" color="darkgreen"];
+		p234t3 [label="P234" color="darkgreen"];
+
+		//p45t3->p6t3 [arrowhead="both" color="darkorchid4"];
+		p45t3->p456t3 [style="dashed" arrowhead="none" color="darkorchid4"];
+		p6t3 ->p456t3 [style="dashed" arrowhead="none" color="darkorchid4"];
+		p456t3 [label="P456" color="darkorchid4"];
+
+		//p56t3->p5t3 [arrowhead="both" color="cyan1"];
+		p56t3->p567t3 [style="dashed" arrowhead="none" color="cyan1"];
+		p7t3 ->p567t3 [style="dashed" arrowhead="none" color="cyan1"];
+		p567t3 [label="P567" color="cyan1"];
+
+		//p123t3->p234t3 [arrowhead="both" color="red"];
+		p1234t3 [label="P1234" color="red" pos="0,-3!" orientation="90.0"];
+		p123t3->p1234t3 [style="dashed" arrowhead="none" color="red"];
+		p234t3->p1234t3 [style="dashed" arrowhead="none" color="red"];
+
+ 		//p456t3->p567t3 [arrowhead="both" color="red"];
+ 		p4567t3 [label="P4567" color="red" pos="2,-3!" orientation="180.0"];
+		p456t3->p4567t3 [style="dashed" arrowhead="none" color="red"];
+		p567t3->p4567t3 [style="dashed" arrowhead="none" color="red"];
+		
+	}
+
+	cluster0->cluster1;
+	cluster1->cluster2;
+	cluster2->cluster3;
+
+}
