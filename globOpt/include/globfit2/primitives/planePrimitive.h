@@ -688,21 +688,21 @@ namespace GF2
         pcl::ConcaveHull<PclPointT>              concave_hull;                                   // object
         //typename pcl::PointCloud<PclPointT>::Ptr cloud_hull( new pcl::PointCloud<PclPointT>() );
         typename pcl::PointCloud<PclPointT> cloud_hull;
-        typename pcl::PointCloud<PclPointT> cloud_projected;
-        std::vector<pcl::Vertices>                   polygons;                               // output list indexing the points from cloud_hull, in 2D this is size 1
+        typename pcl::PointCloud<PclPointT>::Ptr cloud_projected( new typename pcl::PointCloud<PclPointT>() );
+        std::vector<pcl::Vertices>          polygons;                               // output list indexing the points from cloud_hull, in 2D this is size 1
         //pcl::PointCloud<PclPointT>::Ptr plane_polygon_cloud_ptr( new pcl::PointCloud<PclPointT> );
 
-        cloud_projected.resize(indices->size());
+        cloud_projected->resize(indices->size());
 
         // get assigned points, project them to the plane and store as PCL cloud
         int i = 0;
         for ( typename _IndicesContainerT::const_iterator it = indices->begin(); it != indices->end(); ++i, ++it )
         {
-            cloud_projected.at(i).getVector3fMap() = plane.projectPoint(points[*it].pos()).template cast<float>();
+            cloud_projected->at(i).getVector3fMap() = plane.projectPoint(points[*it].pos()).template cast<float>();
         }
 
         concave_hull.setAlpha( alpha );
-        concave_hull.setInputCloud( cloud_projected.makeShared() );
+        concave_hull.setInputCloud( cloud_projected );
         concave_hull.reconstruct( cloud_hull, polygons );
 
         if ( polygons.size() )

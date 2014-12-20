@@ -25,91 +25,8 @@ struct RansacParams
     pcl::SacModel   modelType;
 };
 
-template < class _InnerPrimitiveContainerT
-         , class _PclCloudT
-         , class _PointContainerT
-         , class _PrimitiveContainerT
-         , class _PrimitiveMapT
-         , typename _Scalar >
-inline int parseInput( _PointContainerT         &points
-                     , typename _PclCloudT::Ptr &pcl_cloud
-                     , _PrimitiveContainerT     &initial_primitives
-                     , _PrimitiveMapT           &patches
-                     , RansacParams<_Scalar>    &params
-                     , int argc, char **argv )
-{
-    typedef typename _PointContainerT::value_type           PointPrimitiveT;
-    typedef typename _InnerPrimitiveContainerT::value_type  PrimitiveT;
-
-    bool valid_input = true;
-    std::string cloud_path, input_prims_path, associations_path;
-
-    if (    (GF2::console::parse_argument( argc, argv, "--cloud", cloud_path) < 0)
-         && (!boost::filesystem::exists(cloud_path)) )
-    {
-        std::cerr << "[" << __func__ << "]: " << "--cloud does not exist: " << cloud_path << std::endl;
-        valid_input = false;
-    }
-
-    // primitives
-    if (    (GF2::console::parse_argument( argc, argv, "-p"     , input_prims_path) < 0)
-         && (GF2::console::parse_argument( argc, argv, "--prims", input_prims_path) < 0)
-         && (!boost::filesystem::exists(input_prims_path)) )
-    {
-        std::cerr << "[" << __func__ << "]: " << "-p or --prims is compulsory" << std::endl;
-        valid_input = false;
-    }
-
-    if (    (pcl::console::parse_argument( argc, argv, "-a", associations_path) < 0)
-         && (pcl::console::parse_argument( argc, argv, "--assoc", associations_path) < 0)
-         && (!boost::filesystem::exists(associations_path)) )
-    {
-        std::cerr << "[" << __func__ << "]: " << "-a or --assoc is compulsory" << std::endl;
-        valid_input = false;
-    }
-
-    // scale
-    if (    (GF2::console::parse_argument( argc, argv, "--scale", params.scale) < 0)
-         && (GF2::console::parse_argument( argc, argv, "-sc"    , params.scale) < 0) )
-    {
-        std::cerr << "[" << __func__ << "]: " << "--scale is compulsory" << std::endl;
-        valid_input = false;
-    }
-
-    // READ
-    int err     = EXIT_SUCCESS;
-    pcl_cloud   = typename _PclCloudT::Ptr( new _PclCloudT() );
-    if ( EXIT_SUCCESS == err )
-    {
-        err = GF2::io::readPoints<PointPrimitiveT>( points, cloud_path, &pcl_cloud );
-        if ( err != EXIT_SUCCESS )
-        {
-            std::cerr << "[" << __func__ << "]: " << "readPoints returned error " << err << std::endl;
-            valid_input = false;
-        }
-    } //...read points
-
-    if ( EXIT_SUCCESS == err )
-    {
-        std::cout << "[" << __func__ << "]: " << "reading primitives from " << input_prims_path << "...";
-        err = GF2::io::readPrimitives<PrimitiveT, _InnerPrimitiveContainerT>( initial_primitives, input_prims_path, &patches );
-        if ( EXIT_SUCCESS == err )
-            std::cout << "[" << __func__ << "]: " << "reading primitives ok (#: " << initial_primitives.size() << ")\n";
-        else
-            std::cerr << "[" << __func__ << "]: " << "reading primitives failed" << std::endl;
-    } //...read primitives
-
-    // read assoc
-    std::vector< std::pair<int,int> > points_primitives;
-    GF2::io::readAssociations( points_primitives, associations_path, NULL );
-    for ( size_t i = 0; i != points.size(); ++i )
-    {
-        // store association in point
-        points[i].setTag( PointPrimitiveT::GID, points_primitives[i].first );
-    }
-
-    return err + !valid_input;
-}
+#include "globfit2/io/inputParser.hpp"
+#include "globfit2/comparison/impl/reassign.hpp"
 
 template < typename _PointContainerT
          , class    _InnerPrimitiveContainerT
@@ -276,23 +193,36 @@ int ransacCli( int argc, char **argv )
 template < class _PrimitiveContainerT
          , class _PointContainerT
          , class _Scalar
+//         , class _PrimitiveMapT
          >
-inline int reassign( _PointContainerT &points, _PrimitiveContainerT const& primitives, _Scalar const scale )
+inline int reassign( _PointContainerT &points, _PrimitiveContainerT const& primitives, _Scalar const scale/*, _PrimitiveMapT const& patches*/ )
 {
     typedef typename _PointContainerT::value_type PointPrimitiveT;
 
 #if 1
     std::cout << "starting assignment" << std::endl; fflush( stdout );
+
+    // distances between a point patch (point.gid), and a new primitive (primitive.gid)
+    std::map< std::pair<int,int>, std::pair<_Scalar,int> > dists; // < <point.gid, primitives.gid>, <sumdist,|points|> >
+
     TIC
     #pragma omp for schedule(dynamic,8)
     for ( int pid = 0; pid < points.size(); ++pid )
     {
-        float min_dist = FLT_MAX, tmp; int min_gid = 0;
+        float min_dist = FLT_MAX, tmp;
+        int   min_gid = 0;
         for ( int gid = 0; gid != primitives.size(); ++gid )
         {
             tmp = std::abs( primitives[gid].getDistance(points[pid].template pos()) );
             if ( tmp < 0.f )
                 std::cerr << "asdf: " << tmp << std::endl;
+            std::pair<int,int> key( points[pid].getTag(PointPrimitiveT::GID), gid );
+            #pragma omp critical
+            {
+                dists[ key ].first += tmp;
+                dists[ key ].second++;
+            }
+
             if ( (tmp < min_dist) && (tmp < scale) )
             {
                 min_dist = tmp;
@@ -450,6 +380,14 @@ int main(int argc, char *argv[])
                           , GF2::_3d::PrimitiveContainerT
                           , PclCloudT
                           >( argc, argv);
+    }
+    else if ( GF2::console::find_switch(argc,argv,"--assign") )
+    {
+        return GF2::reassignCli< GF2::PointContainerT
+                               , GF2::_3d::InnerPrimitiveContainerT
+                               , GF2::_3d::PrimitiveContainerT
+                               , PclCloudT
+                               >( argc, argv);
     }
     else if ( GF2::console::find_switch(argc,argv,"--3D") )
     {
