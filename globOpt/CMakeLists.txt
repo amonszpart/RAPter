@@ -42,7 +42,7 @@ IF(WITH_GUROBI)
     ADD_DEFINITIONS(-DGF2_WITH_GUROBI)
 ENDIF()
 
-SET( WITH_PEARL OFF CACHE BINARY "Compile pearl executable.")
+SET( WITH_PEARL ON CACHE BINARY "Compile pearl executable.")
 #SET( WITH_PEARL YES CACHE BINARY "Compile pearl executable." FORCE)
 SET( WITH_RSAC ON CACHE BINARY "Compile ransac executable." FORCE)
 SET( WITH_PLYCONVERTER ON CACHE BINARY "Compile ply-converter executable.")
@@ -72,6 +72,12 @@ SET( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE} -O2"
 
 #________________DEPS________________#
 #____________________________________#
+
+find_package(OpenMP)
+if (OPENMP_FOUND)
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+endif()
 
 #OpenGL
 FIND_PACKAGE( OpenGL REQUIRED )
@@ -212,6 +218,7 @@ SET( GLOBOPT_HPP_LIST
     include/globfit2/util/pcl_util.hpp
     include/globfit2/util/containers.hpp
     include/globfit2/processing/util.hpp
+    include/globfit2/comparison/impl/reassign.hpp
 )
 
 SET( GLOBOPT_H_LIST
@@ -283,15 +290,16 @@ IF(WITH_PEARL)
     ## Deps
     SET( PATH_PEARL_ROOT ${PATH_GLOBOPT_DEPS_ROOT}/pearl CACHE PATH "Pearl root" FORCE )
     SET( WITH_GCO ON CACHE BINARY "Use alpha-expansion library")
-    SET( PATH_GCO_ROOT ${PATH_GLOBOPT_DEPS_ROOT}/gco-v3-0 CACHE PATH "alpha-expansion root" FORCE )
+    SET( PATH_GCO_ROOT ${PATH_GLOBOPT_DEPS_ROOT}/gco-v3-float CACHE PATH "alpha-expansion root" FORCE )
 
     # GCO
     IF(WITH_GCO)
         add_library( libgco-v3 SHARED IMPORTED )
-        set_property( TARGET libgco-v3 PROPERTY IMPORTED_LOCATION_RELEASE ${PATH_GCO_ROOT}/build/Release/lib/libgco-v3-0.so )
-        set_property( TARGET libgco-v3 PROPERTY IMPORTED_LOCATION_DEBUG ${PATH_GCO_ROOT}/build/Debug/lib/libgco-v3-0d.so )
+        set_property( TARGET libgco-v3 PROPERTY IMPORTED_LOCATION_RELEASE ${PATH_GCO_ROOT}/build/Release/lib/libgco-v3-0-float.so )
+        set_property( TARGET libgco-v3 PROPERTY IMPORTED_LOCATION_DEBUG ${PATH_GCO_ROOT}/build/Debug/lib/libgco-v3-0-floatd.so )
         SET( GCO_INCLUDE_DIRS ${PATH_GCO_ROOT}/include )
         SET( GCO_LIBRARIES "libgco-v3" )
+        add_definitions( -DGCO_ENERGYTYPE=float )
     ENDIF(WITH_GCO)
 
     MESSAGE( STATUS ${PATH_PEARL_ROOT} )
@@ -329,9 +337,10 @@ IF(WITH_PLYCONVERTER)
 
     add_executable( ${PLYCONVERTER_TARGET} ${PLYCONVERTER_SRC} ${PLYCONVERTER_H})
     TARGET_LINK_LIBRARIES( ${PLYCONVERTER_TARGET}
-        opencv_core
+        opencv_calib3d
         opencv_highgui
         opencv_imgproc
+        opencv_core
         ${PCL_LIBRARIES}
         boost_filesystem
     )

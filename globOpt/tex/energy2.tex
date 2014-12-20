@@ -1,0 +1,113 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
+\usepackage[]{algorithm2e}
+\usepackage{algorithmic}
+
+% algorithmic indent
+\newlength\myindent
+\setlength\myindent{2em}
+\newcommand\bindent{%
+  \begingroup
+  \setlength{\itemindent}{\myindent}
+  \addtolength{\algorithmicindent}{\myindent}
+}
+\newcommand\eindent{\endgroup}
+%   v2
+\newcommand{\pushcode}[1][1]{\hskip\dimexpr#1\algorithmicindent\relax}
+
+% probability
+\newcommand{\pr}[1]{\textit{\Large Pr~}(#1)}
+\let\oldeqref\eqref
+\renewcommand{\eqref}[1]{ {\it Eq. \oldeqref{#1}} }
+\newcommand{\INDSTATE}[1][1]{\STATE\hspace{#1\algorithmicindent}}
+\newcommand{\MYCOMMENT}[1]{{\scriptsize \COMMENT{-- -- #1 -- --}}}
+
+
+\begin{document}
+\section{QP v.2}
+\begin{flalign*}
+    \textit{binary variables: } \chi_{i,j} &=~ 
+    \begin{cases}
+        1 \textit{, line $L_{i,j}$ selected} \\
+        0 \textit{, line $L_{i,j}$ not selected}
+    \end{cases} \\
+    %
+    E_{unary}^{ij} &= \sum_{k,~ p_k \in Points} 
+        \begin{cases} 
+            d(L_{i,j}, p_k)^2 &\textit{, if $d(L_{i,j}, p_k) < scale$} \\ 
+            0                 &\textit{, otherwise}
+         \end{cases} \\
+    %
+    E_{pairwise}^{ij,kl} &= deg\_angle( L_{ij}, L_{kl} ) \\
+    %
+    \textit{ minimize } \\
+    &\sum \chi_{i,j} \cdot E_{unary}^{ij} + \sum \chi_{k,l} \cdot E_{pairwise}^{ij,kl} \cdot \chi_{i,j} + \sum \chi_{i,j} \\
+    %
+    \textit{ subject to: }
+    &\sum_{m, ~ d(~p_m,~L_{ij}~) ~~~<~ scale} \chi_{ij} >= 1
+\end{flalign*}
+
+\section{Mixed node formulation to solve with alpha-expansion}
+
+\begin{flalign*}
+	\text{Nodes: }~V~&= \{ ~ p_k \in \textit{Points} ,~ l_i \in \textit{Lines} ~\} \\
+	\text{Edges: }~E~&= \{ ~ <p_k,p_h> \text{ s.t. } d(p_k,p_h) < \textit{scale}, \\
+				     &     ~ <p_k,l_i> \text{ s.t. } d(p_k,l_i) < \textit{scale}, \\ 
+                     &     ~ <l_i,l_j> \text{ s.t. } i~!=~j ~\}
+\end{flalign*}
+
+\par\textbf{Interpretation:} Both lines and points are nodes. Lines are fully connected, points are connected both to other points and lines within "scale" distance \\
+
+\par\textbf{Labels:} \begin{itemize}
+			\item $''l_i'' \in \{''l_0'' \ldots ''l_{L-1}''\}$ a point's label, meaning the point is assigned to line $l_i$
+            \item $''0''$ a line's label, meaning the line is not selected
+            \item $''1''$ a line's label, meaning the line is selected
+        \end{itemize}
+
+\par\textbf{Weights setup:}
+\begin{align}
+\textit{Notation: } & U(Node,Label) = unary\_weight \notag \\
+\notag
+\\ & U(~p_k~,~''l_j''~) = d(~p_k~,~l_j~) \label{eq:primdist}
+\\ & U(~p_k~,~''0''~) = C_{outlier} \label{eq:outlier_point}
+\\ & U(~p_k~,~''1''~) = \infty \label{eq:point_one_label}
+\\ & U(~l_i~,~''l_j''~) = \infty, ~~~&\text{ for $i~==~j$ and $i~!=~j$ } \label{eq:line_line_label}
+\\ & U(~l_i~,~''0''~) = 0 \label{eq:line_null_label}
+\\ & U(~l_i~,~''1''~) = 1 \label{eq:line_one_label}
+\end{align}
+
+\begin{align}
+\textit{Notation: } & P(Node_0, Node_1, Label_0, Label_1) = pairwise\_weight \notag \\
+\notag
+\\ & P(~p_k~,~p_h~,~''l_i''~,~''l_i''~) = 0 \label{eq:point_point_same}
+\\ & P(~p_k~,~p_h~,~''l_i''~,~''l_j''~) = \frac{1}{d(~p_k~,~p_h~)}, ~~~&\text{ for $i~!=~j$ } \label{eq:point_point_diff}
+%
+\\ & P(~p_k~,~l_i~,~''l_i''~,~''0''~) = \infty \label{eq:point_line_off}
+\\ & P(~p_k~,~l_i~,~''l_i''~,~''1''~) = 0 \label{eq:point_line_on} %d(~p_k~,~l_i~)
+%
+\\ & P(~p_k~,~l_i~,~''l_j''~,\{~''0''~,~''1''~\}) = 0, ~~~&\text{ for $i~!=~j$ } \label{eq:point_other_line}
+\\ & P(~l_i~,~l_j~,~''0''~,\{~''0''~,~''1''~\}) = 0 \label{eq:line_line_off}
+\\ & P(~l_i~,~l_j~,~''1''~,~''1'') = angle(~l_i~,~l_j~) \label{eq:line_line_on}
+\end{align}
+
+\par\textbf{Interpretation:}\\
+\textit{Eq}~\ref{eq:primdist}: Point to primitive distance \\
+\textit{Eq}~\ref{eq:outlier_point}: Point outlier cost is a fixed scalar\\
+\textit{Eq}~\ref{eq:point_one_label}: Forbidden label for point, so unary cost $\infty$ \\
+\textit{Eq}~\ref{eq:line_line_label}: Forbidden label for line, so unary cost $\infty$ \\
+\textit{Eq}~\ref{eq:line_null_label}: Line is not selected, contributes 0 to complexity \\
+\textit{Eq}~\ref{eq:line_one_label}: Line is selected, contributes 1 to complexity \\
+\textit{Eq}~\ref{eq:point_point_same}: Point-point local neighbourhood smoothness term (from Pearl), no penalty for same labels (neighbouring points assigned to same line)\\
+\textit{Eq}~\ref{eq:point_point_diff}: Point-point local neighbourhood smoothness term, penalty for neighbouring points assigned to different lines\\
+\textit{Eq}~\ref{eq:point_line_off}: Point is assigned to line $l_i$, that is not selected $\rightarrow$ not allowed, so pairwise cost is $\infty$ \\
+\textit{Eq}~\ref{eq:point_line_on}: Point is assigned to line $l_i$, that is selected $\rightarrow$ allowed, and already encoded in unary cost, so nothing to do here \\
+\textit{Eq}~\ref{eq:point_other_line}: Point is not assigned to line $l_j$, so this edge is obsolete for the moment \\
+\textit{Eq}~\ref{eq:line_line_off}: Line $l_i$ is off, so no angular mismatch cost \\
+\textit{Eq}~\ref{eq:line_line_on}: Both lines on, so angular mismatch cost \\
+
+\end{document}

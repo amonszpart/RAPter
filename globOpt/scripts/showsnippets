@@ -1,0 +1,37 @@
+#show
+../globOptVis --show3D --scale 0.05 --pop-limit 100 -p primitives_it9.bonmin.csv -a points_primitives_it8.csv --title "GlobOpt - [Dir-Colours] 8 iteration output" --use-tags --no-clusters --statuses -1,1 --no-pop  --no-rel --no-scale --no-rel --draw-mode 2 --hull-alpha 10 --save-poly
+
+#show patch
+../globOptVis --show3D --scale 0.05 --pop-limit 100 -p patches.csv -a points_primitives.csv --title "GlobOpt - Segmentation" --use-tags --no-clusters --statuses -1,1 --no-pop  --no-rel --no-scale --draw-mode 2 --hull-alpha 10 --normals 5 --save-poly
+
+
+
+
+
+
+
+
+
+
+
+# showours
+../globOptVis --show3D --scale 0.05 --pop-limit 10 -p primitives_it5.bonmin.csv -a points_primitives_it4.csv --title "GlobOpt - [Dir-Colours] 8 iteration output" --use-tags --no-clusters --statuses -1,1 --no-pop  --no-rel --no-scale --draw-mode 2 --hull-alpha 10 --save-poly
+
+
+#showschnabel
+../globOptVis --show3D --scale 0.05 --pop-limit 10 -p primitives.ransac.csv --title "GlobOpt - Schnbel" --no-clusters --no-pop --no-rel --no-scale --dir-colours --assoc points_primitives.ransac.csv --use-tags --draw-mode 2 --hull-alpha 10 --save-poly
+
+#shoowransac
+../globOptVis --show3D --scale 0.05 --pop-limit 10 -p primitives.ransac.csv --title "GlobOpt - Ransac" --no-clusters --no-pop --no-rel --no-scale --dir-colours --assoc points_primitives.ransac.csv --use-tags --draw-mode 2 --hull-alpha 10 --save-poly
+
+
+# run ransac
+../ransac --3D --scale 0.02 --cloud cloud.ply -p patches.csv -a points_primitives.csv 
+
+
+#showransac2D
+../globOptVis --show --scale 0.05 --pop-limit 10 -p primitives.ransac.csv --title "GlobOpt - Ransac" --no-clusters --no-pop --no-rel --no-scale --dir-colours --assoc points_primitives.ransac.csv --use-tags --draw-mode 2 --hull-alpha 10 --save-poly
+# showpearl2D
+../globOptVis --show --scale 0.05 --pop-limit 10 -p primitives.pearl.csv --title "GlobOpt - Pearl" --no-clusters --no-pop --no-rel --no-scale --dir-colours --assoc points_primitives.pearl.csv --use-tags --draw-mode 2 --hull-alpha 10 --save-poly
+#showours2D
+../globOptVis --show --scale 0.05 --pop-limit 10 -p primitives_it5.bonmin.csv -a points_primitives_it4.csv --title "GlobOpt" --use-tags --no-clusters --statuses -1,1 --no-pop  --no-rel --no-scale --draw-mode 2 --hull-alpha 10 --save-poly --dir-colours

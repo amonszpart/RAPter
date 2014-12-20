@@ -1,0 +1,41 @@
+// --method gf2 --datacost 0.01 --pwcost 1000 --nthreads 16 --thread_depth 500 --sample_k 1.1 --sample_scale 1 --scale 0.05 --seed 123456 --3D --input-cloud /home/bontius/workspace/SmartGeometry/ransacTest/data/Maya_temple_cor.ply --K 4
+    // --method gf2 --gt stairs --gt-nlines 6 --gt-spacing 4 --gt-decay 0.2 --nrects 8 --nangles 3 --noise 0.001 --datacost 0.01 --pwcost 1000 --npoints 2000 --nthreads 128 --thread_depth 500 --sample_k 1.1 --sample_scale 1 --nodebug --scale 0.05 --seed 123456 --3D --input-cloud /home/bontius/Downloads/house_050_noisy00000.pcd --K 4
+    // --method gf2 --gt stairs --gt-nlines 6 --gt-spacing 4 --gt-decay 0.15 --nrects 2 --nangles 2 --noise 0.005 --datacost 0.5 --pwcost 50 --npoints 300 --nthreads 128 --thread_depth 300 --sample_k 1.15 --sample_scale 1.5 --nodebug --scale 0.05 --show-clusters --trunc_at 0.4
+    // --method gf2 --gt pearl0 --gt-nlines 6 --gt-spacing 60 --gt-decay 0.15 --nrects 2 --nangles 2 --noise 0.005 --datacost 0.5 --pwcost 50 --npoints 300 --nthreads 128 --thread_depth 300 --sample_k 1.15 --sample_scale 1.5 --nodebug --scale 0.05 --show-clusters --trunc_at 0.4
+    // --method gf2 --gt stratified --gt-nlines 6 --gt-spacing 60 --gt-decay 0.15 --nrects 2 --nangles 2 --noise 0.005 --datacost 0.5 --pwcost 50 --npoints 300 --nthreads 128 --thread_depth 300 --sample_k 1.15 --sample_scale 1.5 --nodebug --scale 0.05 --show-clusters
+    // --method pearl --beta 1000 --smooth_weight 30000 --gt pearl0 --gt-nlines 6 --gt-spacing 60 --gt-decay 0.15 --nrects 8 --nangles 3 --noise 0.005 --datacost 0.5 --pwcost 50 --npoints 400 --nthreads 128 --thread_depth 300 --sample_k 1.0 --sample_scale 2 --nodebug --scale 0.05 --seed 123456
+
+    // Sunday: --method gf2 --gt stairs --gt-nlines 6 --gt-spacing 4 --gt-decay 0.2 --nrects 8 --nangles 3 --noise 0.001 --datacost 0.5 --pwcost 1000 --npoints 2000 --nthreads  32 --thread_depth 500 --sample_k 1.2 --sample_scale 1 --nodebug --scale 0.05 --seed 123456 --3D --input-cloud /home/bontius/Downloads/house_050_noisy00000.pcd --K 3
+
+// smooth cube ok
+--method gf2 --datacost 0.01 --pwcost 10000 --nthreads 128 --thread_depth 500 --sample_k 1.2 --sample_scale 1 --scale 0.01 --seed 123456 --3D --input-cloud /home/bontius/workspace/SmartGeometry/ransacTest/data/lafarge/smooth_cube.ply --K 6 --npoints 10000
+
+
+# 4rects_missing points
+./pcd_viewer --show /home/bontius/workspace/SmartGeometry/ransacTest/data/05_4rects_lshape/gf2/lines.txt
+./pcd_viewer --show /home/bontius/workspace/SmartGeometry/ransacTest/data/05_4rects_lshape/pearl/lines.txt
+# smooth-cube
+./pcd_viewer --show /home/bontius/workspace/SmartGeometry/ransacTest/data/smooth_cube_20140408_1117/planes.txt
+# l-shaped house
+./pcd_viewer --show /home/bontius/workspace/SmartGeometry/ransacTest/data/lshape_20140409_1315/planes.txt
+# floorplan
+./pcd_viewer --show /home/bontius/workspace/SmartGeometry/ransacTest/data/06_floorplan/gf2/lines.txt
+
+# 4rects_missing points - alpha-exp 
+## lambdas << 5.f, 100000.f, 0.01f, 0.f;
+./post_optimize /home/bontius/workspace/SmartGeometry/ransacTest/data/05_4rects_lshape/gf2/lines.txt /home/bontius/workspace/SmartGeometry/ransacTest/data/05_4rects_lshape/gf2/cloud.pcd
+# floorplan
+ ./post_optimize /home/bontius/workspace/SmartGeometry/ransacTest/data/06_floorplan/gf2/lines.txt /home/bontius/workspace/SmartGeometry/ransacTest/data/06_floorplan/gf2/cloud.pcd --gap 0.1f
+
+
+- generation: centroids
+- second round...-> all friends
+- energy cost: exp( -0.1 + 50 * min_ang_diff ) - 1
+
+# lshape house 3D
+/home/bontius/workspace/SmartGeometry/ransacTest/data/lshape_20140409_1315/planes.txt /home/bontius/workspace/SmartGeometry/ransacTest/data/lshape_20140409_1315/cloud.pcd
+
+# show 3D house:
+Release/bin/post_optimize /home/bontius/workspace/SmartGeometry/ransacTest/data/lshape_20140409_1415_1024x1000/planes.txt /home/bontius/workspace/SmartGeometry/ransacTest/data/lshape_20140409_1415_1024x1000/cloud_20140409_1415.pcd 
+
+

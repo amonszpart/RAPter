@@ -1,0 +1,26 @@
+if [[ -z "$1" ]]
+then
+	build_type=Release
+else
+	build_type=$1
+fi
+
+cd ../../geometry-tools/PCLTools/build/
+cmake -DCMAKE_BUILD_TYPE=$1 ..
+make -j 8
+
+cd ../../../SmartGeometry/AMUtil/build/
+cmake -DCMAKE_BUILD_TYPE=$1 ..
+make -j 8
+
+cd ../../gf2Cuda/build
+cmake -DCMAKE_BUILD_TYPE=$1 ..
+make -j 8
+
+cd ../../../../KinfuSuperRes/build
+cmake -DCMAKE_BUILD_TYPE=$1 ..
+make -j 8
+
+cd ../../../SmartGeometry/ransacTest/build/
+cmake -DCMAKE_BUILD_TYPE=$1 ..
+make -j 8

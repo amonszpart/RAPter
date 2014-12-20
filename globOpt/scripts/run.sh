@@ -50,14 +50,14 @@ fi
 if [ -n "$6" ]; then
         smallThresh=$6;
 else
-        smallThresh="64";
+        smallThresh="1";
 fi
 
 #d=`../divide.py 2 3`;
 
-anglegens="90"; # Desired angle generators in degrees. Default: 90.
-nbExtraIter=20;  # iteration count. Default: 2.
-dirbias="1";	# not-same-dir-id cost offset. Default: 0. Don't use, if freqweight is on.
+anglegens="60,90"; # Desired angle generators in degrees. Default: 90.
+nbExtraIter=10;  # iteration count. Default: 2.
+dirbias="0";	# not-same-dir-id cost offset. Default: 0. Don't use, if freqweight is on.
 freqweight="1000"; # dataterm = (freqweight / #instances) * datacost. Default: 0. 1 might be too strong...todo
 adopt="0";      # Adopt points argument. Default: 0
 # In candidate generation, divide angle limit with this to match copies. Default: 1. Set to 10, if too many candidates (variables).
@@ -246,7 +246,7 @@ do
     # reset to false, meaning we will continue decreasing, unless generate flips it again
     decrease_level=true
     
-    if [ $smallThresh -lt $smallThreshlimit ]; then
+    if [ $smallThresh -lt $smallThreshlimit ] || [ $smallThresh -eq "0" ]; then
         smallThresh=$smallThreshlimit
         #smallThresh=1
         adopt="1"

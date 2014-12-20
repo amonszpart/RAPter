@@ -1,0 +1,354 @@
+terminology:
+	patch: a location with some points assigned to it, and 0, one or more primitives explaining it
+	candidate: a primitive that could explain a patch
+
+
+subsample 5k-20k points
+normalize scene unit cube
+
+orient points
+    fit line/plane to scale radius sphere, or 3 closest points
+
+regiongrow (parameters: 2 x scale, 18 degrees)
+	pick an unassigned oriented point 
+	create a patch with points as center and point normal as patch orientation
+	do a 2xscale radius search
+	for each neighbour:
+		if point_normal . patch avg orientation < 18 degrees
+			add point to patch
+			update patch centroid and patch avg orientation
+			add point to to_visit
+
+Iterate:
+	Candidate gen (parameters: 9 degrees, patch-pop-limit 25, preferred angles 0,90,180)
+		label patches by point population: 
+			if (#assigned points < 25):
+				patch is small
+		
+		copy all input candidates to output (even small patches, TODO: discuss)
+		for all primitive pairs l_ij, l_kl (n over 2 pairs):
+			if  l_ij . l_kl < 9 degrees AND
+				both patches big:
+
+				closest_angle = estimate closest perfect angle between l_ij and l_kl
+				if direction l not copied to patch i before:
+					rotate l_kl by -closest angle, and add to patch i
+				if direction j not copied to patch k before:
+					rotate l_ij by  closest angle, and add to patch k
+				// TODO: discuss this for smaller perfect angles (i.e. for 20 degrees, both -20, and -40 might be a good candidate)
+
+	ProblemSetup( params: scale 0.01, unary 10000, pairwise 0.5, cmplxity 1, 
+				  patch-pop-limit 25, angles 0,90,180, freq-weight 0.5, constr-mode large_patch_only OR hybrid )
+
+		for each patch i
+			for each candidate j
+				add binary variable x_ij
+
+		// linear terms
+		for each patch i
+			for each candidate l_ij
+				for each point in patch i
+					datacost_ij += distance(p_i, l_ij)^2
+
+				datacost_ij *= (#points_i > 0) ? unary_weight / #points_i 
+								   		       : 2 * unary_weight 			// empty patches are expensive to assign primitive for
+				if ( freq_weight > 0 )
+					datacost_ij *= freq_weight / (#patches with direction j in previous output) // data_weight = (pw * freq_weight / #j)
+
+				datacost_ij += complexity_weight 							// complexity is a linear term
+				
+		// quadratic terms
+		for each patch i
+			for each candidate l_ij
+				for each patch k
+					for each candidate l_kl
+						// truncated cost function (truncation experimental)
+						pairwise_cost_ij_kl = pairwise_weight * min( sqrt(0.5degree), sqrt(angle(l_ij,l_kl)) )
+
+		// constraints
+		for each patch i
+			if #points_i > patch-pop-limit(25)
+				add constraint \sum x_ij >= 1
+			else if ( constr_mode == hybrid ) // points in small patches need a nearby line selected
+				for each point p_m assigned to patch i
+					for each patch k
+						for each candidate l
+							if dist(l_kl,p) < scale
+								add l_kl to explainers_{p_m}
+					add constraint \sum explainers_{p_m} >= 1
+
+	Merging( parameters: scale )
+		if ( do_adopt_points ) // experimental, conservative: do_adopt_points = false
+			for each point assigned to a small patch
+				assign point to closest finite primitive (line/planesegment)
+
+		for each pair l_ij, l_kl of selected primitives
+			if they contain each other in a scale sized box
+				points_m = points_i + points_k
+
+				if 2D
+					patch_m.centroid = avg( points_m )
+					create candidate l_mj and l_ml (from the two directions of l_ij and l_kl)
+					candidate l_mn = refit line to points_m
+				if 3D
+					candidate l_mn = refit line to points_m
+					create candidate l_mj and l_ml (from the two directions of l_ij and l_kl) at position of l_mn
+
+	Reiterate
+
+
+_______________________
+
+terminology:
+	patch: a location with some points assigned to it, and 0, one or more primitives explaining it
+	candidate: a primitive that could explain a patch
+
+
+subsample 5k-20k points
+normalize scene unit cube
+
+orient points
+    fit line/plane to scale radius sphere, or 3 closest points
+
+regiongrow (parameters: 2 x scale, 18 degrees)
+	pick an unassigned oriented point 
+	create a patch with points as center and point normal as patch orientation
+	do a 2xscale radius search
+	for each neighbour:
+		if point_normal . patch avg orientation < 18 degrees
+			add point to patch
+			update patch centroid and patch avg orientation
+			add point to to_visit
+
+Iterate:
+	Candidate gen (parameters: 9 degrees, patch-pop-limit 25, preferred angles 0,90,180)
+		label patches by point population: 
+			if (#assigned points < 25):
+				patch is small
+		
+		copy all input candidates to output (even small patches, TODO: discuss)
+		for all primitive pairs l_ij, l_kl (n over 2 pairs):
+			if  l_ij . l_kl < 9 degrees AND
+				both patches big:
+
+				closest_angle = estimate closest perfect angle between l_ij and l_kl
+				if direction l not copied to patch i before:
+					rotate l_kl by -closest angle, and add to patch i
+				if direction j not copied to patch k before:
+					rotate l_ij by  closest angle, and add to patch k
+				// TODO: discuss this for smaller perfect angles 
+                                // (i.e. for 20 degrees, both -20, and -40 might be a good candidate)
+
+	ProblemSetup( params: scale 0.01, unary 10000, pairwise 0.5, cmplxity 1, 
+				  patch-pop-limit 25, angles 0,90,180, freq-weight 0.5, 
+                                    constr-mode large_patch_only OR hybrid )
+
+		for each patch i
+			for each candidate j
+				add binary variable x_ij
+
+		// linear terms
+		for each patch i
+			for each candidate l_ij
+				for each point in patch i
+					datacost_ij += distance(p_i, l_ij)^2
+
+				datacost_ij *= (#points_i > 0) ? unary_weight / #points_i 
+							   		       : 2 * unary_weight 			
+                                    // empty patches are expensive to assign primitive for
+				if ( freq_weight > 0 )
+                                        // data_weight = (pw * freq_weight / #j)
+					datacost_ij *= freq_weight / (#patches with direction j in previous output) 
+
+                                // complexity is a linear term				
+                                datacost_ij += complexity_weight 							
+                                
+				
+		// quadratic terms
+		for each patch i
+			for each candidate l_ij
+				for each patch k
+					for each candidate l_kl
+						// truncated cost function (truncation experimental)
+						pairwise_cost_ij_kl = pairwise_weight * min( sqrt(0.5degree), 
+                                                                                                                       sqrt(angle(l_ij,l_kl)) )
+
+		// constraints
+		for each patch i
+			if #points_i > patch-pop-limit(25)
+				add constraint \sum x_ij >= 1
+			else if ( constr_mode == hybrid ) // points in small patches need a nearby line selected
+				for each point p_m assigned to patch i
+					for each patch k
+						for each candidate l
+							if dist(l_kl,p) < scale
+								add l_kl to explainers_{p_m}
+					add constraint \sum explainers_{p_m} >= 1
+
+	Merging( parameters: scale )
+		if ( do_adopt_points ) // experimental, conservative: do_adopt_points = false
+			for each point assigned to a small patch
+				assign point to closest finite primitive (line/planesegment)
+
+		for each pair l_ij, l_kl of selected primitives
+			if they contain each other in a scale sized box
+				points_m = points_i + points_k
+
+				if 2D
+					patch_m.centroid = avg( points_m )
+					create candidate l_mj and l_ml (from the two directions of l_ij and l_kl)
+					candidate l_mn = refit line to points_m
+				if 3D
+					candidate l_mn = refit line to points_m
+					create candidate l_mj and l_ml (from the two directions of l_ij and l_kl) 
+                                            at position of l_mn
+
+	Reiterate
+
+
+
+
+
+
+
+
+
+++++++++++++++++++++
+New
+
+ 
+
+
+
+
+Subsample 5k-20k points
+Normalize scene unit cube
+
+Orient points
+
+
+Regiongrow (parameters: 2 x scale, 18 degrees)
+
+
+
+// small patches won't have anything to calculate size by in the second iteration, 
+// so we need to store the initially fit segment sizes to sort/categorize them 
+// a patch will only change from small to big, not the other way, so this is fine
+for patches
+    store primitive_segment_size 
+
+CANDIDATE_SIZE_LIMIT = scale
+
+Iterate:
+        estimate dominant directions:
+            dominant = have more, than 25% * max_dominant_dir_size instances
+
+	Candidate gen (parameters: 9 degrees, patch-size-limit CANDIDATE_SIZE_LIMIT, 
+                               preferred angles 0,90,180)
+                label patches by stored primitive segment size: 
+                    if (primitive_segment_size < CANDIDATE_SIZE_LIMIT)
+                        patch is small in this iteration
+                    else if patch was small in prev iteration:
+                        label patch as new_big
+                        
+		copy all large input primitives to output
+
+                // this part is only happening for always large patches:
+        	for all primitive pairs l_ij, l_kl (n over 2 pairs):
+                        if  (l_ij . l_kl < 9 degrees) AND (both patches big):
+
+				closest_angle = estimate closest perfect angle between l_ij and l_kl
+				if direction l not copied to patch i before:
+					rotate l_kl by -closest angle, and add to patch i
+				if direction j not copied to patch k before:
+					rotate l_ij by  closest angle, and add to patch k
+				// TODO: discuss this for smaller perfect angles 
+                                // (i.e. for 20 degrees, both -20, and -40 might be a good candidate)
+
+                for all new_big patches:
+                    copy all directions to patch from dominant input primitives, 
+
+	ProblemSetup( params: scale=0.01, unary=10000, pairwise=0.5, cmplxity=1, 
+                              smooth_weight=cost(17degrees), patch-pop-limit=CANDIDATE_SIZE_LIMIT, 
+                              angles={0,90,180}, freq-weight=0.5, 
+                              constr-mode=large_patch_only )
+
+		for each patch i
+			for each candidate j
+				add binary variable x_ij
+
+		// linear terms
+		for each patch i
+			for each candidate l_ij
+				for each point in patch i
+					datacost_ij += distance(p_i, l_ij)^2
+
+                                // empty patches are expensive to assign primitive for
+				datacost_ij *= (#points_i > 0) ? unary_weight / #points_i 
+							   		     : 2 * unary_weight 			
+                                    
+				if ( freq_weight > 0 )
+                                        // data_weight = (pw * freq_weight / #j)
+					datacost_ij *= freq_weight / 
+                                                              (#patches with direction j in previous output)
+                                
+
+                                // complexity is a linear term				
+                                datacost_ij += complexity_weight 							
+                                
+				
+		// quadratic terms
+		for each patch i
+			for each candidate l_ij
+				for each patch k
+					for each candidate l_kl
+						// truncated cost function (truncation experimental)
+						pairwise_cost_ij_kl = pairwise_weight * 
+                                                                                 min( sqrt(0.5degree),                                                                                                                          sqrt(angle(l_ij,l_kl)) )
+                                                 if j != l 
+                                                    dist = segment2segment spatial distance
+                                                    // pearl smoothness term:
+                                                    pairwise_cost_ij_kl += smoothness_weight * 
+                                                                                      exp ( -1.f * dist^2 / 0.25);
+
+		// constraints
+		for each patch i
+            	    if patch_size < CANDIDATE_SIZE_LIMIT
+			add constraint \sum x_ij >= 1
+
+	
+
+
+
+
+
+
+
+
+        Merging( parameters: scale )
+
+
+		
+
+            for each pair l_ij, l_kl of selected primitives
+			if they contain each other in a scale sized box
+				points_m = points_i + points_k
+
+				if 2D
+					patch_m.centroid = avg( points_m )
+					create candidate l_mj and l_ml 
+                                            (from the two directions of l_ij and l_kl)
+					candidate l_mn = refit line to points_m
+				if 3D
+					candidate l_mn = refit line to points_m
+					create candidate l_mj and l_ml at position of l_mn
+                                            (from the two directions of l_ij and l_kl)
+
+        CANDIDATE_SIZE_LIMIT /= 2
+
+	if ( iteration < 3 ) 
+            Reiterate
+
+	if ( do_adopt_points )
+		for each point assigned to a small patch
+			assign point to closest finite primitive (line/planesegment)

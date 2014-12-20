@@ -1,0 +1,345 @@
+\documentclass[11pt,a3paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
+\usepackage[]{algorithm2e}
+\usepackage{algorithmic}
+
+% algorithmic indent
+\newlength\myindent
+\setlength\myindent{2em}
+\newcommand\bindent{%
+  \begingroup
+  \setlength{\itemindent}{\myindent}
+  \addtolength{\algorithmicindent}{\myindent}
+}
+\newcommand\eindent{\endgroup}
+%   v2
+\newcommand{\pushcode}[1][1]{\hskip\dimexpr#1\algorithmicindent\relax}
+
+% probability
+\newcommand{\pr}[1]{\textit{\Large Pr~}(#1)}
+\let\oldeqref\eqref
+\renewcommand{\eqref}[1]{ {\it Eq. \oldeqref{#1}} }
+\newcommand{\INDSTATE}[1][1]{\STATE\hspace{#1\algorithmicindent}}
+\newcommand{\MYCOMMENT}[1]{{\scriptsize \COMMENT{-- -- #1 -- --}}}
+
+
+\begin{document}
+
+\pagebreak
+\section{Algorithm v4.0}
+
+\begin{algorithm}[H]
+\begin{algorithmic}[1]
+	\STATE \textbf{function} globFit++() $\rightarrow \langle [solution\_candidates], confidence \rangle$
+	\FOR { $scale \in scales$ }
+		\STATE $[candidates] \leftarrow generateCandidates( scale )$
+		\STATE $[candidates] \leftarrow spawnCandidates([candidates],scale)$
+		\STATE $\langle [selected\_candidates], confidence \rangle \leftarrow selectCandidates([candidates],scale)$
+		\STATE
+		\IF { $confidence > solution\_confidence$ }
+			\STATE $solution\_confidence = confidence$
+			\STATE $[solution\_candidates] = [selected\_candidates]$
+		\ENDIF
+	\ENDFOR
+	\STATE
+	\RETURN $\langle [solution\_candidates], solution\_confidence \rangle$
+\end{algorithmic}
+\caption{globFit++ 4.0 outline}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{generateCandidates()}
+\begin{algorithmic}[1]
+	\STATE \textbf{function} $generateCandidates(scale) \rightarrow [candidates]$
+    \FOR{ $point_i \in points$ }
+		\STATE $neighbourhood_{p_i}$ $\leftarrow scale$
+		\STATE $candidates_i \leftarrow$ LS fit line to $neighbourhood_{p_i}$, refit
+	\ENDFOR ~ \MYCOMMENT{ points }
+	\RETURN $[candidates]$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{spawnCandidates()}
+\begin{algorithmic}[1]
+	\STATE \textbf{function} $spawnCandidates([candidates],scale) \rightarrow [candidates]$
+	\STATE $N = candidates.size()$
+	\FOR { $l=0$ to $N$}
+		\STATE \MYCOMMENT{ replicate candidates at other neighbourhoods }
+		\FOR { $point_i \in points$ }
+			\STATE \MYCOMMENT{ primitive distance to point}
+			\IF { $dist(point_i,candidates[l]) > neighbourhood\_radius(scale)$ }
+				\STATE \MYCOMMENT{ sparsify, randomly, or track neighbourhoods replicated to }
+				\IF { $RAND() < inverseNeighbourhoodDensity$ } 
+					\STATE $candidates$.put$(candidates[l]$.moveTo$(point_i))$
+				\ENDIF ~ \MYCOMMENT{ sparse enough }
+			\ENDIF ~ \MYCOMMENT{ far enough }
+		\ENDFOR ~ \MYCOMMENT{ points }
+	\ENDFOR ~ \MYCOMMENT{ candidates }
+	\RETURN $[candidates]$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{selectCandidates()}
+\begin{algorithmic}[1]
+	\STATE \textbf{function} selectCandidates$(scale) \rightarrow \langle [candidates],energy\rangle$
+	\STATE $k_0 = 0$
+	\STATE \MYCOMMENT{ explore in log space, then linearly around best candidate(s)}
+	\FOR {$method \in \langle LOG2, LIN \rangle$}
+	\STATE $[limits] = ((method == LOG2) ~?~ [1,candidates.size()] ~ : ~ [k_0-k_0/2,k_0+k_0/2]) $
+	\STATE $Ks \leftarrow $generateKs$( method, [limits], k_0 )$
+	\STATE \MYCOMMENT{ sweep Ks }
+	\STATE $\langle [min\_candidates],min\_energy\rangle = \langle [~],FLT\_MAX\rangle$ \MYCOMMENT{ init minimization}
+	\FORALL { $k \in Ks$ }
+		 \STATE $\langle [k\_candidates],e \rangle \leftarrow$ optimizeLabeling$(k,[candidates])$
+		 \IF { $e < min\_energy $ }
+		 	\STATE $\langle [min\_candidates],min\_energy\rangle = \langle [k\_candidates],e\rangle$
+		 	\STATE $k_0 = k$
+		 \ENDIF
+	\ENDFOR ~ \MYCOMMENT{ Ks }
+	\ENDFOR ~ \MYCOMMENT{ methods }
+	\RETURN $\langle [min\_candidates],min\_energy \rangle$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{generateKs()}
+	\begin{algorithmic}[1]
+		\STATE \textbf{function} generateKs$(step\_method,[limits], k_0) \rightarrow [Ks]$
+		\STATE \MYCOMMENT{if first run (LOG2 case)}
+		\IF { $k_0 == 0$ }
+			\STATE $k_0 \leftarrow$ completeLinkageClustering$(scale,[candidates])$					\ENDIF
+		\STATE $Ks = [k_0]$ \MYCOMMENT{ init Ks with a single value}
+		\STATE \MYCOMMENT{explore spectrum down}
+		\STATE $k = k_0$		
+		\WHILE { $k\leftarrow step(k,step\_method,-1) ~>~ limits[0]$}
+			\STATE $Ks$.put$( k )$
+		\ENDWHILE
+		\STATE \MYCOMMENT{explore spectrum up}
+		\STATE $k = k_0$		
+		\WHILE { $k\leftarrow step(k,step\_method,+1) ~<~ limits[1]$}
+			\STATE $Ks$.put$( k )$
+		\ENDWHILE
+		\RETURN $[Ks]$
+		\STATE
+		\STATE \textbf{function} $step(k,step\_method,step) \rightarrow new\_k$
+		\IF { $step\_method == LOG2$ }
+			\RETURN $step > 0 ~~?~~ k << 1 ~~:~~ k >> 1$
+		\ELSIF{ $step\_method == LIN$ }
+			\RETURN $k + step$
+		\ENDIF
+	\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{optimizeLabeling()}
+\begin{algorithmic}[1]
+	\STATE \textbf{function} optimizeLabeling$(k,[all\_candidates]) \rightarrow \langle [selected\_candidates],energy\rangle$
+	\STATE $k_{sub} = min(100,k)$ ~ \MYCOMMENT{ tractable \# new candidates to include}
+	\FOR { $iteration < num\_restarts$ }
+		\STATE $[current\_candidates] \leftarrow $ initLabeling$(k,[candidates])$
+		\WHILE{ $step++ ~<~ max\_depth$ }
+			\STATE \MYCOMMENT{ remove }
+			\STATE $[to\_skip] \leftarrow $ sample$([current\_candidates],k_{sub})$
+			\FORALL { $to\_skip$ in $[to\_skip]$ }
+					\STATE $[scores] \leftarrow [scores]~\cup $ calcEnergy$([current\_candidates] \cup to\_skip)$
+			\ENDFOR	
+			\STATE $[scores] \leftarrow $ sort and normalize $[scores]$
+			\STATE $[to\_skip] \leftarrow choose([to\_skip],[scores],temperatrue)$ ~ \MYCOMMENT{one or more based on temperature}
+			\STATE $[current\_candidates].remove([to\_skip])$
+
+			\STATE \MYCOMMENT{ add }
+			\STATE $[scores] = [~] $
+			\IF { $RAND(1.0) < 0.5$ }
+				\STATE $[to\_add] \leftarrow $ sample$([candidates],k_{sub})$
+				\FORALL { $to\_add$ in $[to\_add]$ }				
+					\STATE $[scores] \leftarrow [scores] ~\cup $ calcEnergy$([candidates] \cup to\_add,FULL)$
+				\ENDFOR
+			\ELSE
+				\STATE $[to\_add] \leftarrow $ sampleSimilar$([candidates],k_{sub})$ \MYCOMMENT{ i.e. close lines in param. space}
+				\FORALL { $to\_add$ in $[to\_add]$ }				
+					\STATE $[scores] \leftarrow [scores] ~\cup $ calcEnergy$([candidates] \cup to\_add,PAIRWISE\_ONLY)$
+				\ENDFOR
+			\ENDIF
+			
+			\STATE $[scores] \leftarrow $ sort and normalize $[scores]$
+			\STATE $[to\_add] \leftarrow choose([to\_add],[scores],temperatrue)$ \COMMENT{-- -- greediness based on temperature -- --}
+			\STATE $[current\_candidates].add([to\_add])$
+			\STATE
+			\STATE track history, prevent getting stuck (small circles) based on temperature
+		\ENDWHILE ~\MYCOMMENT{depth steps}
+	\ENDFOR ~\MYCOMMENT{restart count}
+	\RETURN $\langle [current\_candidates],calcEnergy([current\_candidates],FULL)\rangle$ \MYCOMMENT{ or $[best\_selection\_seen]$ instead? }
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{calcEnergy()}
+	\begin{algorithmic}[1]
+		\STATE \textbf{function} calcEnergy$([candidates],energy\_mask) \rightarrow energy\_sum$
+		\STATE ...
+		\RETURN $E_{data} + E_{complexity} + E_{pairwise} + E_{label\_smoothness}$ \MYCOMMENT{ I think we need label smoothness }
+	\end{algorithmic}
+\end{algorithm}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% v1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\pagebreak
+\section{Algorithm v3.0}
+\begin{algorithm}[H]
+	\While{ convergence }{
+		\emph{CandiateGeneration}\;
+		\emph{CalculateGraph}\;
+		\Begin{
+			Assign points to primitives $\rightarrow E_{data}$ \\
+			Cluster primitive distances (2nd order) $\rightarrow E_{k,j}$ \\
+		}
+		\emph{Selection}\;
+	}
+% \KwData{this text}
+% \KwResult{how to write algorithm with \LaTeX2e }
+% initialization\;
+% \While{not at end of this document}{
+%  read current\;
+%  \eIf{understand}{
+%   go to next section\;
+%   current section becomes this one\;
+%   }{
+%   go back to the beginning of current section\;
+%  }
+% }
+ \caption{Alg3.0 outline}
+\end{algorithm}
+
+\noindent $P^k \in \{P_1,..., P_M\}$: the k-th candidate primitive ($l_i^1$, or $l_i^2$), \\ 
+$p_i \in \{ p_1, ..., p_N \}$: points in the scene
+
+\begin{align}
+	E_{\mathcal{G}} &= \sum_{k \in \mathcal{G}} {E_{data}} 
+				 	 + \sum_{\{k,j\} \in \mathcal{G}}{E_{k,j}}
+				 	 + E_{global}
+				 	 \label{eq:e_graph3}
+	\\
+%
+	E_{data} &= 
+		\lambda_{d} ~\cdot~ \sum_{i, p_i \in P^k }^N d(p_i,P^k)  \label{eq:e_dist3} 
+		%\\ &+~ \lambda_N ~\cdot~ \frac{1}{||\{p_i \in P^k \}||} ~+ 		 \label{eq:e_size3}
+		%\\ &+~ \lambda_{vol} ~\cdot~ \frac{1}{Volume(P^k)} 				 \label{eq:e_volume3}
+	\\
+%
+	E_{k,j} &= 
+		\lambda_{ang} ~\cdot~ \min_{h ~|~ \theta_h \in \{0,\frac{\pi}{2},..\}} 
+		%(~ \underbrace{
+%		d(P^k,P^j)
+		%}_{\hbox to 0cm{\hss angular similarity needs more accurracy with distance? \hss}} 
+		(\theta_h ~-~ \vec{n}_k \cdot \vec{n}_j)^2 ~)  \label{eq:e_angle3} \\
+		%&+~ \lambda_{dist} ~\cdot~ \label{eq:e_dist3} \\
+%
+	E_{global} &= \lambda_{global} ~\cdot~ |P^k| \label{eq:e_clique_size3}
+%
+\end{align}
+
+\section{Refs}
+\subsection{PEaRL (MRF-based)}
+\begin{align}
+E({\bf L}) &= \underbrace{\sum_p ||p-L_p|| }_{\text{arb. geom. error measure}}
+\underbrace{~+~ \lambda \cdot \sum_{(p,q)\in \underbrace{\mathcal{N}}_{neighbourhood}} \omega_{pq} \cdot \delta(L_p \neq L_q)}_{\text{spatial smoothness}}
+\underbrace{ + ~~ \beta |\mathcal{L}_{{\bf L}} |}_{\text{primitive count}} \\
+%
+||p-L_p|| &= \left( \frac{|y-ax-b|}{\sqrt{a^2+1}} \right)^2 &(\text{point2plane}) \\
+%
+\omega_{pq} &= \exp - \frac{||p-q||^2}{\xi^2} ~\big|~ \xi:= "5" & (\text{neighbour distance})
+\end{align}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% v2
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Algorithm v2.0}
+\begin{align}
+	E_{\mathcal{G}} &= \sum_{k \in \mathcal{G}} {E_k} 
+				 	 + \sum_{\{k,j\} \in \mathcal{G}}{E_{k,j}}
+				 	 \label{eq:e_graph2}
+	\\
+%
+	\overbrace{E_{k}}^{dataTerm} &= 
+		\lambda_{d} ~\cdot~ \sum_{i, p_i \in P^k }^N d(p_i,P^k) ~+ &(reconst.\  error)\label{eq:e_dist2} \\
+		&+~ \lambda_N ~\cdot~ \frac{1}{||\{p_i \in P^k \}||} ~+ &(support) \label{eq:e_size2} \\
+		&+~ \lambda_{vol} ~\cdot~ \pr{P^k_{volume}, P^k_{xyz}, P^k_{type}, Scene } &(size)			\label{eq:e_volume2}
+	\\
+%
+	\overbrace{E_{k,j}}^{pairwiseTerm} &= 
+		\lambda_{ang} ~\cdot~ 
+		\pr{joint_{(k,j)},
+			\overbrace{\vec{n}_k,\vec{n}_j}^{poses},
+		    \overbrace{P^k_{xyz},P^j_{xyz}}^{locations},
+			\overbrace{P^k_{type},P^j_{type}}^{types},Scene}
+		&(connection) 
+		\label{eq:e_angle2} 
+\end{align}
+\subsection*{\eqref{eq:e_volume2} unfolded}
+\begin{align}
+	\pr{P^k_{volume}, P^k_{xyz}, P^k_{type}, Scene } &=
+		\pr{P^k_{volume} | P^k_{xyz}, P^k_{type}, Scene }  ~\cdot~\notag\\
+&~\cdot~\pr{P^k_{xyz} | P^k_{type}, Scene }  ~\cdot~\notag\\
+&~\cdot~\pr{P^k_{type} | Scene }  ~\cdot~\overbrace{\pr{Scene}}^1 &(size)
+\end{align}
+\subsection*{\eqref{eq:e_angle2} unfolded}
+\begin{align}
+		\pr{ joint_{(k,j)},
+			 \overbrace{\vec{n}_k,\vec{n}_j}^{poses},
+		     \overbrace{P^k_{xyz},P^j_{xyz}}^{locations},
+		   	 \overbrace{P^k_{type},P^j_{type}}^{types},Scene} &=
+		\pr{ joint_{(k,j)} | 
+			 \overbrace{\vec{n}_k,\vec{n}_j}^{poses},
+		     \overbrace{P^k_{xyz},P^j_{xyz}}^{locations},
+		   	 \overbrace{P^k_{type},P^j_{type}}^{types},Scene} ~\cdot~\notag\\
+&~\cdot~\pr{\overbrace{\vec{n}_k,\vec{n}_j}^{poses} |
+		     \overbrace{P^k_{xyz},P^j_{xyz}}^{locations},
+		   	 \overbrace{P^k_{type},P^j_{type}}^{types},Scene} ~\cdot~\notag\\		   	 &~\cdot~\pr{ \overbrace{P^k_{xyz},P^j_{xyz}}^{locations} |
+		   	 \overbrace{P^k_{type},P^j_{type}}^{types},Scene} ~\cdot~\notag\\
+&~\cdot~\pr{ \overbrace{P^k_{type},P^j_{type}}^{types} |
+			 Scene} ~\cdot~ 
+			 \overbrace{\pr{Scene}}^1 &(connection)
+%
+%	E_{global} &= \lambda_{global} ~\cdot~ \sum_{clique_h}^{all\_cliques} \frac{1}{||\{k,j\} \in V_{clique_h}||} \sum_{\{k,j\} \in V_{clique_h}} E_{k,j} \label{eq:e_clique_size}
+%
+\end{align}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% v1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\pagebreak
+\section{Old version}
+\begin{align}
+	E_{\mathcal{G}} &= \sum_{k \in \mathcal{G}} {E_k} 
+				 	 + \sum_{\{k,j\} \in \mathcal{G}}{E_{k,j}}
+				 	 + E_{global}
+				 	 \label{eq:e_graph}
+	\\
+%
+	E_{k} &= 
+		\lambda_{d} ~\cdot~ \sum_{i, p_i \in P^k }^N d(p_i,P^k) ~+ \label{eq:e_dist} \\
+		&+~ \lambda_N ~\cdot~ \frac{1}{||\{p_i \in P^k \}||} ~+ 		 \label{eq:e_size} \\
+		&+~ \lambda_{vol} ~\cdot~ \frac{1}{Volume(P^k)} 				 \label{eq:e_volume}
+	\\
+%
+	E_{k,j} &= 
+		\lambda_{ang} ~\cdot~ \min_h( (\sigma^{target}_h ~-~ \vec{n}_k \cdot \vec{n}_j)^2 ) ~~s.t.~~ \sigma^{target}_h \in \{0,\frac{\pi}{2},..\} \label{eq:e_angle} \\
+%
+	E_{global} &= \lambda_{global} ~\cdot~ \sum_{clique_h}^{all\_cliques} \frac{1}{||\{k,j\} \in V_{clique_h}||} \sum_{\{k,j\} \in V_{clique_h}} E_{k,j} \label{eq:e_clique_size}
+%
+\end{align}
+(\ref{eq:e_graph}): total energy of selected solution (to be minimized) \\
+(\ref{eq:e_clique_size}): based on (\ref{eq:e_angle}) a clique has parallel and orthogonal lines, the larger and fewer cliques, the smaller $E_{global}$. Contains the sum of average edge energy in clique \\
+(\ref{eq:e_dist}): sum of squared distances of points assigned to primitive \\
+(\ref{eq:e_size}): primitives with large point-counts preferred \\
+(\ref{eq:e_volume}): large primitives preferred (should be changed to "primitives close to target size preferred")
+(\ref{eq:e_angle}): similarity of rotation (parallel:0, orthogonal:$\frac{\pi}{2}$, any other specified), will have to be changed for other primitive types
+
+\end{document}
