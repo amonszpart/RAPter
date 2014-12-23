@@ -11,6 +11,45 @@
 
 namespace GF2
 {
+    template <class StoredT>
+    struct CachedField
+    {
+        class CachedFieldException : public std::runtime_error
+        {
+            public:
+                explicit CachedFieldException( const std::string& __arg )
+                    : std::runtime_error( __arg )
+                {
+                    std::cerr << "[CachedFieldException]: " << __arg << std::endl; fflush(stderr);
+                }
+        };
+
+        CachedField()
+            : _updated(false)
+        {}
+
+        void update( StoredT const& content )
+        {
+            _content = content;
+            _updated = true;
+        }
+
+        bool isUpdated() const { return _updated; }
+        void outdate  ()       { _updated = false; }
+
+        StoredT const& get() const
+        {
+            if ( !_updated )
+                throw new CachedFieldException("Cached field outdated");
+
+            return _content;
+        }
+
+        protected:
+            bool    _updated;
+            StoredT _content;
+    };
+
      /*! \brief                 Primitive wrapper base class. Requires implementation of #pos() and #dir() functions.
       *                         It's also good to implement constructor from default input (i.e. from point and normal for planes)
       *  \tparam _EmbedSpaceDim Hack to know, if the embedding space is 2D or 3D. TODO: don't use smartgeometry::fitlinearprimitve in \ref Segment::fitLocal()
@@ -36,9 +75,11 @@ namespace GF2
             };//...TAGS
 
             // ____________________TYPEDEFS____________________
-            typedef _Scalar Scalar;                          //!< Scalar typedef to reach from outside.
-            enum { Dim = _Dim };                             //!< Standard typedef for _Dim template parameter.
+            typedef _Scalar                      Scalar;     //!< Scalar typedef to reach from outside.
+            enum {  Dim                        = _Dim };     //!< Standard typedef for _Dim template parameter.
             typedef Eigen::Matrix<Scalar,_Dim,1> VectorType; //!< Standard typedef of internal storage Eigen::Matrix.
+            typedef Eigen::Matrix<Scalar,3,1>    Position;   //!< \brief Standard 3D point typedef.
+            typedef std::vector<Eigen::Matrix<Scalar,3,1> > ExtremaT; //!< Stores extrema of finite primitive.
 
             // ____________________CONSTRUCTORS____________________
             //! \brief Default constructor, initializing coeffs to zeros.
@@ -67,11 +108,13 @@ namespace GF2
             Eigen::Matrix<Scalar,_Dim,1> const& operator()() const { return _coeffs; }
             //! \brief Reference getter alias for internal storage.
             Eigen::Matrix<Scalar,_Dim,1>      & operator()()       { return _coeffs; }
-            //! \brief Converts to Eigen::Matrix<...> to avoid operator() as getter.
-            //! \return Copy of internally stored data.
+            /*! \brief Converts to Eigen::Matrix<...> to avoid operator() as getter.
+             * \return Copy of internally stored data.
+             */
             /*explicit */ operator VectorType()          { return _coeffs; }
-            //! \brief Converts to Eigen::Matrix<...> to avoid operator() as getter. Const version.
-            //! \return Copy of internally stored data.
+            /*! \brief Converts to Eigen::Matrix<...> to avoid operator() as getter. Const version.
+             *  \return Copy of internally stored data.
+             */
             /*explicit */ operator VectorType() const    { return _coeffs; }
 
             // ____________________VIRTUALS____________________
@@ -92,13 +135,16 @@ namespace GF2
 
                 return ss.str();
             } //...toString()
+            inline ExtremaT const& getExtentCached() const { return _extents.get(); }
+            inline void setExtentOutdated() const { _extents.outdate(); }
 
         protected:
             // ____________________FIELDS____________________
-            Eigen::Matrix<Scalar,_Dim,1> _coeffs; //!< \brief Internal storage of arbitrary length vector representing the primitive.
-
+            Eigen::Matrix<Scalar,_Dim,1>    _coeffs;  //!< \brief Internal storage of arbitrary length vector representing the primitive.
+            mutable CachedField<ExtremaT>   _extents; //!< \brief Stores extents of finite primitive.
 
             // ____________________DEPRECATED____________________
+#if 0
         public:
             //! \deprecated Convenience getter for older implementations, should be deprecated.
             std::vector<Scalar>
@@ -188,6 +234,7 @@ namespace GF2
 
                 return lines;
             } //...read()
+#endif
     }; //...Primmitive
 } //...ns GF2
 

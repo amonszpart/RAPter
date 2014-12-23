@@ -30,3 +30,14 @@ globOpt/data
 
 *.orig
 *_test
+
+
+## Added by aron on 20 12 2014
+*.pyc
+doc
+globOpt/scripts/depr
+
+globOpt/tex/*.aux
+globOpt/tex/*.dvi
+globOpt/tex/*.log
+globOpt/tex/*.gz

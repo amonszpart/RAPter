@@ -132,11 +132,11 @@ namespace GF2
     //! \brief Compute the distance to a finite line
     struct MyPointFiniteLineDistanceFunctor {
         template <class _LineT, class _PointContainerT, class _Vec3Derived>
-        inline typename _LineT::Scalar eval(
+        static inline typename _LineT::Scalar eval(
                   _PointContainerT const& extrema0
                 , _LineT const& l0
                 , _Vec3Derived const& q
-                ) const {
+                ) /*const*/ {
             typedef typename _PointContainerT::value_type PointT;
             typedef typename _LineT::Scalar Scalar;
 
@@ -167,11 +167,11 @@ namespace GF2
     //! \brief Compute the distance to a finite line
     struct MyPointFinitePlaneDistanceFunctor {
         template <class _LineT, class _PointContainerT, class _Vec3Derived>
-        inline typename _LineT::Scalar eval(
+        static inline typename _LineT::Scalar eval(
                   _PointContainerT const& extrema0
                 , _LineT const& l0
                 , _Vec3Derived const& q
-                ) const {
+                ) /*const*/ {
             typedef typename _PointContainerT::value_type PointT;
             typedef typename _LineT::Scalar Scalar;
 
@@ -212,30 +212,34 @@ namespace GF2
         }
     };
 
-    template <class _PrimitiveT, class PointToPrimFunctor>
+    template <class _PrimitiveT/*, class PointToPrimFunctor*/>
     struct MyFinitePrimitiveToFinitePrimitiveCompatFunctor
     {
-        template < class _PointContainerT>
-        inline typename _PrimitiveT::Scalar eval(
-                  _PointContainerT const& extrema0
-                , _PrimitiveT const& p0
-                , _PointContainerT const& extrema1
-                , _PrimitiveT const& p1) const {
+        template <class _PointContainerT>
+        static inline typename _PrimitiveT::Scalar eval(
+                  _PointContainerT  const& extrema0
+                , _PrimitiveT       const& p0
+                , _PointContainerT  const& extrema1
+                , _PrimitiveT       const& p1 ) /*const*/
+        {
             typedef typename _PointContainerT::value_type PointT;
             typedef typename _PrimitiveT::Scalar Scalar;
 
-            PointToPrimFunctor functor;
+            //PointToPrimFunctor functor;
 
             Scalar min = std::numeric_limits<Scalar>::max();
-            for (typename _PointContainerT::const_iterator it = extrema0.begin();
-                 it != extrema0.end(); ++it){
-                const Scalar m = functor.eval(extrema1, p1, *it);
-                if(m < min) min = m;
+            for ( typename _PointContainerT::const_iterator it  = extrema0.begin();
+                                                            it != extrema0.end  (); ++it )
+            {
+                //const Scalar m = functor.eval(extrema1, p1, *it);
+                const Scalar m = p1.getFiniteDistance( extrema1, *it );
+                if ( m < min ) min = m;
             }
 
             for (typename _PointContainerT::const_iterator it = extrema1.begin();
                  it != extrema1.end(); ++it){
-                const Scalar m = functor.eval(extrema0, p0, *it);
+                //const Scalar m = functor.eval(extrema0, p0, *it);
+                const Scalar m = p0.getFiniteDistance( extrema0, *it );
                 if(m < min) min = m;
             }
 
@@ -353,6 +357,20 @@ namespace GF2
         virtual ~SpatialSqrtPrimitivePrimitiveEnergyFunctor() {};
 
         virtual inline _Scalar
+        evalSpatial( PrimitiveT const& p1, ExtremaT const& ex1, PrimitiveT const& p2, ExtremaT const& ex2 )
+        {
+            // distance between finite primitives
+            //_Scalar dist = _primPrimCompFunctor.template eval( ex1, p1, ex2, p2 ); // changed by Aron on 21 12 2014
+            _Scalar dist = _FiniteFiniteDistanceFunctor::eval( ex1, p1, ex2, p2 );
+            // (scale - distance) truncated at scale-scale = 0, normalized by scale to 0..1
+            _Scalar spat_w = std::max( _Scalar(1.) * _scale
+                                       - dist //_primPrimCompFunctor.template eval( ex1, p1, ex2, p2 )
+                                     , _Scalar(0.) ) / _scale;
+
+            return 100. * spat_w;
+        }
+
+        virtual inline _Scalar
         eval( PrimitiveT const& p1, ExtremaT const& ex1, PrimitiveT const& p2, ExtremaT const& ex2 )
         {
             _Scalar diff  = MyPrimitivePrimitiveAngleFunctor::eval( p1, p2, this->_angles );
@@ -361,26 +379,22 @@ namespace GF2
             //_Scalar score = std::min( _Scalar(0.09341652027), _Scalar(sqrt(diff)) );
             _Scalar score = _Scalar( std::sqrt(diff) );
 
-            // distance between finite primitives
-            _Scalar dist = _primPrimCompFunctor.template eval( ex1, p1, ex2, p2 );
-            // (scale - distance) truncated at scale-scale = 0, normalized by scale to 0..1
-            _Scalar spat_w = std::max( _Scalar(1.) * _scale
-                                       - _primPrimCompFunctor.template eval( ex1, p1, ex2, p2 )
-                                     , _Scalar(0.) ) / _scale;
+            _Scalar spat_w = evalSpatial( p1, ex1, p2, ex2 );
 
-            if ( _verbose && (spat_w > _Scalar(0.)) )
-            {
-                std::cout << "score was " << score << ", and now will be using dist ";
-                std::cout << dist << " --> ";
+//            if ( _verbose && (spat_w > _Scalar(0.)) )
+//            {
+//                std::cout << "score was " << score << ", and now will be using dist ";
+//                std::cout << dist << " --> ";
 
-                std::cout << score << " + " << spat_w << " = ";
-            }
+//                std::cout << score << " + " << spat_w << " = ";
+//            }
             //score *= _Scalar(1.) + spat_w;
             //_Scalar angle = GF2::angleInRad( p1.dir(), p2.dir() );
             //score += spat_w * std::sqrt( std::min( angle, _Scalar(M_PI) - angle ) );
 
             // score = sqrt(angle) + sqrt(angle) * spatial_weight = (1+spatial_weight) * sqrt(angle)
-            score += spat_w * score;
+            score += spat_w * score * score;
+
             if ( _verbose && (spat_w > _Scalar(0.)) )
             {
                 std::cout << score << std::endl;

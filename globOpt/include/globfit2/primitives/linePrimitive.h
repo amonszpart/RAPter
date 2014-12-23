@@ -5,8 +5,9 @@
 #include <memory> // shared_ptr
 
 #include <Eigen/Dense>
-#include "globfit2/primitives/primitive.h" // inherit
-#include "globfit2/processing/util.hpp" // getPopulationOf()
+#include "globfit2/optimization/energyFunctors.h"   // pointToFiniteLineDistanceFunctor
+#include "globfit2/primitives/primitive.h"          // inherit
+#include "globfit2/processing/util.hpp"             // getPopulationOf()
 
 #ifdef GF2_USE_PCL
 #   include "pcl/point_cloud.h"
@@ -26,8 +27,8 @@ namespace GF2
     {
             typedef ::GF2::Primitive<2,6> ParentT;
         public:
-
             typedef ParentT::Scalar Scalar;
+            typedef std::vector<Eigen::Matrix<Scalar,3,1> > ExtentsT;
 
             // ____________________CONSTRUCT____________________
             LinePrimitive() : ParentT() {}
@@ -81,18 +82,32 @@ namespace GF2
                                     , Scalar           const  angle_multiplier = Scalar(1.)
                                     ) const
             {
+                typedef Eigen::Matrix<Scalar,3,1> Direction;
+
                 Scalar const angle = angles[ closest_angle_id ] * angle_multiplier;
+                Direction d0 = Eigen::AngleAxisf(angle, Direction::UnitZ()) * other.dir(),
+                          d1 = Eigen::AngleAxisf(-angle, Direction::UnitZ()) * other.dir();
+                bool revert = false;
+                if ( angleInRad(this->dir(), d0 ) > angleInRad(this->dir(), d1 ) )
+                {
+                     std::cout << "[" << __func__ << "]: " << "HOPP! using other angle instead..." << std::endl;
+                     revert = true;
+                }
+                else
+                     std::cout << "[" << __func__ << "]: " << "ok" << std::endl;
 
                 out = LinePrimitive( /*  position: */ this->pos()
-                                   , /* direction: */ Eigen::AngleAxisf(angle, Eigen::Matrix<Scalar,3,1>::UnitZ())
-                                                      * other.dir()
+                                   , /* direction: */ revert ? d1 : d0
                                    );
+
                 // copy position id from self
                 out.setTag( GID, this->getTag(GID) );
                 // copy direction id from the other
                 out.setTag( DIR_GID, other.getTag(DIR_GID) );
                 // erase chosen tag - this is a new candidate
                 out.setTag( STATUS, UNSET );
+
+                std::cout << "angle= " << angle << ", closest_angle_id: " << closest_angle_id << ", mult:  " << angle_multiplier << std::endl;
 
                 return true;
             } //...generateFrom
@@ -156,26 +171,44 @@ namespace GF2
                 return (this->pos() - point).cross( this->dir() ).norm();
             } //...getDistance()
 
-            //! \brief                          Calculates the length of the line based on the points in \p cloud, masked by \p indices and the distance from point to line \p threshold.
-            //!
-            //!                                 The method calculates the inliers and selects the most far away point from #pos() in both directions.
-            //! \tparam     _PointT             Type of point stored in \p cloud. Concept: \ref GF2::PointPrimitve.
-            //! \tparam     _Scalar             Precision of data in \p minMax.
-            //! \tparam     _PointContainerPtrT Type to store the points to select inliers from. Concept: "std::vector<PointPrimitive>*" .
-            //! \param[out] minMax              Output container holding the two endpoints.
-            //! \param[in]  cloud               Point container to look for inlier points in.
-            //! \param[in]  threshold           A point in \p cloud is an inlier, if it is closer than this threshold. Usually the "scale".
-            //! \param[in]  indices             Optional input to specify subset of points by indices.
-            //! \return                         EXIT_SUCCESS
+            /*! \brief              Helps calculating line to line distance.
+             *  \param[in] extrema  Extrema of this primitive.
+             *  \param[in] pnt      One of the extrema of the other primitive.
+             *  \return             Distance from point to plane.
+             */
+            inline Scalar
+            getFiniteDistance( ExtentsT const& extrema, Position const& pnt ) const
+            {
+                return MyPointFiniteLineDistanceFunctor::eval( extrema, *this, pnt );
+            }
+
+            /*! \brief                          Calculates the length of the line based on the points in \p cloud, masked by \p indices and the distance from point to line \p threshold.
+             *
+             *                                  The method calculates the inliers and selects the most far away point from #pos() in both directions.
+             *  \tparam     _PointT             Type of point stored in \p cloud. Concept: \ref GF2::PointPrimitve.
+             *  \tparam     _Scalar             Precision of data in \p minMax.
+             *  \tparam     _PointContainerPtrT Type to store the points to select inliers from. Concept: "std::vector<PointPrimitive>*" .
+             *  \param[out] minMax              Output container holding the two endpoints.
+             *  \param[in]  cloud               Point container to look for inlier points in.
+             *  \param[in]  threshold           A point in \p cloud is an inlier, if it is closer than this threshold. Usually the "scale".
+             *  \param[in]  indices             Optional input to specify subset of points by indices.
+             *  \return                         EXIT_SUCCESS
+             */
             template <typename _PointT, typename _PointContainerT>
             int
-            getExtent( std::vector<Eigen::Matrix<Scalar,3,1> >      & minMax
+            getExtent( std::vector<Eigen::Matrix<Scalar,3,1> >       & minMax
                      , _PointContainerT                         const& cloud
-                     , double                                   const  threshold   = 0.01
-                     , std::vector<int>                         const* indices_arg = NULL
-                     , bool const force = false ) const
+                     , double                                   const  threshold            = 0.01
+                     , std::vector<int>                         const* indices_arg          = NULL
+                     , bool                                     const  force_axis_aligned   = false ) const
             {
                 typedef Eigen::Matrix<Scalar,3,1> Position;
+
+                if ( this->_extents.isUpdated() )
+                {
+                    minMax = _extents.get();
+                    return 0;
+                }
 
                 // select inliers
                 std::vector<int> inliers;
@@ -228,8 +261,11 @@ namespace GF2
                 minMax[0] = on_line_cloud[ min_id ];
                 minMax[1] = on_line_cloud[ max_id ];
 
+                this->_extents.update( minMax );
+
                 return EXIT_SUCCESS;
             } //...getExtent()
+    public:
 
             /*! \brief Calculates size, a bit smarter, than taking the area of #getExtent().
              *  \tparam MatrixDerived   Concept: Eigen::Matrix<_Scalar,-1,1>.

@@ -2,6 +2,7 @@
 #define __GF2_PLANEPRIMITIVE_H__
 
 #include <Eigen/Dense>
+#include "globfit2/optimization/energyFunctors.h"
 #include "globfit2/primitives/primitive.h"
 #include "globfit2/processing/util.hpp" // pca, getPopulationOf()
 
@@ -23,6 +24,7 @@ namespace GF2
             typedef ::GF2::Primitive<3,6> ParentT;
         public:
             typedef ParentT::Scalar Scalar;
+            typedef std::vector<Eigen::Matrix<Scalar,3,1> > ExtentsT;
 
             // ____________________CONSTRUCT____________________
 
@@ -34,9 +36,10 @@ namespace GF2
             //! \brief Constructor that takes raw data in std::vector format as input.
             inline PlanePrimitive( std::vector<Scalar> const& coeffs ) : ParentT( coeffs ) {}
 
-            //! \brief           Creates PlanePrimitive from point on plane and direction.
-            //! \param[in] p0    Point on plane.
-            //! \param[in] dir   Plane normal.
+            /*! \brief Creates PlanePrimitive from point on plane and direction.
+             *  \param[in] p0    Point on plane.
+             *  \param[in] dir   Plane normal.
+             */
             inline PlanePrimitive( Eigen::Matrix<Scalar,3,1> pnt, Eigen::Matrix<Scalar,3,1> normal );
 
             /*! \brief Creates plane primitive from an ordered local frame
@@ -102,11 +105,23 @@ namespace GF2
 
             // ____________________GEOMETRY____________________
 
-            //! \brief              Returns point to plane distance.
-            //! \param[in] point    Point to calculate distance from.
-            //! \return             Distance from point to plane.
+            /*! \brief              Returns point to plane distance.
+             *  \param[in] point    Point to calculate distance from.
+             *  \return             Distance from point to plane.
+             */
             inline Scalar
             getDistance( Eigen::Matrix<Scalar,3,1> const& point ) const {  return (point - this->pos()).dot( this->dir() ); }
+
+            /*! \brief              Helps calculating plane to plane distance.
+             *  \param[in] extrema  Extrema of this primitive.
+             *  \param[in] pnt      One of the extrema of the other primitive.
+             *  \return             Distance from point to plane.
+             */
+            inline Scalar
+            getFiniteDistance( ExtentsT const& extrema, Position const& pnt ) const
+            {
+                return MyPointFinitePlaneDistanceFunctor::eval( extrema, *this, pnt );
+            }
 
             inline Eigen::Matrix<Scalar,3,1>
             projectPoint( Eigen::Matrix<Scalar,3,1> const& point ) const { return point - (this->getDistance(point) * this->dir() ); }
@@ -264,6 +279,7 @@ namespace GF2
             //return false;
             //Scalar const angle = angles[ closest_angle_id ];
             Scalar angle = angles[ closest_angle_id ];
+#warning This has to be tested for angle sign
             out = PlanePrimitive( /*  position: */ this->pos()
                                 , /* direction: */ Eigen::AngleAxisf( angle, other.dir().cross(dir()) ) * other.dir()
                                 );
@@ -299,13 +315,19 @@ namespace GF2
      */
     template <typename _PointPrimitiveT, class _IndicesContainerT, typename _PointContainerT>
     int
-    PlanePrimitive::getExtent( std::vector<Eigen::Matrix<Scalar,3,1> >       & minMax
+    PlanePrimitive::getExtent( ExtentsT                                      & minMax
                              , _PointContainerT                         const& cloud
                              , double                                   const  threshold          /*= 0.01*/
                              , _IndicesContainerT                       const* indices_arg        /*= NULL*/
                              , bool                                     const  force_axis_aligned /*= false */) const
     {
         typedef Eigen::Matrix<Scalar,3,1> Position;
+
+        if ( this->_extents.isUpdated() )
+        {
+            minMax = _extents.get();
+            return 0;
+        }
 
 #ifdef GF2_USE_PCL
 
@@ -459,7 +481,7 @@ namespace GF2
             minMax[d] = (frame * (Eigen::Matrix<Scalar,4,1>() << minMax[d], Scalar(1)).finished()).template head<3>();
         }
 
-
+        this->_extents.update( minMax );
 
         return EXIT_SUCCESS;
 #           else

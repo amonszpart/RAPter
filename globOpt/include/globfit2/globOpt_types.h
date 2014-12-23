@@ -19,7 +19,7 @@ namespace GF2
         typedef GF2::LinePrimitive                    PrimitiveT;
         typedef std::vector<PrimitiveT>               InnerPrimitiveContainerT;
         typedef std::vector<InnerPrimitiveContainerT> PrimitiveContainerT;
-        typedef MyFinitePrimitiveToFinitePrimitiveCompatFunctor<PrimitiveT, MyPointFiniteLineDistanceFunctor> MyFiniteLineToFiniteLineCompatFunctor;
+        typedef MyFinitePrimitiveToFinitePrimitiveCompatFunctor<PrimitiveT/*, MyPointFiniteLineDistanceFunctor*/> MyFiniteLineToFiniteLineCompatFunctor;
     }
 
     namespace _3d
@@ -27,7 +27,7 @@ namespace GF2
         typedef GF2::PlanePrimitive                   PrimitiveT;
         typedef std::vector<PrimitiveT>               InnerPrimitiveContainerT;
         typedef std::vector<InnerPrimitiveContainerT> PrimitiveContainerT;
-        typedef MyFinitePrimitiveToFinitePrimitiveCompatFunctor<PrimitiveT, MyPointFinitePlaneDistanceFunctor> MyFinitePlaneToFinitePlaneCompatFunctor;
+        typedef MyFinitePrimitiveToFinitePrimitiveCompatFunctor<PrimitiveT/*, MyPointFinitePlaneDistanceFunctor*/> MyFinitePlaneToFinitePlaneCompatFunctor;
     }
 }
 

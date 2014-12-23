@@ -15,13 +15,28 @@ namespace GF2
     angleInRad( Eigen::Matrix<Scalar,Dim,1> const& v1, Eigen::Matrix<Scalar,Dim,1> const& v2 )
     {
         // better, than acos
-        Scalar tmp = atan2( v1.cross(v2).norm(), v1.dot(v2) );
+        Scalar angle = atan2( v1.cross(v2).norm(), v1.dot(v2) );
 
         // fix nans
-        if ( tmp != tmp )
-            tmp = Scalar(0);
-        return tmp;
+        if ( angle != angle )   angle = Scalar(0);
+
+        return angle;
     }
+#if 0
+    template<typename Scalar, int Dim> inline Scalar
+    angleInRadSigned( Eigen::Matrix<Scalar,Dim,1> const& v1, Eigen::Matrix<Scalar,Dim,1> const& v2 )
+    {
+        // better, than acos
+        Scalar angle = atan2( v1.cross(v2).norm(), v1.dot(v2) );
+
+        // fix nans
+        if ( angle != angle )   angle = Scalar(0);
+
+        Scalar sign = Eigen::Matrix<Scalar,3,1>::UnitZ()
+
+        return angle;
+    }
+#endif
 
 #   if GF2_USE_PCL
     template <int Dim>

@@ -374,6 +374,7 @@ int Merging::adoptPoints( _PointContainerT          & points
                         {
                             if ( extremaMap.find(GidLid(gid,lid)) == extremaMap.end() )
                             {
+                                it2->template setExtentOutdated(); // we want to recalculate to be sure, points might have been reassigned
                                 err = it2->template getExtent<_PointPrimitiveT>
                                         ( extremaMap[ GidLid(gid,lid) ]
                                         , points
@@ -838,12 +839,17 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
                 }
 
                 if ( populations[gid].size() )
+                {
+                    // we want to recalculate to be sure, points might have been reassigned
+                    inner_it->template setExtentOutdated();
+
                     err = inner_it->template getExtent<_PointPrimitiveT>
                                                                ( extrema[gid][lid]
                                                                , points
                                                                , scale
                                                                , &(populations[gid])
                                                                );
+                }
                 else
                     err = EXIT_FAILURE;
 
@@ -862,8 +868,6 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
 
         CHECK( err, "calcExtrema" )
     } //...getExtrema
-
-
 
 
     typedef typename GidLidExtremaT::const_iterator GidIt;
@@ -887,15 +891,6 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
                                   ++inner_it )
             max_dir_gid = std::max( max_dir_gid, (*inner_it).getTag(_PrimitiveT::DIR_GID) );
     std::cout << "[" << __func__ << "]: " << "max_dir_gid: " << max_dir_gid << std::endl;
-
-//    // debug
-//    cout << "[in]:  " << primitives.size() << endl;
-//    for ( outer_const_iterator outer_it  = primitives.begin();
-//          (outer_it != primitives.end());
-//          ++outer_it )
-//        for(auto innerIt = (*outer_it).second.begin(); innerIt != (*outer_it).second.end(); innerIt ++)
-//            cout << (*innerIt).getTag(_PrimitiveT::GID ) << " - "
-//                 << (*innerIt).getTag(_PrimitiveT::DIR_GID ) << endl;
 
     // Here are two first loops to iterate over the map entries, and for each of them over the
     // linear array containing primitives (we call them ref. primitive in the following).
@@ -1019,17 +1014,6 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
     // we can now remove primitives that are not assigned to any points
     processing::eraseNonAssignedPrimitives<_PrimitiveT, inner_iterator>(out_primitives, points, preserveSmallPatches);
 
-
-
-//    cout << "[out]: " << out_primitives.size() << endl;
-//    for ( outer_const_iterator outer_it  = out_primitives.begin();
-//          (outer_it != out_primitives.end()) ;
-//          ++outer_it )
-//        for(auto innerIt = (*outer_it).second.begin(); innerIt != (*outer_it).second.end(); innerIt ++)
-//            cout << (*innerIt).getTag(_PrimitiveT::GID ) << " - "
-//                 << (*innerIt).getTag(_PrimitiveT::DIR_GID ) << endl;
-
-
     // here we detect if merge have occured and changed the shape of the primitive container
     // Indeed, sometime the merge can generate 2 primitives that can be merged the next times,
     // leading to an infinite loop.
@@ -1073,18 +1057,6 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
 
     // if we reach that point, that means that input/output are similar
     return false;
-
-    // debug
-//    std::ofstream dbg( "lines.plot" );
-//    for ( auto it = extrema.begin(); it != extrema.end(); ++it )
-//    {
-//        for ( int i = 0; i != it->second.size(); ++i )
-//        {
-//            dbg << extrema[it->first][i][0].transpose() << "\n"
-//                << extrema[it->first][i][1].transpose() << "\n\n";
-//        }
-//    }
-//    dbg.close();
 } //...Merging::mergeSameDirGids()
 
 } //...namespace GF2
