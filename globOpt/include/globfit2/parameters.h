@@ -227,8 +227,19 @@ namespace GF2 {
         _Scalar                      dir_id_bias     = _Scalar( 0. );
 
         //! \brief dataterm = data_weight * freq_weight/#instances * data cost
-        _Scalar                      freq_weight     = _Scalar(0.);
+        _Scalar                      freq_weight     = _Scalar( 0. );
+
+        static const _Scalar spatial_weight_coeff/* = 100.f*/; // E_pw = (1. + spatial_weight_coeff) * comp(P0,P1)
+        static const _Scalar w_mod_base          /* = 0.1f*/;  // E_data *= w_mod_base + (1. - w_mod_base) * f(#j/|P|), usually 0.1
+        static const _Scalar spatial_weight_distance;          //!< \brief neighbourhood is this times scale, usually 1.0 or 2.0
     };
+
+    template <typename _Scalar>
+    const _Scalar ProblemSetupParams<_Scalar>::spatial_weight_coeff = 10.f;
+    template <typename _Scalar>
+    const _Scalar ProblemSetupParams<_Scalar>::spatial_weight_distance = 2.f;
+    template <typename _Scalar>
+    const _Scalar ProblemSetupParams<_Scalar>::w_mod_base = 0.1f;
 
     template <typename _Scalar>
     struct MergeParams : public CandidateGeneratorParams<_Scalar>

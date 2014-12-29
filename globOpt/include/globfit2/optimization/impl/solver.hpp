@@ -221,6 +221,11 @@ Solver::solve( int    argc
             {
                 std::cerr << "[" << __func__ << "]: " << "ooo...optimize didn't work with code " << r << std::endl; fflush(stderr);
                 err = r;
+                if ( !x_out.size() )
+                {
+                    std::cerr << "No output from optimizer, exiting" << std::endl;
+
+                }
             }
         } //...optimize
 
@@ -240,6 +245,11 @@ Solver::solve( int    argc
         } //...copy output
 
         // dump
+        if ( err != EXIT_SUCCESS ) // by Aron 27/12/2014
+        {
+            std::cout << "err is " << err << ", now saving will happen..." << std::endl;
+        }
+        if ( EXIT_SUCCESS == err)
         {
             {
                 std::string x_path = project_path + "/x.csv";

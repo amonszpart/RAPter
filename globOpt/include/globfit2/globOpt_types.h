@@ -13,6 +13,7 @@ namespace GF2
     typedef GF2::PointPrimitive PointPrimitiveT;
     typedef typename PointPrimitiveT::Scalar Scalar;
     typedef std::vector< PointPrimitiveT > PointContainerT;
+    typedef std::vector<Scalar> AnglesT;
 
     namespace _2d
     {
