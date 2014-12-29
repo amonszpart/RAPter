@@ -206,6 +206,7 @@ namespace GF2
                      , _Scalar                                                            const  scale
                      , Eigen::Matrix<_Scalar,-1,1>                                        const& weights
                      , _PrimPrimDistFunctorT                                            * const& primPrimDistFunctor
+                     , AnglesT                                                            const& angle_gens
                      , int                                                                const  patch_pop_limit
                      , _Scalar                                                            const  dir_id_bias
                      , int                                                                const  verbose                = 0

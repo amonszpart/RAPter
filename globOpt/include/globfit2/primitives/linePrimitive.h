@@ -85,16 +85,12 @@ namespace GF2
                 typedef Eigen::Matrix<Scalar,3,1> Direction;
 
                 Scalar const angle = angles[ closest_angle_id ] * angle_multiplier;
-                Direction d0 = Eigen::AngleAxisf(angle, Direction::UnitZ()) * other.dir(),
+                Direction d0 = Eigen::AngleAxisf( angle, Direction::UnitZ()) * other.dir(),
                           d1 = Eigen::AngleAxisf(-angle, Direction::UnitZ()) * other.dir();
+
                 bool revert = false;
-                if ( angleInRad(this->dir(), d0 ) > angleInRad(this->dir(), d1 ) )
-                {
-                     std::cout << "[" << __func__ << "]: " << "HOPP! using other angle instead..." << std::endl;
+                if ( angleInRad(this->dir(),d0) > angleInRad(this->dir(),d1) )
                      revert = true;
-                }
-                else
-                     std::cout << "[" << __func__ << "]: " << "ok" << std::endl;
 
                 out = LinePrimitive( /*  position: */ this->pos()
                                    , /* direction: */ revert ? d1 : d0

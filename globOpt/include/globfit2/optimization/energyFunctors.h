@@ -3,8 +3,9 @@
 
 #include <vector>
 #include "globfit2/my_types.h" // angleInRad
+#include "globfit2/parameters.h"
 
-#include<Eigen/StdVector>
+#include <Eigen/StdVector>
 
 namespace GF2
 {
@@ -312,6 +313,7 @@ namespace GF2
             return std::numeric_limits<Scalar>::max();
         }
 
+        inline std::vector<Scalar> getAngles() const { return _angles; }
         protected:
             std::vector<Scalar> _angles;
     }; //...AbstractPrimitivePrimitiveEnergyFunctor
@@ -343,9 +345,10 @@ namespace GF2
     template <class _FiniteFiniteDistanceFunctor, class _PointContainerT, typename _Scalar, class PrimitiveT>
     struct SpatialSqrtPrimitivePrimitiveEnergyFunctor : public AbstractPrimitivePrimitiveEnergyFunctor<_Scalar,PrimitiveT>
     {
+        typedef std::vector<_Scalar> AnglesT;
         typedef std::vector< Eigen::Matrix<_Scalar,3,1> > ExtremaT;
 
-        SpatialSqrtPrimitivePrimitiveEnergyFunctor( std::vector<_Scalar> const& angles
+        SpatialSqrtPrimitivePrimitiveEnergyFunctor( AnglesT              const& angles
                                                   , _PointContainerT     const& points
                                                   , _Scalar              const  scale )
             : AbstractPrimitivePrimitiveEnergyFunctor<_Scalar,PrimitiveT>( angles )
@@ -363,17 +366,18 @@ namespace GF2
             //_Scalar dist = _primPrimCompFunctor.template eval( ex1, p1, ex2, p2 ); // changed by Aron on 21 12 2014
             _Scalar dist = _FiniteFiniteDistanceFunctor::eval( ex1, p1, ex2, p2 );
             // (scale - distance) truncated at scale-scale = 0, normalized by scale to 0..1
-            _Scalar spat_w = std::max( _Scalar(1.) * _scale
-                                       - dist //_primPrimCompFunctor.template eval( ex1, p1, ex2, p2 )
-                                     , _Scalar(0.) ) / _scale;
+            _Scalar spat_w = std::max( ProblemSetupParams<_Scalar>::spatial_weight_distance * _scale - dist
+                                     , _Scalar(0.) )
+                                     / _scale;
 
-            return 100. * spat_w;
+            return ProblemSetupParams<_Scalar>::spatial_weight_coeff * spat_w;
         }
 
         virtual inline _Scalar
-        eval( PrimitiveT const& p1, ExtremaT const& ex1, PrimitiveT const& p2, ExtremaT const& ex2 )
+        eval( PrimitiveT const& p1, ExtremaT const& ex1, PrimitiveT const& p2, ExtremaT const& ex2, AnglesT const& allowed_angles )
         {
-            _Scalar diff  = MyPrimitivePrimitiveAngleFunctor::eval( p1, p2, this->_angles );
+            //_Scalar diff  = MyPrimitivePrimitiveAngleFunctor::eval( p1, p2, this->_angles );
+            _Scalar diff  = MyPrimitivePrimitiveAngleFunctor::eval( p1, p2, allowed_angles );
 
             // truncated at half degree difference
             //_Scalar score = std::min( _Scalar(0.09341652027), _Scalar(sqrt(diff)) );
@@ -393,7 +397,10 @@ namespace GF2
             //score += spat_w * std::sqrt( std::min( angle, _Scalar(M_PI) - angle ) );
 
             // score = sqrt(angle) + sqrt(angle) * spatial_weight = (1+spatial_weight) * sqrt(angle)
-            score += spat_w * score * score;
+            //score += spat_w * score * score;
+            if ( (p1.getTag(PrimitiveT::TAGS::DIR_GID) != p2.getTag(PrimitiveT::TAGS::DIR_GID))
+                 && (spat_w > 0.f) )
+                score += ProblemSetupParams<_Scalar>::spatial_weight_coeff;
 
             if ( _verbose && (spat_w > _Scalar(0.)) )
             {

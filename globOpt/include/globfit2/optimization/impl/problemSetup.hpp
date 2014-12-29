@@ -201,6 +201,9 @@ ProblemSetup::formulateCli( int    argc
 
     // WORK
     problemSetup::OptProblemT problem;
+    AnglesT angle_gens_in_rad;
+    for ( AnglesT::const_iterator angle_it = angle_gens.begin(); angle_it != angle_gens.end(); ++angle_it )
+        angle_gens_in_rad.push_back( *angle_it * M_PI / 180. );
     int err = formulate<_PointPrimitiveDistanceFunctor>( problem
                                                        , prims
                                                        , points
@@ -209,6 +212,7 @@ ProblemSetup::formulateCli( int    argc
                                                        , params.scale
                                                        , params.weights
                                                        , primPrimDistFunctor
+                                                       , angle_gens_in_rad
                                                        , params.patch_population_limit
                                                        , params.dir_id_bias
                                                        , !calc_energy && verbose
@@ -253,6 +257,11 @@ ProblemSetup::formulateCli( int    argc
     return err;
 } //...ProblemSetup::formulateCli()
 
+namespace problemSetup
+{
+
+
+} //...ns problemSetup
 
 template < class _PointPrimitiveDistanceFunctor
          , class _PrimitiveContainerT
@@ -270,6 +279,7 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
                        , _Scalar                                                       const  scale
                        , Eigen::Matrix<_Scalar,-1,1>                                   const& weights
                        , _PrimPrimDistFunctorT                                       * const& primPrimDistFunctor // AbstractPrimitivePrimitiveEnergyFunctor<_Scalar,_PrimitiveT>
+                       , AnglesT                                                       const& angle_gens_in_rad
                        , int                                                           const  patch_pop_limit
                        , _Scalar                                                       const  dir_id_bias
                        , int                                                           const  verbose
@@ -287,6 +297,15 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
     typedef std::pair<int,int> IntPair;
     /*   */ std::map <IntPair,int> lids_varids;
     std::set<int> chosen_varids;
+
+    AnglesT angles = primPrimDistFunctor->getAngles();
+    if ( angle_gens_in_rad.end() != std::find_if( angle_gens_in_rad.begin(), angle_gens_in_rad.end(), [](Scalar const& angle) { return angle > 2. * M_PI; } ) )
+    {
+        std::cerr << "[" << __func__ << "]: " << "angle_gens need to be in rad, are you sure?" << std::endl;
+        std::cerr<<"angle_gens_in_rad:";for(size_t vi=0;vi!=angle_gens_in_rad.size();++vi)std::cerr<<angle_gens_in_rad[vi]<<" ";std::cerr << "\n";
+        throw new std::runtime_error("angle_gens need to be in rad, are you sure");
+    }
+
 
     // ____________________________________________________
     // Variables - Add variables to problem
@@ -357,8 +376,10 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
                 break;
 
             case ProblemSetupParams<_Scalar>::DATA_COST_MODE::INSTANCE_BASED:
-                err = problemSetup::instanceBasedDataCost<_PointPrimitiveDistanceFunctor, _PrimitiveT, _PointPrimitiveT>
-                        ( problem, prims, points, lids_varids, weights, scale );
+                std::cerr << "::INSTANCE_BASED not implemented" << std::endl;
+                throw new std::runtime_error("::INSTANCE_BASED not implemented");
+//                err = problemSetup::instanceBasedDataCost<_PointPrimitiveDistanceFunctor, _PrimitiveT, _PointPrimitiveT>
+//                        ( problem, prims, points, lids_varids, weights, scale );
                 break;
 
             case ProblemSetupParams<_Scalar>::DATA_COST_MODE::BAND_BASED:
@@ -385,6 +406,18 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
         typedef std::map< LidLid, ExtremaT > ExtremaMapT;
         ExtremaMapT extremas;
 
+#if 0
+        // estimate direction cluster angles
+        problemSetup::DirAngleMapT dirAngles;        // intermediate storage to collect dir angle distributions
+        std::map< int, AnglesT > allowedAngles;      // final storage to store allowed angles
+        {
+            problemSetup::DirAnglesFunctorOuter<_PrimitiveT,_PrimitiveContainerT,AnglesT> outerFunctor( prims, angles, /* output reference */ dirAngles );
+            processing::filterPrimitives<_PrimitiveT,typename _PrimitiveContainerT::value_type>( prims, outerFunctor );
+
+            problemSetup::selectAngles( allowedAngles, dirAngles, angles, angle_gens_in_rad );
+        }
+#endif
+
         GidPidVectorMap populations;
         processing::getPopulations( populations, points );
 
@@ -396,6 +429,7 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
                     continue;
 
                 const int gid = prims[lid][lid1].getTag( _PrimitiveT::TAGS::GID );
+                const int did = prims[lid][lid1].getTag( _PrimitiveT::TAGS::DIR_GID );
 
                 // extremas key
                 LidLid lidLid1( lid, lid1 );
@@ -421,6 +455,7 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
                         if ( (lid == lidOth) && (lid1 == lid1Oth) ) continue;
 
                         const int gidOth = prims[lidOth][lid1Oth].getTag( _PrimitiveT::TAGS::GID );
+                        const int didOth = prims[lidOth][lid1Oth].getTag( _PrimitiveT::TAGS::DIR_GID );
 
                         // extremas key
                         LidLid lidLid1Oth( lidOth, lid1Oth );
@@ -436,7 +471,9 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
                         }
 
                         // SqrtAngle:
-                        _Scalar dist = primPrimDistFunctor->eval( prims[lid][lid1], (*it).second, prims[lidOth][lid1Oth], (*oit).second );
+                        _Scalar dist = primPrimDistFunctor->eval( prims[lid][lid1], (*it).second
+                                                                , prims[lidOth][lid1Oth], (*oit).second
+                                                                , /* allowedAngles.size() ? allowedAngles[didOth] : */ angles );
 
                         // should be deprecated:
                         if ( prims[lid][lid1].getTag(_PrimitiveT::DIR_GID) != prims[lidOth][lid1Oth].getTag(_PrimitiveT::DIR_GID) )
@@ -816,6 +853,9 @@ namespace problemSetup {
     {
         typedef typename _AssocT::key_type IntPair;
 
+        const _Scalar w_mod_base     = ProblemSetupParams<_Scalar>::w_mod_base,
+                      w_mod_base_inv = _Scalar(1.) - w_mod_base;
+
         int err = EXIT_SUCCESS;
 
         // INSTANCES
@@ -890,9 +930,10 @@ namespace problemSetup {
                         v -= _Scalar(1.);                                                    // (#did/n)^2 - 1.
                         v *= v;                                                              // ((#did/n)^2 - 1.)^2
                         v *= v * v;                                                          // ((#did/n)^2 - 1.)^6
-                        coeff *= _Scalar(0.1) + _Scalar(0.9) * v;                            // .1 + .9 * ((#did/n)^2 - 1.)^6
+                        coeff *= w_mod_base + w_mod_base_inv * v;                            // .1 + .9 * ((#did/n)^2 - 1.)^6
                         //coeff *= freq_weight * _Scalar(1.) / ( _Scalar(1.) + std::log(dir_instances[dir_gid]) );
                         //coeff *= freq_weight / _Scalar(dir_instances[dir_gid]);
+#warning freq_weight not used...
                     }
                     else
                         coeff *= freq_weight;
@@ -913,6 +954,7 @@ namespace problemSetup {
         return err;
     } //...associationBasedDataCost
 
+#if 0
     //! \brief Nic's version, unfinished!.
     //! \tparam _AssocT     Associates a primitive identified by <lid,lid1> with a variable id in the problem. Default: std::map< std::pair<int,int>, int >
     //! \warning Unfinished
@@ -977,6 +1019,7 @@ namespace problemSetup {
     //        }
         return err;
     } //...instanceBasedDataCost()
+#endif
 
 } //...namespace ProblemSetup
 } //...namespace GF2

@@ -7,6 +7,11 @@
 #include "globfit2/optimization/energyFunctors.h"   // MyPointPrimitiveDistanceFunctor
 #include "globfit2/io/io.h"                         // readPrimities,savePrimitives,etc.
 #include "globfit2/util/diskUtil.hpp"               // saveBackup
+#include "globfit2/processing/angle_util.hpp"       // selectAngles
+
+//debug
+#include "pcl/point_types.h" // debug
+#include "pcl/point_cloud.h" // debug
 
 #define isSMALL(prim) (prim.getTag(_PrimitiveT::STATUS) == _PrimitiveT::STATUS_VALUES::SMALL)
 #define notSMALL(prim) (prim.getTag(_PrimitiveT::STATUS) != _PrimitiveT::STATUS_VALUES::SMALL)
@@ -90,23 +95,26 @@ namespace GF2
     }
 
     template <class _PrimitiveT, class _PrimitiveContainerT, class _GeneratedT, class _CopiedT, class _PromotedT>
-    inline bool output( _PrimitiveT & cand0, _PrimitiveContainerT &out_prims, _GeneratedT &generated, _CopiedT &copied, int &nlines
-                              , _PromotedT const& promoted, int const gid0, int const lid0, int const closest_angle_id )
+    inline bool output( _PrimitiveT & cand, _PrimitiveContainerT &out_prims, _GeneratedT &generated, _CopiedT &copied, int &nlines
+                      , _PromotedT const& promoted, int const gid, int const lid0, int const closest_angle_id, std::map<int,AnglesT> allowedAngles )
     {
         typedef std::pair<int,int> GidLid;
         typedef std::pair<int,int> DidAid;
-
+#if 1
         // filter similar
         {
-            for ( int i = 0; i != out_prims[gid0].size(); ++i )
+            for ( int i = 0; i != out_prims[gid].size(); ++i )
             {
-                if ( cand0.getTag(_PrimitiveT::DIR_GID) == out_prims[gid0][i].getTag(_PrimitiveT::DIR_GID) )
+                if ( cand.getTag(_PrimitiveT::DIR_GID) == out_prims[gid][i].getTag(_PrimitiveT::DIR_GID) )
                 {
                     //float eps = (cand0.template dir() - out_prims[gid0][i].template dir()).array().abs().sum();
-                    float ang = GF2::angleInRad( cand0.template dir(), out_prims[gid0][i].template dir() );
+                    float ang = GF2::angleInRad( cand.template dir(), out_prims[gid][i].template dir() );
                     if ( ang < 1.e-6 )
                     {
                         //std::cout << "SIMILAR: " << cand0.toString() << " vs. " << out_prims[gid0][i].toString() << std::endl;
+                        DidAid didAid( cand.getTag(_PrimitiveT::DIR_GID),closest_angle_id ); // direction id, closest angle id
+                        copied[ cand.getTag(_PrimitiveT::GID) ].insert( didAid );
+
                         return false;
                     }
 //                    else
@@ -114,34 +122,37 @@ namespace GF2
                 }
             }
         }
+#endif
 
         // This is a new candidate, make sure formulate knows that
-        cand0.setTag( _PrimitiveT::STATUS, _PrimitiveT::STATUS_VALUES::UNSET );
-        if ( isPROMOTED(gid0,lid0) )
+        cand.setTag( _PrimitiveT::STATUS, _PrimitiveT::STATUS_VALUES::UNSET );
+        if ( isPROMOTED(gid,lid0) )
         {
-            cand0.setTag( _PrimitiveT::USER_ID1, lid0 ); // receiverLid
+            cand.setTag( _PrimitiveT::USER_ID1, lid0 ); // receiverLid
 
             // record responsibility
-            ++generated[ GidLid(gid0,lid0) ]; // receiver
+            ++generated[ GidLid(gid,lid0) ]; // receiver
             //++generated[ GidLid(gid1,lid1) ]; // sender
         }
-        _PrimitiveT &added = containers::add( out_prims, gid0, cand0 ); // insert into output
+        _PrimitiveT &added = containers::add( out_prims, gid, cand ); // insert into output
         ++nlines;                                  // keep track of output size
 
         // debug
-        int tmp_size = copied[ cand0.getTag(_PrimitiveT::GID) ].size();
+        int tmp_size = copied[ cand.getTag(_PrimitiveT::GID) ].size();
 
         // keep track of instances
-        DidAid didAid( cand0.getTag(_PrimitiveT::DIR_GID),closest_angle_id ); // direction id, closest angle id
-        copied[ cand0.getTag(_PrimitiveT::GID) ].insert( didAid );
+        DidAid didAid( cand.getTag(_PrimitiveT::DIR_GID),closest_angle_id ); // direction id, closest angle id
+        copied[ cand.getTag(_PrimitiveT::GID) ].insert( didAid );
 
         // debug
-        if ( copied[cand0.getTag(_PrimitiveT::GID) ].size() == tmp_size )
+        if ( copied[cand.getTag(_PrimitiveT::GID) ].size() == tmp_size )
             std::cerr << "[" << __func__ << "][" << __LINE__ << "]: NOOOOO insertion, should not happen"
-                      << cand0.getTag( _PrimitiveT::GID ) << ", " << cand0.getTag( _PrimitiveT::DIR_GID ) << std::endl;
+                      << cand.getTag( _PrimitiveT::GID ) << ", " << cand.getTag( _PrimitiveT::DIR_GID ) << std::endl;
 
         return true;
     }
+
+
 
     /*! \brief Main functionality to generate lines from points.
      *
@@ -183,6 +194,7 @@ namespace GF2
 
         // cache, so that it can be turned off
         bool safe_mode = safe_mode_arg;
+        bool debug = false, allow_debug = false;
 
         // _________ error checks _________
 
@@ -206,6 +218,14 @@ namespace GF2
         // count patch populations
         GidPidVectorMap populations; // populations[patch_id] = all points with GID==patch_id
         processing::getPopulations( populations, points );
+
+        // debug
+        typedef pcl::PointXYZRGB PCLPointT;
+        typedef pcl::PointCloud<PCLPointT> PCLCloudT;
+        typedef typename PCLCloudT::Ptr PCLCloudPtrT;
+        PCLCloudPtrT cloud( new PCLCloudT() );
+        _PointPrimitiveT::template toCloud<PCLCloudPtrT, _PointContainerT, PCLPointAllocator<_PointPrimitiveT::Dim> >
+                ( cloud, points );
 
         // _________ (1) promotion _________
 
@@ -304,14 +324,37 @@ namespace GF2
             }
         } //...promote
 
+        // _________ (2) statistics _________
+
+        // 2.1 ANGLES
+        AnglesT angle_gens_in_rad;
+        deduceGenerators<_Scalar>( angle_gens_in_rad, angles );
+        std::cout<<"angle_gens_in_rad:";for(size_t vi=0;vi!=angle_gens_in_rad.size();++vi)std::cout<<angle_gens_in_rad[vi]*180./M_PI<<" ";std::cout << "\n";
+        // estimate direction cluster angles
+        DirAngleMapT dirAngles;        // intermediate storage to collect dir angle distributions
+        std::map<int,AnglesT> allowedAngles;      // final storage to store allowed angles
+        {
+            DirAnglesFunctorOuter<_PrimitiveT,_PrimitiveContainerT,AnglesT> outerFunctor( in_lines, angles, /* output reference */ dirAngles );
+            processing::filterPrimitives<_PrimitiveT,typename _PrimitiveContainerT::mapped_type>( in_lines, outerFunctor );
+
+            if ( !dirAngles.size() )
+                std::cerr << "[" << __func__ << "]: dirAngles.size(): " << dirAngles.size() << std::endl;
+
+            selectAngles( allowedAngles, dirAngles, angles, angle_gens_in_rad );
+        }
+
+        // 2.2 Neighbourhoods
+        //_Scalar dist = MyFinitePrimitiveToFinitePrimitiveCompatFunctor::eval( ex1, p1, ex2, p2 );
 
         // Status of primitives at this stage are:
         //  ACTIVE      for large primitives to use
         //  TAG_UNSET   for promoted primitives to give directions to
         //  SMALL       for primitives to ignore
 
+        //debug
+        pcl::visualization::PCLVisualizer::Ptr vptr( new pcl::visualization::PCLVisualizer() );
 
-        // _________ (2) generation _________
+        // _________ (4) generation _________
         int gid0, gid1, dir_gid0, dir_gid1, lid0, lid1;
         gid0 = gid1 = dir_gid0 = dir_gid1 = _PrimitiveT::TAG_UNSET; // group tags cached
         for ( outer_const_iterator outer_it0  = in_lines.begin(); outer_it0 != in_lines.end(); ++outer_it0 )
@@ -363,106 +406,187 @@ namespace GF2
                         if ( safe_mode )    add1 &= isPROMOTED(gid1,lid1); // add cand1 only, if prim1 was promoted
 
                         // find best rotation id and value
-                        int closest_angle_id = 0;
-                        if ( add0 || add1 ) // speedup by skipping angle calculation, if won't add anyway... //added by Aron 12:46 18 Oct 2014
+                        int closest_angle_id0 = 0, closest_angle_id1 = 0;
+                        if ( add0 || add1 ) // speedup by skipping angle calculation, if won't add anyway... // added by Aron 12:46 18 Oct 2014
                         {
-                            _Scalar angdiff    = _PrimitivePrimitiveAngleFunctorT::template eval<_Scalar>( prim0, prim1, angles, &closest_angle_id );
+                            bool isAllowedAngle0 = allowedAngles.find(dir_gid1) != allowedAngles.end(), // do I have restrictions, when I copy dir1 to pos0 with this angle?
+                                 isAllowedAngle1 = allowedAngles.find(dir_gid0) != allowedAngles.end(); // do I have restrictions, when I copy dir0 to pos1 with this angle?
+
+                            // ANG0
+                            // angdiff0 determines, if dir1 from pos1 can be copied to pos0 using allowed angles for dir1
+                            _Scalar angdiff0 = _PrimitivePrimitiveAngleFunctorT::template eval<_Scalar>( prim0, prim1,
+                                                                                                 isAllowedAngle0 ? allowedAngles[dir_gid1] : angles,
+                                                                                                 &closest_angle_id0 );
+                            // retarget closest angle id0 to angles instead of allowedAngles[dir_gid1]
+                            if ( isAllowedAngle0 )
+                                for ( int aa = 0; aa != angles.size(); ++aa )
+                                    if ( angles[aa] == allowedAngles[dir_gid1][closest_angle_id0] )
+                                    {
+                                        closest_angle_id0 = aa;
+                                        break;
+                                    }
+
+                            // ANG1
+                            // angdiff1 determines, if dir0 from pos0 can be copied to pos1 using allowed angles for dir0
+                            _Scalar angdiff1 = _PrimitivePrimitiveAngleFunctorT::template eval<_Scalar>( prim0, prim1,
+                                                                                                 isAllowedAngle1 ? allowedAngles[dir_gid0] : angles,
+                                                                                                 &closest_angle_id1 );
+                            // retarget closest angle id1 to angles instead of allowedAngles[dir_gid0]
+                            if ( isAllowedAngle1 )
+                                for ( int aa = 0; aa != angles.size(); ++aa )
+                                    if ( angles[aa] == allowedAngles[dir_gid0][closest_angle_id1] )
+                                    {
+                                        closest_angle_id1 = aa;
+                                        break;
+                                    }
 
                             // decide based on rotation difference (RECEIVE_SIMILAR)
-                            bool    close_ang  = angdiff < angle_limit;
-                            add0              &= close_ang; // prim0 needs to be close to prim1 in angle
-                            add1              &= close_ang; // prim1 needs to be close to prim0 in angle
+                            //bool    close_ang  = angdiff < angle_limit;
+                            add0              &= angdiff0 < angle_limit; // prim0 needs to be close to prim1 in angle
+                            add1              &= angdiff1 < angle_limit; // prim1 needs to be close to prim0 in angle
                         }
 
                         // store already copied pairs
                         {
-                            if ( copied[gid0].find(DidAid(dir_gid1,closest_angle_id)) != copied[gid0].end() )
+                            if ( copied[gid0].find(DidAid(dir_gid1,closest_angle_id0)) != copied[gid0].end() )
                                 add0 = false;
-//                            else if ( add0 )
-//                            {
-//                                std::cout << "[add0] letting " << gid0 << ", " << dir_gid1 << " through, since angle_id " << closest_angle_id << " is not in copied"
-//                                          << ", sender: " << gid1 << ", receiver dir: " << dir_gid0
-//                                          << std::endl;
-//                            }
 
-
-                            if ( copied[gid1].find(DidAid(dir_gid0,closest_angle_id)) != copied[gid1].end() )
+                            if ( copied[gid1].find(DidAid(dir_gid0,closest_angle_id1)) != copied[gid1].end() )
                                 add1 = false;
-//                            else if ( add1 )
-//                            {
-//                                std::cout << "[add1] letting " << gid1 << ", " << dir_gid0 << " through, since angle_id " << closest_angle_id << " is not in copied" << std::endl;
-//                            }
                         }
 
                         if ( !add0 && !add1 )
                             continue;
 
+                        // debug
+                        if (    ((dir_gid0 == 127) || (dir_gid1 == 127))
+                             && (     (((gid0==71) || (gid0==80) || (gid0==64) || (gid0==67)) && add0)
+                                  ||  (((gid1==71) || (gid1==80) || (gid1==64) || (gid1==67)) && add1)
+                                )
+                           )
+                        {
+                            std::cout << "sotp" << std::endl;
+                            debug = allow_debug;
+                        }
+
+                        bool added0 = add0, added1 = add1;
+
+                        AnglesT single_gen0, single_gen1;
+                        genAngles( single_gen0, angles[closest_angle_id0], angle_gens_in_rad );
+                        genAngles( single_gen1, angles[closest_angle_id1], angle_gens_in_rad );
+
                         // copy line from pid to pid1
                         _PrimitiveT cand0;
-                        if ( add0 && prim0.generateFrom(cand0, prim1, closest_angle_id, angles, _Scalar(1.)) )
+                        if ( add0 && prim0.generateFrom(cand0, prim1, closest_angle_id0, angles, _Scalar(1.)) )
                         {
-#if 1 // added by Aron at 11:11 on 22 Oct 2014
-                            output( cand0, out_prims, generated, copied, nlines
-                                  , promoted, gid0, lid0, closest_angle_id );
-#else
-                            // This is a new candidate, make sure formulate knows that
-                            cand0.setTag( _PrimitiveT::STATUS, _PrimitiveT::STATUS_VALUES::UNSET );
-                            if ( isPROMOTED(gid0,lid0) )
+                            added0 = output( cand0, out_prims, generated, copied, nlines
+                                           , promoted, gid0, lid0, closest_angle_id0, allowedAngles );
+
+                            if ( allowedAngles.find(dir_gid0) == allowedAngles.end() && single_gen0.size() )
                             {
-                                cand0.setTag( _PrimitiveT::USER_ID1, lid0 ); // receiverLid
-
-                                // record responsibility
-                                ++generated[ GidLid(gid0,lid0) ]; // receiver
-                                //++generated[ GidLid(gid1,lid1) ]; // sender
+                                processing::appendAnglesFromGenerators( allowedAngles[dir_gid0], single_gen0, /* no_paral: */ false, true, true );
                             }
-                            containers::add( out_prims, gid0, cand0 ); // insert into output
-                            ++nlines;                                  // keep track of output size
-
-                            // debug
-                            int tmp_size = copied[ cand0.getTag(_PrimitiveT::GID) ].size();
-
-                            // keep track of instances
-                            DidAid didAid( cand0.getTag(_PrimitiveT::DIR_GID),closest_angle_id ); // direction id, closest angle id
-                            copied[ cand0.getTag(_PrimitiveT::GID) ].insert( didAid );
-
-                            // debug
-                            if ( copied[cand0.getTag(_PrimitiveT::GID) ].size() == tmp_size )
-                                std::cerr << "[" << __func__ << "][" << __LINE__ << "]: NOOOOO insertion, should not happen"
-                                          << cand0.getTag( _PrimitiveT::GID ) << ", " << cand0.getTag( _PrimitiveT::DIR_GID ) << std::endl;
-#endif
                         } //...add0
 
                         _PrimitiveT cand1;
-                        if ( add1 && prim1.generateFrom(cand1, prim0, closest_angle_id, angles, _Scalar(-1.)) )
+                        if ( add1 && prim1.generateFrom(cand1, prim0, closest_angle_id1, angles, _Scalar(-1.)) ) // changed to 1 on 22 12 2014
                         {
-#if 1 // added by Aron at 11:11 on 22 Oct 2014
-                            output( cand1, out_prims, generated, copied, nlines
-                                  , promoted, gid1, lid1, closest_angle_id );
-#else
-                            // This is a new candidate, make sure formulate knows that
-                            cand1.setTag( _PrimitiveT::STATUS, _PrimitiveT::STATUS_VALUES::UNSET );
-                            if ( isPROMOTED(gid1,lid1) )
+                            added1 = output( cand1, out_prims, generated, copied, nlines
+                                           , promoted, gid1, lid1, closest_angle_id1, allowedAngles );
+
+                            if ( allowedAngles.find(dir_gid1) == allowedAngles.end() && single_gen1.size() )
                             {
-                                cand1.setTag( _PrimitiveT::USER_ID1, lid1 ); // receiverLid
-
-                                // record responsibility
-                                ++generated[ GidLid(gid1,lid1) ]; // receiver
+                                processing::appendAnglesFromGenerators( allowedAngles[dir_gid1], single_gen1, /* no_paral: */ false, true, true );
                             }
-                            containers::add( out_prims, gid1, cand1 );  // insert
-                            ++nlines;                                   // keep track of output size
-
-                            // debug
-                            int tmp_size = copied[ cand1.getTag(_PrimitiveT::GID) ].size();
-
-                            // keep track of instances
-                            DidAid didAid( cand1.getTag(_PrimitiveT::DIR_GID), closest_angle_id );
-                            copied[ cand1.getTag(_PrimitiveT::GID) ].insert( didAid );
-
-                            // debug
-                            if ( copied[cand1.getTag(_PrimitiveT::GID)].size() == tmp_size )
-                                std::cerr << "[" << __func__ << "][" << __LINE__ << "]: NOOOOO insertion, should not happen for " << cand1.getTag( _PrimitiveT::GID ) << ", " << cand1.getTag( _PrimitiveT::DIR_GID ) << std::endl;
-#endif
                         } //...if add1
+
+                        //debug
+                        {
+                            if ( debug )
+                            {
+                                vptr->setBackgroundColor( .9, .9, .9 );
+                                vptr->addPointCloud( cloud );
+
+                                char line_name[255];
+                                sprintf( line_name, "prim0" );
+                                _PrimitiveT::template draw<_PointPrimitiveT>( /*   primitive: */ prim0
+                                                                              , /*      points: */ points
+                                                                              , /*   threshold: */ scale
+                                                                              , /*     indices: */ &(populations[gid0])
+                                                                              , /*      viewer: */ vptr
+                                                                              , /*   unique_id: */ line_name
+                                                                              , /*      colour: */ 1,0,0
+                                                                              , /* viewport_id: */ 0
+                                                                              );
+                                sprintf( line_name, "prim1" );
+                                _PrimitiveT::template draw<_PointPrimitiveT>( /*   primitive: */ prim1
+                                                                              , /*      points: */ points
+                                                                              , /*   threshold: */ scale
+                                                                              , /*     indices: */ &(populations[gid1])
+                                                                              , /*      viewer: */ vptr
+                                                                              , /*   unique_id: */ line_name
+                                                                              , /*      colour: */ 0,1,0
+                                                                              , /* viewport_id: */ 0
+                                                                              );
+                                if ( added0 )
+                                {
+                                    sprintf( line_name, "cand0" );
+                                    _PrimitiveT::template draw<_PointPrimitiveT>( /*   primitive: */ cand0
+                                                                                  , /*      points: */ points
+                                                                                  , /*   threshold: */ scale
+                                                                                  , /*     indices: */ &(populations[gid0])
+                                                                                  , /*      viewer: */ vptr
+                                                                                  , /*   unique_id: */ line_name
+                                                                                  , /*      colour: */ 0,0,1
+                                                                                  , /* viewport_id: */ 0
+                                                                                  );
+                                }
+                                if ( added1 )
+                                {
+                                    sprintf( line_name, "cand1" );
+                                    _PrimitiveT::template draw<_PointPrimitiveT>( /*   primitive: */ cand1
+                                                                                  , /*      points: */ points
+                                                                                  , /*   threshold: */ scale
+                                                                                  , /*     indices: */ &(populations[gid1])
+                                                                                  , /*      viewer: */ vptr
+                                                                                  , /*   unique_id: */ line_name
+                                                                                  , /*      colour: */ 0,1,1
+                                                                                  , /* viewport_id: */ 0
+                                                                                  );
+                                }
+                                std::cout << "gid: " << gid0 << ", dir_gid: " << dir_gid0
+                                          << ", gid1: " << gid1 << ", dir_gid1: " << dir_gid1
+                                          << std::endl;
+
+                                if ( added0 )
+                                {
+                                    std::cout << "copied[" << gid0 << "]: ";
+                                    for ( auto it = copied[gid0].begin(); it != copied[gid0].end(); ++it )
+                                        std::cout << "<" << it->first << "," << it->second << "," << angles[it->second] * 180./M_PI << ">, ";
+                                    std::cout << "\twas looking for " << "<" << dir_gid1 << "," << closest_angle_id0 << "," << angles[closest_angle_id0] * 180./M_PI << ">";
+                                    std::cout << std::endl;
+                                }
+
+                                if ( added1 )
+                                {
+                                    std::cout << "copied[" << gid1 << "]: ";
+                                    for ( auto it = copied[gid1].begin(); it != copied[gid1].end(); ++it )
+                                        std::cout << "<" << it->first << "," << it->second << "," << angles[it->second] * 180./M_PI << ">, ";
+                                    std::cout << "\twas looking for " << "<" << dir_gid0 << "," << closest_angle_id1 << "," << angles[closest_angle_id1] * 180./M_PI << ">";
+                                    std::cout << std::endl;
+                                }
+
+                                if ( debug && (added0 || added1) )
+                                {
+                                    vptr->spin();
+                                    debug = false;
+                                }
+                                vptr->removeAllShapes();
+                            }
+                            else
+                                std::cout << "gid: " << gid0 << ", dir_gid: " << dir_gid0 << std::endl;
+                        } //...debug
+
                     } //...for l3
                 } //...for l2
             } //...for l1
