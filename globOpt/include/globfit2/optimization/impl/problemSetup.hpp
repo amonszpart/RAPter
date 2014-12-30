@@ -5,6 +5,7 @@
 #include "Eigen/Dense"
 #include <vector>
 #include <map>
+#include <set> // edgelist
 
 #if GF2_USE_PCL
 #   include "pcl/console/parse.h" // pcl::console::parse_argument
@@ -16,6 +17,8 @@
 #include "globfit2/parameters.h"                  // ProblemSetupParams
 #include "globfit2/processing/util.hpp"           // getPopulation()
 #include "globfit2/io/io.h"                       // readPrimitives(), readPoints()
+
+#include "globfit2/processing/graph.hpp"
 
 namespace GF2 {
 
@@ -259,7 +262,22 @@ ProblemSetup::formulateCli( int    argc
 
 namespace problemSetup
 {
+    /*! \brief tuple<3> to temporarily store graph edges until we know how large the graph will be
+     */
+    template <typename _Scalar>
+    struct EdgeT
+    {
+        int _v0, _v1;
+        _Scalar _w;
+        EdgeT( int v0, int v1, _Scalar w ) : _v0(v0), _v1(v1), _w(w) {}
 
+        bool operator<( EdgeT<_Scalar> const& other ) const
+        {
+            if ( _v0 < other._v0 ) return true;
+            else if ( _v1 < other._v1 ) return true;
+            else return _w < other._w;
+        }
+    };
 
 } //...ns problemSetup
 
@@ -287,6 +305,9 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
         )
 {
     using problemSetup::OptProblemT;
+
+    typedef Graph< _Scalar, typename MyGraphConfig<_Scalar>::UndirectedGraph > GraphT;
+    typedef problemSetup::EdgeT<_Scalar> EdgeT;
 
     // work - formulate problem
     int err = EXIT_SUCCESS;
@@ -325,7 +346,8 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
                 sprintf( name, "x_%d_%d", gid, dir_gid );
 
                 // store var_id for later, add binary variable
-                const int var_id = problem.addVariable( OptProblemT::BOUND::RANGE, 0.0, 1.0, OptProblemT::VAR_TYPE::INTEGER );
+                const int var_id = problem.addVariable( OptProblemT::BOUND::RANGE, 0.0, 1.0, OptProblemT::VAR_TYPE::INTEGER
+                                                        , OptProblemT::LINEARITY::LINEAR, name ); // changed to nonlinear by Aron on 29.12.2014
                 lids_varids[ IntPair(lid,lid1) ] = var_id;
 
                 // save for initial starting point
@@ -405,18 +427,10 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
         typedef std::pair<int,int> LidLid;
         typedef std::map< LidLid, ExtremaT > ExtremaMapT;
         ExtremaMapT extremas;
+        typedef OptProblemT::Scalar ProblemScalar;
 
-#if 0
-        // estimate direction cluster angles
-        problemSetup::DirAngleMapT dirAngles;        // intermediate storage to collect dir angle distributions
-        std::map< int, AnglesT > allowedAngles;      // final storage to store allowed angles
-        {
-            problemSetup::DirAnglesFunctorOuter<_PrimitiveT,_PrimitiveContainerT,AnglesT> outerFunctor( prims, angles, /* output reference */ dirAngles );
-            processing::filterPrimitives<_PrimitiveT,typename _PrimitiveContainerT::value_type>( prims, outerFunctor );
-
-            problemSetup::selectAngles( allowedAngles, dirAngles, angles, angle_gens_in_rad );
-        }
-#endif
+        GraphT::testGraph();
+        std::set< EdgeT > edgesList;
 
         GidPidVectorMap populations;
         processing::getPopulations( populations, points );
@@ -471,23 +485,115 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
                         }
 
                         // SqrtAngle:
-                        _Scalar dist = primPrimDistFunctor->eval( prims[lid][lid1], (*it).second
-                                                                , prims[lidOth][lid1Oth], (*oit).second
-                                                                , /* allowedAngles.size() ? allowedAngles[didOth] : */ angles );
+                        _Scalar score = primPrimDistFunctor->eval( prims[lid][lid1], (*it).second
+                                                                 , prims[lidOth][lid1Oth], (*oit).second
+                                                                 , /* allowedAngles.size() ? allowedAngles[didOth] : */ angles );
 
                         // should be deprecated:
                         if ( prims[lid][lid1].getTag(_PrimitiveT::DIR_GID) != prims[lidOth][lid1Oth].getTag(_PrimitiveT::DIR_GID) )
-                            dist += dir_id_bias;
+                            score += dir_id_bias;
 
                         // multiply by pairwise weight
-                        dist *= weights(1);
+                        score *= weights(1);
 
                         // add
-                        problem.addQObjective( lids_varids.at( IntPair(lid,lid1) ), lids_varids.at( IntPair(lidOth,lid1Oth) ), dist );
+                        const int varId0 = lids_varids.at( IntPair(lid,lid1) );
+                        const int varId1 = lids_varids.at( IntPair(lidOth,lid1Oth) );
+                        problem.addQObjective( varId0, varId1, score );
+
+                        // coupling
+                        {
+                            _Scalar invDist = primPrimDistFunctor->evalSpatial( prims[lid][lid1], (*it).second
+                                                                              , prims[lidOth][lid1Oth], (*oit).second );
+                            if ( invDist > _Scalar(0.) && (did == didOth) )
+                            {
+                                edgesList.insert( EdgeT(varId0, varId1, invDist) );
+                            }
+                        }
                     } // ... olid1
                 } // ... olid
             } // ... lid1
         } // ... lid
+
+        {
+            typedef std::vector<int> ComponentListT;
+            GraphT graph( lids_varids.size() );
+            for ( auto it = edgesList.begin(); it != edgesList.end(); ++it )
+            {
+                graph.addEdge( it->_v0, it->_v1, /* not used right now: */ it->_w );
+            }
+
+            for ( int i = 0; i != lids_varids.size(); ++i )
+            {
+                if ( !problem.getVarName(i).empty() )
+                    graph.addVertexName( i, problem.getVarName(i) );
+            }
+
+            {
+                std::ofstream f;
+                f.open( "components.gv" );
+                f << "graph {\n";
+                ComponentListT components;
+                std::map<int,int> compSizes;
+                graph.getComponents( components, &compSizes );
+
+                std::map< int, std::vector<int> > clusters; // [ cluster0: [v0, v10,...], cluster1: [v3, v5, ...], ... ]
+                for ( int varId = 0; varId != components.size(); ++varId )
+                {
+                    if ( compSizes[ components[varId] ] < 2 )
+                        continue;
+
+                    if ( problem.getVarName(varId).empty() )
+                        f << varId;
+                    else
+                        f << problem.getVarName(varId);
+
+                    f << " -- " << components[varId] << std::endl;
+
+                    // store
+                    clusters[ components[varId] ].push_back( varId );
+                }
+
+                f << "}" << std::endl;
+                f.close();
+
+                if ( clusters.size() )
+                {
+                    //system( "dot -Tpng -o comps.png components.gv && (eog comps.png &)" );
+
+                    // work
+                    typename OptProblemT::SparseMatrix cluster_constraint( 1, problem.getVarCount()+1 );
+                    char name[255];
+                    int clusterId = 0;
+                    for ( auto it = clusters.begin(); it != clusters.end(); ++it, ++clusterId )
+                    {
+                        sprintf(name,"cl_%d", clusterId );
+                        int varid = problem.addVariable( OptProblemT::BOUND::RANGE, 0.0, 1.0, OptProblemT::VAR_TYPE::INTEGER
+                                                         , OptProblemT::LINEARITY::LINEAR, name );
+
+                        for ( int i = 0; i != it->second.size(); ++i )
+                        {
+                            cluster_constraint.insert( 0, it->second[i] ) = 1;
+                        }
+                        cluster_constraint.insert( 0, varid ) = -(int)it->second.size();
+                        // k * X_cluster_l <= A( l, : ) * X <= INF
+                        problem.addConstraint( OptProblemT::BOUND::GREATER_EQ
+                                               , /* lower_limit: */ 0 // k * X_cluster_l
+                                               , /* upper_limit: */ problem.getINF()
+                                               , &cluster_constraint );
+
+                        chosen_varids.insert( varid );
+
+                        // extra!
+                        //problem.addLinObjective( varid, -1 );
+                    }
+                }
+            }
+
+            graph.draw( "graph.gv" );
+            //system( "dot -Tpng -o graph.png graph.gv && (eog graph.png &)" );
+        }
+
     } //...pairwise cost
 
     // ____________________________________________________
@@ -930,10 +1036,9 @@ namespace problemSetup {
                         v -= _Scalar(1.);                                                    // (#did/n)^2 - 1.
                         v *= v;                                                              // ((#did/n)^2 - 1.)^2
                         v *= v * v;                                                          // ((#did/n)^2 - 1.)^6
-                        coeff *= w_mod_base + w_mod_base_inv * v;                            // .1 + .9 * ((#did/n)^2 - 1.)^6
+                        coeff *= (w_mod_base + w_mod_base_inv * v) * freq_weight;            // .1 + .9 * ((#did/n)^2 - 1.)^6
                         //coeff *= freq_weight * _Scalar(1.) / ( _Scalar(1.) + std::log(dir_instances[dir_gid]) );
                         //coeff *= freq_weight / _Scalar(dir_instances[dir_gid]);
-#warning freq_weight not used...
                     }
                     else
                         coeff *= freq_weight;

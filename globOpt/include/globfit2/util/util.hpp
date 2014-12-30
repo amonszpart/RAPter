@@ -72,28 +72,28 @@ hsv2rgb( ::cv::Point3_<Scalar> const& in )
     return out;
 }
 
-static void RGB2HSV(float r, float g, float b,
-                    float &h, float &s, float &v)
-{
-    float K = 0.f;
+//static void RGB2HSV(float r, float g, float b,
+//                    float &h, float &s, float &v)
+//{
+//    float K = 0.f;
 
-    if (g < b)
-    {
-        std::swap(g, b);
-        K = -1.f;
-    }
+//    if (g < b)
+//    {
+//        std::swap(g, b);
+//        K = -1.f;
+//    }
 
-    if (r < g)
-    {
-        std::swap(r, g);
-        K = -2.f / 6.f - K;
-    }
+//    if (r < g)
+//    {
+//        std::swap(r, g);
+//        K = -2.f / 6.f - K;
+//    }
 
-    float chroma = r - std::min(g, b);
-    h = fabs(K + (g - b) / (6.f * chroma + 1e-20f));
-    s = chroma / (r + 1e-20f);
-    v = r;
-}
+//    float chroma = r - std::min(g, b);
+//    h = fabs(K + (g - b) / (6.f * chroma + 1e-20f));
+//    s = chroma / (r + 1e-20f);
+//    v = r;
+//}
 
 /*! \brief
  *  \tparam MatrixDervied Concept: Eigen::Matrix<Scalar,3,1>

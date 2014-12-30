@@ -219,6 +219,7 @@ SET( GLOBOPT_HPP_LIST
     include/globfit2/util/containers.hpp
     include/globfit2/processing/util.hpp
     include/globfit2/processing/angle_util.hpp
+    include/globfit2/processing/graph.hpp
     include/globfit2/comparison/impl/reassign.hpp
 )
 
@@ -239,8 +240,8 @@ SET( GLOBOPT_H_LIST
     include/globfit2/optimization/problemSetup.h
     include/globfit2/optimization/merging.h
     include/globfit2/optimization/mergingFunctors.h
-    include/optimization/qp/gurobiOpt.h
-    include/optimization/qp/MyGRBCallback.h
+    #include/optimization/qp/gurobiOpt.h
+    #include/optimization/qp/MyGRBCallback.h
     include/globfit2/optimization/solver.h
     include/globfit2/io/io.h
 )

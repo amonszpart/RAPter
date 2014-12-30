@@ -56,7 +56,7 @@ fi
 #d=`../divide.py 2 3`;
 
 anglegens="60,90"; # Desired angle generators in degrees. Default: 90.
-nbExtraIter=10;  # iteration count. Default: 2.
+nbExtraIter=8;  # iteration count. Default: 2.
 dirbias="0";	# not-same-dir-id cost offset. Default: 0. Don't use, if freqweight is on.
 freqweight="1000"; # dataterm = (freqweight / #instances) * datacost. Default: 0. 1 might be too strong...todo
 adopt="0";      # Adopt points argument. Default: 0
@@ -66,7 +66,7 @@ cand_anglediv="1";# for 3D: "2.5";
 segmentScaleMultiplier="1";# for 3D: "2.5";
 pwCostFunc="spatsqrt" # spatial cost function. TODO: reactivate sqrt (does not compile for now)
 
-visdefparam="--angle-gens $anglegens --use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-rel --no-scale" #"--use-tags --no-clusters" #--ids
+visdefparam="--angle-gens $anglegens --use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-rel --no-scale --bg-colour .9,.9,.9" #"--use-tags --no-clusters" #--ids
 firstConstrMode="patch" # what to add in the first run formulate. Default: 0 (everyPatchNeedsDirection), experimental: 2 (largePatchesNeedDirection).
 iterationConstrMode="patch" # what to add in the second iteration formulate. Default: 0 (everyPatchNeedsDirection), experimental: 2 (largePatchesNeedDirection).
 startAt=0
@@ -79,6 +79,7 @@ smallThreshDiv="2"; #stepsize
 safeMode=""; #"--safe-mode"; #"--safe-mode" # "--safe-mode" for new, or "" for old version
 variableLimit=1100; # 1300; # Safe mode gets turned on, and generate rerun, if candidates exceed this number (1300)
 premerge=1 # call merge after segmentation 0/1
+algCode=3 # 0==B_BB, OA, QG, 3==Hyb, ECP, IFP
 
 echo "scale: $scale"
 echo "pw: $pw"
@@ -194,7 +195,7 @@ if [ $premerge -ne 0 ]; then
     echo ">>>>>> PREMERGE produced  $premergeLinesCnt patches instead of $patchesLinesCnt";
     cp patches.csv_merged_it-1.csv $input
     cp points_primitives_it-1.csv $assoc
-    my_exec "../globOptVis --show$flag3D --scale $scale --use-tags --pop-limit $poplimit -p patches.csv -a $assoc --normals 100 --title \"GlobOpt - PreMerge output\" --no-clusters --no-pop --no-rel &"
+    my_exec "../globOptVis --show$flag3D --scale $scale --use-tags --pop-limit $poplimit -p patches.csv -a $assoc --normals 100 --title \"GlobOpt - PreMerge output\" --no-clusters --no-pop --no-rel --bg-colour .9,.9,.9 &"
 fi
 
 # Generate candidates. OUT: candidates_it0.csv. #small-mode : small patches don't receive any candidates
@@ -210,7 +211,7 @@ fi
 my_exec "$executable --formulate$flag3D --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --constr-mode $firstConstrMode --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $anglegens --candidates candidates_it0.csv -a $assoc --freq-weight $freqweight --cost-fn $pwCostFunc"
 
 # Solve optimization problem. OUT: primitives_it0.bonmin.csv
-my_exec "$executable --solver$flag3D bonmin --problem problem -v --time -1 --candidates candidates_it0.csv"
+my_exec "$executable --solver$flag3D bonmin --problem problem -v --time -1 --angle-gens $anglegens --bmode $algCode --candidates candidates_it0.csv"
 
 if [ "$correspondance" = true ] ; then
     my_exec "$correspondance_exe  $correspondance_gtprim $correspondance_gtassing primitives_it0.bonmin.csv $assoc cloud.ply $scale"
@@ -234,6 +235,8 @@ fi #startAt <= 1
 
 # if true, stay on the same level for one more iteration (too many variables)
 decrease_level=true;
+# converged is false, until two outputs are not distinguishable by diff
+converged=false;
 
 for c in $(seq 1 $nbExtraIter)
 do
@@ -290,7 +293,7 @@ do
         my_exec "$executable --formulate$flag3D --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --constr-mode $iterationConstrMode --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $anglegens --candidates candidates_it$c.csv -a $assoc --freq-weight $freqweight  --cost-fn $pwCostFunc"
 
         # Solve optimization problem. OUT: primitives_it$c.bonmin.csv
-        my_exec "$executable --solver$flag3D bonmin -v --problem problem --time -1 --angle-gens $anglegens --candidates candidates_it$c.csv"
+        my_exec "$executable --solver$flag3D bonmin -v --problem problem --time -1 --bmode $algCode --angle-gens $anglegens --candidates candidates_it$c.csv"
         
         if [ "$correspondance" = true ] ; then
             my_exec "$correspondance_exe  $correspondance_gtprim $correspondance_gtassing primitives_it$c.bonmin.csv $assoc cloud.ply $scale"
@@ -311,6 +314,9 @@ do
 
         my_exec "$executable --energy --formulate$flag3D --scale $scale --cloud cloud.ply --unary 10000 --pw $pw --cmp 1 --constr-mode $iterationConstrMode --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $anglegens --candidates primitives_it$c.bonmin.csv -a $assoc --freq-weight $freqweight  --cost-fn $pwCostFunc"
     fi
+
+    echo "diff primitives_it$prevId.csv primitives_it$nextId.csv"
+    echo $(diff primitives_it$prevId.csv primitives_it$nextId.csv)
 done
 
 #energies

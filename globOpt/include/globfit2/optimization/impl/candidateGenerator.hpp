@@ -502,6 +502,7 @@ namespace GF2
 
                         //debug
                         {
+                            //--generate -sc 0.02 -al 0.3 -ald 1 --small-mode 0 --patch-pop-limit 5 -p primitives_merged_it0.csv --assoc points_primitives_it0.csv --angle-gens 60,90 --small-thresh-mult 1
                             if ( debug )
                             {
                                 vptr->setBackgroundColor( .9, .9, .9 );
