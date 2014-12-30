@@ -20,9 +20,8 @@
 
 namespace GF2
 {
-    namespace vis {
-        //inline void
-    }
+    typedef std::pair<int,int> GidLid; // uniquely identifies a primitive by first: gid, second: linear id in innerContainer (vector).
+    typedef std::pair<int,int> DidAid; // <DirectionId, AngleId>
 
     namespace cgen
     {
@@ -152,7 +151,115 @@ namespace GF2
         return true;
     }
 
+    /*! \brief Adds a candidate at location prim0, with direction from prim1.
+     *  \param[in/out] allowedAngles
+     *  \param[in/out] copied           [gid] = [ <dir0,angle_id0>, <dir0,angle_id1>, <dir2,angle_id0>, ... ]
+     *  \param[in/out] generated        Records, how many extra candidates the input primitive generated in the output.
+     *  \param[in/out] nLines           Keeps track of overall output size.
+     */
+    template < class _PrimitivePrimitiveAngleFunctorT
+             , class _PrimitiveT, typename _Scalar, class _AnglesT, class _PromotedT
+             , class _AllowedAnglesT, class _CopiedT, class _GeneratedT, class _PrimitiveContainerT >
+    inline int addCandidate( _PrimitiveT        const& prim0
+                           , _PrimitiveT        const& prim1
+                           , int                const  lid0
+                           , int                const  lid1
+                           , bool               const  safe_mode
+                           , _Scalar            const  angle_limit
+                           , _AnglesT           const& angles
+                           , _AnglesT           const& angle_gens_in_rad
+                           , _PromotedT         const& promoted
+                           , _AllowedAnglesT         & allowedAngles
+                           , _CopiedT                & copied
+                           , _GeneratedT             & generated
+                           , int                     & nLines
+                           , _PrimitiveContainerT    & out_prims
+                           )
+    {
 
+        const int gid0     = prim0.getTag( _PrimitiveT::GID );
+        const int gid1     = prim1.getTag( _PrimitiveT::GID );
+        const int dir_gid0 = prim0.getTag( _PrimitiveT::DIR_GID );
+        const int dir_gid1 = prim1.getTag( _PrimitiveT::DIR_GID );
+
+        std::vector<int> gids = { 0, 1, 3 }, dids = { 129 };
+        if ( (    std::find(dids.begin(),dids.end(),dir_gid0) != dids.end()
+               || std::find(dids.begin(),dids.end(),dir_gid1) != dids.end() )
+             &&
+             (    std::find(gids.begin(),gids.end(),gid0    ) != gids.end()
+               || std::find(gids.begin(),gids.end(),gid1    ) != gids.end() )
+           )
+            std::cout << "here" << "<" << gid0 << "," << dir_gid0 << "> -- "
+                                << "<" << gid1 << "," << dir_gid1 << ">" << std::endl;
+
+        bool add0 = false;
+
+        add0 = notSMALL(prim0) && notSMALL(prim1) && notPROMOTED(gid1,lid1);
+        // changed by Aron 08:15, 26/09/2014 to prevent many candidates, trust originals, don't add anything to them, just add to promoted ones
+        if ( safe_mode )    add0 &= isPROMOTED(gid0,lid0); // add cand0 only, if prim0 was promoted
+
+        if ( !add0 ) return false;
+
+        int closest_angle_id0 = 0;
+        // do I have restrictions, when I copy dir1 to pos0 with this angle?
+        bool isAllowedAngle0 = allowedAngles.find(dir_gid1) != allowedAngles.end();
+
+        _Scalar angdiff0 = _PrimitivePrimitiveAngleFunctorT::template eval<_Scalar>( prim0, prim1,
+                                                                             isAllowedAngle0 ? allowedAngles[dir_gid1] : angles,
+                                                                             &closest_angle_id0 );
+        // retarget closest angle id0 to angles instead of allowedAngles[dir_gid1]
+        if ( isAllowedAngle0 )
+            for ( int aa = 0; aa != angles.size(); ++aa )
+                if ( angles[aa] == allowedAngles[dir_gid1][closest_angle_id0] )
+                {
+                    closest_angle_id0 = aa;
+                    break;
+                }
+
+        add0 &= angdiff0 < angle_limit; // prim0 needs to be close to prim1 in angle
+
+        if ( copied[gid0].find(DidAid(dir_gid1,closest_angle_id0)) != copied[gid0].end() )
+            add0 = false;
+
+        if ( !add0 )
+            return false;
+
+        bool added0 = add0;
+
+        AnglesT single_gen0;
+        genAngles( single_gen0, angles[closest_angle_id0], angle_gens_in_rad );
+
+        // copy line from pid to pid1
+        _PrimitiveT cand0;
+        if ( add0 && prim0.generateFrom(cand0, prim1, closest_angle_id0, angles, _Scalar(1.)) )
+        {
+            added0 = output( cand0, out_prims, generated, copied, nLines
+                           , promoted, gid0, lid0, closest_angle_id0, allowedAngles );
+
+            if ( allowedAngles.find(dir_gid1) == allowedAngles.end() && single_gen0.size() )
+            {
+                processing::appendAnglesFromGenerators( /*        out: */ allowedAngles[dir_gid1]
+                                                      , /* generators: */ single_gen0
+                                                      , /*   no_paral: */ false
+                                                      , /*    verbose: */ true
+                                                      , /*      inRad: */ true );
+            }
+        } //...add0
+
+        if ( added0 )
+        {
+            std::cout << "added " << "<" << gid0 << "," << dir_gid1 << "> from "
+                      << "<" << gid1 << "," << dir_gid1 << "> via angle "
+                      << angles[closest_angle_id0] * 180. / M_PI;
+            if ( allowedAngles.find(dir_gid1) != allowedAngles.end() )
+                std::cout << " allowed angles[" << dir_gid1 << "][1]: " << allowedAngles[dir_gid1][1];
+            std::cout << std::endl;
+
+            fflush( stdout );
+        }
+
+        return added0;
+    }
 
     /*! \brief Main functionality to generate lines from points.
      *
@@ -187,8 +294,6 @@ namespace GF2
         //typedef typename outer_const_iterator::value_type::const_iterator inner_const_iterator;
         typedef typename InnerContainerT::const_iterator                   inner_const_iterator;
         typedef typename InnerContainerT::iterator                         inner_iterator;
-        typedef          std::pair<int,int>                                GidLid;                  // uniquely identifies a primitive by first: gid, second: linear id in innerContainer (vector).
-        typedef          std::pair<int,int>                                DidAid;
         typedef          std::map< GidLid, int >                           GeneratedMapT;
         typedef          std::pair<std::pair<int,int>,int>                 GeneratedEntryT;
 
@@ -328,19 +433,22 @@ namespace GF2
 
         // 2.1 ANGLES
         AnglesT angle_gens_in_rad;
-        deduceGenerators<_Scalar>( angle_gens_in_rad, angles );
-        std::cout<<"angle_gens_in_rad:";for(size_t vi=0;vi!=angle_gens_in_rad.size();++vi)std::cout<<angle_gens_in_rad[vi]*180./M_PI<<" ";std::cout << "\n";
-        // estimate direction cluster angles
-        DirAngleMapT dirAngles;        // intermediate storage to collect dir angle distributions
         std::map<int,AnglesT> allowedAngles;      // final storage to store allowed angles
         {
-            DirAnglesFunctorOuter<_PrimitiveT,_PrimitiveContainerT,AnglesT> outerFunctor( in_lines, angles, /* output reference */ dirAngles );
-            processing::filterPrimitives<_PrimitiveT,typename _PrimitiveContainerT::mapped_type>( in_lines, outerFunctor );
+            deduceGenerators<_Scalar>( angle_gens_in_rad, angles );
+            std::cout<<"angle_gens_in_rad:";for(size_t vi=0;vi!=angle_gens_in_rad.size();++vi)std::cout<<angle_gens_in_rad[vi]*180./M_PI<<" ";std::cout << "\n";
 
-            if ( !dirAngles.size() )
-                std::cerr << "[" << __func__ << "]: dirAngles.size(): " << dirAngles.size() << std::endl;
+            // estimate direction cluster angles
+            DirAngleMapT dirAngles;        // intermediate storage to collect dir angle distributions
+            {
+                DirAnglesFunctorOuter<_PrimitiveT,_PrimitiveContainerT,AnglesT> outerFunctor( in_lines, angles, /* output reference */ dirAngles );
+                processing::filterPrimitives<_PrimitiveT,typename _PrimitiveContainerT::mapped_type>( in_lines, outerFunctor );
 
-            selectAngles( allowedAngles, dirAngles, angles, angle_gens_in_rad );
+                if ( !dirAngles.size() )
+                    std::cerr << "[" << __func__ << "]: dirAngles.size(): " << dirAngles.size() << std::endl;
+
+                selectAngles( allowedAngles, dirAngles, angles, angle_gens_in_rad );
+            }
         }
 
         // 2.2 Neighbourhoods
@@ -382,11 +490,20 @@ namespace GF2
                     {
                         // cache inner primitive
                         _PrimitiveT const& prim1 = containers::valueOf<_PrimitiveT>( inner_it1 );
-                        dir_gid1                 = prim1.getTag( _PrimitiveT::DIR_GID );
 
                         // cache group id of patch at first member
                              if ( gid1 == -2               )    gid1 = prim1.getTag( _PrimitiveT::GID );
                         else if ( gid1 != outer_it1->first )    std::cerr << "[" << __func__ << "]: " << "Not good, prims under one gid don't have same GID in inner loop..." << std::endl;
+
+#if 1
+                        addCandidate<_PrimitivePrimitiveAngleFunctorT>(
+                                    prim0, prim1, lid0, lid1, safe_mode, angle_limit, angles, angle_gens_in_rad, promoted,
+                                    allowedAngles, copied, generated, nlines, out_prims );
+                        addCandidate<_PrimitivePrimitiveAngleFunctorT>(
+                                    prim1, prim0, lid1, lid0, safe_mode, angle_limit, angles, angle_gens_in_rad, promoted,
+                                    allowedAngles, copied, generated, nlines, out_prims );
+#else
+                        dir_gid1                 = prim1.getTag( _PrimitiveT::DIR_GID );
 
                         bool add0 = false, // add0: new primitive at location of prim0, with direction from prim1.
                              add1 = false; // add1: new primitive at location of prim1, with direction from prim0
@@ -458,17 +575,6 @@ namespace GF2
                         if ( !add0 && !add1 )
                             continue;
 
-                        // debug
-                        if (    ((dir_gid0 == 127) || (dir_gid1 == 127))
-                             && (     (((gid0==71) || (gid0==80) || (gid0==64) || (gid0==67)) && add0)
-                                  ||  (((gid1==71) || (gid1==80) || (gid1==64) || (gid1==67)) && add1)
-                                )
-                           )
-                        {
-                            std::cout << "sotp" << std::endl;
-                            debug = allow_debug;
-                        }
-
                         bool added0 = add0, added1 = add1;
 
                         AnglesT single_gen0, single_gen1;
@@ -499,7 +605,9 @@ namespace GF2
                                 processing::appendAnglesFromGenerators( allowedAngles[dir_gid1], single_gen1, /* no_paral: */ false, true, true );
                             }
                         } //...if add1
+#endif
 
+#if 0
                         //debug
                         {
                             //--generate -sc 0.02 -al 0.3 -ald 1 --small-mode 0 --patch-pop-limit 5 -p primitives_merged_it0.csv --assoc points_primitives_it0.csv --angle-gens 60,90 --small-thresh-mult 1
@@ -587,6 +695,7 @@ namespace GF2
                             else
                                 std::cout << "gid: " << gid0 << ", dir_gid: " << dir_gid0 << std::endl;
                         } //...debug
+#endif
 
                     } //...for l3
                 } //...for l2

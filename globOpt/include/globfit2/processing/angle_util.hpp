@@ -9,7 +9,7 @@ namespace GF2
     {
 
         std::cout<<"[" << __func__ << "]: " << "angles:";
-        for(size_t vi=0;vi!=angles.size();++vi)std::cout<<angles[vi]<<" ";std::cout << "\n";
+        for(size_t vi=0;vi!=angles.size();++vi)std::cout<<angles[vi]*180./M_PI<<" ";std::cout << "\n";
 
         // first element is always the parallel generator
         angle_gens.push_back( _Scalar(0.) );
@@ -111,6 +111,9 @@ namespace GF2
     template <typename _Scalar>
     inline void genAngles( AnglesT &single_gen, _Scalar const& angle, AnglesT angleGensInRad )
     {
+        if ( angle == _Scalar(0.) || angle == _Scalar(M_PI) )
+            return;
+
         int i = 0;
         while ( i != angleGensInRad.size() )
         {
@@ -120,7 +123,7 @@ namespace GF2
                 continue;
             }
 
-            if ( fmod(angle, angleGensInRad[i]) == _Scalar(0.) )
+            if ( (fmod(angle, angleGensInRad[i]) == _Scalar(0.)) && (angleGensInRad[i] != _Scalar(0.)) )
             {
                 single_gen.push_back( angleGensInRad[i] );
                 break;
@@ -129,7 +132,7 @@ namespace GF2
         }
 
         if ( single_gen.size() )
-            std::cout << "[" << __func__ << "]: " << "deduced " << single_gen[0] * 180. / M_PI << " from " << angle << std::endl;
+            std::cout << "[" << __func__ << "]: " << "deduced " << single_gen[0] * 180. / M_PI << " from " << angle * 180. / M_PI << std::endl;
     }
 
     /*! \brief Decides, which perfect angles to allow for each direction id

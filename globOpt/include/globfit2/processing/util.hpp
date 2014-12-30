@@ -99,7 +99,9 @@ namespace GF2 {
         template <class _AnglesContainerT, class _Scalar> inline int
         appendAnglesFromGenerators( _AnglesContainerT &angles, std::vector<_Scalar> &angle_gens, bool no_parallel, char verbose, bool inRad = false )
         {
-            std::cout << "[" << __func__ << "]: " << "ASSUMING DEGREES" << std::endl;
+            if ( !inRad )
+                std::cout << "[" << __func__ << "]: " << "ASSUMING DEGREES" << std::endl;
+
             std::set<_Scalar> angles_set;
             // copy
             angles_set.insert( angles.begin(), angles.end() );
