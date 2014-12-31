@@ -1,4 +1,4 @@
-#ifndef GF2_CANDIDATEGENERATOR_HPP
+﻿#ifndef GF2_CANDIDATEGENERATOR_HPP
 #define GF2_CANDIDATEGENERATOR_HPP
 
 #include "globfit2/my_types.h"                      // PCLPointAllocator
@@ -20,8 +20,10 @@
 
 namespace GF2
 {
-    typedef std::pair<int,int> GidLid; // uniquely identifies a primitive by first: gid, second: linear id in innerContainer (vector).
-    typedef std::pair<int,int> DidAid; // <DirectionId, AngleId>
+    typedef int GidT; // DirectionId type
+    typedef int DidT; // DirectionId type
+    typedef std::pair<GidT,int> GidLid; // uniquely identifies a primitive by first: gid, second: linear id in innerContainer (vector).
+    typedef std::pair<DidT,int> DidAid; // <DirectionId, AngleId>
 
     namespace cgen
     {
@@ -95,11 +97,8 @@ namespace GF2
 
     template <class _PrimitiveT, class _PrimitiveContainerT, class _GeneratedT, class _CopiedT, class _PromotedT>
     inline bool output( _PrimitiveT & cand, _PrimitiveContainerT &out_prims, _GeneratedT &generated, _CopiedT &copied, int &nlines
-                      , _PromotedT const& promoted, int const gid, int const lid0, int const closest_angle_id, std::map<int,AnglesT> allowedAngles )
+                      , _PromotedT const& promoted, int const gid, int const lid0, int const closest_angle_id )
     {
-        typedef std::pair<int,int> GidLid;
-        typedef std::pair<int,int> DidAid;
-#if 1
         // filter similar
         {
             for ( int i = 0; i != out_prims[gid].size(); ++i )
@@ -121,7 +120,6 @@ namespace GF2
                 }
             }
         }
-#endif
 
         // This is a new candidate, make sure formulate knows that
         cand.setTag( _PrimitiveT::STATUS, _PrimitiveT::STATUS_VALUES::UNSET );
@@ -134,7 +132,7 @@ namespace GF2
             //++generated[ GidLid(gid1,lid1) ]; // sender
         }
         _PrimitiveT &added = containers::add( out_prims, gid, cand ); // insert into output
-        ++nlines;                                  // keep track of output size
+        ++nlines;                                                     // keep track of output size
 
         // debug
         int tmp_size = copied[ cand.getTag(_PrimitiveT::GID) ].size();
@@ -156,10 +154,11 @@ namespace GF2
      *  \param[in/out] copied           [gid] = [ <dir0,angle_id0>, <dir0,angle_id1>, <dir2,angle_id0>, ... ]
      *  \param[in/out] generated        Records, how many extra candidates the input primitive generated in the output.
      *  \param[in/out] nLines           Keeps track of overall output size.
+     *  \param[in/out] aliases          Keeps track of diretion ids and their assigned generator angles. If not set, not enabled. NULL is used at the second phase, when aliases are added.
      */
-    template < class _PrimitivePrimitiveAngleFunctorT
+    template < class _PrimitivePrimitiveAngleFunctorT, class _AliasesT
              , class _PrimitiveT, typename _Scalar, class _AnglesT, class _PromotedT
-             , class _AllowedAnglesT, class _CopiedT, class _GeneratedT, class _PrimitiveContainerT >
+             , class _AllowedAnglesT, class _CopiedT, class _GeneratedT, class _PrimitiveContainerT>
     inline int addCandidate( _PrimitiveT        const& prim0
                            , _PrimitiveT        const& prim1
                            , int                const  lid0
@@ -174,6 +173,7 @@ namespace GF2
                            , _GeneratedT             & generated
                            , int                     & nLines
                            , _PrimitiveContainerT    & out_prims
+                           , _AliasesT               * aliases
                            )
     {
 
@@ -182,70 +182,99 @@ namespace GF2
         const int dir_gid0 = prim0.getTag( _PrimitiveT::DIR_GID );
         const int dir_gid1 = prim1.getTag( _PrimitiveT::DIR_GID );
 
-        std::vector<int> gids = { 0, 1, 3 }, dids = { 129 };
-        if ( (    std::find(dids.begin(),dids.end(),dir_gid0) != dids.end()
-               || std::find(dids.begin(),dids.end(),dir_gid1) != dids.end() )
-             &&
-             (    std::find(gids.begin(),gids.end(),gid0    ) != gids.end()
-               || std::find(gids.begin(),gids.end(),gid1    ) != gids.end() )
-           )
-            std::cout << "here" << "<" << gid0 << "," << dir_gid0 << "> -- "
-                                << "<" << gid1 << "," << dir_gid1 << ">" << std::endl;
-
         bool add0 = false;
 
         add0 = notSMALL(prim0) && notSMALL(prim1) && notPROMOTED(gid1,lid1);
         // changed by Aron 08:15, 26/09/2014 to prevent many candidates, trust originals, don't add anything to them, just add to promoted ones
-        if ( safe_mode )    add0 &= isPROMOTED(gid0,lid0); // add cand0 only, if prim0 was promoted
-
-        if ( !add0 ) return false;
-
-        int closest_angle_id0 = 0;
-        // do I have restrictions, when I copy dir1 to pos0 with this angle?
-        bool isAllowedAngle0 = allowedAngles.find(dir_gid1) != allowedAngles.end();
-
-        _Scalar angdiff0 = _PrimitivePrimitiveAngleFunctorT::template eval<_Scalar>( prim0, prim1,
-                                                                             isAllowedAngle0 ? allowedAngles[dir_gid1] : angles,
-                                                                             &closest_angle_id0 );
-        // retarget closest angle id0 to angles instead of allowedAngles[dir_gid1]
-        if ( isAllowedAngle0 )
-            for ( int aa = 0; aa != angles.size(); ++aa )
-                if ( angles[aa] == allowedAngles[dir_gid1][closest_angle_id0] )
-                {
-                    closest_angle_id0 = aa;
-                    break;
-                }
-
-        add0 &= angdiff0 < angle_limit; // prim0 needs to be close to prim1 in angle
-
-        if ( copied[gid0].find(DidAid(dir_gid1,closest_angle_id0)) != copied[gid0].end() )
-            add0 = false;
+        if ( safe_mode )
+            add0 &= isPROMOTED(gid0,lid0); // add cand0 only, if prim0 was promoted
 
         if ( !add0 )
             return false;
 
-        bool added0 = add0;
+        int closest_angle_id0 = 0;
+        // do I have restrictions, when I copy dir1 to pos0 with this angle?
+        bool isRestricted0 = allowedAngles.find(dir_gid1) != allowedAngles.end();
 
-        AnglesT single_gen0;
-        genAngles( single_gen0, angles[closest_angle_id0], angle_gens_in_rad );
+        _Scalar angdiff0 = _PrimitivePrimitiveAngleFunctorT::template eval<_Scalar>( prim0, prim1,
+                                                                                     /*isRestricted0 ? allowedAngles[dir_gid1] : */ angles,
+                                                                                     &closest_angle_id0 );
+        // retarget closest angle id0 to angles instead of allowedAngles[dir_gid1]
+//        if ( isRestricted0 )
+//            for ( int aa = 0; aa != angles.size(); ++aa )
+//                if ( angles[aa] == allowedAngles[dir_gid1][closest_angle_id0] )
+//                {
+//                    closest_angle_id0 = aa;
+//                    break;
+//                }
 
-        // copy line from pid to pid1
+        // prim0 needs to be close to prim1 in angle
+        add0 &= angdiff0 < angle_limit;
+
+        // was this direction-angle pair already covered?
+        if ( copied[gid0].find(DidAid(dir_gid1,closest_angle_id0)) != copied[gid0].end() )
+            add0 = false;
+
+        // are we still adding it?
+        if ( !add0 )
+            return false;
+
+        // can candidate be created?
         _PrimitiveT cand0;
-        if ( add0 && prim0.generateFrom(cand0, prim1, closest_angle_id0, angles, _Scalar(1.)) )
-        {
-            added0 = output( cand0, out_prims, generated, copied, nLines
-                           , promoted, gid0, lid0, closest_angle_id0, allowedAngles );
+        if ( !prim0.generateFrom(cand0, prim1, closest_angle_id0, angles, _Scalar(1.)) )
+            return false;
 
-            if ( allowedAngles.find(dir_gid1) == allowedAngles.end() && single_gen0.size() )
-            {
+        // (1) if not restricted ? output, restrict
+        // (2)                   : if angle allowed ? output
+        // (3)                                      : if (generator not 0,180) and (not alias created) ? create alias
+
+        // cache
+        const _Scalar bestAngle = angles[closest_angle_id0];
+        // guess generator
+        AnglesT generators;
+        genAngles( generators, bestAngle, angle_gens_in_rad );
+        if ( generators.size() > 1 ) { throw new CandidateGeneratorException("[addCandidate] generators.size > 1, are you sure about this?"); }
+
+        bool added0   = add0; // debug
+        bool doOutput = false;
+
+        // (1) If not restricted
+        if ( !isRestricted0 )
+        {
+            // (1.1) Output
+            doOutput = true;
+
+            // (1.2) Restrict
+            // if not 0 or 180, so there's a clear generator
+            if ( generators.size() )
+                // assign direction to generator
                 processing::appendAnglesFromGenerators( /*        out: */ allowedAngles[dir_gid1]
-                                                      , /* generators: */ single_gen0
+                                                      , /* generators: */ generators
                                                       , /*   no_paral: */ false
                                                       , /*    verbose: */ true
                                                       , /*      inRad: */ true );
-            }
-        } //...add0
+        }
+        // (2) If restricted --> If angle found is in the restriction
+        else if ( std::find(allowedAngles[dir_gid1].begin(), allowedAngles[dir_gid1].end(), bestAngle) != allowedAngles[dir_gid1].end() )
+        {
+            // (2.1) Output
+            doOutput = true;
+        }
+        // (3) Restricted, and not to the found angle --> If generator exists, and no alias exists yet, make one
+        else if (    aliases && generators.size()                                                // there exists a clear generator (i.e. 60 or 90, NOT 0, or 180) AND
+                  && (    (  aliases          ->find(dir_gid1     ) == aliases            ->end())   // AND (there's no alias to this did yet
+                       || ((*aliases)[dir_gid1].find(generators[0]) == (*aliases)[dir_gid1].end()) ) //      OR the aliases don't have this generator yet)
+                )
+        {
+            // (3.1)
+            (*aliases)[dir_gid1][ generators[0] ] = aliases->createAlias( gid0, lid0, generators[0], prim0 );
+        }
 
+        // Output
+        if ( doOutput )
+            added0 = output( cand0, out_prims, generated, copied, nLines, promoted, gid0, lid0, closest_angle_id0 );
+
+        // debug
         if ( added0 )
         {
             std::cout << "added " << "<" << gid0 << "," << dir_gid1 << "> from "
@@ -260,6 +289,37 @@ namespace GF2
 
         return added0;
     }
+
+    template <class _PrimitiveT>
+    struct AliasT
+    {
+        typedef typename _PrimitiveT::Scalar Scalar;
+
+        AliasT() : _gid( _PrimitiveT::INVALID ), _lid( -1 ), _generatorAngle( -1 ), _prim( NULL ) {}
+
+        AliasT( GidT const gid, GidT const lid, Scalar const generatorAngle, _PrimitiveT const& prim )
+            : _gid( gid ), _lid( lid ), _generatorAngle( generatorAngle ), _prim( &prim ) {}
+        AliasT( AliasT<_PrimitiveT> const& other )
+            : _gid( other._gid ), _lid( other._lid ), _generatorAngle( other._generatorAngle ), _prim( other._prim ) {}
+
+//        inline AliasT<_PrimitiveT> const& operator=( AliasT<_PrimitiveT> const& other )
+//        {
+//            if ( this == &other ) return *this;
+//        }
+
+        GidT    _gid, _lid;
+        Scalar _generatorAngle;
+        _PrimitiveT const* _prim;
+    };
+
+    template <class _PrimitiveT, typename _Scalar>
+    struct AliasesT : public std::map< DidT, std::map<_Scalar,AliasT<_PrimitiveT> > >
+    {
+        inline AliasT<_PrimitiveT> createAlias( GidT const gid, GidT const lid, _Scalar generatorAngle, _PrimitiveT const& prim )
+        {
+            return AliasT<_PrimitiveT>( gid, lid, generatorAngle, prim );
+        }
+    };
 
     /*! \brief Main functionality to generate lines from points.
      *
@@ -299,7 +359,7 @@ namespace GF2
 
         // cache, so that it can be turned off
         bool safe_mode = safe_mode_arg;
-        bool debug = false, allow_debug = false;
+        AliasesT<_PrimitiveT,_Scalar> aliases;
 
         // _________ error checks _________
 
@@ -463,6 +523,9 @@ namespace GF2
         pcl::visualization::PCLVisualizer::Ptr vptr( new pcl::visualization::PCLVisualizer() );
 
         // _________ (4) generation _________
+
+        DidT maxDid = 0; // collects currently existing maximum cluster id (!small, active, all!)
+
         int gid0, gid1, dir_gid0, dir_gid1, lid0, lid1;
         gid0 = gid1 = dir_gid0 = dir_gid1 = _PrimitiveT::TAG_UNSET; // group tags cached
         for ( outer_const_iterator outer_it0  = in_lines.begin(); outer_it0 != in_lines.end(); ++outer_it0 )
@@ -474,6 +537,8 @@ namespace GF2
                 // cache outer primitive
                 _PrimitiveT const& prim0 = *inner_it0;
                 dir_gid0                 = prim0.getTag( _PrimitiveT::DIR_GID );
+
+                if ( dir_gid0 > maxDid ) maxDid = dir_gid0; // small, active, uninited!
 
                 // cache group id of patch at first member
                      if ( gid0 == -2               )  gid0 = prim0.getTag( _PrimitiveT::GID ); // store gid of first member in patch
@@ -495,212 +560,74 @@ namespace GF2
                              if ( gid1 == -2               )    gid1 = prim1.getTag( _PrimitiveT::GID );
                         else if ( gid1 != outer_it1->first )    std::cerr << "[" << __func__ << "]: " << "Not good, prims under one gid don't have same GID in inner loop..." << std::endl;
 
-#if 1
                         addCandidate<_PrimitivePrimitiveAngleFunctorT>(
                                     prim0, prim1, lid0, lid1, safe_mode, angle_limit, angles, angle_gens_in_rad, promoted,
-                                    allowedAngles, copied, generated, nlines, out_prims );
+                                    allowedAngles, copied, generated, nlines, out_prims, &aliases );
                         addCandidate<_PrimitivePrimitiveAngleFunctorT>(
                                     prim1, prim0, lid1, lid0, safe_mode, angle_limit, angles, angle_gens_in_rad, promoted,
-                                    allowedAngles, copied, generated, nlines, out_prims );
-#else
-                        dir_gid1                 = prim1.getTag( _PrimitiveT::DIR_GID );
-
-                        bool add0 = false, // add0: new primitive at location of prim0, with direction from prim1.
-                             add1 = false; // add1: new primitive at location of prim1, with direction from prim0
-
-#                       warning "This uses bias for all patches, fix later by calling this method with receive_all in the last iteration and fixing the contents there"
-
-                        // prim0 (pos) needs to be active or promoted to receive directions
-                        // prim1 (dir) needs to be active and not promoted to send direction
-                        add0 = notSMALL(prim0) && notSMALL(prim1) && notPROMOTED(gid1,lid1);
-                        // changed by Aron 08:15, 26/09/2014 to prevent many candidates, trust originals, don't add anything to them, just add to promoted ones
-                        if ( safe_mode )    add0 &= isPROMOTED(gid0,lid0); // add cand0 only, if prim0 was promoted
-
-                        // prim0 (dir) needs to be active and not promoted to send direction
-                        // prim1 (pos) needs to be active or promoted to receive directions
-                        add1 = notSMALL(prim0) && notSMALL(prim1) && notPROMOTED(gid0,lid0);
-                        // changed by Aron 08:15, 26/09/2014 to prevent many candidates, trust originals, don't add anything to them, just add to promoted ones
-                        if ( safe_mode )    add1 &= isPROMOTED(gid1,lid1); // add cand1 only, if prim1 was promoted
-
-                        // find best rotation id and value
-                        int closest_angle_id0 = 0, closest_angle_id1 = 0;
-                        if ( add0 || add1 ) // speedup by skipping angle calculation, if won't add anyway... // added by Aron 12:46 18 Oct 2014
-                        {
-                            bool isAllowedAngle0 = allowedAngles.find(dir_gid1) != allowedAngles.end(), // do I have restrictions, when I copy dir1 to pos0 with this angle?
-                                 isAllowedAngle1 = allowedAngles.find(dir_gid0) != allowedAngles.end(); // do I have restrictions, when I copy dir0 to pos1 with this angle?
-
-                            // ANG0
-                            // angdiff0 determines, if dir1 from pos1 can be copied to pos0 using allowed angles for dir1
-                            _Scalar angdiff0 = _PrimitivePrimitiveAngleFunctorT::template eval<_Scalar>( prim0, prim1,
-                                                                                                 isAllowedAngle0 ? allowedAngles[dir_gid1] : angles,
-                                                                                                 &closest_angle_id0 );
-                            // retarget closest angle id0 to angles instead of allowedAngles[dir_gid1]
-                            if ( isAllowedAngle0 )
-                                for ( int aa = 0; aa != angles.size(); ++aa )
-                                    if ( angles[aa] == allowedAngles[dir_gid1][closest_angle_id0] )
-                                    {
-                                        closest_angle_id0 = aa;
-                                        break;
-                                    }
-
-                            // ANG1
-                            // angdiff1 determines, if dir0 from pos0 can be copied to pos1 using allowed angles for dir0
-                            _Scalar angdiff1 = _PrimitivePrimitiveAngleFunctorT::template eval<_Scalar>( prim0, prim1,
-                                                                                                 isAllowedAngle1 ? allowedAngles[dir_gid0] : angles,
-                                                                                                 &closest_angle_id1 );
-                            // retarget closest angle id1 to angles instead of allowedAngles[dir_gid0]
-                            if ( isAllowedAngle1 )
-                                for ( int aa = 0; aa != angles.size(); ++aa )
-                                    if ( angles[aa] == allowedAngles[dir_gid0][closest_angle_id1] )
-                                    {
-                                        closest_angle_id1 = aa;
-                                        break;
-                                    }
-
-                            // decide based on rotation difference (RECEIVE_SIMILAR)
-                            //bool    close_ang  = angdiff < angle_limit;
-                            add0              &= angdiff0 < angle_limit; // prim0 needs to be close to prim1 in angle
-                            add1              &= angdiff1 < angle_limit; // prim1 needs to be close to prim0 in angle
-                        }
-
-                        // store already copied pairs
-                        {
-                            if ( copied[gid0].find(DidAid(dir_gid1,closest_angle_id0)) != copied[gid0].end() )
-                                add0 = false;
-
-                            if ( copied[gid1].find(DidAid(dir_gid0,closest_angle_id1)) != copied[gid1].end() )
-                                add1 = false;
-                        }
-
-                        if ( !add0 && !add1 )
-                            continue;
-
-                        bool added0 = add0, added1 = add1;
-
-                        AnglesT single_gen0, single_gen1;
-                        genAngles( single_gen0, angles[closest_angle_id0], angle_gens_in_rad );
-                        genAngles( single_gen1, angles[closest_angle_id1], angle_gens_in_rad );
-
-                        // copy line from pid to pid1
-                        _PrimitiveT cand0;
-                        if ( add0 && prim0.generateFrom(cand0, prim1, closest_angle_id0, angles, _Scalar(1.)) )
-                        {
-                            added0 = output( cand0, out_prims, generated, copied, nlines
-                                           , promoted, gid0, lid0, closest_angle_id0, allowedAngles );
-
-                            if ( allowedAngles.find(dir_gid0) == allowedAngles.end() && single_gen0.size() )
-                            {
-                                processing::appendAnglesFromGenerators( allowedAngles[dir_gid0], single_gen0, /* no_paral: */ false, true, true );
-                            }
-                        } //...add0
-
-                        _PrimitiveT cand1;
-                        if ( add1 && prim1.generateFrom(cand1, prim0, closest_angle_id1, angles, _Scalar(-1.)) ) // changed to 1 on 22 12 2014
-                        {
-                            added1 = output( cand1, out_prims, generated, copied, nlines
-                                           , promoted, gid1, lid1, closest_angle_id1, allowedAngles );
-
-                            if ( allowedAngles.find(dir_gid1) == allowedAngles.end() && single_gen1.size() )
-                            {
-                                processing::appendAnglesFromGenerators( allowedAngles[dir_gid1], single_gen1, /* no_paral: */ false, true, true );
-                            }
-                        } //...if add1
-#endif
-
-#if 0
-                        //debug
-                        {
-                            //--generate -sc 0.02 -al 0.3 -ald 1 --small-mode 0 --patch-pop-limit 5 -p primitives_merged_it0.csv --assoc points_primitives_it0.csv --angle-gens 60,90 --small-thresh-mult 1
-                            if ( debug )
-                            {
-                                vptr->setBackgroundColor( .9, .9, .9 );
-                                vptr->addPointCloud( cloud );
-
-                                char line_name[255];
-                                sprintf( line_name, "prim0" );
-                                _PrimitiveT::template draw<_PointPrimitiveT>( /*   primitive: */ prim0
-                                                                              , /*      points: */ points
-                                                                              , /*   threshold: */ scale
-                                                                              , /*     indices: */ &(populations[gid0])
-                                                                              , /*      viewer: */ vptr
-                                                                              , /*   unique_id: */ line_name
-                                                                              , /*      colour: */ 1,0,0
-                                                                              , /* viewport_id: */ 0
-                                                                              );
-                                sprintf( line_name, "prim1" );
-                                _PrimitiveT::template draw<_PointPrimitiveT>( /*   primitive: */ prim1
-                                                                              , /*      points: */ points
-                                                                              , /*   threshold: */ scale
-                                                                              , /*     indices: */ &(populations[gid1])
-                                                                              , /*      viewer: */ vptr
-                                                                              , /*   unique_id: */ line_name
-                                                                              , /*      colour: */ 0,1,0
-                                                                              , /* viewport_id: */ 0
-                                                                              );
-                                if ( added0 )
-                                {
-                                    sprintf( line_name, "cand0" );
-                                    _PrimitiveT::template draw<_PointPrimitiveT>( /*   primitive: */ cand0
-                                                                                  , /*      points: */ points
-                                                                                  , /*   threshold: */ scale
-                                                                                  , /*     indices: */ &(populations[gid0])
-                                                                                  , /*      viewer: */ vptr
-                                                                                  , /*   unique_id: */ line_name
-                                                                                  , /*      colour: */ 0,0,1
-                                                                                  , /* viewport_id: */ 0
-                                                                                  );
-                                }
-                                if ( added1 )
-                                {
-                                    sprintf( line_name, "cand1" );
-                                    _PrimitiveT::template draw<_PointPrimitiveT>( /*   primitive: */ cand1
-                                                                                  , /*      points: */ points
-                                                                                  , /*   threshold: */ scale
-                                                                                  , /*     indices: */ &(populations[gid1])
-                                                                                  , /*      viewer: */ vptr
-                                                                                  , /*   unique_id: */ line_name
-                                                                                  , /*      colour: */ 0,1,1
-                                                                                  , /* viewport_id: */ 0
-                                                                                  );
-                                }
-                                std::cout << "gid: " << gid0 << ", dir_gid: " << dir_gid0
-                                          << ", gid1: " << gid1 << ", dir_gid1: " << dir_gid1
-                                          << std::endl;
-
-                                if ( added0 )
-                                {
-                                    std::cout << "copied[" << gid0 << "]: ";
-                                    for ( auto it = copied[gid0].begin(); it != copied[gid0].end(); ++it )
-                                        std::cout << "<" << it->first << "," << it->second << "," << angles[it->second] * 180./M_PI << ">, ";
-                                    std::cout << "\twas looking for " << "<" << dir_gid1 << "," << closest_angle_id0 << "," << angles[closest_angle_id0] * 180./M_PI << ">";
-                                    std::cout << std::endl;
-                                }
-
-                                if ( added1 )
-                                {
-                                    std::cout << "copied[" << gid1 << "]: ";
-                                    for ( auto it = copied[gid1].begin(); it != copied[gid1].end(); ++it )
-                                        std::cout << "<" << it->first << "," << it->second << "," << angles[it->second] * 180./M_PI << ">, ";
-                                    std::cout << "\twas looking for " << "<" << dir_gid0 << "," << closest_angle_id1 << "," << angles[closest_angle_id1] * 180./M_PI << ">";
-                                    std::cout << std::endl;
-                                }
-
-                                if ( debug && (added0 || added1) )
-                                {
-                                    vptr->spin();
-                                    debug = false;
-                                }
-                                vptr->removeAllShapes();
-                            }
-                            else
-                                std::cout << "gid: " << gid0 << ", dir_gid: " << dir_gid0 << std::endl;
-                        } //...debug
-#endif
-
+                                    allowedAngles, copied, generated, nlines, out_prims, &aliases );
                     } //...for l3
                 } //...for l2
             } //...for l1
         } //...for l0
+
+        // ___________ (5) ALIASES _______________
+
+        // [did][angle] = AliasT( gid, lid, prim )
+        for ( auto aliasIt = aliases.begin(); aliasIt != aliases.end(); ++aliasIt )
+        {
+            // first: dir_gid
+            // second: std::map<angle, AliasT>
+            for ( auto angleIt = aliasIt->second.begin(); angleIt != aliasIt->second.end(); ++angleIt )
+            {
+                // first: angle
+                // second: AliasT
+
+                // copy original primitive
+                _PrimitiveT prim0 = *( angleIt->second._prim );
+                const int did = ++maxDid;
+                prim0.setTag( _PrimitiveT::DIR_GID, did );
+                const int gid0 = angleIt->second._gid;
+                const int lid0 = angleIt->second._lid;
+
+                if ( !output( prim0, out_prims, generated, copied, nlines, promoted, gid0, lid0, 0 ) )
+                {
+                    std::cerr << "Alias could not be added" << std::endl;
+                    throw new CandidateGeneratorException("Alias could not be added");
+                } //...if could not output
+                else
+                    std::cout << "\nAdded alias to " << angleIt->second._prim->getTag(_PrimitiveT::DIR_GID)
+                              << " as " << out_prims[gid0].back().toString()
+                              << " <" << out_prims[gid0].back().getTag( _PrimitiveT::GID ) << ","
+                              << out_prims[gid0].back().getTag( _PrimitiveT::DIR_GID ) << ">"
+                              << std::endl;
+
+                // record allowed alias
+                AnglesT tmpGenerators = { angleIt->first };
+                processing::appendAnglesFromGenerators( /*        out: */ allowedAngles[ did ]
+                                                      , /* generators: */ tmpGenerators
+                                                      , /*   no_paral: */ false
+                                                      , /*    verbose: */ true
+                                                      , /*      inRad: */ true );
+
+                // add all allowed copies
+                for ( outer_const_iterator outer_it  = in_lines.begin(); outer_it != in_lines.end(); ++outer_it )
+                {
+                    lid1 =  0;
+                    for ( inner_const_iterator inner_it = (*outer_it).second.begin(); inner_it != (*outer_it).second.end(); ++inner_it, ++lid1 )
+                    {
+                        // cache outer primitive
+                        _PrimitiveT const& prim1 = *inner_it;
+
+                        // copy prim0 (the alias) to all compatible receivers given allowedAngles.
+                        addCandidate<_PrimitivePrimitiveAngleFunctorT,AliasesT<_PrimitiveT,_Scalar> >(
+                            prim1, prim0, lid1, lid0, safe_mode, angle_limit, angles, angle_gens_in_rad, promoted,
+                            allowedAngles, copied, generated, nlines, out_prims, nullptr );
+
+                    } //...inner for
+                } //...outer for
+            } //...for all angles
+        } //...for all aliases
 
         // /home/bontius/workspace/globOpt/data/scenes/triangle_60d$ ../glob_opt --generate -sc 0.04 -al 0.4 -ald 1 --small-mode 0 --patch-pop-limit 25 --angle-gens 60 -p patches.csv --assoc points_primitives.csv --small-thresh-mult 1
         // new: /home/bontius/workspace/globOpt/data/scenes/pearl1_test$ ../glob_opt --generate -sc 0.02 -al 0.6 -ald 1 --small-mode 0 --patch-pop-limit 20 --angle-gens 90 -p primitives_merged_it0.csv --assoc points_primitives_it0.csv --small-thresh-mult 0.05

@@ -79,7 +79,7 @@ smallThreshDiv="2"; #stepsize
 safeMode=""; #"--safe-mode"; #"--safe-mode" # "--safe-mode" for new, or "" for old version
 variableLimit=1100; # 1300; # Safe mode gets turned on, and generate rerun, if candidates exceed this number (1300)
 premerge=1 # call merge after segmentation 0/1
-algCode=3 # 0==B_BB, OA, QG, 3==Hyb, ECP, IFP
+algCode=0 # 0==B_BB, OA, QG, 3==Hyb, ECP, IFP
 
 echo "scale: $scale"
 echo "pw: $pw"

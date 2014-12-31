@@ -585,7 +585,7 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
                         chosen_varids.insert( varid );
 
                         // extra!
-                        //problem.addLinObjective( varid, -1 );
+                        //problem.addLinObjective( varid, -100 );
                     }
                 }
             }
