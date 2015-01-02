@@ -8,15 +8,19 @@
 
 namespace GF2
 {
+    /*! \brief Namespace graph to make usage of boost graph class wrapper \ref Graph easier.
+     */
     namespace graph
     {
         /*! \brief tuple<3> to temporarily store graph edges until we know how large the graph will be
+         *  \tparam _Scalar EdgeWeight type.
          */
         template <typename _Scalar>
         struct EdgeT
         {
             int _v0, _v1;
             _Scalar _w;
+
             EdgeT( int v0, int v1, _Scalar w ) : _v0(v0), _v1(v1), _w(w) {}
 
             bool operator<( EdgeT<_Scalar> const& other ) const
@@ -27,10 +31,39 @@ namespace GF2
             }
         };
 
-        // instead of "typedef std::set< graph::EdgeT<_Scalar> >"
+        /*! \brief Class instead of "typedef std::set< graph::EdgeT<_Scalar> >".
+         *         Records maximum vertex Id in the edgelist.
+         * \tparam _Scalar EdgeWeight type.
+         */
         template <typename _Scalar>
         class EdgeListT : public std::set<graph::EdgeT<_Scalar> >
-        {};
+        {
+            typedef std::set<graph::EdgeT<_Scalar> > ParentT;
+
+            public:
+                /*! \brief Overload constructor to initialize vertex id field.
+                 */
+                EdgeListT() : ParentT(), _maxVertexId( UidT(0) ) {}
+
+                /*! \brief Overload set insert to keep track of maximum node id in the edges list.
+                 */
+                std::pair<typename ParentT::iterator, bool>
+                insert( typename ParentT::value_type&& __x )
+                {
+                    if ( __x._v0 > _maxVertexId ) _maxVertexId = __x._v0;
+                    if ( __x._v1 > _maxVertexId ) _maxVertexId = __x._v1;
+
+                    return ParentT::insert( __x );
+                }
+
+                /*! \brief Get maximum vertex id added up till now.
+                 *  \warning Does not clear upon clear!! \todo Clear vertex id upon clear;
+                 */
+                inline UidT getMaxVertexId() const { return _maxVertexId; }
+
+            protected:
+                UidT _maxVertexId;
+        };
 
     } //...ns graph
 
@@ -79,6 +112,13 @@ namespace GF2
             Graph( const int vertex_count )
                 : _undigraph( vertex_count )
             {}
+
+            Graph( graph::EdgeListT<_Scalar> const& edgesList )
+                : Graph( edgesList.getMaxVertexId() )
+            {
+                for ( auto it = edgesList.begin(); it != edgesList.end(); ++it )
+                    this->addEdge( it->_v0, it->_v1, /* not used right now: */ it->_w );
+            }
 
             inline std::pair<EdgeT, bool>
             addEdge( const int v0, const int v1, _Scalar const weight )

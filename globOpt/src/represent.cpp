@@ -88,16 +88,14 @@ static inline int representCli( int argc, char** argv )
         }
     }
 
-    GraphT graph( edgesList.size() );
-    for ( auto it = edgesList.begin(); it != edgesList.end(); ++it )
-    {
-        graph.addEdge( it->_v0, it->_v1, /* not used right now: */ it->_w );
-    }
+    GraphT graph( edgesList );
     graph.draw( "representGraph.gv", /* show: */ true );
 
     typename GraphT::ClustersT clusters;
     graph.getClusters( clusters, 2 );
     graph.showClusters( clusters, "representClusters.gv", /* show: */ true );
+
+
 
     return !valid_input;
 } //...representCli
