@@ -28,17 +28,18 @@ static inline int representCli( int argc, char** argv )
     typedef typename _PrimitiveContainerT::value_type        InnerPrimitiveContainerT;
     typedef containers::PrimitiveContainer<_PrimitiveT>      PrimitiveMapT;
     typedef typename _PrimitiveT::Scalar                     Scalar;
+    typedef typename _PrimitiveT::ExtentsT                   ExtentsT;
     PointContainerT         points;
     PclCloudPtrT            pcl_cloud;
     _PrimitiveContainerT    prims;
     PrimitiveMapT           patches;
     RepresentParams<Scalar> params;
-    typedef typename _PrimitiveT::ExtentsT                   ExtentsT;
 
     // Graphs
     typedef Graph<Scalar, typename MyGraphConfig<Scalar>::UndirectedGraph > GraphT;
     typedef typename graph::EdgeT<Scalar>                                   EdgeT;
     typedef typename GraphT::ComponentListT                                 ComponentListT;
+    typedef typename GraphT::ClustersT                                      ClustersT;
 
     bool valid_input = GF2::parseInput<InnerPrimitiveContainerT,PclCloudT>(
                         points, pcl_cloud, prims, patches, params, argc, argv );
@@ -50,12 +51,14 @@ static inline int representCli( int argc, char** argv )
 
     std::cout << "[" << __func__ << "]: " << "gids: " << patches.size() << ", points: " << points.size() << ", scale: " << params.scale << std::endl;
 
+#if 0
     // finite distance calculation between patches
     SpatialSqrtPrimitivePrimitiveEnergyFunctor<_FiniteFiniteDistFunctor, _PointContainerT, Scalar,_PrimitiveT>
             ppDistFunctor( params.angles, points, params.scale );
 
     // create spatial+directionId clustered graph via this edge list
     graph::EdgeListT<Scalar> edgesList;
+    std::map< UidT, _PrimitiveT const* > primitivesByUid;
 
     // enumerate all unique primitive pairs
     for ( typename PrimitiveMapT::Iterator it0(patches); it0.hasNext(); it0.step() )
@@ -84,7 +87,7 @@ static inline int representCli( int argc, char** argv )
                                                            , params.scale
                                                            , &(populations[it1.getGid()]) );
 
-        // add edge, if same direction id (colour) and close to eachother
+        // add edge, if same direction id (colour) and close to each other
         if ( EXIT_SUCCESS == err )
         {
             // Originally, evalSpatial returns 1 if they are at the same spot, and 0 if they are 2 x scale away.
@@ -92,7 +95,12 @@ static inline int representCli( int argc, char** argv )
                                                       , *it1, extrema1 );
             if ( (did0 == did1) && invDist > Scalar(0.) ) // same colour and closer than 2xscale
                 edgesList.insert( EdgeT(it0.getUniqueId(), it1.getUniqueId(), /* not used: */ invDist) );
-        } // if extrema exist
+
+            if ( primitivesByUid.find(it0.getUniqueId()) == primitivesByUid.end() )
+                primitivesByUid[ it0.getUniqueId() ] = &(*it0);
+            if ( primitivesByUid.find(it1.getUniqueId()) == primitivesByUid.end() )
+                primitivesByUid[ it1.getUniqueId() ] = &(*it1);
+        } //...if extrema exist
     } //...all primitive pairs
 
     // build fixed size graph from edge list
@@ -106,8 +114,78 @@ static inline int representCli( int argc, char** argv )
     // plot (debug)
     graph.showClusters( clusters, "representClusters.gv", /* show: */ true );
 
-    // WORK
 
+    // for each cluster, select the largest (for now) representative
+    for ( typename ClustersT::const_iterator clustersIt = clusters.begin();
+          clustersIt != clusters.end(); ++clustersIt )
+    {
+        // first: clusterId
+        // second: vector<nodeId>
+
+        typedef typename ClustersT::mapped_type InnerT;
+        InnerT const& nodes = clustersIt->second;
+        for ( typename InnerT::const_iterator nodeIt = nodes.begin();
+              nodeIt != nodes.end(); ++nodeIt )
+        {
+            // nodeIt is a uniqueId in the graph
+            std::cout << "fetching " << *nodeIt;
+            _PrimitiveT const* prim = primitivesByUid.at( *nodeIt );
+            std::cout << "OK" << std::endl;
+            fflush(stdout);
+        }
+    }
+#endif
+    /// WORK
+    // output representatives
+    _PrimitiveContainerT outPrims;
+    std::set<GidT> activeGids;
+
+    typedef typename Eigen::Matrix<Scalar,Eigen::Dynamic,1> SpatialSignifT;
+    SpatialSignifT spatialSignif(1,1); // tmp
+    typedef typename std::pair<SpatialSignifT,_PrimitiveT const*> SizedPrimT;
+    std::map< DidT, SizedPrimT > maxSpatialSignifs; // "size"
+
+    for ( typename PrimitiveMapT::Iterator it0(patches); it0.hasNext(); it0.step() )
+    {
+        // cache
+        _PrimitiveT const* prim = &(*it0);
+        const DidT did = prim->getTag( _PrimitiveT::DIR_GID );
+        // calc size
+        prim->getSpatialSignificance( spatialSignif, points, params.scale, &(populations[prim->getTag(_PrimitiveT::GID)]) );
+
+        // insert, if did unseen
+        if ( maxSpatialSignifs.find( did ) == maxSpatialSignifs.end() )
+            maxSpatialSignifs[ did ] = SizedPrimT( spatialSignif, prim );
+        // or replace max, if larger
+        else if ( spatialSignif(0) > maxSpatialSignifs[did].first(0) )
+        {
+            maxSpatialSignifs[did].first  = spatialSignif; // store size
+            maxSpatialSignifs[did].second = prim;          // store primitive
+        } //...if bigger
+    } //...all primitives
+
+    // record to output
+    for ( auto it = maxSpatialSignifs.begin(); it != maxSpatialSignifs.end(); ++it )
+    {
+        //  first: did
+        // second: SizedPrimT (<size,prim>)
+        _PrimitiveT const* prim = it->second.second;
+        containers::add( outPrims, prim->getTag(_PrimitiveT::GID), *(prim) );
+        activeGids.insert( prim->getTag(_PrimitiveT::GID) );
+    }
+
+    std::cout << "[" << __func__ << "]: " << "saved to representatives.csv" << std::endl;
+    io::savePrimitives<_PrimitiveT,typename InnerPrimitiveContainerT::const_iterator>( outPrims, "representatives.csv" );
+
+    _PointContainerT outPoints( points ); // need reassignment
+    // clear all points' assignment that don't have selected primitives
+    for ( auto it = outPoints.begin(); it != outPoints.end(); ++it )
+    {
+        if ( activeGids.find( it->getTag(_PointPrimitiveT::GID) ) == activeGids.end() )
+            it->setTag( _PointPrimitiveT::GID, _PointPrimitiveT::UNSET );
+    }
+    std::string assocPath( "points_representatives.csv" );
+    io::writeAssociations<_PointPrimitiveT>( outPoints, assocPath );
 
     return !valid_input;
 } //...representCli
