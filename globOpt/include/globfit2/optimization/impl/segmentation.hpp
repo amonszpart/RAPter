@@ -18,6 +18,7 @@
 #include "globfit2/util/containers.hpp" // add( map, gid, primitive), add( vector, gid, primitive )
 #include "globfit2/parameters.h"        // CandidateGeneratorParams
 #include "globfit2/processing/util.hpp" // getNeighbourIndices
+#include "globfit2/processing/angle_util.hpp" // appendAngles
 #include "globfit2/util/diskUtil.hpp"   // saveBackup
 #include "globfit2/io/io.h"             // readPoints
 #include "globfit2/optimization/patchDistanceFunctors.h" // RepresentativeSqrPatchPatchDistanceFunctorT
@@ -470,7 +471,7 @@ Segmentation::segmentCli( int    argc
 
     CandidateGeneratorParams<_Scalar> generatorParams;
     std::string                 cloud_path              = "./cloud.ply";
-    std::vector<_Scalar>        angle_gens              = { _Scalar(90.) };
+    AnglesT                     angle_gens( { AnglesT::Scalar(90.)} );
     std::string                 mode_string             = "representative_sqr";
     std::vector<std::string>    mode_opts               = { "representative_sqr" };
     bool                        verbose                 = false;
@@ -548,7 +549,7 @@ Segmentation::segmentCli( int    argc
     bool no_paral = pcl::console::find_switch(argc,argv,"--no_paral");
     if ( EXIT_SUCCESS == err )
     {
-        processing::appendAnglesFromGenerators( generatorParams.angles, angle_gens, no_paral, true );
+        angles::appendAnglesFromGenerators( generatorParams.angles, angle_gens, no_paral, true );
     } //...read angles
 
     // Read points

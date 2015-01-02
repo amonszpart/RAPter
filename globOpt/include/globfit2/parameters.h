@@ -3,6 +3,7 @@
 
 #include <vector>
 #include "Eigen/Dense"
+#include "globfit2/simple_types.h"
 
 namespace GF2 {
 
@@ -10,11 +11,12 @@ namespace GF2 {
     template <typename _Scalar>
     struct CommonParams
     {
+            typedef _Scalar Scalar;
             //! \brief Scale parameter of input.
             _Scalar scale = 0.05;
 
             //! \brief Desired angles stored in radians but generated from degrees.
-            std::vector<_Scalar> angles; // = { 0, M_PI_2, M_PI };
+            AnglesT angles; // = { 0, M_PI_2, M_PI };
 
             //! \brief  Point-count threshold, that decides if a patch is big or small. (small: \#points < patch_pop_limit, large: \#points >= patch_pop_limit).
             //!         \n Used in \ref CandidateGenerator::generate(), \ref ProblemSetup::formulate(), \ref problemSetup::largePatchesNeedDirectionConstraint().

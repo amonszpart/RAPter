@@ -5,19 +5,21 @@
 #include <set>
 #include <vector>
 #include <algorithm>
-#include "pcl/search/kdtree.h"
+#include "Eigen/Dense"
 #include "globfit2/util/containers.hpp" // add()
+#include "globfit2/simple_types.h"      // GidT
+#include "pcl/search/kdtree.h"
 
 // #include "pcl/common/common.h" //debug: getminmax3D
 
 /*!   \brief GlobOpt main namespace. */
 namespace GF2 {
 
-    typedef std::map   < int, int >         GidIntMap;
+    typedef std::map   < GidT, int >        GidIntMap;
     typedef std::set   < int >              PidSet;
     typedef std::vector< int >              PidVector;
-    typedef std::map   < int, PidSet >      GidPidSetMap;
-    typedef std::map   < int, PidVector >   GidPidVectorMap;
+    typedef std::map   < GidT, PidSet >      GidPidSetMap;
+    typedef std::map   < GidT, PidVector >   GidPidVectorMap;
 
     /*! \brief Various 3D processing snippets that don't fit elsewhere. */
     namespace processing
@@ -87,62 +89,6 @@ namespace GF2 {
 
             return population.size();
         } //...getPopulations
-
-        /*! \brief Adds angles from generator to in/out vector \p angles.
-         *
-         *  \tparam _AnglesContainerT Concept: std::vector<_Scalar>.
-         *  \tparam _Scalar           Floating point precision type.
-         *  \param[in,out] angles     Container (vector) to append to.
-         *  \param[in] angle_gen      Generator element. 0, \p angle_gen, 2 * \p angle_gen, ..., M_PI will be appended.
-         *  \param[in] verbose        Enable logging.
-         */
-        template <class _AnglesContainerT, class _Scalar> inline int
-        appendAnglesFromGenerators( _AnglesContainerT &angles, std::vector<_Scalar> &angle_gens, bool no_parallel, char verbose, bool inRad = false )
-        {
-            if ( !inRad )
-                std::cout << "[" << __func__ << "]: " << "ASSUMING DEGREES" << std::endl;
-
-            std::set<_Scalar> angles_set;
-            // copy
-            angles_set.insert( angles.begin(), angles.end() );
-
-            // insert 0 element
-            if ( !no_parallel )
-                angles_set.insert( _Scalar(0) );
-
-            for ( int i = 0; i != angle_gens.size(); ++i )
-            {
-                _Scalar angle_gen_rad = angle_gens[i] * (inRad ? _Scalar(1.) : M_PI/_Scalar(180.));
-
-                if ( angle_gen_rad == _Scalar(0.) )
-                {
-                    std::cerr << "[" << __func__ << "]: " << "skipping 0 as generator" << std::endl;
-                    continue;
-                }
-
-                // generate
-                for ( _Scalar angle = angle_gen_rad; angle < M_PI; angle+= angle_gen_rad )
-                    angles_set.insert( angle );
-            }
-
-            // insert 0 element
-            if ( !no_parallel )
-                angles_set.insert( _Scalar(M_PI) );
-
-            angles.resize( angles_set.size() );
-            std::copy( angles_set.begin(), angles_set.end(), angles.begin() );
-
-            // print
-            if ( verbose )
-            {
-                std::cout << "Desired angles: {";
-                for ( size_t vi=0;vi!=angles.size();++vi)
-                    std::cout << angles[vi] << "(" << angles[vi] * _Scalar(180.) / M_PI << ")" << ((vi==angles.size()-1) ? "" : ", ");
-                std::cout << "}\n";
-            }
-
-            return EXIT_SUCCESS;
-        } //...appendAnglesFromGenerator()
         
         /*! \brief Applies a functor to each primitive.
          *  \tparam _PrimitiveT          Primitive wrapper class. Concept: LinePrimitive2.

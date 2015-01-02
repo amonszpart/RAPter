@@ -1,8 +1,70 @@
 #ifndef GF2_ANGLE_UTIL_HPP
 #define GF2_ANGLE_UTIL_HPP
 
+#include "globfit2/optimization/energyFunctors.h"
+
 namespace GF2
 {
+    namespace angles
+    {
+        /*! \brief Adds angles from generator to in/out vector \p angles.
+         *
+         *  \tparam _AnglesContainerT Concept: std::vector<_Scalar>.
+         *  \tparam _Scalar           Floating point precision type.
+         *  \param[in,out] angles     Container (vector) to append to.
+         *  \param[in] angle_gen      Generator element. 0, \p angle_gen, 2 * \p angle_gen, ..., M_PI will be appended.
+         *  \param[in] verbose        Enable logging.
+         */
+        template <class _AnglesContainerT> inline int
+        appendAnglesFromGenerators( _AnglesContainerT &angles, _AnglesContainerT &angle_gens, bool no_parallel, char verbose, bool inRad = false )
+        {
+            typedef typename _AnglesContainerT::Scalar Scalar;
+
+            if ( !inRad )
+                std::cout << "[" << __func__ << "]: " << "ASSUMING DEGREES" << std::endl;
+
+            std::set<Scalar> angles_set;
+            // copy
+            angles_set.insert( angles.begin(), angles.end() );
+
+            // insert 0 element
+            if ( !no_parallel )
+                angles_set.insert( Scalar(0) );
+
+            for ( int i = 0; i != angle_gens.size(); ++i )
+            {
+                Scalar angle_gen_rad = angle_gens[i] * (inRad ? Scalar(1.) : M_PI/Scalar(180.));
+
+                if ( angle_gen_rad == Scalar(0.) )
+                {
+                    std::cerr << "[" << __func__ << "]: " << "skipping 0 as generator" << std::endl;
+                    continue;
+                }
+
+                // generate
+                for ( Scalar angle = angle_gen_rad; angle < M_PI; angle+= angle_gen_rad )
+                    angles_set.insert( angle );
+            }
+
+            // insert 0 element
+            if ( !no_parallel )
+                angles_set.insert( Scalar(M_PI) );
+
+            angles.resize( angles_set.size() );
+            std::copy( angles_set.begin(), angles_set.end(), angles.begin() );
+
+            // print
+            if ( verbose )
+            {
+                std::cout << "Desired angles: {";
+                for ( size_t vi=0;vi!=angles.size();++vi)
+                    std::cout << angles[vi] << "(" << angles[vi] * Scalar(180.) / M_PI << ")" << ((vi==angles.size()-1) ? "" : ", ");
+                std::cout << "}\n";
+            }
+
+            return EXIT_SUCCESS;
+        } //...appendAnglesFromGenerator()
+    } //...ns angles
 
     template <typename _Scalar, class _AnglesT>
     inline int deduceGenerators( _AnglesT &angle_gens, _AnglesT const& angles )
@@ -57,7 +119,6 @@ namespace GF2
     } //...deduceGenerators
 
     typedef std::map< int, std::map<int,int> > DirAngleMapT; // <did, <angle_id, count> >
-
 
     template <typename _PrimitiveT, typename _PrimitiveContainerT, typename _AnglesT>
     struct DirAnglesFunctorInner
@@ -200,7 +261,7 @@ namespace GF2
             {
                 AnglesT single_gen;
                 genAngles( single_gen, angles[max_vote_id], angle_gens );
-                processing::appendAnglesFromGenerators( allowedAngles[it->first], single_gen, /* no_paral: */ false, true, /*inRad:*/ true );
+                angles::appendAnglesFromGenerators( allowedAngles[it->first], single_gen, /* no_paral: */ false, true, /*inRad:*/ true );
             }
 
             votes.clear();

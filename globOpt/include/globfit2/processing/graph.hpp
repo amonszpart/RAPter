@@ -8,6 +8,32 @@
 
 namespace GF2
 {
+    namespace graph
+    {
+        /*! \brief tuple<3> to temporarily store graph edges until we know how large the graph will be
+         */
+        template <typename _Scalar>
+        struct EdgeT
+        {
+            int _v0, _v1;
+            _Scalar _w;
+            EdgeT( int v0, int v1, _Scalar w ) : _v0(v0), _v1(v1), _w(w) {}
+
+            bool operator<( EdgeT<_Scalar> const& other ) const
+            {
+                if ( _v0 < other._v0 ) return true;
+                else if ( _v1 < other._v1 ) return true;
+                else return _w < other._w;
+            }
+        };
+
+        // instead of "typedef std::set< graph::EdgeT<_Scalar> >"
+        template <typename _Scalar>
+        class EdgeListT : public std::set<graph::EdgeT<_Scalar> >
+        {};
+
+    } //...ns graph
+
     template <typename _Scalar>
     struct MyGraphConfig
     {
@@ -22,6 +48,9 @@ namespace GF2
             typedef typename boost::graph_traits< _UndirectedGraph >::vertex_descriptor VertexT;
             typedef typename boost::graph_traits< _UndirectedGraph >::edge_descriptor EdgeT;
             typedef typename boost::graph_traits< _UndirectedGraph >::out_edge_iterator OutEdgeIteratorT;
+
+            typedef std::vector<int> ComponentListT;
+            typedef std::map<int,size_t> ComponentSizesT;
 
             static inline int testGraph()
             {
@@ -73,7 +102,7 @@ namespace GF2
             /*! \brief Gets the graph's connected components.
              *  \param[in] counts Entries: <component_id, component_size>
              */
-            inline int getComponents( std::vector<int> &components, std::map<int, int> *counts = NULL )
+            inline int getComponents( std::vector<int> &components, ComponentSizesT *counts = NULL )
             {
                 if ( counts ) counts->clear();
 
@@ -92,7 +121,7 @@ namespace GF2
                 return num;
             }
 
-            inline int draw( std::string const& out_path )
+            inline int draw( std::string const& out_path, bool show = false )
             {
                 std::ofstream f;
                 f.open( out_path );
@@ -120,6 +149,7 @@ namespace GF2
                                  ss << nameIt1->second;
                             else
                                  ss << v1;
+
                             ss << "\n";
 
                             std::cout << ss.str();
@@ -130,6 +160,62 @@ namespace GF2
 
                 f << "}\n";
                 f.close();
+
+                if ( show )
+                {
+                    char cmd[2048];
+                    sprintf( cmd, "dot -Tpng -o %s.png %s && (eog %s.png &)", out_path.c_str(), out_path.c_str(), out_path.c_str() );
+                    std::cout << "[" << __func__ << "]: " << cmd << std::endl;
+                    system( cmd );
+                }
+            }
+
+            typedef std::map< int, std::vector<UidT> > ClustersT; // [ cluster0: [v0, v10,...], cluster1: [v3, v5, ...], ... ]
+
+            inline void getClusters( ClustersT &clusters, int sizeLimit = 2 )
+            {
+                ComponentListT      components;
+                ComponentSizesT     compSizes;
+                this->getComponents( components, &compSizes );
+
+                for ( UidT uId = 0; uId != components.size(); ++uId )
+                {
+                    if ( compSizes[ components[uId] ] < sizeLimit )
+                        continue;
+
+                    // store
+                    clusters[ components[uId] ].push_back( uId );
+                }
+            } //...getClusters()
+
+            inline void showClusters( ClustersT const& clusters,
+                                      std::string const& path, bool show = false )
+            {
+                std::ofstream f;
+                f.open( path.c_str() );
+                f << "graph {\n";
+
+                for ( ClustersT::const_iterator it = clusters.begin(); it != clusters.end(); ++it )
+                {
+                    // it->first: clusterId
+                    // it->second: vector<UidT>
+                    for ( typename ClustersT::mapped_type::const_iterator nodeIt = it->second.begin();
+                          nodeIt != it->second.end(); ++nodeIt )
+                    {
+                        f << *nodeIt << " -- c" << /* clusterId */ it->first << std::endl;
+                    }
+                }
+
+                f << "}" << std::endl;
+                f.close();
+
+                if ( show )
+                {
+                    char cmd[2048];
+                    sprintf( cmd, "dot -Tpng -o %s.png %s && (eog %s.png &)", path.c_str(), path.c_str(), path.c_str() );
+                    std::cout << "[" << __func__ << "]: " << cmd << std::endl;
+                    system( cmd );
+                }
             }
 
         protected:

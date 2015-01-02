@@ -7,14 +7,15 @@
 //#include "globfit2/optimization/problemSetup.h"
 
 
-int subsample( int argc, char** argv ); // subsample.cpp
-int segment  ( int argc, char** argv ); // segment.cpp
-int generate ( int argc, char** argv ); // generate.cpp
-int formulate( int argc, char** argv ); // problemSetup.cpp
-int solve    ( int argc, char** argv ); // solve.cpp
-int merge    ( int argc, char** argv ); // merge.cpp
-int datafit  ( int argc, char** argv ); // datafit.cpp
-int reassign (int argc, char** argv );
+int subsample ( int argc, char** argv ); // subsample.cpp
+int segment   ( int argc, char** argv ); // segment.cpp
+int generate  ( int argc, char** argv ); // generate.cpp
+int formulate ( int argc, char** argv ); // problemSetup.cpp
+int solve     ( int argc, char** argv ); // solve.cpp
+int merge     ( int argc, char** argv ); // merge.cpp
+int datafit   ( int argc, char** argv ); // datafit.cpp
+int reassign  ( int argc, char** argv );
+int represent ( int argc, char** argv ); // represent.cpp
 
 int main( int argc, char *argv[] )
 {
@@ -35,6 +36,7 @@ int main( int argc, char *argv[] )
                   << "\t--merge3D\n"
                   << "\t--datafit\n"
                   << "\t--corresp\n"
+                  << "\t--represent[3D]"
                   //<< "\t--show\n"
                   << std::endl;
 
@@ -80,6 +82,10 @@ int main( int argc, char *argv[] )
     else if ( GF2::console::find_switch(argc,argv,"--reassign") )
     {
         return reassign( argc, argv );
+    }
+    else if ( GF2::console::find_switch(argc,argv,"--represent") || GF2::console::find_switch(argc,argv,"--represent3D") )
+    {
+        return represent( argc, argv );
     }
 //    else if ( GF2::console::find_switch(argc,argv,"--corresp") || GF2::console::find_switch(argc,argv,"--corresp3D") )
 //    {

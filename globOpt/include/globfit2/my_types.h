@@ -38,7 +38,11 @@ namespace GF2
     }
 #endif
 
-#   if GF2_USE_PCL
+#if GF2_USE_PCL
+
+    typedef pcl::PointCloud<pcl::PointNormal> PclCloudT;
+    typedef typename pcl::PointCloud<pcl::PointNormal>::Ptr PclCloudPtrT;
+
     template <int Dim>
     struct PCLPointAllocator
     {
@@ -73,7 +77,7 @@ namespace GF2
         return pcl_pnt;
     }
 
-#   endif
+#endif
 }
 
 #endif // MY_TYPES_H

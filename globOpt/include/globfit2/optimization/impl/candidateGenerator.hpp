@@ -20,11 +20,6 @@
 
 namespace GF2
 {
-    typedef int GidT; // DirectionId type
-    typedef int DidT; // DirectionId type
-    typedef std::pair<GidT,int> GidLid; // uniquely identifies a primitive by first: gid, second: linear id in innerContainer (vector).
-    typedef std::pair<DidT,int> DidAid; // <DirectionId, AngleId>
-
     namespace cgen
     {
         template <typename _PrimitiveT, typename _PrimitiveContainerT>
@@ -248,7 +243,7 @@ namespace GF2
             // if not 0 or 180, so there's a clear generator
             if ( generators.size() )
                 // assign direction to generator
-                processing::appendAnglesFromGenerators( /*        out: */ allowedAngles[dir_gid1]
+                angles::appendAnglesFromGenerators( /*        out: */ allowedAngles[dir_gid1]
                                                       , /* generators: */ generators
                                                       , /*   no_paral: */ false
                                                       , /*    verbose: */ true
@@ -339,7 +334,7 @@ namespace GF2
                                 , _PrimitiveContainerT              /*const*/& in_lines //non-const, becuase some of the primitives get promoted to large patches
                                 , _PointContainerT                  const& points   // non-const to be able to add group tags
                                 , _Scalar                           const  scale
-                                , std::vector<_Scalar>              const& angles
+                                , AnglesT                           const& angles
                                 , CandidateGeneratorParams<_Scalar> const& params
                                 , _Scalar                           const  smallThreshMult
                                 , bool                              const  safe_mode_arg
@@ -603,8 +598,8 @@ namespace GF2
                               << std::endl;
 
                 // record allowed alias
-                AnglesT tmpGenerators = { angleIt->first };
-                processing::appendAnglesFromGenerators( /*        out: */ allowedAngles[ did ]
+                AnglesT tmpGenerators( {angleIt->first} );
+                angles::appendAnglesFromGenerators( /*        out: */ allowedAngles[ did ]
                                                       , /* generators: */ tmpGenerators
                                                       , /*   no_paral: */ false
                                                       , /*    verbose: */ true
@@ -717,7 +712,7 @@ namespace GF2
 
         CandidateGeneratorParams<Scalar> generatorParams;
         std::string                 cloud_path              = "./cloud.ply";
-        std::vector<Scalar>         angle_gens              = { Scalar(90.) };
+        AnglesT                     angle_gens( {_Scalar(90.)} );
         std::string                 mode_string             = "representative_sqr";
         std::vector<std::string>    mode_opts               = { "representative_sqr" };
         std::string                 input_prims_path        = "patches.csv";
@@ -843,7 +838,7 @@ namespace GF2
         // Read desired angles
         if ( EXIT_SUCCESS == err )
         {
-            processing::appendAnglesFromGenerators( generatorParams.angles, angle_gens, no_paral, true );
+            angles::appendAnglesFromGenerators( generatorParams.angles, angle_gens, no_paral, true );
         } //...read angles
 
         // Read points

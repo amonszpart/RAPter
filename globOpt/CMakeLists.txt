@@ -228,6 +228,7 @@ SET( GLOBOPT_H_LIST
     include/globfit2/util/parse.h
     include/globfit2/parameters.h
     include/globfit2/my_types.h
+    include/globfit2/simple_types.h
     include/globfit2/globOpt_types.h
     include/globfit2/primitives/linePrimitive.h
     include/globfit2/primitives/primitive.h
@@ -256,6 +257,7 @@ SET( GLOBOPT_SRC_LIST
     src/merge.cpp
     src/datafit.cpp
     src/reassign.cpp
+    src/represent.cpp
     #src/optimization/candidateGenerator.cpp # cached compilation
     #src/optimization/qp/visualizer.cpp     # cached compilation
 )

@@ -16,6 +16,7 @@
 #include "globfit2/optimization/energyFunctors.h" // AbstractPrimitivePrimitiveEnergyFunctor,
 #include "globfit2/parameters.h"                  // ProblemSetupParams
 #include "globfit2/processing/util.hpp"           // getPopulation()
+#include "globfit2/processing/angle_util.hpp"     // appendAngle...
 #include "globfit2/io/io.h"                       // readPrimitives(), readPoints()
 
 #include "globfit2/processing/graph.hpp"
@@ -44,7 +45,7 @@ ProblemSetup::formulateCli( int    argc
     std::string               cloud_path         = "cloud.ply",
                               candidates_path    = "candidates.csv",
                               assoc_path         = "points_primitives.csv";
-    std::vector<Scalar>       angle_gens         = { 90. };
+    AnglesT                   angle_gens( {AnglesT::Scalar(90.)} );
     int                       srand_val          = 123456;
     std::string               cost_string        = "sqrt";
     std::string               problem_rel_path   = "problem";
@@ -146,7 +147,7 @@ ProblemSetup::formulateCli( int    argc
     // Read desired angles
     bool no_paral = pcl::console::find_switch( argc, argv, "--no-paral");
     {
-        processing::appendAnglesFromGenerators( params.angles, angle_gens, no_paral, verbose );
+        angles::appendAnglesFromGenerators( params.angles, angle_gens, no_paral, verbose );
     } //...read angles
 
     // read points
@@ -260,27 +261,6 @@ ProblemSetup::formulateCli( int    argc
     return err;
 } //...ProblemSetup::formulateCli()
 
-namespace problemSetup
-{
-    /*! \brief tuple<3> to temporarily store graph edges until we know how large the graph will be
-     */
-    template <typename _Scalar>
-    struct EdgeT
-    {
-        int _v0, _v1;
-        _Scalar _w;
-        EdgeT( int v0, int v1, _Scalar w ) : _v0(v0), _v1(v1), _w(w) {}
-
-        bool operator<( EdgeT<_Scalar> const& other ) const
-        {
-            if ( _v0 < other._v0 ) return true;
-            else if ( _v1 < other._v1 ) return true;
-            else return _w < other._w;
-        }
-    };
-
-} //...ns problemSetup
-
 template < class _PointPrimitiveDistanceFunctor
          , class _PrimitiveContainerT
          , class _PointContainerT
@@ -307,7 +287,7 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
     using problemSetup::OptProblemT;
 
     typedef Graph< _Scalar, typename MyGraphConfig<_Scalar>::UndirectedGraph > GraphT;
-    typedef problemSetup::EdgeT<_Scalar> EdgeT;
+    typedef graph::EdgeT<_Scalar> EdgeT;
 
     // work - formulate problem
     int err = EXIT_SUCCESS;
@@ -428,6 +408,8 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
         typedef std::map< LidLid, ExtremaT > ExtremaMapT;
         ExtremaMapT extremas;
         typedef OptProblemT::Scalar ProblemScalar;
+        typedef typename GraphT::ComponentSizesT ComponentSizesT;
+        typedef typename GraphT::ComponentListT ComponentListT;
 
         GraphT::testGraph();
         std::set< EdgeT > edgesList;
@@ -516,7 +498,6 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
         } // ... lid
 
         {
-            typedef std::vector<int> ComponentListT;
             GraphT graph( lids_varids.size() );
             for ( auto it = edgesList.begin(); it != edgesList.end(); ++it )
             {
@@ -534,7 +515,7 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
                 f.open( "components.gv" );
                 f << "graph {\n";
                 ComponentListT components;
-                std::map<int,int> compSizes;
+                ComponentSizesT compSizes;
                 graph.getComponents( components, &compSizes );
 
                 std::map< int, std::vector<int> > clusters; // [ cluster0: [v0, v10,...], cluster1: [v3, v5, ...], ... ]
@@ -573,9 +554,9 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
 
                         for ( int i = 0; i != it->second.size(); ++i )
                         {
-                            cluster_constraint.insert( 0, it->second[i] ) = 1;
+                            cluster_constraint.insert( 0, it->second[i] ) = -1;
                         }
-                        cluster_constraint.insert( 0, varid ) = -(int)it->second.size();
+                        cluster_constraint.insert( 0, varid ) = (int)it->second.size();
                         // k * X_cluster_l <= A( l, : ) * X <= INF
                         problem.addConstraint( OptProblemT::BOUND::GREATER_EQ
                                                , /* lower_limit: */ 0 // k * X_cluster_l

@@ -346,7 +346,7 @@ Solver::datafit( int    argc
     std::string             cloud_path      = "cloud.ply",
                             primitives_path = "candidates.csv",
                             associations_path = "";
-    std::vector<Scalar>     angle_gens      = { Scalar(90.) };
+    AnglesT                 angle_gens( {AnglesT::Scalar(90.)} );
     bool                    verbose         = false;
 
     // parse params
@@ -409,9 +409,9 @@ Solver::datafit( int    argc
 
     // Read desired angles
     bool no_paral = pcl::console::find_switch( argc, argv, "--no-paral");
-    std::vector<Scalar> angles;
+    AnglesT angles;
     {
-        processing::appendAnglesFromGenerators( angles, angle_gens, no_paral, true );
+        angles::appendAnglesFromGenerators( angles, angle_gens, no_paral, true );
     } // ... read angles
 
 #if 0

@@ -3,6 +3,7 @@
 
 #include <vector>
 
+#include "globfit2/simple_types.h"
 #include "globfit2/primitives/linePrimitive.h"
 #include "globfit2/primitives/planePrimitive.h"
 #include "globfit2/primitives/pointPrimitive.h"
@@ -11,9 +12,9 @@
 namespace GF2
 {
     typedef GF2::PointPrimitive PointPrimitiveT;
-    typedef typename PointPrimitiveT::Scalar Scalar;
+    //typedef typename PointPrimitiveT::Scalar Scalar;
+    typedef __Scalar Scalar;
     typedef std::vector< PointPrimitiveT > PointContainerT;
-    typedef std::vector<Scalar> AnglesT;
 
     namespace _2d
     {

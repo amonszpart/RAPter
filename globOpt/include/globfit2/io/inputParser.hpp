@@ -5,25 +5,37 @@
   * Created: 10/11/2014
   */
 
-#ifndef INPUTPARSER_HPP
-#define INPUTPARSER_HPP
+#ifndef GF2_INPUTPARSER_HPP
+#define GF2_INPUTPARSER_HPP
+
+#include <string>
+#include "boost/filesystem.hpp"
+#include "globfit2/simple_types.h"
+#include "globfit2/util/parse.h"
+#include "globfit2/io/io.h"
+#include "globfit2/processing/util.hpp"
+#include "globfit2/processing/angle_util.hpp" // appendAngles
+
+namespace GF2
+{
 
 template < class _InnerPrimitiveContainerT
          , class _PclCloudT
          , class _PointContainerT
          , class _PrimitiveContainerT
          , class _PrimitiveMapT
-         , typename _Scalar >
+         , typename _ParamsT >
 inline int parseInput( _PointContainerT         &points
                      , typename _PclCloudT::Ptr &pcl_cloud
                      , _PrimitiveContainerT     &initial_primitives
                      , _PrimitiveMapT           &patches
-                     , RansacParams<_Scalar>    &params
+                     , _ParamsT                 &params
                      , int                       argc, char **argv
                      , bool                      read_assoc = true )
 {
     typedef typename _PointContainerT::value_type           PointPrimitiveT;
     typedef typename _InnerPrimitiveContainerT::value_type  PrimitiveT;
+    typedef typename PrimitiveT::Scalar                     Scalar;
 
     bool valid_input = true;
     std::string cloud_path, input_prims_path, associations_path;
@@ -100,6 +112,20 @@ inline int parseInput( _PointContainerT         &points
 
     return err + !valid_input;
 }
+
+inline int parseAngles( AnglesT &angles, int argc, char** argv, AnglesT* angle_gens_out = NULL, bool no_paral = false, bool verbose = false, bool inRad = false )
+{
+    AnglesT angle_gens;
+    pcl::console::parse_x_arguments( argc, argv, "--angle-gens", angle_gens );
+
+    angles::appendAnglesFromGenerators( angles, angle_gens, no_paral, verbose, inRad );
+
+    if ( angle_gens_out ) *angle_gens_out = angle_gens;
+
+    return EXIT_SUCCESS;
+}
+
+} //...ns GF2
 
 
 #endif // INPUTPARSER_HPP

@@ -55,7 +55,7 @@ namespace GF2
                     , PrimitiveContainerT                   &  in_lines // non-const, because some of the primitives are promoted
                     , PointContainerT                  const&  points
                     , Scalar                           const   scale
-                    , std::vector<Scalar>              const&  angles
+                    , AnglesT                          const&  angles
                     , CandidateGeneratorParams<Scalar> const&  params
                     , Scalar                           const  smallThresh
                     , bool                             const  safe_mode = false

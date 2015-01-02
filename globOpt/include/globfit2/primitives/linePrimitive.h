@@ -192,7 +192,7 @@ namespace GF2
              */
             template <typename _PointT, typename _PointContainerT>
             int
-            getExtent( std::vector<Eigen::Matrix<Scalar,3,1> >       & minMax
+            getExtent( ExtentsT                                      & minMax
                      , _PointContainerT                         const& cloud
                      , double                                   const  threshold            = 0.01
                      , std::vector<int>                         const* indices_arg          = NULL

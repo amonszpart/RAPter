@@ -11,6 +11,7 @@
 #include "globfit2/visualization/visualization.h"
 #include "globfit2/io/io.h"
 #include "globfit2/processing/util.hpp"          //getPopulations()
+#include "globfit2/processing/angle_util.hpp" // appendAngles...
 #include "globfit2/optimization/patchDistanceFunctors.h" // RepresentativeSqrPatchPatchDistanceFunctorT
 #include "globfit2/util/util.hpp"
 
@@ -102,7 +103,7 @@ Merging::mergeCli( int argc, char** argv )
     std::string cloud_path = "cloud.ply",
                 prims_path = "primitives.bonmin.csv",
                 assoc_path = "points_primitives.csv";
-    std::vector<_Scalar>  angle_gens = { _Scalar(90.) };
+    AnglesT  angle_gens( {AnglesT::Scalar(90.)} );
     // parse params
     {
         bool valid_input = true;
@@ -159,7 +160,7 @@ Merging::mergeCli( int argc, char** argv )
 
     // Read desired angles
     bool no_paral = pcl::console::find_switch(argc,argv,"--no_paral");
-    processing::appendAnglesFromGenerators( params.angles, angle_gens, no_paral, true );
+    angles::appendAnglesFromGenerators( params.angles, angle_gens, no_paral, true );
 
     // associations
     std::vector<std::pair<int,int> > points_primitives;
