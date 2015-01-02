@@ -45,56 +45,68 @@ static inline int representCli( int argc, char** argv )
     AnglesT angle_gens;
     parseAngles( params.angles, argc, argv, &angle_gens );
 
-    GidPidVectorMap populations; // populations[patch_id] = all points with GID==patch_id
+    GidPidVectorMap populations;
     processing::getPopulations( populations, points );
 
-    std::cout << "gids: " << patches.size() << ", points: " << points.size() << ", scale: " << params.scale << std::endl;
+    std::cout << "[" << __func__ << "]: " << "gids: " << patches.size() << ", points: " << points.size() << ", scale: " << params.scale << std::endl;
 
+    // finite distance calculation between patches
     SpatialSqrtPrimitivePrimitiveEnergyFunctor<_FiniteFiniteDistFunctor, _PointContainerT, Scalar,_PrimitiveT>
             ppDistFunctor( params.angles, points, params.scale );
 
+    // create spatial+directionId clustered graph via this edge list
     graph::EdgeListT<Scalar> edgesList;
 
+    // enumerate all unique primitive pairs
     for ( typename PrimitiveMapT::Iterator it0(patches); it0.hasNext(); it0.step() )
         for ( typename PrimitiveMapT::Iterator it1(patches); it1.hasNext(); it1.step() )
     {
+        // skip reverse pairs (0-1 allows 1-0 to be skipped)
         if ( it1 < it0 ) continue; // WARNING: hack, assumes gids are coming sorted increasingly
 
+        // cache direction ids
         const DidT did0 = it0->getTag(_PrimitiveT::DIR_GID);
         const DidT did1 = it1->getTag(_PrimitiveT::DIR_GID);
 
+        // log
         std::cout << "<" << it0.getGid() << "," << it0.getLid() << "," << did0 << "," << it0.getUniqueId() << ">"
                   << "<" << it1.getGid() << "," << it1.getLid() << "," << did1 << "," << it1.getUniqueId() << ">"
                   << std::endl;
 
-
-        ExtentsT extrema, extrema2;
+        // get spatial extent (is usually cached in the function)
+        ExtentsT extrema, extrema1;
         int err = it0->template getExtent<_PointPrimitiveT>( extrema
-                                                          , points
-                                                          , params.scale
-                                                          , &(populations[it0.getGid()]) )
-                + it1->template getExtent<_PointPrimitiveT>( extrema2
-                                                            , points
-                                                            , params.scale
-                                                            , &(populations[it1.getGid()]) );
+                                                           , points
+                                                           , params.scale
+                                                           , &(populations[it0.getGid()]) )
+                + it1->template getExtent<_PointPrimitiveT>( extrema1
+                                                           , points
+                                                           , params.scale
+                                                           , &(populations[it1.getGid()]) );
+
+        // add edge, if same direction id (colour) and close to eachother
         if ( EXIT_SUCCESS == err )
         {
+            // Originally, evalSpatial returns 1 if they are at the same spot, and 0 if they are 2 x scale away.
             Scalar invDist = ppDistFunctor.evalSpatial( *it0, extrema
-                                                      , *it1, extrema2 );
-            if ( invDist > Scalar(0.) && (did0 == did1) )
-            {
-                edgesList.insert( EdgeT(it0.getUniqueId(), it1.getUniqueId(), invDist) );
-            }
-        }
-    }
+                                                      , *it1, extrema1 );
+            if ( (did0 == did1) && invDist > Scalar(0.) ) // same colour and closer than 2xscale
+                edgesList.insert( EdgeT(it0.getUniqueId(), it1.getUniqueId(), /* not used: */ invDist) );
+        } // if extrema exist
+    } //...all primitive pairs
 
+    // build fixed size graph from edge list
     GraphT graph( edgesList );
+    // plot (debug)
     graph.draw( "representGraph.gv", /* show: */ true );
 
+    // extract connected components with at least 2 nodes
     typename GraphT::ClustersT clusters;
-    graph.getClusters( clusters, 2 );
+    graph.getClusters( clusters, /* minimum primitive count: */ 2 );
+    // plot (debug)
     graph.showClusters( clusters, "representClusters.gv", /* show: */ true );
 
+    // WORK
 
 
     return !valid_input;
