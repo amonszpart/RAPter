@@ -239,7 +239,7 @@ Segmentation::patchify( _PrimitiveContainerT                   & patches
                   , /* [out]          groups_pointids: */ groups
                   , /* [in]                     scale: */ scale
                   , /* [in] patchPatchDistanceFunctor: */ patchPatchDistanceFunctor
-                  , /* [in]              gid_tag_name: */ PointPrimitiveT::GID
+                  , /* [in]              gid_tag_name: */ PointPrimitiveT::TAGS::GID
                   , /* [in]                      nn_K: */ nn_K
                   , /* [in]                   verbose: */ verbose );
     } // ... (1) group
@@ -250,7 +250,7 @@ Segmentation::patchify( _PrimitiveContainerT                   & patches
     processing::getPopulations( populations, points );
 
     // Copy the representative direction of each patch in groups to an output patch with GID as it's linear index in groups.
-    for ( size_t gid = 0; gid != groups.size(); ++gid )
+    for ( GidT gid = 0; gid != groups.size(); ++gid )
     {
         // don't add single clusters primitives, they will have to join others immediately
         if ( populations[gid].size() <= 1 ) continue;
@@ -261,8 +261,8 @@ Segmentation::patchify( _PrimitiveContainerT                   & patches
         {
             // LINE
         containers::add( patches, gid, groups[gid].getRepresentative() )
-                .setTag( _PrimitiveT::GID    , gid )
-                .setTag( _PrimitiveT::DIR_GID, gid );
+                .setTag( _PrimitiveT::TAGS::GID    , gid )
+                .setTag( _PrimitiveT::TAGS::DIR_GID, gid );
         }
         else if ( _PrimitiveT::EmbedSpaceDim == 3)
         {

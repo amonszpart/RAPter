@@ -16,7 +16,7 @@ namespace GF2
     inline int reassignCli( int argc, char** argv )
     {
         typedef typename _PclCloudT::PointType                    PclPointT;
-        typedef          std::map<int, _InnerPrimitiveContainerT> PrimitiveMapT;
+        typedef          std::map<GidT, _InnerPrimitiveContainerT> PrimitiveMapT;
         typedef typename _PointContainerT::value_type             PointPrimitiveT;
         typedef typename _InnerPrimitiveContainerT::value_type    PrimitiveT;
         typedef typename _PclCloudT::PointType                    PclPointT;
@@ -72,7 +72,7 @@ namespace GF2
                 for ( int lid = 0; lid != it->size(); ++lid )
                 {
                     PrimitiveT const& prim = it->at( lid );
-                    sprintf( name, "prim%06d_%06d", prim.getTag( PrimitiveT::GID ), lid );
+                    sprintf( name, "prim%06d_%06d", prim.getTag( PrimitiveT::TAGS::GID ), lid );
                     vptr->addPlane( *(prim.modelCoefficients()), prim. pos()(0), prim. pos()(1), prim. pos()(2), name );
 
                     ++plane_count;
@@ -155,8 +155,8 @@ namespace GF2
                 for ( int  i = 0; i < num_pixels; i++ )
                 {
                     result[i] = gc->whatLabel(i);
-                    std::pair<int,int> lidLid1 = labelMap[ result[i] ];
-                    points[i].setTag( PointPrimitiveT::GID, primitives[lidLid1.first][lidLid1.second].getTag( PrimitiveT::GID) );
+                    std::pair<LidT,LidT> lidLid1 = labelMap[ result[i] ];
+                    points[i].setTag( PointPrimitiveT::TAGS::GID, primitives[lidLid1.first][lidLid1.second].getTag( PrimitiveT::TAGS::GID) );
                 }
 
                 std::cout<<"result:";for(size_t vi=0;vi!=num_pixels;++vi)std::cout<<result[vi]<<" ";std::cout << "\n";

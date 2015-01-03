@@ -68,8 +68,8 @@ static inline int representCli( int argc, char** argv )
         if ( it1 < it0 ) continue; // WARNING: hack, assumes gids are coming sorted increasingly
 
         // cache direction ids
-        const DidT did0 = it0->getTag(_PrimitiveT::DIR_GID);
-        const DidT did1 = it1->getTag(_PrimitiveT::DIR_GID);
+        const DidT did0 = it0->getTag(_PrimitiveT::TAGS::DIR_GID);
+        const DidT did1 = it1->getTag(_PrimitiveT::TAGS::DIR_GID);
 
         // log
         std::cout << "<" << it0.getGid() << "," << it0.getLid() << "," << did0 << "," << it0.getUniqueId() << ">"
@@ -149,9 +149,9 @@ static inline int representCli( int argc, char** argv )
     {
         // cache
         _PrimitiveT const* prim = &(*it0);
-        const DidT did = prim->getTag( _PrimitiveT::DIR_GID );
+        const DidT did = prim->getTag( _PrimitiveT::TAGS::DIR_GID );
         // calc size
-        prim->getSpatialSignificance( spatialSignif, points, params.scale, &(populations[prim->getTag(_PrimitiveT::GID)]) );
+        prim->getSpatialSignificance( spatialSignif, points, params.scale, &(populations[prim->getTag(_PrimitiveT::TAGS::GID)]) );
 
         // insert, if did unseen
         if ( maxSpatialSignifs.find( did ) == maxSpatialSignifs.end() )
@@ -170,19 +170,20 @@ static inline int representCli( int argc, char** argv )
         //  first: did
         // second: SizedPrimT (<size,prim>)
         _PrimitiveT const* prim = it->second.second;
-        containers::add( outPrims, prim->getTag(_PrimitiveT::GID), *(prim) );
-        activeGids.insert( prim->getTag(_PrimitiveT::GID) );
+        containers::add( outPrims, prim->getTag(_PrimitiveT::TAGS::GID), *(prim) );
+        activeGids.insert( prim->getTag(_PrimitiveT::TAGS::GID) );
     }
 
     std::cout << "[" << __func__ << "]: " << "saved to representatives.csv" << std::endl;
     io::savePrimitives<_PrimitiveT,typename InnerPrimitiveContainerT::const_iterator>( outPrims, "representatives.csv" );
 
+    // ___POINTS___
     _PointContainerT outPoints( points ); // need reassignment
     // clear all points' assignment that don't have selected primitives
     for ( auto it = outPoints.begin(); it != outPoints.end(); ++it )
     {
-        if ( activeGids.find( it->getTag(_PointPrimitiveT::GID) ) == activeGids.end() )
-            it->setTag( _PointPrimitiveT::GID, _PointPrimitiveT::UNSET );
+        if ( activeGids.find( it->getTag(_PointPrimitiveT::TAGS::GID) ) == activeGids.end() )
+            it->setTag( _PointPrimitiveT::TAGS::GID, _PointPrimitiveT::LONG_VALUES::UNSET );
     }
     std::string assocPath( "points_representatives.csv" );
     io::writeAssociations<_PointPrimitiveT>( outPoints, assocPath );

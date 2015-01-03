@@ -16,8 +16,8 @@
 namespace GF2 {
 
     typedef std::map   < GidT, int >        GidIntMap;
-    typedef std::set   < int >              PidSet;
-    typedef std::vector< int >              PidVector;
+    typedef std::set   < PidT >              PidSet;
+    typedef std::vector< PidT >              PidVector;
     typedef std::map   < GidT, PidSet >      GidPidSetMap;
     typedef std::map   < GidT, PidVector >   GidPidVectorMap;
 
@@ -29,7 +29,7 @@ namespace GF2 {
          *
          *  \tparam                 Concept: std::map< int, int >. Key: gid, value: population (\#points assigned to a group id (GID).
          *  \param[out] populations Contains an int value for each GID that occurred in points. The value is the count, how many points had this GID.
-         *  \param[in]  points      The points containing gids retrievable by \code points[pid].getTag( _PointPrimitiveT::GID ) \endcode.
+         *  \param[in]  points      The points containing gids retrievable by \code points[pid].getTag( _PointPrimitiveT::TAGS::GID ) \endcode.
          *  \return                 EXIT_SUCCESS
         */
         template <class _GidIntMap, class _PointContainerT > inline int
@@ -39,7 +39,7 @@ namespace GF2 {
 
             for ( size_t pid = 0; pid != points.size(); ++pid )
             {
-                ++populations[ points[pid].getTag(_PointPrimitiveT::GID) ];
+                ++populations[ points[pid].getTag(_PointPrimitiveT::TAGS::GID) ];
             }
 
             return EXIT_SUCCESS;
@@ -48,7 +48,7 @@ namespace GF2 {
         /*! \brief Calculate the number of points that are assigned to a GID (group id).
         *   \tparam _GidIntSetMap   Concept: std::map< int, std::set<int> >. Key: GID, value: list of point ids that have that GID. (\#points assigned to a group id (GID).
         *   \param[out] populations Contains an int value for each GID that occurred in points. The value is the count, how many points had this GID.
-        *   \param[in]  points      The points containing gids retrievable by \code points[pid].getTag( _PointPrimitiveT::GID ) \endcode.
+        *   \param[in]  points      The points containing gids retrievable by \code points[pid].getTag( _PointPrimitiveT::TAGS::GID ) \endcode.
         *   \return                 EXIT_SUCCESS
         */
         template <class _GidIntSetMap, class _PointContainerT > inline int
@@ -58,8 +58,8 @@ namespace GF2 {
 
             for ( size_t pid = 0; pid != points.size(); ++pid )
             {
-                const int gid = points[pid].getTag( _PointPrimitiveT::GID );
-                containers::add( populations, gid, static_cast<int>(pid) );
+                const GidT gid = points[pid].getTag( _PointPrimitiveT::TAGS::GID );
+                containers::add( populations, gid, static_cast<PidT>(pid) );
             }
 
             return EXIT_SUCCESS;
@@ -71,11 +71,11 @@ namespace GF2 {
          *
          *  \param[out] population  Contains an int value for the GID \p gid that occurred in points. The value is the count, how many points has this GID \p gid.
          *  \param[in]  gid         The group id to look for.
-         *  \param[in]  points      The points containing gids retrievable by \code points[pid].getTag( _PointPrimitiveT::GID ) \endcode.
+         *  \param[in]  points      The points containing gids retrievable by \code points[pid].getTag( _PointPrimitiveT::TAGS::GID ) \endcode.
          *  \return                 Number of points assigned to \p gid.
          */
         template <class _PidContainerT, class _PointContainerT > inline int
-        getPopulationOf( _PidContainerT & population, int const gid, _PointContainerT const& points )
+        getPopulationOf( _PidContainerT & population, GidT const gid, _PointContainerT const& points )
         {
             typedef typename _PointContainerT::value_type _PointPrimitiveT;
 
@@ -83,8 +83,8 @@ namespace GF2 {
             for ( size_t pid = 0; pid != points.size(); ++pid )
             {
                 // if assigned to gid, push_back pid
-                if ( points[pid].getTag( _PointPrimitiveT::GID ) == gid )
-                    containers::add( population, static_cast<int>(pid) );
+                if ( points[pid].getTag( _PointPrimitiveT::TAGS::GID ) == gid )
+                    containers::add( population, static_cast<PidT>(pid) );
             } //...for points
 
             return population.size();
@@ -272,7 +272,7 @@ namespace GF2 {
                     // apply functor to primitive
                     if( functor.eval( *inner_it ) )
                     {
-                        if ( inner_it->getTag(_PrimitiveT::STATUS) == _PrimitiveT::STATUS_VALUES::SMALL )
+                        if ( inner_it->getTag(_PrimitiveT::TAGS::STATUS) == _PrimitiveT::STATUS_VALUES::SMALL )
                         {
                             std::cerr << "[" << __func__ << "]: " << "erasing small patch, this should NOT happen" << std::endl;
                             //throw new std::runtime_error("erasing small patch, should not happen");
@@ -324,16 +324,16 @@ namespace GF2 {
                 //! Return true when the id cannot be found in the set -> induce destruction
                 inline
                 bool eval(const _PrimitiveT& p) const{
-                    if (_preserveSmall && p.getTag(_PrimitiveT::STATUS)  == _PrimitiveT::STATUS_VALUES::SMALL)
+                    if (_preserveSmall && p.getTag(_PrimitiveT::TAGS::STATUS)  == _PrimitiveT::STATUS_VALUES::SMALL)
                         return false;
-                    return gids.find( p.getTag(_PrimitiveT::GID) ) == gids.end();
+                    return gids.find( p.getTag(_PrimitiveT::TAGS::GID) ) == gids.end();
                 }
             } nestedFunctor;
 
             for(typename _PointContainerT::const_iterator it  = points.begin();
                                                           it != points.end();
                                                         ++it)
-                nestedFunctor.gids.insert((*it).getTag(PointT::GID));
+                nestedFunctor.gids.insert((*it).getTag(PointT::TAGS::GID));
             nestedFunctor._preserveSmall = preserveSmall;
 
             return erasePrimitives<_PrimitiveT, _inner_iterator>(primitives, nestedFunctor);
@@ -354,7 +354,7 @@ namespace GF2 {
         fitLinearPrimitive( PrimitiveT                      & primitive
                             , PointsT                  const& cloud
                             , Scalar                          scale
-                            , std::vector<int>         const* p_indices             = NULL
+                            , std::vector<PidT>        const* p_indices             = NULL
                             , int                             refit                 = 0
                             , PrimitiveT               const* initial_line          = NULL
                             , bool                            fit_pos_only          = false

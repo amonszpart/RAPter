@@ -167,8 +167,9 @@ ProblemSetup::formulateCli( int    argc
     } //...read primitives
 
     // read point-primitive associations
-    std::vector<std::pair<int,int> > points_primitives;
+    std::vector<std::pair<PidT,LidT> > points_primitives;
     io::readAssociations( points_primitives, assoc_path, NULL );
+    int nrWarnings = 0;
     for ( size_t i = 0; i != points.size(); ++i )
     {
         if ( i > points_primitives.size() )
@@ -177,11 +178,13 @@ ProblemSetup::formulateCli( int    argc
             return EXIT_FAILURE;
         }
 
-        points[i].setTag( _PointPrimitiveT::GID, points_primitives[i].first );
+        points[i].setTag( _PointPrimitiveT::TAGS::GID, points_primitives[i].first );
 
-        if ( points[i].getTag(_PointPrimitiveT::GID) == -1 )
-            std::cerr << "[" << __func__ << "]: " << "point assigned to patch with id -1" << std::endl;
+        if ( points[i].getTag(_PointPrimitiveT::TAGS::GID) == -1 )
+            ++nrWarnings;
     } //...read associations
+    if ( nrWarnings )
+        std::cerr << "[" << __func__ << "]: " << nrWarnings << "/" << points.size() << " points unAssigned!" << std::endl;
 
     //AbstractPrimitivePrimitiveEnergyFunctor<Scalar,_PrimitiveT> *primPrimDistFunctor = NULL;
     SpatialSqrtPrimitivePrimitiveEnergyFunctor<_FiniteFiniteDistFunctor, _PointContainerT, Scalar,_PrimitiveT> *primPrimDistFunctor = NULL;
@@ -411,7 +414,7 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
         typedef typename GraphT::ComponentSizesT ComponentSizesT;
         typedef typename GraphT::ComponentListT ComponentListT;
 
-        GraphT::testGraph();
+        //GraphT::testGraph();
         std::set< EdgeT > edgesList;
 
         GidPidVectorMap populations;
@@ -472,7 +475,7 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
                                                                  , /* allowedAngles.size() ? allowedAngles[didOth] : */ angles );
 
                         // should be deprecated:
-                        if ( prims[lid][lid1].getTag(_PrimitiveT::DIR_GID) != prims[lidOth][lid1Oth].getTag(_PrimitiveT::DIR_GID) )
+                        if ( prims[lid][lid1].getTag(_PrimitiveT::TAGS::DIR_GID) != prims[lidOth][lid1Oth].getTag(_PrimitiveT::TAGS::DIR_GID) )
                             score += dir_id_bias;
 
                         // multiply by pairwise weight
@@ -564,6 +567,8 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
                                                , &cluster_constraint );
 
                         chosen_varids.insert( varid );
+
+                        std::cout << "added " << name << std::endl;
 
                         // extra!
                         //problem.addLinObjective( varid, -100 );
@@ -667,7 +672,7 @@ namespace problemSetup {
         return err;
     } //...everyPointNeedsPatchConstraint
 
-    //! \brief              Adds constraints to \p problem so, that each patch (prims[i] that have the same _PrimitiveT::GID) has at least one member j (prims[i][j]) selected.
+    //! \brief              Adds constraints to \p problem so, that each patch (prims[i] that have the same _PrimitiveT::TAGS::GID) has at least one member j (prims[i][j]) selected.
     //! \tparam _AssocT     Associates a primitive identified by <lid,lid1> with a variable id in the problem. Default: std::map< std::pair<int,int>, int >
     template < class _PointPrimitiveDistanceFunctor
              , class _PrimitiveT        /* = typename _PrimitiveContainerT::value_type::value_type */
@@ -709,10 +714,10 @@ namespace problemSetup {
                 if ( prims[lid][lid1].getTag( _PrimitiveT::TAGS::STATUS ) == _PrimitiveT::STATUS_VALUES::SMALL )
                     continue;
 
-                if ( verbose && (lid1 == 0) ) std::cout << "[" << __func__ << "]: " << "Constraining " << prims[lid][lid1].getTag( _PrimitiveT::GID ) << " to choose one of ";
+                if ( verbose && (lid1 == 0) ) std::cout << "[" << __func__ << "]: " << "Constraining " << prims[lid][lid1].getTag( _PrimitiveT::TAGS::GID ) << " to choose one of ";
                 coeffs[ /* varid: */ lids_varids.at(IntPair(lid,lid1)) ] = 1.0;
                 non_zero_line = true;
-                if ( verbose ) std::cout << prims[lid][lid1].getTag( _PrimitiveT::DIR_GID ) << ", ";
+                if ( verbose ) std::cout << prims[lid][lid1].getTag( _PrimitiveT::TAGS::DIR_GID ) << ", ";
             }
             if ( verbose )std::cout << " directions";
 
@@ -786,7 +791,7 @@ namespace problemSetup {
         {
             if ( !prims[lid].size() ) continue;
             // cache patch group id
-            const int gid = prims[lid].at(0).getTag(_PrimitiveT::GID);
+            const int gid = prims[lid].at(0).getTag(_PrimitiveT::TAGS::GID);
             // check for population size
 //            if ( populations[gid].size() < pop_limit )
 //            { // small patch
@@ -956,7 +961,7 @@ namespace problemSetup {
                 if ( prims[lid][lid1].getTag( _PrimitiveT::TAGS::STATUS ) != _PrimitiveT::STATUS_VALUES::ACTIVE )
                     continue;
 
-                ++dir_instances[ prims[lid][lid1].getTag(_PrimitiveT::DIR_GID) ];
+                ++dir_instances[ prims[lid][lid1].getTag(_PrimitiveT::TAGS::DIR_GID) ];
                 ++active_count;
             }
 
@@ -970,7 +975,7 @@ namespace problemSetup {
             }
 
             // cache patch group id to match with point group ids
-            const int gid = prims[lid][0].getTag( _PrimitiveT::GID );
+            const int gid = prims[lid][0].getTag( _PrimitiveT::TAGS::GID );
 
             // for each direction
             for ( size_t lid1 = 0; lid1 != prims[lid].size(); ++lid1 )
@@ -985,8 +990,8 @@ namespace problemSetup {
                 // for each point, check if assigned to main patch (TODO: move assignment test to earlier, it's indep of lid1)
                 for ( size_t pid = 0; pid != points.size(); ++pid )
                 {
-                    //if ( points[pid].getTag( PointPrimitiveT::GID ) == static_cast<int>(lid) )
-                    if ( points[pid].getTag( _PointPrimitiveT::GID ) == gid )
+                    //if ( points[pid].getTag( PointPrimitiveT::TAGS::GID ) == static_cast<int>(lid) )
+                    if ( points[pid].getTag( _PointPrimitiveT::TAGS::GID ) == gid )
                     {
                         // if within scale, add unary cost
                         _Scalar dist = _PointPrimitiveDistanceFunctor::template eval<_Scalar>( points[pid], prims[lid][lid1] );
@@ -1002,7 +1007,7 @@ namespace problemSetup {
                 // prefer dominant directions
                 if ( freq_weight > _Scalar(0.) )
                 {
-                    const int dir_gid = prims[lid][lid1].getTag( _PrimitiveT::GID );
+                    const int dir_gid = prims[lid][lid1].getTag( _PrimitiveT::TAGS::GID );
 
                     if ( verbose && dir_instances[dir_gid] )
                         std::cout << "[" << __func__ << "]: " << "changed " << coeff << " to ";
@@ -1074,7 +1079,7 @@ namespace problemSetup {
     //                Scalar unary_i = Scalar(0);
     //                for ( size_t pid = 0; pid != points.size(); ++pid )
     //                {
-    //                    if ( points[pid].getTag( PointPrimitiveT::GID ) == static_cast<int>(lid) )
+    //                    if ( points[pid].getTag( PointPrimitiveT::TAGS::GID ) == static_cast<int>(lid) )
     //                    {
     //                        // if within scale, add unary cost
     //                        Scalar dist = PointPrimitiveDistanceFunctor::eval<Scalar>( points[pid], prims[lid][lid1] );
@@ -1083,10 +1088,10 @@ namespace problemSetup {
     //                    }
     //                } // for points
 
-    //                if ( prims[lid].getTag(PrimitiveT::GID) != lid )
-    //                    std::cerr << "[" << __func__ << "]: " << "a;sldjfa;lkjdf, " << prims[lid].getTag(PrimitiveT::GID) << "lid != tag" << prims[lid].getTag(PrimitiveT::GID) << std::endl;
+    //                if ( prims[lid].getTag(PrimitiveT::TAGS::GID) != lid )
+    //                    std::cerr << "[" << __func__ << "]: " << "a;sldjfa;lkjdf, " << prims[lid].getTag(PrimitiveT::TAGS::GID) << "lid != tag" << prims[lid].getTag(PrimitiveT::TAGS::GID) << std::endl;
 
-    //                if ( prims[lid].getTag(PrimitiveT::GID) == prims[lid1].getTag(PointPrimitiveT::GID) )
+    //                if ( prims[lid].getTag(PrimitiveT::TAGS::GID) == prims[lid1].getTag(PointPrimitiveT::TAGS::GID) )
     //                    repr_dirs[ lid ] = std::pair<Scalar,int>( unary_i, cnt );
     //            }
     //        } // for lines

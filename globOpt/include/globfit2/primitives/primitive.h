@@ -57,23 +57,45 @@ namespace GF2
       *  \tparam _Scalar        Internal data type. Concept: float.
       */
     template <int _EmbedSpaceDim, int _Dim, typename _Scalar = float>
-    class Primitive : public ::GF2::Taggable
+    class Primitive : public ::GF2::Taggable<_Scalar>
     {
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-            enum { EmbedSpaceDim = _EmbedSpaceDim };
 
+            typedef ::GF2::Taggable<_Scalar> TaggableT;
+            typedef TaggableT                ParentT;
+            enum { EmbedSpaceDim = _EmbedSpaceDim };
+#if 0
             enum STATUS_VALUES { ACTIVE = 1 //!< Used to show, that this primitive is active. Also used as starting point in \ref GF2::Solver.
                                , SMALL  = 2 //!< Used to show, that this primitive is *not* active, but needs to be kept for later use, so copied to output everywhere.
-                               , UNSET  = ::GF2::Taggable::TAG_UNSET
+                               //, UNSET  = ParentT::TAG_UNSET
                                , INVALID = -2 //!< Used to show, that the status value has not been read yet.
                                };
+#endif
+            //! A weak attempt to get strongly typed enums. Won't work because of UNSET us used across types.
+            struct STATUS_VALUES
+            {
+                static const char ACTIVE  = 1; //!< Used to show, that this primitive is active. Also used as starting point in \ref GF2::Solver.
+                static const char SMALL   = 2; //!< Used to show, that this primitive is *not* active, but needs to be kept for later use, so copied to output everywhere.
+                static const char UNSET   = ParentT::TAG_UNSET;
+                static const char INVALID = -2; //!< Used to show, that the status value has not been read yet.
+            };
+
             //! \brief Defines the tags (ids) that this primitive can manage using setTag and getTag functions.
-            enum TAGS {
-                GID        = 0  //!< group id             - which group this primitive is supposed to explain
-                , DIR_GID  = 1  //!< direction group id   - which group this primitive got it's direction from
-                , STATUS   = 2  //!< an additional flag to store, if this is part of a solution.
+            struct TAGS {
+                static const GidT    GID       = 0;  //!< group id             - which group this primitive is supposed to explain
+                static const DidT    DIR_GID   = 1;  //!< direction group id   - which group this primitive got it's direction from
+                static const char    STATUS    = 2;  //!< an additional flag to store, if this is part of a solution.
+                static const _Scalar GEN_ANGLE/* = 3*/;  //!< flag to show which angle the direction is commited to
             };//...TAGS
+
+            struct GEN_ANGLE_VALUES {
+                static const _Scalar UNSET /*= ParentT::TAG_UNSET*/;
+            };
+
+            struct LONG_VALUES {
+                static const GidT UNSET /*= ParentT::TAG_UNSET*/;
+            };
 
             // ____________________TYPEDEFS____________________
             typedef _Scalar                      Scalar;     //!< Scalar typedef to reach from outside.
@@ -236,7 +258,14 @@ namespace GF2
                 return lines;
             } //...read()
 #endif
-    }; //...Primmitive
+    }; //...Primitive
+
+    template <int _EmbedSpaceDim, int _Dim, typename _Scalar>
+    const _Scalar Primitive<_EmbedSpaceDim, _Dim, _Scalar>::TAGS::GEN_ANGLE = _Scalar( 3. );
+    template <int _EmbedSpaceDim, int _Dim, typename _Scalar>
+    const _Scalar Primitive<_EmbedSpaceDim, _Dim, _Scalar>::GEN_ANGLE_VALUES::UNSET = Primitive<_EmbedSpaceDim, _Dim, _Scalar>::ParentT::TAG_UNSET;
+    template <int _EmbedSpaceDim, int _Dim, typename _Scalar>
+    const GidT Primitive<_EmbedSpaceDim, _Dim, _Scalar>::LONG_VALUES::UNSET = Primitive<_EmbedSpaceDim, _Dim, _Scalar>::ParentT::TAG_UNSET;
 } //...ns GF2
 
 #endif // __AM__PRIMITIVE_HPP__

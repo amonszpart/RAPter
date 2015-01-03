@@ -29,14 +29,14 @@ namespace merging
             RefitFunctor( _PointContainerT const& points, GidPidVectorMap const& populations, _Scalar scale ) : _points(points), _populations(populations), _scale(scale) {}
             int eval( _PrimitiveT& prim ) const
             {
-                const int gid = prim.getTag( _PrimitiveT::GID );
-                const int dir_gid = prim.getTag( _PrimitiveT::DIR_GID );
+                const int gid = prim.getTag( _PrimitiveT::TAGS::GID );
+                const int dir_gid = prim.getTag( _PrimitiveT::TAGS::DIR_GID );
                 std::cout << "[" << __func__ << "]: "
                           << "transforming primitive with GID: " << gid
                           << ", and DIR_GID: " << dir_gid
                           << std::endl;
 
-                GidPidVectorMap::const_iterator pop_it = _populations.find( prim.getTag(_PrimitiveT::GID) );
+                GidPidVectorMap::const_iterator pop_it = _populations.find( prim.getTag(_PrimitiveT::TAGS::GID) );
                 if ( (pop_it != _populations.end()) && (pop_it->second.size()) ) // if population exists, and has non-zero points
                 {
                     std::cout << "refit from: " << prim().transpose();
@@ -50,7 +50,7 @@ namespace merging
                                                                     , /* refit position only: */ false
                                                                     , /*               debug: */ false  );
                     // save tags
-                    Taggable tmp; tmp.copyTagsFrom( prim );
+                    typename _PrimitiveT::TaggableT tmp; tmp.copyTagsFrom( prim );
                     // create new primitive
                     prim = _PrimitiveT( refit.template pos(), prim.template dir() );
                     // rewrite tags
@@ -81,7 +81,7 @@ namespace merging
             inline
             int eval(const  _PrimitiveT& prim, int )
             {
-                _arities[prim.getTag( _PrimitiveT::DIR_GID )] ++;
+                _arities[prim.getTag( _PrimitiveT::TAGS::DIR_GID )] ++;
                 return 0;
             } //...eval()
 
@@ -145,7 +145,7 @@ Merging::mergeCli( int argc, char** argv )
 
     // read primitives
     typedef std::vector<_PrimitiveT>    PatchT;
-    typedef std::map   < int, PatchT >  PrimitiveMapT;
+    typedef std::map   < GidT, PatchT >  PrimitiveMapT;
     _PrimitiveContainerT prims;
     PrimitiveMapT        prims_map;
     {
@@ -163,7 +163,7 @@ Merging::mergeCli( int argc, char** argv )
     angles::appendAnglesFromGenerators( params.angles, angle_gens, no_paral, true );
 
     // associations
-    std::vector<std::pair<int,int> > points_primitives;
+    std::vector<std::pair<PidT,LidT> > points_primitives;
     io::readAssociations( points_primitives, assoc_path, NULL );
     for ( size_t i = 0; i != points.size(); ++i )
     {
@@ -175,10 +175,10 @@ Merging::mergeCli( int argc, char** argv )
         }
 
         // store association in point
-        points[i].setTag( _PointPrimitiveT::GID, points_primitives[i].first );
+        points[i].setTag( _PointPrimitiveT::TAGS::GID, points_primitives[i].first );
 
         // error check 2
-        if ( points[i].getTag(_PointPrimitiveT::GID) == -1 )
+        if ( points[i].getTag(_PointPrimitiveT::TAGS::GID) == -1 )
             std::cerr << "[" << __func__ << "]: " << "point assigned to patch with id -1" << std::endl;
     }
 
@@ -344,12 +344,12 @@ int Merging::adoptPoints( _PointContainerT          & points
         std::cout << "Orphan re-assigned ";
         for ( size_t pid = 0; pid != points.size(); ++pid )
         {
-            const int point_gid = points[pid].getTag(_PointPrimitiveT::GID);
+            const int point_gid = points[pid].getTag(_PointPrimitiveT::TAGS::GID);
             typename _PrimitiveContainerT::const_iterator it = prims.find( point_gid );
 
             // try to find if at least one of the primitive of the group is big
             // if is not the case, we can potentially re-assign
-            auto isBigPatch = [] (const _PrimitiveT& prim) { return prim.getTag(_PrimitiveT::STATUS) != _PrimitiveT::STATUS_VALUES::SMALL; };
+            auto isBigPatch = [] (const _PrimitiveT& prim) { return prim.getTag(_PrimitiveT::TAGS::STATUS) != _PrimitiveT::STATUS_VALUES::SMALL; };
 
             if (    ( it == prims.end()                            )    // the patch this point is assigned to does not exist
                  || ( !containers::valueOf<_PrimitiveT>(it).size()      // the patch this point is assigned to is empty (no primitives in it)
@@ -368,10 +368,10 @@ int Merging::adoptPoints( _PointContainerT          & points
                     int lid = 0; // primitive linear index in patch
                     for ( _inner_const_iterator it2 = it1->second.begin(); it2 != it1->second.end(); ++it2, ++lid )
                     {
-                        const int gid = (*it2).getTag(_PrimitiveT::GID);
+                        const int gid = (*it2).getTag(_PrimitiveT::TAGS::GID);
 
                         // if large patch found
-                        if ( (*it2).getTag(_PrimitiveT::STATUS) != _PrimitiveT::STATUS_VALUES::SMALL)
+                        if ( (*it2).getTag(_PrimitiveT::TAGS::STATUS) != _PrimitiveT::STATUS_VALUES::SMALL)
                         {
                             if ( extremaMap.find(GidLid(gid,lid)) == extremaMap.end() )
                             {
@@ -399,7 +399,7 @@ int Merging::adoptPoints( _PointContainerT          & points
                 if ( (minDist < scale) && (minDist >= _Scalar(0.)) )
                 {
                     // reassign point
-                    points[pid].setTag( _PointPrimitiveT::GID, minGid );
+                    points[pid].setTag( _PointPrimitiveT::TAGS::GID, minGid );
                     std::cout << pid << " " << minGid << ", ";
                     changed = true;
                 }
@@ -416,12 +416,12 @@ int Merging::adoptPoints( _PointContainerT          & points
     {
         for ( size_t pid = 0; pid != points.size(); ++pid )
         {
-            int gid = points[pid].getTag( _PointPrimitiveT::GID );
+            int gid = points[pid].getTag( _PointPrimitiveT::TAGS::GID );
             if (    (prims.find(gid) == prims.end())
                  || (!containers::valueOf<_PrimitiveT>(prims.find(gid)).size()) )
             //if ( !prims.at(gid).size() ) // no primitives with this GID
             {
-                points[pid].setTag   ( _PointPrimitiveT::GID, -2 );
+                points[pid].setTag   ( _PointPrimitiveT::TAGS::GID, -2 );
                 orphan_pids.push_back( pid );
             }
         }
@@ -483,7 +483,7 @@ int Merging::adoptPoints( _PointContainerT          & points
                 // if point has only one possible reassignment - do assign it
                 if ( adopter_gids[pid].size() == 1 )
                 {
-                    points[pid].setTag( _PointPrimitiveT::GID, adopter_gids[pid][0].first );
+                    points[pid].setTag( _PointPrimitiveT::TAGS::GID, adopter_gids[pid][0].first );
                     points_it = orphan_pids.erase( points_it ); // returns iterator to next element
                     ++change;
                 }
@@ -514,7 +514,7 @@ int Merging::adoptPoints( _PointContainerT          & points
                         // rule out itself
                         if ( pid2 == pid ) continue;
                         // rule out other orphans
-                        const int gid2 = points[pid2].getTag(_PointPrimitiveT::GID);
+                        const int gid2 = points[pid2].getTag(_PointPrimitiveT::TAGS::GID);
                         if ( gid2 < 0 )  continue;
 
                         _Scalar dist = (points[pid].template pos() - points[pid2].template pos()).norm();
@@ -524,7 +524,7 @@ int Merging::adoptPoints( _PointContainerT          & points
                             if ( prims.at(gid2).size() > 1 ) std::cerr << "[" << __func__ << "]: " << "two lines in one patch, not prepared here, fix this" << std::endl;
 
                             closest_distance = dist;
-                            closest_gid      = points[pid2].getTag( _PointPrimitiveT::GID );
+                            closest_gid      = points[pid2].getTag( _PointPrimitiveT::TAGS::GID );
                             closest_orphan   = points_it;
                         } //...if dist <
                     } //...for cloud
@@ -533,7 +533,7 @@ int Merging::adoptPoints( _PointContainerT          & points
                 // check, if any luck
                 if ( closest_gid >= 0 )
                 {
-                    points[ *closest_orphan ].setTag( _PointPrimitiveT::GID, closest_gid );
+                    points[ *closest_orphan ].setTag( _PointPrimitiveT::TAGS::GID, closest_gid );
                     std::cout << "erasing orphan " << std::distance( orphan_pids.begin(), closest_orphan ) << "/" << orphan_pids.size();
                     orphan_pids.erase( closest_orphan );
                     std::cout << " size now " << orphan_pids.size() << std::endl;
@@ -567,15 +567,15 @@ inline void merge( Container&        out_primitives, // [out] Container storing 
                    const Population& pop1,           // [in]  Second primitive population (point ids)
                    PointCloud&       points,         // [in]  Point cloud
                    Scalar            scale,          // [in]  Working scale (for refit)
-                   int             & max_dir_gid,
+                   DidT            & max_dir_gid,
                    bool              nogeneration = false
                  )
 {
 
-    int gid0 = l0.getTag(PrimitiveT::GID );
-    int gid1 = l1.getTag(PrimitiveT::GID );
-    int did0 = l0.getTag(PrimitiveT::DIR_GID );
-    int did1 = l1.getTag(PrimitiveT::DIR_GID );
+    int gid0 = l0.getTag(PrimitiveT::TAGS::GID );
+    int gid1 = l1.getTag(PrimitiveT::TAGS::GID );
+    int did0 = l0.getTag(PrimitiveT::TAGS::DIR_GID );
+    int did1 = l1.getTag(PrimitiveT::TAGS::DIR_GID );
 
 //    std::cout << "merging (" << gid0 << ","
 //                             << did0 << ") "
@@ -681,7 +681,7 @@ inline void merge( Container&        out_primitives, // [out] Container storing 
         // by default we copy from l0
         mergedPrim.copyTagsFrom(l0);
         // change direction ID to the next free one, since we changed the direction with refit
-        mergedPrim.setTag( PrimitiveT::DIR_GID, ++max_dir_gid );
+        mergedPrim.setTag( PrimitiveT::TAGS::DIR_GID, ++max_dir_gid );
         // save
         primToAdd.push_back(mergedPrim);
 
@@ -701,7 +701,7 @@ inline void merge( Container&        out_primitives, // [out] Container storing 
         mergedPrim = PrimitiveT(centroid, l1.dir());
         mergedPrim.copyTagsFrom(l1);
         // set same group id as l0 (same population)
-        mergedPrim.setTag(PrimitiveT::GID, l0.getTag(PrimitiveT::GID) );
+        mergedPrim.setTag(PrimitiveT::TAGS::GID, l0.getTag(PrimitiveT::TAGS::GID) );
         primToAdd.push_back(mergedPrim);
 
     }/*else {
@@ -724,9 +724,9 @@ inline void merge( Container&        out_primitives, // [out] Container storing 
 
     // add generated primitives
     for(typename std::vector<PrimitiveT>::const_iterator it = primToAdd.begin(); it != primToAdd.end(); it++){
-        containers::add<PrimitiveT>( out_primitives, (*it).getTag(PrimitiveT::GID ), (*it) );
-//        std::cout<< "Add (" << (*it).getTag(PrimitiveT::GID )
-//                 << ","     << (*it).getTag(PrimitiveT::DIR_GID ) << ") : "
+        containers::add<PrimitiveT>( out_primitives, (*it).getTag(PrimitiveT::TAGS::GID ), (*it) );
+//        std::cout<< "Add (" << (*it).getTag(PrimitiveT::TAGS::GID )
+//                 << ","     << (*it).getTag(PrimitiveT::TAGS::DIR_GID ) << ") : "
 ////                 << (*it).pos().transpose() <<  " - "
 ////                 << (*it).dir().transpose() <<  " - "
 //                 << std::endl;
@@ -738,15 +738,15 @@ inline void merge( Container&        out_primitives, // [out] Container storing 
     typedef typename PointCloud::value_type PointT;
     for ( size_t pid = 0; pid != points.size(); ++pid )
     {
-        if ( points[pid].getTag( PointT::GID ) == originalGid){
-            points[pid].setTag(  PointT::GID, newGid );
+        if ( points[pid].getTag( PointT::TAGS::GID ) == originalGid){
+            points[pid].setTag(  PointT::TAGS::GID, newGid );
         }
     }
 
     // for now, do nothing except: the two primitives are kept
 
-    //containers::add<PrimitiveT>( out_primitives, l0.getTag(PrimitiveT::GID ), l0 );
-    //containers::add<PrimitiveT>( out_primitives, l1.getTag(PrimitiveT::GID ), l1 );
+    //containers::add<PrimitiveT>( out_primitives, l0.getTag(PrimitiveT::TAGS::GID ), l0 );
+    //containers::add<PrimitiveT>( out_primitives, l1.getTag(PrimitiveT::TAGS::GID ), l1 );
 }
 
 } //...ns merging
@@ -780,10 +780,10 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
     typedef typename _PrimitiveContainerT::const_iterator      outer_const_iterator;
     typedef typename _InnerPrimitiveContainerT::const_iterator      inner_const_iterator;
     typedef           std::vector<Eigen::Matrix<_Scalar,3,1> > ExtremaT;
-    typedef           std::map   < int, ExtremaT>              LidExtremaT;
-    typedef           std::map   < int, LidExtremaT >          GidLidExtremaT;
-    typedef           std::pair  < int, // map key
-                                   int> // linear index in the array associated to the key
+    typedef           std::map   < LidT, ExtremaT>              LidExtremaT;
+    typedef           std::map   < GidT, LidExtremaT >          GidLidExtremaT;
+    typedef           std::pair  < GidT, // map key
+                                   LidT> // linear index in the array associated to the key
                       GidLid;
 
 
@@ -822,7 +822,7 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
                                       ++inner_it, ++lid )
             {
                 // ignore small patches
-                if ( inner_it->getTag( _PrimitiveT::STATUS ) == _PrimitiveT::STATUS_VALUES::SMALL )
+                if ( inner_it->getTag( _PrimitiveT::TAGS::STATUS ) == _PrimitiveT::STATUS_VALUES::SMALL )
                 {
                     ignoreList.insert(gid);
                     continue;
@@ -831,7 +831,7 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
                 // save patch gid
                 if ( gid == -2 )
                 {
-                    gid = inner_it->getTag( _PrimitiveT::GID );
+                    gid = inner_it->getTag( _PrimitiveT::TAGS::GID );
                     // sanity check
                     if ( extrema.find(gid) != extrema.end() )
                     {
@@ -857,8 +857,8 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
                 if ( err != EXIT_SUCCESS )
                 {
                     std::cerr << "Issue when computing extent of ("
-                              << primitives.at(gid).at(lid).getTag(_PrimitiveT::GID )     << ","
-                              << primitives.at(gid).at(lid).getTag(_PrimitiveT::DIR_GID ) << ")"
+                              << primitives.at(gid).at(lid).getTag(_PrimitiveT::TAGS::GID )     << ","
+                              << primitives.at(gid).at(lid).getTag(_PrimitiveT::TAGS::DIR_GID ) << ")"
                               << std::endl
                               << "Ignored later... " << std::endl;
 
@@ -885,12 +885,12 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
     }
 
     // estimate the maximum direction id, to be able to give new ids to refit primitives
-    int max_dir_gid = 0;
+    DidT max_dir_gid = 0;
     for ( outer_const_iterator outer_it  = primitives.begin(); (outer_it != primitives.end()); ++outer_it )
         for ( inner_const_iterator inner_it  = containers::valueOf<_PrimitiveT>(outer_it).begin();
                                    (inner_it != containers::valueOf<_PrimitiveT>(outer_it).end());
                                   ++inner_it )
-            max_dir_gid = std::max( max_dir_gid, (*inner_it).getTag(_PrimitiveT::DIR_GID) );
+            max_dir_gid = std::max( max_dir_gid, static_cast<DidT>((*inner_it).getTag(_PrimitiveT::TAGS::DIR_GID)) );
     std::cout << "[" << __func__ << "]: " << "max_dir_gid: " << max_dir_gid << std::endl;
 
     // Here are two first loops to iterate over the map entries, and for each of them over the
@@ -981,7 +981,7 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
                         ignoreList.insert(gid0);
                         ignoreList.insert(gid1);
 
-                        if ( ( prim0.getTag(_PrimitiveT::STATUS) == _PrimitiveT::SMALL ) || ( prim1.getTag(_PrimitiveT::STATUS) == _PrimitiveT::SMALL ) )
+                        if ( ( prim0.getTag(_PrimitiveT::TAGS::STATUS) == _PrimitiveT::STATUS_VALUES::SMALL ) || ( prim1.getTag(_PrimitiveT::TAGS::STATUS) == _PrimitiveT::STATUS_VALUES::SMALL ) )
                         {
                             std::cout << "[" << __func__ << "]: " << "crap, small patches are merged..." << std::endl; fflush(stdout);
                             throw new std::runtime_error("asdf");
@@ -1029,9 +1029,9 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
 
     auto cmp_primitive = [](_PrimitiveT const& l0, _PrimitiveT const& l1)
     {
-        if (l0.getTag(_PrimitiveT::GID ) == l1.getTag(_PrimitiveT::GID ))
-            return l0.getTag(_PrimitiveT::DIR_GID ) < l1.getTag(_PrimitiveT::DIR_GID );
-        return l0.getTag(_PrimitiveT::GID ) < l1.getTag(_PrimitiveT::GID );
+        if (l0.getTag(_PrimitiveT::TAGS::GID ) == l1.getTag(_PrimitiveT::TAGS::GID ))
+            return l0.getTag(_PrimitiveT::TAGS::DIR_GID ) < l1.getTag(_PrimitiveT::TAGS::DIR_GID );
+        return l0.getTag(_PrimitiveT::TAGS::GID ) < l1.getTag(_PrimitiveT::TAGS::GID );
     };
 
     for ( ;
@@ -1050,8 +1050,8 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
             _PrimitiveT& l0 = *inner_itIn;
             _PrimitiveT& l1 = *inner_itOut;
 
-            if (l0.getTag(_PrimitiveT::DIR_GID ) != l1.getTag(_PrimitiveT::DIR_GID ) ||
-                l0.getTag(_PrimitiveT::GID ) != l1.getTag(_PrimitiveT::GID ) )
+            if (l0.getTag(_PrimitiveT::TAGS::DIR_GID ) != l1.getTag(_PrimitiveT::TAGS::DIR_GID ) ||
+                l0.getTag(_PrimitiveT::TAGS::GID ) != l1.getTag(_PrimitiveT::TAGS::GID ) )
                 return true;
         }
     }

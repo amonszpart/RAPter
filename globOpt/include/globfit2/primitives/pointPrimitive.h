@@ -2,6 +2,7 @@
 #define __GF2_POINTPRIMITIVE_H__
 
 #include "globfit2/primitives/primitive.h"
+#include "globfit2/simple_types.h"
 //#include "globfit2/primitives/taggable.h"
 
 namespace GF2
@@ -12,11 +13,12 @@ namespace GF2
         typedef ::GF2::Primitive<3,6> ParentT;
         public:
             //! \brief custom tags for taggable
-            enum TAGS {
-                PID     //!< \brief Point ID \warning Currently unused.
-                , GID   //!< \brief Group ID. Should match LinePrimitive::GID and PlanePrimitive::GID (not the actual enum value, but PointPrimitive.getTag(PointPrimitive::GID) == LinePrimitive.getTag(LinePrimitive::GID)).
-                , LID   //!< \brief Primitive ID \warning Currently UNUSED, GID is used instead.
-                , LID0  //!< \brief Primitive ID \warning Currently UNUSED, GID is used instead.
+            struct TAGS {
+                static const PidT PID  = 0;   //!< \brief Point ID \warning Currently unused.
+                // WARNING: don't ever change GID=1, historical data won't work!
+                static const GidT GID  = 1;   //!< \brief Group ID. Should match LinePrimitive::GID and PlanePrimitive::GID (not the actual enum value, but PointPrimitive.getTag(PointPrimitive::GID) == LinePrimitive.getTag(LinePrimitive::GID)).
+                static const LidT LID  = 2;   //!< \brief Primitive ID \warning Currently UNUSED, GID is used instead.
+                static const LidT LID0 = 3;  //!< \brief Primitive ID \warning Currently UNUSED, GID is used instead.
             }; //...enum TAGS
 
             typedef ParentT::Scalar Scalar;

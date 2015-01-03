@@ -237,11 +237,11 @@ namespace GF2 {
     };
 
     template <typename _Scalar>
-    const _Scalar ProblemSetupParams<_Scalar>::spatial_weight_coeff = 10.f;
+    const _Scalar ProblemSetupParams<_Scalar>::spatial_weight_coeff = 10.f; // 10 was good
     template <typename _Scalar>
-    const _Scalar ProblemSetupParams<_Scalar>::spatial_weight_distance = 2.f;
+    const _Scalar ProblemSetupParams<_Scalar>::spatial_weight_distance = 2.f; // 2 was good
     template <typename _Scalar>
-    const _Scalar ProblemSetupParams<_Scalar>::w_mod_base = 0.1f;
+    const _Scalar ProblemSetupParams<_Scalar>::w_mod_base = 0.1f; // 0.1 was good
 
     template <typename _Scalar>
     struct MergeParams : public CandidateGeneratorParams<_Scalar>

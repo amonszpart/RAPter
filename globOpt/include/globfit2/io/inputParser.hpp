@@ -101,12 +101,12 @@ inline int parseInput( _PointContainerT         &points
     // read assoc
     if ( read_assoc )
     {
-        std::vector< std::pair<int,int> > points_primitives;
+        std::vector< std::pair<PidT,LidT> > points_primitives;
         GF2::io::readAssociations( points_primitives, associations_path, NULL );
         for ( size_t i = 0; i != points.size(); ++i )
         {
             // store association in point
-            points[i].setTag( PointPrimitiveT::GID, points_primitives[i].first );
+            points[i].setTag( PointPrimitiveT::TAGS::GID, points_primitives[i].first );
         }
     }
 

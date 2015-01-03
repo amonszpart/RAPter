@@ -38,7 +38,7 @@ namespace GF2
                                       , _WeightsT            const& /*weights*/
                                       , _Scalar              const  scale );
 
-        //! \brief              Adds constraints to \p problem so, that each patch (prims[i] that have the same _PrimitiveT::GID) has at least one member j (prims[i][j]) selected.
+        //! \brief              Adds constraints to \p problem so, that each patch (prims[i] that have the same _PrimitiveT::TAGS::GID) has at least one member j (prims[i][j]) selected.
         //! \tparam _AssocT     Associates a primitive identified by <lid,lid1> with a variable id in the problem. Default: std::map< std::pair<int,int>, int >
         template < class _PointPrimitiveDistanceFunctor
                  , class _PrimitiveT        /* = typename _PrimitiveContainerT::value_type::value_type */
@@ -187,7 +187,7 @@ namespace GF2
              *  \param[in] verbose              Debug messages display.
              *  \param[in] freq_weight          Multiplies the data cost by freq_weight / DIR_COUNT.
              *  \return                         Outputs EXIT_SUCCESS or the error the OptProblem implementation returns.
-             *  \note                           \p points are assumed to be tagged at _PointPrimitiveT::GID with the _PrimitiveT::GID of the \p prims.
+             *  \note                           \p points are assumed to be tagged at _PointPrimitiveT::TAGS::GID with the _PrimitiveT::TAGS::GID of the \p prims.
              *  \sa \ref problemSetup::largePatchesNeedDirectionConstraint
              */
             template < class _PointPrimitiveDistanceFunctor

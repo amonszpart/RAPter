@@ -1,6 +1,8 @@
 ﻿#ifndef GF2_CANDIDATEGENERATOR_HPP
 #define GF2_CANDIDATEGENERATOR_HPP
 
+#include <map>
+
 #include "globfit2/my_types.h"                      // PCLPointAllocator
 #include "globfit2/util/util.hpp"                   // parseIteration()
 #include "globfit2/processing/util.hpp"             // calcPopulations()
@@ -13,8 +15,8 @@
 #include "pcl/point_types.h" // debug
 #include "pcl/point_cloud.h" // debug
 
-#define isSMALL(prim) (prim.getTag(_PrimitiveT::STATUS) == _PrimitiveT::STATUS_VALUES::SMALL)
-#define notSMALL(prim) (prim.getTag(_PrimitiveT::STATUS) != _PrimitiveT::STATUS_VALUES::SMALL)
+#define isSMALL(prim) (prim.getTag(_PrimitiveT::TAGS::STATUS) == _PrimitiveT::STATUS_VALUES::SMALL)
+#define notSMALL(prim) (prim.getTag(_PrimitiveT::TAGS::STATUS) != _PrimitiveT::STATUS_VALUES::SMALL)
 #define isPROMOTED(gid,lid) (promoted.find( GidLid(gid,lid) ) != promoted.end())
 #define notPROMOTED(gid,lid) (promoted.find( GidLid(gid,lid) ) == promoted.end())
 
@@ -25,7 +27,7 @@ namespace GF2
         template <typename _PrimitiveT, typename _PrimitiveContainerT>
         struct FilterChosenFunctor
         {
-            typedef std::pair<int,int> GidLid;
+            typedef std::pair<GidT,LidT> GidLid;
 
             inline FilterChosenFunctor( _PrimitiveContainerT &out_prims, std::set<GidLid> const& chosen, std::set<GidLid> const& promoted )
                 : _out_prims( out_prims )
@@ -36,9 +38,9 @@ namespace GF2
                     std::cerr << "[" << __func__ << "]: " << "out_prims not empty...it was assumed to be empty..." << std::endl;
             }
 
-            inline int eval( _PrimitiveT const& prim, int lid )
+            inline int eval( _PrimitiveT const& prim, LidT lid )
             {
-                const int gid = prim.getTag(_PrimitiveT::GID);
+                const int gid = prim.getTag(_PrimitiveT::TAGS::GID);
                 //const GidLid gidLid( gid, lid );
 
                 // all promoted, and their derivatives fail here, since they have it set to the original lid
@@ -52,9 +54,9 @@ namespace GF2
                     if ( !keep )
                     {
                         // the original patch was promoted, and not chosen, so we need to demote it, and put it back
-//                        std::cout << "skip: gid:" << prim.getTag(_PrimitiveT::GID) << ", lid: " << lid
+//                        std::cout << "skip: gid:" << prim.getTag(_PrimitiveT::TAGS::GID) << ", lid: " << lid
 //                                  << ", tag1: " << prim.getTag(_PrimitiveT::USER_ID1)
-//                                  << ", active: " << prim.getTag(_PrimitiveT::STATUS)
+//                                  << ", active: " << prim.getTag(_PrimitiveT::TAGS::STATUS)
 //                                  << std::endl;
                         if ( lid == prim.getTag(_PrimitiveT::USER_ID1) ) // this is the original promoted patch
                         {
@@ -63,10 +65,10 @@ namespace GF2
                         }
                     }
 //                    else
-//                        std::cout << "KEEP: gid:" << prim.getTag(_PrimitiveT::GID) << ", lid: " << lid << ", tag1: " << prim.getTag(_PrimitiveT::USER_ID1) << std::endl;
+//                        std::cout << "KEEP: gid:" << prim.getTag(_PrimitiveT::TAGS::GID) << ", lid: " << lid << ", tag1: " << prim.getTag(_PrimitiveT::USER_ID1) << std::endl;
 
-                    if ( prim.getTag(_PrimitiveT::STATUS) != _PrimitiveT::STATUS_VALUES::UNSET )
-                        std::cout << "[" << __func__ << "]: " << "status should not be " << prim.getTag(_PrimitiveT::STATUS) << ", it should be UNSET" << std::endl;
+                    if ( prim.getTag(_PrimitiveT::TAGS::STATUS) != _PrimitiveT::STATUS_VALUES::UNSET )
+                        std::cout << "[" << __func__ << "]: " << "status should not be " << prim.getTag(_PrimitiveT::TAGS::STATUS) << ", it should be UNSET" << std::endl;
                 }
 
                 //bool patch_promoted = std::find_if( _promoted.begin(), _promoted.end(), [&gid](GidLid const& e){return e.first == gid;} ) != _promoted.end();
@@ -77,7 +79,7 @@ namespace GF2
                 {
                     _PrimitiveT &added = containers::add( _out_prims, gid, prim );
                     if ( demote )
-                        added.setTag( _PrimitiveT::STATUS, _PrimitiveT::STATUS_VALUES::SMALL );
+                        added.setTag( _PrimitiveT::TAGS::STATUS, _PrimitiveT::STATUS_VALUES::SMALL );
 
                     return notSMALL( added );
                 }
@@ -91,33 +93,34 @@ namespace GF2
     }
 
     template <class _PrimitiveT, class _PrimitiveContainerT, class _GeneratedT, class _CopiedT, class _PromotedT>
-    inline bool output( _PrimitiveT & cand, _PrimitiveContainerT &out_prims, _GeneratedT &generated, _CopiedT &copied, int &nlines
-                      , _PromotedT const& promoted, int const gid, int const lid0, int const closest_angle_id )
+    inline bool output( _PrimitiveT & cand, _PrimitiveContainerT &out_prims, _GeneratedT &generated, _CopiedT &copied, LidT &nlines
+                      , _PromotedT const& promoted, GidT const gid, LidT const lid0, int const closest_angle_id, typename _PrimitiveT::Scalar const genAngle )
     {
-        // filter similar
-        {
-            for ( int i = 0; i != out_prims[gid].size(); ++i )
-            {
-                if ( cand.getTag(_PrimitiveT::DIR_GID) == out_prims[gid][i].getTag(_PrimitiveT::DIR_GID) )
-                {
-                    //float eps = (cand0.template dir() - out_prims[gid0][i].template dir()).array().abs().sum();
-                    float ang = GF2::angleInRad( cand.template dir(), out_prims[gid][i].template dir() );
-                    if ( ang < 1.e-6 )
-                    {
-                        //std::cout << "SIMILAR: " << cand0.toString() << " vs. " << out_prims[gid0][i].toString() << std::endl;
-                        DidAid didAid( cand.getTag(_PrimitiveT::DIR_GID),closest_angle_id ); // direction id, closest angle id
-                        copied[ cand.getTag(_PrimitiveT::GID) ].insert( didAid );
+        typedef typename _PrimitiveT::Scalar Scalar;
 
-                        return false;
-                    }
-//                    else
-//                        std::cout << "not similar: " << cand0.toString() << " vs. " << out_prims[gid0][i].toString() << std::endl;
+        // filter similar
+        for ( int i = 0; i != out_prims[gid].size(); ++i )
+        {
+            if ( cand.getTag(_PrimitiveT::TAGS::DIR_GID) == out_prims[gid][i].getTag(_PrimitiveT::TAGS::DIR_GID) )
+            {
+                //float eps = (cand0.template dir() - out_prims[gid0][i].template dir()).array().abs().sum();
+                Scalar ang = GF2::angleInRad( cand.template dir(), out_prims[gid][i].template dir() );
+                if ( ang < 1.e-6 )
+                {
+                    //std::cout << "SIMILAR: " << cand0.toString() << " vs. " << out_prims[gid0][i].toString() << std::endl;
+                    DidAid didAid( cand.getTag(_PrimitiveT::TAGS::DIR_GID),closest_angle_id ); // direction id, closest angle id
+                    copied[ cand.getTag(_PrimitiveT::TAGS::GID) ].insert( didAid );
+
+                    return false;
                 }
-            }
-        }
+                //                    else
+                //                        std::cout << "not similar: " << cand0.toString() << " vs. " << out_prims[gid0][i].toString() << std::endl;
+            } //...if same dId
+        } //...for all prims in this patch (gId)
 
         // This is a new candidate, make sure formulate knows that
-        cand.setTag( _PrimitiveT::STATUS, _PrimitiveT::STATUS_VALUES::UNSET );
+        cand.setTag( _PrimitiveT::TAGS::STATUS, _PrimitiveT::STATUS_VALUES::UNSET );
+        // Make sure variable scheduling can find this candidate based on lid0
         if ( isPROMOTED(gid,lid0) )
         {
             cand.setTag( _PrimitiveT::USER_ID1, lid0 ); // receiverLid
@@ -126,20 +129,24 @@ namespace GF2
             ++generated[ GidLid(gid,lid0) ]; // receiver
             //++generated[ GidLid(gid1,lid1) ]; // sender
         }
+        // GEN_ANGLE
+        if ( genAngle != _PrimitiveT::GEN_ANGLE_VALUES::UNSET )
+            cand.setTag( _PrimitiveT::TAGS::GEN_ANGLE, genAngle );
+        // Add
         _PrimitiveT &added = containers::add( out_prims, gid, cand ); // insert into output
         ++nlines;                                                     // keep track of output size
 
         // debug
-        int tmp_size = copied[ cand.getTag(_PrimitiveT::GID) ].size();
+        int tmp_size = copied[ cand.getTag(_PrimitiveT::TAGS::GID) ].size();
 
         // keep track of instances
-        DidAid didAid( cand.getTag(_PrimitiveT::DIR_GID),closest_angle_id ); // direction id, closest angle id
-        copied[ cand.getTag(_PrimitiveT::GID) ].insert( didAid );
+        DidAid didAid( cand.getTag(_PrimitiveT::TAGS::DIR_GID),closest_angle_id ); // direction id, closest angle id
+        copied[ cand.getTag(_PrimitiveT::TAGS::GID) ].insert( didAid );
 
         // debug
-        if ( copied[cand.getTag(_PrimitiveT::GID) ].size() == tmp_size )
+        if ( copied[cand.getTag(_PrimitiveT::TAGS::GID) ].size() == tmp_size )
             std::cerr << "[" << __func__ << "][" << __LINE__ << "]: NOOOOO insertion, should not happen"
-                      << cand.getTag( _PrimitiveT::GID ) << ", " << cand.getTag( _PrimitiveT::DIR_GID ) << std::endl;
+                      << cand.getTag( _PrimitiveT::TAGS::GID ) << ", " << cand.getTag( _PrimitiveT::TAGS::DIR_GID ) << std::endl;
 
         return true;
     }
@@ -156,8 +163,8 @@ namespace GF2
              , class _AllowedAnglesT, class _CopiedT, class _GeneratedT, class _PrimitiveContainerT>
     inline int addCandidate( _PrimitiveT        const& prim0
                            , _PrimitiveT        const& prim1
-                           , int                const  lid0
-                           , int                const  lid1
+                           , LidT               const  lid0
+                           , LidT               const  lid1
                            , bool               const  safe_mode
                            , _Scalar            const  angle_limit
                            , _AnglesT           const& angles
@@ -166,16 +173,16 @@ namespace GF2
                            , _AllowedAnglesT         & allowedAngles
                            , _CopiedT                & copied
                            , _GeneratedT             & generated
-                           , int                     & nLines
+                           , LidT                    & nLines
                            , _PrimitiveContainerT    & out_prims
                            , _AliasesT               * aliases
                            )
     {
 
-        const int gid0     = prim0.getTag( _PrimitiveT::GID );
-        const int gid1     = prim1.getTag( _PrimitiveT::GID );
-        const int dir_gid0 = prim0.getTag( _PrimitiveT::DIR_GID );
-        const int dir_gid1 = prim1.getTag( _PrimitiveT::DIR_GID );
+        const GidT gid0     = prim0.getTag( _PrimitiveT::TAGS::GID );
+        const GidT gid1     = prim1.getTag( _PrimitiveT::TAGS::GID );
+        const DidT dir_gid0 = prim0.getTag( _PrimitiveT::TAGS::DIR_GID );
+        const DidT dir_gid1 = prim1.getTag( _PrimitiveT::TAGS::DIR_GID );
 
         bool add0 = false;
 
@@ -229,8 +236,27 @@ namespace GF2
         AnglesT generators;
         genAngles( generators, bestAngle, angle_gens_in_rad );
         if ( generators.size() > 1 ) { throw new CandidateGeneratorException("[addCandidate] generators.size > 1, are you sure about this?"); }
+        else if ( !generators.size() )
+        {
+            _Scalar genAngle = _PrimitiveT::GEN_ANGLE_VALUES::UNSET;
+            if ( prim1.getTag(_PrimitiveT::TAGS::GEN_ANGLE) != _PrimitiveT::GEN_ANGLE_VALUES::UNSET )
+                genAngle = prim1.getTag( _PrimitiveT::TAGS::GEN_ANGLE );
+            else if ( allowedAngles.find(dir_gid1) != allowedAngles.end() )
+            {
+                //AnglesT _angleGens;
+                //deduceGenerators( _angleGens, allowedAngles.at(dir_gid1) );
+                genAngle = allowedAngles.at(dir_gid1).at(1);
+            }
 
-        bool added0   = add0; // debug
+            if ( genAngle != _PrimitiveT::GEN_ANGLE_VALUES::UNSET )
+            {
+                cand0.setTag( _PrimitiveT::TAGS::GEN_ANGLE, genAngle );
+                std::cout << "[" << __func__ << "]: " << "assuming gen_angle copy: " << cand0.getTag(_PrimitiveT::TAGS::GEN_ANGLE) << std::endl;
+                generators.push_back( genAngle );
+            } //...if genAngle filled
+        } //...if generators.empty()
+
+        bool added0   = false; // debug
         bool doOutput = false;
 
         // (1) If not restricted
@@ -244,10 +270,10 @@ namespace GF2
             if ( generators.size() )
                 // assign direction to generator
                 angles::appendAnglesFromGenerators( /*        out: */ allowedAngles[dir_gid1]
-                                                      , /* generators: */ generators
-                                                      , /*   no_paral: */ false
-                                                      , /*    verbose: */ true
-                                                      , /*      inRad: */ true );
+                                                  , /* generators: */ generators
+                                                  , /*   no_paral: */ false
+                                                  , /*    verbose: */ true
+                                                  , /*      inRad: */ true );
         }
         // (2) If restricted --> If angle found is in the restriction
         else if ( std::find(allowedAngles[dir_gid1].begin(), allowedAngles[dir_gid1].end(), bestAngle) != allowedAngles[dir_gid1].end() )
@@ -267,16 +293,24 @@ namespace GF2
 
         // Output
         if ( doOutput )
-            added0 = output( cand0, out_prims, generated, copied, nLines, promoted, gid0, lid0, closest_angle_id0 );
+        {
+            if ( generators.size() > 1 ) { throw new CandidateGeneratorException("[addCandidate] generators.size > 1, are you sure about this?"); }
+            added0 = output( cand0, out_prims, generated, copied, nLines, promoted, gid0, lid0, closest_angle_id0, generators.size() ? generators[0] : _PrimitiveT::GEN_ANGLE_VALUES::UNSET );
+        }
 
         // debug
         if ( added0 )
         {
-            std::cout << "added " << "<" << gid0 << "," << dir_gid1 << "> from "
-                      << "<" << gid1 << "," << dir_gid1 << "> via angle "
+            std::cout << "[" << __func__ << "]: "
+                      << "added prim" << "<g" << gid0 << ",d" << dir_gid1 << "> from prim"
+                      << "<g" << gid1 << ",d" << dir_gid1 << "> via angle "
                       << angles[closest_angle_id0] * 180. / M_PI;
             if ( allowedAngles.find(dir_gid1) != allowedAngles.end() )
-                std::cout << " allowed angles[" << dir_gid1 << "][1]: " << allowedAngles[dir_gid1][1];
+            {
+                std::cout << " allowed angles[" << dir_gid1 << "][1]: " << allowedAngles[dir_gid1][1] * 180./M_PI << ", cand0.angle: " << cand0.getTag(_PrimitiveT::TAGS::GEN_ANGLE);
+                if ( cand0.getTag(_PrimitiveT::TAGS::GEN_ANGLE) == _PrimitiveT::GEN_ANGLE_VALUES::UNSET )
+                        std::cout << "a;sdlfj" << std::endl;
+            }
             std::cout << std::endl;
 
             fflush( stdout );
@@ -290,7 +324,7 @@ namespace GF2
     {
         typedef typename _PrimitiveT::Scalar Scalar;
 
-        AliasT() : _gid( _PrimitiveT::INVALID ), _lid( -1 ), _generatorAngle( -1 ), _prim( NULL ) {}
+        AliasT() : _gid( _PrimitiveT::STATUS_VALUES::INVALID ), _lid( -1 ), _generatorAngle( -1 ), _prim( NULL ) {}
 
         AliasT( GidT const gid, GidT const lid, Scalar const generatorAngle, _PrimitiveT const& prim )
             : _gid( gid ), _lid( lid ), _generatorAngle( generatorAngle ), _prim( &prim ) {}
@@ -303,7 +337,7 @@ namespace GF2
 //        }
 
         GidT    _gid, _lid;
-        Scalar _generatorAngle;
+        Scalar _generatorAngle; //!< \todo Is also stored in primitive now ( getTag( _PrimitiveT::ANGLE) )
         _PrimitiveT const* _prim;
     };
 
@@ -330,8 +364,8 @@ namespace GF2
               , class       _PrimitiveContainerT
               , class       _PointContainerT
               , typename    _Scalar> int
-    CandidateGenerator::generate( _PrimitiveContainerT                   & out_prims
-                                , _PrimitiveContainerT              /*const*/& in_lines //non-const, becuase some of the primitives get promoted to large patches
+    CandidateGenerator::generate( _PrimitiveContainerT                   & outPrims
+                                , _PrimitiveContainerT            /*const*/& inPrims //non-const, becuase some of the primitives get promoted to large patches
                                 , _PointContainerT                  const& points   // non-const to be able to add group tags
                                 , _Scalar                           const  scale
                                 , AnglesT                           const& angles
@@ -351,6 +385,7 @@ namespace GF2
         typedef typename InnerContainerT::iterator                         inner_iterator;
         typedef          std::map< GidLid, int >                           GeneratedMapT;
         typedef          std::pair<std::pair<int,int>,int>                 GeneratedEntryT;
+        typedef          containers::PrimitiveContainer<_PrimitiveT>       PrimitiveMapT; //!< Iterable by single loop using PrimitiveMapT::Iterator
 
         // cache, so that it can be turned off
         bool safe_mode = safe_mode_arg;
@@ -358,7 +393,7 @@ namespace GF2
 
         // _________ error checks _________
 
-        if ( out_prims.size() ) std::cerr << "[" << __func__ << "]: " << "warning, out_lines not empty!" << std::endl;
+        if ( outPrims.size() ) std::cerr << "[" << __func__ << "]: " << "warning, out_lines not empty!" << std::endl;
         if ( params.patch_population_limit < 0 ) { std::cerr << "[" << __func__ << "]: " << "error, popfilter is necessary!!!" << std::endl; return EXIT_FAILURE; }
         if ( angles[0] != _Scalar(0.) )
             throw new CandidateGeneratorException("angles[0] = 0 always! we need it for parallel");
@@ -367,9 +402,9 @@ namespace GF2
 
         // _________ variables _________
 
-        int                                 nlines = 0; // output size
+        LidT                                nlines = 0; // output size
         // filter already copied directions
-        std::map< int, std::set<DidAid> >   copied; // [gid] = [ <dir0,angle_id0>, <dir0,angle_id1>, <dir2,angle_id0>, ... ]
+        std::map< GidT, std::set<DidAid> >   copied; // [gid] = [ <dir0,angle_id0>, <dir0,angle_id1>, <dir2,angle_id0>, ... ]
         // modified angular similarity
         const _Scalar                       angle_limit( params.angle_limit / params.angle_limit_div );
         GeneratedMapT                       generated; // records, how many extra candidates the input primitive generated in the output
@@ -399,7 +434,7 @@ namespace GF2
             // either all (patches), or none (second iteration) have to be unset
             int unset_count = 0, input_count = 0;
             // for all input primitives
-            for ( outer_iterator outer_it0 = in_lines.begin(); outer_it0 != in_lines.end(); ++outer_it0 )
+            for ( outer_iterator outer_it0 = inPrims.begin(); outer_it0 != inPrims.end(); ++outer_it0 )
             {
                 int gid = (*outer_it0).first;
                 int lid = 0;
@@ -424,13 +459,13 @@ namespace GF2
                             if ( (prim_status == _PrimitiveT::STATUS_VALUES::SMALL) )
                                 promoted.insert( GidLid(gid,lid) );
 
-                            prim.setTag( _PrimitiveT::STATUS, _PrimitiveT::STATUS_VALUES::UNSET ); // set to unset, so that formulate can distinguish between promoted and
+                            prim.setTag( _PrimitiveT::TAGS::STATUS, _PrimitiveT::STATUS_VALUES::UNSET ); // set to unset, so that formulate can distinguish between promoted and
                         }
                         // Demote, if first iteration
                         else if (prim_status == _PrimitiveT::STATUS_VALUES::UNSET) // this should only happen in the first iteration
                         {
                             //std::cout << "demoting" << spatialSignif(0) << std::endl;
-                            prim.setTag( _PrimitiveT::STATUS, _PrimitiveT::STATUS_VALUES::SMALL );
+                            prim.setTag( _PrimitiveT::TAGS::STATUS, _PrimitiveT::STATUS_VALUES::SMALL );
                         }
                         else if (prim_status != _PrimitiveT::STATUS_VALUES::SMALL) // this should only happen in the first iteration
                         {
@@ -440,13 +475,13 @@ namespace GF2
 //                            std::cout << "not promoting size " << spatialSignif(0) << " < " << smallThresh << std::endl;
 
                         // update cache
-                        prim_status = prim.getTag( _PrimitiveT::STATUS );
+                        prim_status = prim.getTag( _PrimitiveT::TAGS::STATUS );
                     } //...if not large
 
                     // copy to output
                     {
                         // copy input - to keep CHOSEN tag entries, so that we can start second iteration from a selection
-                        auto &added = containers::add( out_prims, gid, *inner_it0 );
+                        auto &added = containers::add( outPrims, gid, *inner_it0 );
 
                         if ( isPROMOTED(gid,lid) )
                         {
@@ -462,8 +497,8 @@ namespace GF2
                         if ( (prim_status == _PrimitiveT::STATUS_VALUES::ACTIVE) )
                         {
                             // store position-direction combination to avoid duplicates
-                            copied[ gid ].insert( DidAid(inner_it0->getTag(_PrimitiveT::DIR_GID),0) );
-                            //std::cout << "added to copied[" << gid << "]:" << inner_it0->getTag(_PrimitiveT::DIR_GID) << std::endl;
+                            copied[ gid ].insert( DidAid(inner_it0->getTag(_PrimitiveT::TAGS::DIR_GID),0) );
+                            //std::cout << "added to copied[" << gid << "]:" << inner_it0->getTag(_PrimitiveT::TAGS::DIR_GID) << std::endl;
                         }
                     } //...copy to output
 
@@ -486,44 +521,71 @@ namespace GF2
 
         // _________ (2) statistics _________
 
-        // 2.1 ANGLES
-        AnglesT angle_gens_in_rad;
-        std::map<int,AnglesT> allowedAngles;      // final storage to store allowed angles
+        // ANGLES
+        std::map<DidT,AnglesT> allowedAngles;      // final storage to store allowed angles
+        AnglesT                angle_gens_in_rad;
         {
-            deduceGenerators<_Scalar>( angle_gens_in_rad, angles );
-            std::cout<<"angle_gens_in_rad:";for(size_t vi=0;vi!=angle_gens_in_rad.size();++vi)std::cout<<angle_gens_in_rad[vi]*180./M_PI<<" ";std::cout << "\n";
-
-            // estimate direction cluster angles
-            DirAngleMapT dirAngles;        // intermediate storage to collect dir angle distributions
+            // ____ (1) store generators from earlier iterations in allowedAngles, so that they are not rediscovered ____
+            for ( typename PrimitiveMapT::ConstIterator primIt(inPrims); primIt.hasNext(); primIt.step() )
             {
-                DirAnglesFunctorOuter<_PrimitiveT,_PrimitiveContainerT,AnglesT> outerFunctor( in_lines, angles, /* output reference */ dirAngles );
-                processing::filterPrimitives<_PrimitiveT,typename _PrimitiveContainerT::mapped_type>( in_lines, outerFunctor );
+                // _PrimitiveT prim = *primIt;
+                DidT    const dId      = primIt->getTag( _PrimitiveT::TAGS::DIR_GID   );
+                _Scalar const angleGen = primIt->getTag( _PrimitiveT::TAGS::GEN_ANGLE );
 
-                if ( !dirAngles.size() )
-                    std::cerr << "[" << __func__ << "]: dirAngles.size(): " << dirAngles.size() << std::endl;
+                // skip, if not meaningful
+                if ( angleGen == _PrimitiveT::STATUS_VALUES::UNSET ) { std::cout << "[" << __func__ << "]: " << "skipping " << dId << "," << angleGen << std::endl; continue; }
+                else std::cout << "[" << __func__ << "]: " << "NOT skipping " << angleGen << std::endl;
 
-                selectAngles( allowedAngles, dirAngles, angles, angle_gens_in_rad );
+                // only add, if has not been added before (gen_angle->did is stored at every primitive with that did redundantly for now)
+                if ( allowedAngles.find(dId) == allowedAngles.end() )
+                {
+                    // create a vector with this single element
+                    AnglesT generators( {angleGen} );
+                    // store angles from single generator for did
+                    angles::appendAnglesFromGenerators( /*      out: */ allowedAngles[ dId ]
+                                                      , /*       in: */ generators
+                                                      , /* no_paral: */ false               // allow parallel
+                                                      , /*  verbose: */ false
+                                                      , /*    inRad: */ true );             // stored in rad!
+                } //...if dId did not exist
+            } //...add allowedAngles from primitive
+
+            // ____ (2) Deduce rest from existing relations in the currently active landscape ____
+
+            // 2.1 Understand from angles, which generators we got from cli (i.e. 90, or 60,90)
+            deduceGenerators<_Scalar>( angle_gens_in_rad, angles );
+            // log
+            std::cout<<"[" << __func__ << "]: " << "angle_gens_in_rad:";for(size_t vi=0;vi!=angle_gens_in_rad.size();++vi)std::cout<<angle_gens_in_rad[vi]*180./M_PI<<" ";std::cout << "\n";
+
+            // 2.2 estimate direction cluster angles
+            DirAngleMapT dirAngles; // intermediate storage to collect dir angle distributions, <did, <angle_id, count> >
+            {
+                // create functor
+                DirAnglesFunctorOuter<_PrimitiveT,_PrimitiveContainerT,AnglesT> outerFunctor(
+                            inPrims, angles, /* output reference */ dirAngles );
+
+                // run functor -> outputs { <did, [ <angle_gen,count>,... ]>, ... } to dirAngles
+                processing::filterPrimitives<_PrimitiveT, InnerContainerT/*typename _PrimitiveContainerT::mapped_type*/>(
+                            inPrims, outerFunctor );
+
+                // dirAngles -> allowedAngles { <did, [ 0, angle_i, ..., M_PI ] >, ... }
+                selectAngles( /* out: */ allowedAngles, /* in: */ dirAngles, angles, angle_gens_in_rad );
             }
         }
 
-        // 2.2 Neighbourhoods
-        //_Scalar dist = MyFinitePrimitiveToFinitePrimitiveCompatFunctor::eval( ex1, p1, ex2, p2 );
+        /* Status of primitives at this stage are:
+         * ACTIVE      for large primitives to use
+         * TAG_UNSET   for promoted primitives to give directions to
+         * SMALL       for primitives to ignore
+         */
 
-        // Status of primitives at this stage are:
-        //  ACTIVE      for large primitives to use
-        //  TAG_UNSET   for promoted primitives to give directions to
-        //  SMALL       for primitives to ignore
-
-        //debug
-        pcl::visualization::PCLVisualizer::Ptr vptr( new pcl::visualization::PCLVisualizer() );
-
-        // _________ (4) generation _________
+        // _________ (3) generation _________
 
         DidT maxDid = 0; // collects currently existing maximum cluster id (!small, active, all!)
 
-        int gid0, gid1, dir_gid0, dir_gid1, lid0, lid1;
+        GidT gid0, gid1, dir_gid0, dir_gid1, lid0, lid1;
         gid0 = gid1 = dir_gid0 = dir_gid1 = _PrimitiveT::TAG_UNSET; // group tags cached
-        for ( outer_const_iterator outer_it0  = in_lines.begin(); outer_it0 != in_lines.end(); ++outer_it0 )
+        for ( outer_const_iterator outer_it0  = inPrims.begin(); outer_it0 != inPrims.end(); ++outer_it0 )
         {
             gid0 = -2; // -1 is unset, -2 is unread
             lid0 =  0;
@@ -531,15 +593,15 @@ namespace GF2
             {
                 // cache outer primitive
                 _PrimitiveT const& prim0 = *inner_it0;
-                dir_gid0                 = prim0.getTag( _PrimitiveT::DIR_GID );
+                dir_gid0                 = prim0.getTag( _PrimitiveT::TAGS::DIR_GID );
 
                 if ( dir_gid0 > maxDid ) maxDid = dir_gid0; // small, active, uninited!
 
                 // cache group id of patch at first member
-                     if ( gid0 == -2               )  gid0 = prim0.getTag( _PrimitiveT::GID ); // store gid of first member in patch
+                     if ( gid0 == -2               )  gid0 = prim0.getTag( _PrimitiveT::TAGS::GID ); // store gid of first member in patch
                 else if ( gid0 != outer_it0->first )  std::cerr << "[" << __func__ << "]: " << "Not good, prims under one gid don't have same GID..." << std::endl;
 
-                for ( outer_const_iterator outer_it1  = outer_it0; outer_it1 != in_lines.end(); ++outer_it1 )
+                for ( outer_const_iterator outer_it1  = outer_it0; outer_it1 != inPrims.end(); ++outer_it1 )
                 {
                     gid1 = -2; // -1 is unset, -2 is unread
                     lid1 = 0;
@@ -552,21 +614,21 @@ namespace GF2
                         _PrimitiveT const& prim1 = containers::valueOf<_PrimitiveT>( inner_it1 );
 
                         // cache group id of patch at first member
-                             if ( gid1 == -2               )    gid1 = prim1.getTag( _PrimitiveT::GID );
+                             if ( gid1 == -2               )    gid1 = prim1.getTag( _PrimitiveT::TAGS::GID );
                         else if ( gid1 != outer_it1->first )    std::cerr << "[" << __func__ << "]: " << "Not good, prims under one gid don't have same GID in inner loop..." << std::endl;
 
                         addCandidate<_PrimitivePrimitiveAngleFunctorT>(
                                     prim0, prim1, lid0, lid1, safe_mode, angle_limit, angles, angle_gens_in_rad, promoted,
-                                    allowedAngles, copied, generated, nlines, out_prims, &aliases );
+                                    allowedAngles, copied, generated, nlines, outPrims, &aliases );
                         addCandidate<_PrimitivePrimitiveAngleFunctorT>(
                                     prim1, prim0, lid1, lid0, safe_mode, angle_limit, angles, angle_gens_in_rad, promoted,
-                                    allowedAngles, copied, generated, nlines, out_prims, &aliases );
+                                    allowedAngles, copied, generated, nlines, outPrims, &aliases );
                     } //...for l3
                 } //...for l2
             } //...for l1
         } //...for l0
 
-        // ___________ (5) ALIASES _______________
+        // ___________ (4) ALIASES _______________
 
         // [did][angle] = AliasT( gid, lid, prim )
         for ( auto aliasIt = aliases.begin(); aliasIt != aliases.end(); ++aliasIt )
@@ -580,33 +642,33 @@ namespace GF2
 
                 // copy original primitive
                 _PrimitiveT prim0 = *( angleIt->second._prim );
-                const int did = ++maxDid;
-                prim0.setTag( _PrimitiveT::DIR_GID, did );
-                const int gid0 = angleIt->second._gid;
-                const int lid0 = angleIt->second._lid;
+                const DidT did = ++maxDid;
+                prim0.setTag( _PrimitiveT::TAGS::DIR_GID, did );
+                const GidT gid0 = angleIt->second._gid;
+                const LidT lid0 = angleIt->second._lid;
 
-                if ( !output( prim0, out_prims, generated, copied, nlines, promoted, gid0, lid0, 0 ) )
+                if ( !output( prim0, outPrims, generated, copied, nlines, promoted, gid0, lid0, 0, prim0.getTag(_PrimitiveT::TAGS::GEN_ANGLE)) )
                 {
                     std::cerr << "Alias could not be added" << std::endl;
                     throw new CandidateGeneratorException("Alias could not be added");
                 } //...if could not output
                 else
-                    std::cout << "\nAdded alias to " << angleIt->second._prim->getTag(_PrimitiveT::DIR_GID)
-                              << " as " << out_prims[gid0].back().toString()
-                              << " <" << out_prims[gid0].back().getTag( _PrimitiveT::GID ) << ","
-                              << out_prims[gid0].back().getTag( _PrimitiveT::DIR_GID ) << ">"
+                    std::cout << "\nAdded alias to " << angleIt->second._prim->getTag(_PrimitiveT::TAGS::DIR_GID)
+                              << " as " << outPrims[gid0].back().toString()
+                              << " <" << outPrims[gid0].back().getTag( _PrimitiveT::TAGS::GID ) << ","
+                              << outPrims[gid0].back().getTag( _PrimitiveT::TAGS::DIR_GID ) << ">"
                               << std::endl;
 
                 // record allowed alias
                 AnglesT tmpGenerators( {angleIt->first} );
                 angles::appendAnglesFromGenerators( /*        out: */ allowedAngles[ did ]
-                                                      , /* generators: */ tmpGenerators
-                                                      , /*   no_paral: */ false
-                                                      , /*    verbose: */ true
-                                                      , /*      inRad: */ true );
+                                                  , /* generators: */ tmpGenerators
+                                                  , /*   no_paral: */ false
+                                                  , /*    verbose: */ true
+                                                  , /*      inRad: */ true );
 
                 // add all allowed copies
-                for ( outer_const_iterator outer_it  = in_lines.begin(); outer_it != in_lines.end(); ++outer_it )
+                for ( outer_const_iterator outer_it  = inPrims.begin(); outer_it != inPrims.end(); ++outer_it )
                 {
                     lid1 =  0;
                     for ( inner_const_iterator inner_it = (*outer_it).second.begin(); inner_it != (*outer_it).second.end(); ++inner_it, ++lid1 )
@@ -617,17 +679,14 @@ namespace GF2
                         // copy prim0 (the alias) to all compatible receivers given allowedAngles.
                         addCandidate<_PrimitivePrimitiveAngleFunctorT,AliasesT<_PrimitiveT,_Scalar> >(
                             prim1, prim0, lid1, lid0, safe_mode, angle_limit, angles, angle_gens_in_rad, promoted,
-                            allowedAngles, copied, generated, nlines, out_prims, nullptr );
+                            allowedAngles, copied, generated, nlines, outPrims, nullptr );
 
                     } //...inner for
                 } //...outer for
             } //...for all angles
         } //...for all aliases
 
-        // /home/bontius/workspace/globOpt/data/scenes/triangle_60d$ ../glob_opt --generate -sc 0.04 -al 0.4 -ald 1 --small-mode 0 --patch-pop-limit 25 --angle-gens 60 -p patches.csv --assoc points_primitives.csv --small-thresh-mult 1
-        // new: /home/bontius/workspace/globOpt/data/scenes/pearl1_test$ ../glob_opt --generate -sc 0.02 -al 0.6 -ald 1 --small-mode 0 --patch-pop-limit 20 --angle-gens 90 -p primitives_merged_it0.csv --assoc points_primitives_it0.csv --small-thresh-mult 0.05
-
-        // ___________ LIMIT VARIABLES _______________
+        // ___________ (5) LIMIT VARIABLES _______________
         int ret = EXIT_SUCCESS;
         if ( (var_limit > 0) && (nlines > var_limit) )
         {
@@ -639,7 +698,7 @@ namespace GF2
             std::vector< GeneratedEntryT > ranks;
             for ( auto it = generated.begin(); it != generated.end(); ++it )
             {
-                // in_lines[it.first.first][it.first.second].getTag( _PrimitiveT::STATUS ) )
+                // in_lines[it.first.first][it.first.second].getTag( _PrimitiveT::TAGS::STATUS ) )
                 //if ( promoted.find( GidLid(it->first) ) != promoted.end() )
 
                 ranks.push_back( *it );
@@ -678,13 +737,30 @@ namespace GF2
 
                 // (3) Filter out_prims based on chosen
                 //
-                auto tmp = out_prims; out_prims.clear();
-                cgen::FilterChosenFunctor<_PrimitiveT, _PrimitiveContainerT> functor( out_prims, chosen, promoted );
+                auto tmp = outPrims; outPrims.clear();
+                cgen::FilterChosenFunctor<_PrimitiveT, _PrimitiveContainerT> functor( outPrims, chosen, promoted );
                 nlines = processing::filterPrimitives<_PrimitiveT, InnerContainerT>( tmp, functor );
                 // return remaining variable count
                 ret = ranks.size() - chosen.size();
             } // if too many actives already
         } // filter
+
+        // ___________ (6) Make sure allowed angles stick _______________
+        for ( typename PrimitiveMapT::Iterator primIt(outPrims); primIt.hasNext(); primIt.step() )
+        {
+            // _PrimitiveT prim = *primIt;
+            DidT    const dId      = primIt->getTag( _PrimitiveT::TAGS::DIR_GID   );
+            _Scalar const angleGen = primIt->getTag( _PrimitiveT::TAGS::GEN_ANGLE );
+
+            // only add, if has not been added before (gen_angle->did is stored at every primitive with that did redundantly for now)
+            if ( allowedAngles.find(dId) != allowedAngles.end() && (angleGen == _PrimitiveT::STATUS_VALUES::UNSET) )
+            {
+                std::cout << "[" << __func__ << "]: " << "primitive(" << primIt.getGid() << "," << dId << ") "
+                             << "does not have GEN_ANGLE stored: " << angleGen
+                             << ", but allowedAngles has entry [1]: " << allowedAngles[dId][1] << std::endl;
+                primIt->setTag( _PrimitiveT::TAGS::GEN_ANGLE, allowedAngles[dId][1] );
+            }
+        } //...for outPrims
 
         // log
         std::cout << "[" << __func__ << "]: " << "finished generating, we now have " << nlines << " candidates" << std::endl;
@@ -692,10 +768,11 @@ namespace GF2
         return ret;
     } // ...CandidateGenerator::generate()
 
-    //! \brief                  Step 1. Generates primitives from a cloud. Reads "cloud.ply" and saves "candidates.csv".
-    //! \param argc             Contains --cloud cloud.ply, and --scale scale.
-    //! \param argv             Contains --cloud cloud.ply, and --scale scale.
-    //! \return                 EXIT_SUCCESS.
+    /*! \brief                  Step 1. Generates primitives from a cloud. Reads "cloud.ply" and saves "candidates.csv".
+     *  \param argc             Contains --cloud cloud.ply, and --scale scale.
+     *  \param argv             Contains --cloud cloud.ply, and --scale scale.
+     *  \return                 EXIT_SUCCESS.
+     */
     template < class    _PrimitiveContainerT
              , class    _PointContainerT
              , typename _Scalar
@@ -849,16 +926,16 @@ namespace GF2
             if ( err != EXIT_SUCCESS )  std::cerr << "[" << __func__ << "]: " << "readPoints returned error " << err << std::endl;
         } //...read points
 
-        std::vector<std::pair<int,int> > points_primitives;
+        std::vector<std::pair<GidT,LidT> > points_primitives;
         io::readAssociations( points_primitives, associations_path, NULL );
         for ( size_t i = 0; i != points.size(); ++i )
         {
             // store association in point
-            points[i].setTag( PointPrimitiveT::GID, points_primitives[i].first );
+            points[i].setTag( PointPrimitiveT::TAGS::GID, points_primitives[i].first );
         }
 
         // read primitives
-        typedef std::map<int, InnerPrimitiveContainerT> PrimitiveMapT;
+        typedef std::map<GidT, InnerPrimitiveContainerT> PrimitiveMapT;
         _PrimitiveContainerT initial_primitives;
         PrimitiveMapT patches;
         {

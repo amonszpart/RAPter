@@ -14,14 +14,14 @@ struct DecideMergeLineFunctor {
             , _Scalar scale) const {
         typedef typename _PointContainerT::value_type PointT;
 
-        //    std::cout << "testing (" << l0.getTag(_LineT::GID )     << ","
-        //                             << l0.getTag(_LineT::DIR_GID ) << ")"
-        //              << " vs. ("    << l1.getTag(_LineT::GID ) << ","
-        //                             << l1.getTag(_LineT::DIR_GID ) << ")\t" << std::endl;
+        //    std::cout << "testing (" << l0.getTag(_LineT::TAGS::GID )     << ","
+        //                             << l0.getTag(_LineT::TAGS::DIR_GID ) << ")"
+        //              << " vs. ("    << l1.getTag(_LineT::TAGS::GID ) << ","
+        //                             << l1.getTag(_LineT::TAGS::DIR_GID ) << ")\t" << std::endl;
 
         // we don't merge when both group id and direction id are identical
-        if (l0.getTag(_LineT::DIR_GID ) == l1.getTag(_LineT::DIR_GID ) &&
-                l0.getTag(_LineT::GID ) == l1.getTag(_LineT::GID ) )
+        if (l0.getTag(_LineT::TAGS::DIR_GID ) == l1.getTag(_LineT::TAGS::DIR_GID ) &&
+                l0.getTag(_LineT::TAGS::GID ) == l1.getTag(_LineT::TAGS::GID ) )
             return false;
 
 
@@ -42,7 +42,7 @@ struct DecideMergeLineFunctor {
         //const _Scalar l0SqLengthAndScale = (l0b-l0a).squaredNorm() + scale*scale;
 
         // check if they have the same tag
-        //bool sameTag = l0.getTag(_LineT::DIR_GID ) == l1.getTag(_LineT::DIR_GID );
+        //bool sameTag = l0.getTag(_LineT::TAGS::DIR_GID ) == l1.getTag(_LineT::TAGS::DIR_GID );
 
         // check if l1 is aligned to l0
         if ( /*sameTag ||*/ // exactly aligned
@@ -177,8 +177,8 @@ public:
         typedef typename _PointContainerT::value_type PointT;
 
         // we don't merge when both group id and direction id are identical
-        if (p0.getTag(_PlaneT::DIR_GID ) == p1.getTag(_PlaneT::DIR_GID ) &&
-            p0.getTag(_PlaneT::GID )     == p1.getTag(_PlaneT::GID ) )
+        if (p0.getTag(_PlaneT::TAGS::DIR_GID ) == p1.getTag(_PlaneT::TAGS::DIR_GID ) &&
+            p0.getTag(_PlaneT::TAGS::GID )     == p1.getTag(_PlaneT::TAGS::GID ) )
             return false;
 
 
@@ -190,10 +190,10 @@ public:
         if (a1 < a2) return directionnalEval(extrema1, p1, extrema0, p0, scale);
 
         std::cout << "Pathes wich the same area: " << std::endl;
-        std::cout << "(" << p0.getTag(_PlaneT::GID )     << ","
-                  << p0.getTag(_PlaneT::DIR_GID ) << ")"
-                  << " vs. ("    << p1.getTag(_PlaneT::GID ) << ","
-                  << p1.getTag(_PlaneT::DIR_GID ) << ")\t" << std::endl;
+        std::cout << "(" << p0.getTag(_PlaneT::TAGS::GID )     << ","
+                  << p0.getTag(_PlaneT::TAGS::DIR_GID ) << ")"
+                  << " vs. ("    << p1.getTag(_PlaneT::TAGS::GID ) << ","
+                  << p1.getTag(_PlaneT::TAGS::DIR_GID ) << ")\t" << std::endl;
 
         // same area (few chances...)
         return directionnalEval(extrema0, p0, extrema1, p1, scale) ||

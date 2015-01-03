@@ -374,43 +374,47 @@ namespace GF2
         }
 
         virtual inline _Scalar
-        eval( PrimitiveT const& p1, ExtremaT const& ex1, PrimitiveT const& p2, ExtremaT const& ex2, AnglesT const& allowed_angles )
+        eval( PrimitiveT const& p1, ExtremaT const& ex1, PrimitiveT const& p2, ExtremaT const& ex2
+            , AnglesT const& allowedAngles, _Scalar *idealAngle = NULL, _Scalar *spatialWeightOut = NULL  )
         {
-            //_Scalar diff  = MyPrimitivePrimitiveAngleFunctor::eval( p1, p2, this->_angles );
-            _Scalar diff  = MyPrimitivePrimitiveAngleFunctor::eval( p1, p2, allowed_angles );
+            _Scalar score        ( 0. );
+            _Scalar spatialWeight( 0. );
 
-            // truncated at half degree difference
-            //_Scalar score = std::min( _Scalar(0.09341652027), _Scalar(sqrt(diff)) );
-            _Scalar score = _Scalar( std::sqrt(diff) );
-
-            _Scalar spat_w = evalSpatial( p1, ex1, p2, ex2 );
-
-//            if ( _verbose && (spat_w > _Scalar(0.)) )
-//            {
-//                std::cout << "score was " << score << ", and now will be using dist ";
-//                std::cout << dist << " --> ";
-
-//                std::cout << score << " + " << spat_w << " = ";
-//            }
-            //score *= _Scalar(1.) + spat_w;
-            //_Scalar angle = GF2::angleInRad( p1.dir(), p2.dir() );
-            //score += spat_w * std::sqrt( std::min( angle, _Scalar(M_PI) - angle ) );
-
-            // score = sqrt(angle) + sqrt(angle) * spatial_weight = (1+spatial_weight) * sqrt(angle)
-            //score += spat_w * score * score;
-            if ( (p1.getTag(PrimitiveT::TAGS::DIR_GID) != p2.getTag(PrimitiveT::TAGS::DIR_GID))
-                 && (spat_w > 0.f) )
-                score += ProblemSetupParams<_Scalar>::spatial_weight_coeff;
-
-            if ( _verbose && (spat_w > _Scalar(0.)) )
+            if ( p1.getTag(PrimitiveT::TAGS::DIR_GID) != p2.getTag(PrimitiveT::TAGS::DIR_GID) )
             {
-                std::cout << score << std::endl;
+                //_Scalar diff  = MyPrimitivePrimitiveAngleFunctor::eval( p1, p2, this->_angles );
+                int     idealAngleId = 0;
+                _Scalar diff         = MyPrimitivePrimitiveAngleFunctor::eval( p1, p2, allowedAngles, &idealAngleId );
+                if ( idealAngle )
+                    *idealAngle = allowedAngles[ idealAngleId ];
+
+                // truncated at half degree difference
+                //_Scalar score = std::min( _Scalar(/*sqrt(0.3):*/0.5477225575), _Scalar(sqrt(diff)) ); // sqrt(0.3): 0.5477225575,0.38729833462
+                score = _Scalar( sqrt(diff) ); // sqrt(0.3): 0.5477225575,0.38729833462
+                //if ( score > 0.5477225575 ) score = _Scalar(0.);
+                //_Scalar score = _Scalar( std::sqrt(diff) );
+
+                spatialWeight = evalSpatial( p1, ex1, p2, ex2 );
+                if ( spatialWeight > _Scalar(0.) )
+                    score += ProblemSetupParams<_Scalar>::spatial_weight_coeff;
+            }
+            else
+            {
+                if ( idealAngle )
+                    *idealAngle = _Scalar( 0. );
+                if ( spatialWeightOut )
+                    spatialWeight = evalSpatial( p1, ex1, p2, ex2 );
             }
 
-            return score;
-        }
+            // output
+            if ( spatialWeightOut )
+                *spatialWeightOut = spatialWeight;
 
-            bool                           _verbose;
+            return score;
+        } //...eval()
+
+            bool
+            _verbose;
         protected:
             _FiniteFiniteDistanceFunctor   _primPrimCompFunctor;
             _PointContainerT        const& _points;

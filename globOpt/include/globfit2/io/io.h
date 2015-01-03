@@ -59,9 +59,10 @@ namespace GF2
                     // saves primitive part
                     out_file << (*lid_it).toFileEntry();
                     // save taggable part (todo: merge these)
-                    out_file << lid_it->getTag( PrimitiveT::TAGS::GID ) << ",";
+                    out_file << lid_it->getTag( PrimitiveT::TAGS::GID     ) << ",";
                     out_file << lid_it->getTag( PrimitiveT::TAGS::DIR_GID ) << ",";
-                    out_file << lid_it->getTag( PrimitiveT::TAGS::STATUS )  << "\n";
+                    out_file << (int)lid_it->getTag( PrimitiveT::TAGS::STATUS  ) << ",";
+                    out_file << lid_it->getTag( PrimitiveT::TAGS::GEN_ANGLE ) << "\n";
                 }
             }
             out_file.close();
@@ -80,14 +81,14 @@ namespace GF2
         inline int readPrimitives( PrimitiveContainerT &lines
                                  , std::string const& path
                                  //, void(*add)(PrimitiveContainerT & prims, PrimitiveT const& prim, int gid, int dir_gid ) = NULL
-                                 , std::map<int, typename PrimitiveContainerT::value_type> *patches = NULL
+                                 , std::map<GidT, typename PrimitiveContainerT::value_type> *patches = NULL
                                  )
         {
             typedef typename PrimitiveT::Scalar Scalar;
             //enum {                              Dim    = PrimitiveT::Dim }; // Important! This decides how many floats to read
             const int Dim = PrimitiveT::getFileEntryLength();
             //typedef typename PrimitiveContainerT::value_type PatchT;
-            typedef std::map<int, PatchT>                    PatchMap; // <GID, vector<primitives> >
+            typedef std::map<GidT, PatchT>                    PatchMap; // <GID, vector<primitives> >
 
             // open file
             std::ifstream file( path.c_str() );
@@ -97,7 +98,7 @@ namespace GF2
                 return EXIT_FAILURE;
             }
 
-            std::map<int, PatchT> tmp_lines;
+            std::map<GidT, PatchT> tmp_lines;
             int lid        = 0; // deprecated, tracks linear id
             int line_count = 0;
             std::string line;
@@ -120,12 +121,16 @@ namespace GF2
                     std::cerr << "[" << __func__ << "]: " << "not good, floats.size() < Dim..." << std::endl;
 
                 // rest
-                int gid = -1, dir_gid = -1, status = -1;
+                GidT   gid     = -1;
+                DidT   dir_gid = -1;
+                char   status  = -1;
+                Scalar angle   = Scalar( -1. );
                 if ( !iss.eof() )
                 {
                     if ( std::getline(iss, tmp_str, ',') )  gid     = atoi( tmp_str.c_str() );
                     if ( std::getline(iss, tmp_str, ',') )  dir_gid = atoi( tmp_str.c_str() );
                     if ( std::getline(iss, tmp_str, ',') )  status  = atoi( tmp_str.c_str() );
+                    if ( std::getline(iss, tmp_str, ',') )  angle   = atof( tmp_str.c_str() );
                 } // if patch information
 
                 // insert into proper patch, if gid specified
@@ -133,16 +138,17 @@ namespace GF2
                 {
                     //tmp_lines[ gid ].push_back( PrimitiveT(floats) );
                     tmp_lines[ gid ].push_back( PrimitiveT::fromFileEntry(floats) );
-                    tmp_lines[ gid ].back().setTag( PrimitiveT::GID    , gid     );
-                    tmp_lines[ gid ].back().setTag( PrimitiveT::DIR_GID, dir_gid );
-                    tmp_lines[ gid ].back().setTag( PrimitiveT::STATUS , status  );
+                    tmp_lines[ gid ].back().setTag( PrimitiveT::TAGS::GID      , gid     );
+                    tmp_lines[ gid ].back().setTag( PrimitiveT::TAGS::DIR_GID  , dir_gid );
+                    tmp_lines[ gid ].back().setTag( PrimitiveT::TAGS::STATUS   , status  );
+                    tmp_lines[ gid ].back().setTag( PrimitiveT::TAGS::GEN_ANGLE, angle   );
                 }
                 else // just make a new patch for it
                 {
                     throw new std::runtime_error("[io::readPrims] code not up to date to handle gid==-1 cases, please add proper GID to primitives");
 //                    lines.push_back( PatchT() );
 //                    lines[lid].push_back( PrimitiveT(floats) );
-//                    lines[lid].back().setTag( PrimitiveT::GID, line_count ); // 1D indexing only
+//                    lines[lid].back().setTag( PrimitiveT::TAGS::GID, line_count ); // 1D indexing only
                 }
 
                 ++line_count;
@@ -158,8 +164,8 @@ namespace GF2
 //                    typename PatchT::const_iterator end_it2 = it->second.end();
 //                    for ( typename PatchT::const_iterator it2 = it->second.begin(); it2 != end_it2; ++it2 )
 //                    {
-//                        int tmp_gid     = it2->getTag(PrimitiveT::GID);
-//                        int tmp_dir_gid = it2->getTag(PrimitiveT::DIR_GID);
+//                        int tmp_gid     = it2->getTag(PrimitiveT::TAGS::GID);
+//                        int tmp_dir_gid = it2->getTag(PrimitiveT::TAGS::DIR_GID);
 //                        add( lines, *it2, tmp_gid, tmp_dir_gid );
 
 //                        if ( tmp_gid != it->first )
@@ -188,9 +194,9 @@ namespace GF2
         //! \param path                 [In]     Path of file to read
         //! \param linear_indices       [In/Out] If not null, will get filled like this: linear_indices[pid] = line_id
         //! \return                     EXIT_SUCCESS if could open file
-        inline int readAssociations( std::vector<std::pair<int,int> >      & points_primitives
+        inline int readAssociations( std::vector<std::pair<PidT,LidT> >      & points_primitives
                                      , std::string                    const& path
-                                     , std::map<int,int>                   * linear_indices )
+                                     , std::map<PidT,LidT>                   * linear_indices )
         {
             std::ifstream f( path.c_str() );
             if ( !f.is_open() )
@@ -259,7 +265,7 @@ namespace GF2
             for ( size_t pid = 0; pid != points.size(); ++pid )
             {
                 f_assoc << pid
-                           << "," << points[pid].getTag( _PointPrimitiveT::GID )
+                           << "," << points[pid].getTag( _PointPrimitiveT::TAGS::GID )
                            << "," << -1  // assigned to patch, but no direction
                            << std::endl;
             }
@@ -305,8 +311,8 @@ namespace GF2
                 raw_points[pid](5) = cloud->at(pid).normal_z;
 
                 points.emplace_back( _PointT(raw_points[pid]) );
-                points.back().setTag( _PointT::PID, pid );
-                points.back().setTag( _PointT::GID, pid );
+                points.back().setTag( _PointT::TAGS::PID, pid );
+                points.back().setTag( _PointT::TAGS::GID, pid );
             }
             if ( cloud_arg ) *cloud_arg = cloud;
 

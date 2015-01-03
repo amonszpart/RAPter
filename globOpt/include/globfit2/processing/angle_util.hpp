@@ -56,7 +56,7 @@ namespace GF2
             // print
             if ( verbose )
             {
-                std::cout << "Desired angles: {";
+                std::cout << "[" << __func__ << "]: " << "Desired angles: {";
                 for ( size_t vi=0;vi!=angles.size();++vi)
                     std::cout << angles[vi] << "(" << angles[vi] * Scalar(180.) / M_PI << ")" << ((vi==angles.size()-1) ? "" : ", ");
                 std::cout << "}\n";
@@ -118,7 +118,7 @@ namespace GF2
         } //...angles
     } //...deduceGenerators
 
-    typedef std::map< int, std::map<int,int> > DirAngleMapT; // <did, <angle_id, count> >
+    typedef std::map< DidT, std::map<int,int> > DirAngleMapT; // <did, <angle_id, count> >
 
     template <typename _PrimitiveT, typename _PrimitiveContainerT, typename _AnglesT>
     struct DirAnglesFunctorInner
@@ -136,8 +136,8 @@ namespace GF2
         {
             if (
                     ( _prim0.getTag(_PrimitiveT::TAGS::DIR_GID) != prim1.getTag(_PrimitiveT::TAGS::DIR_GID) ) // have same ID
-                 || (    (_prim0.getTag( _PrimitiveT::STATUS)!=_PrimitiveT::STATUS_VALUES::ACTIVE)
-                      || ( prim1.getTag( _PrimitiveT::STATUS)!=_PrimitiveT::STATUS_VALUES::ACTIVE) )
+                 || (    (_prim0.getTag( _PrimitiveT::TAGS::STATUS)!=_PrimitiveT::STATUS_VALUES::ACTIVE)
+                      || ( prim1.getTag( _PrimitiveT::TAGS::STATUS)!=_PrimitiveT::STATUS_VALUES::ACTIVE) )
                )
                 return 0;
 
@@ -199,30 +199,48 @@ namespace GF2
     /*! \brief Decides, which perfect angles to allow for each direction id
      * \return allowedAngles filled with custom "angles" for each direction id
      */
-    inline void selectAngles( std::map< int, AnglesT >            & allowedAngles
+    inline void selectAngles( std::map< DidT, AnglesT >            & allowedAngles
                             , DirAngleMapT                   const& dirAngles
-                            , AnglesT const& angles
-                            , AnglesT const& angle_gens )
+                            , AnglesT                        const& angles
+                            , AnglesT                        const& angle_gens
+                            , bool                           const  verbose = false )
     {
-        typedef typename AnglesT::value_type Scalar;
-        typedef DirAngleMapT::mapped_type AngleHistogramT; // vector<angle_id>
+        /*! \brief { <angle_id, count>, ... }
+         *         i.e. { <0, 10>, <2, 6> } means:
+         *         -  10 pairs are parallel and 6 pairs are 180 (also parallel), if angles == { 0, 90, 180 }
+         *         -  but means 6 pairs with 90, if angle_gens == { 60, 90 }, angles == { 0, 60, 90, 120, 180 }
+         */
+        typedef          DirAngleMapT::mapped_type  AngleHistogramT;
+        typedef typename AnglesT::value_type        Scalar;
 
-        std::map<Scalar,int> votes; // <angle_gen, votecount>
+        std::map<Scalar,int> votes; // { <angle_gen, votecount>, ... }
 
+        // for all did-s
         DirAngleMapT::const_iterator end_it = dirAngles.end();
         for ( DirAngleMapT::const_iterator it = dirAngles.begin(); it != end_it; ++it )
         {
+            // first: did
+            // second: map< angle_id, count >
+            DidT            const  did  = it->first;
             AngleHistogramT const& hist = it->second;
+
+            // Skip, if already set in earlier iteration (and added from GEN_ANGLE tag)
+            if ( allowedAngles.find(did) != allowedAngles.end() ) continue;
+
+            // deduce generators \todo Aron: replace with deduceGenerators? maybe not doing the same...
             int j = 0;
             for ( AngleHistogramT::const_iterator hist_it = hist.begin(); hist_it != hist.end(); ++hist_it, ++j )
             {
+                // first: angle_id
+                // second: ocurrence count
                 const int angle_id = hist_it->first;
 
                 // skip votes on parallel
                 if ( (angles[angle_id] == Scalar(0.)) || (angles[angle_id] == Scalar(M_PI)) )
                     continue;
+                // debug
                 else if ( j == 0 || j == angles.size() )
-                    std::cout << "not skipping " << angles[angle_id] << std::endl;
+                    std::cout << "[" << __func__ << "]: " << "not skipping " << angles[angle_id] << std::endl;
 
                 // for each generator, check, if the angle is an integer divisor of it
                 for ( int i = 0; i != angle_gens.size(); ++i )
@@ -230,43 +248,65 @@ namespace GF2
                     // skip parallel
                     if ( (angle_gens[i] == Scalar(0.)) || (angle_gens[i] == Scalar(M_PI)) )
                         continue;
+                    // debug
                     else if ( i == 0 || i == angle_gens.size() )
-                            std::cout << "not skipping " << angle_gens[i] << std::endl;
+                            std::cout << "[" << __func__ << "]: " << "not skipping " << angle_gens[i] << std::endl;
 
+                    // check common denominator
                     double intpart = 0;
                     Scalar fractpart = modf( angles[angle_id] / angle_gens[i], &intpart );
 
+                    /* if k x gen + ~0, then this is a multiple of the generator angle_gens[i]
+                     * i.e. angles[angle_id] == 60, then 1 x 60 + 0 --> vote for 60, if angle_gens = { 60, 90 }
+                     * , but if angles[angle_id] == 120, angle_gens = { 90 }, then 1 x 90 + 0.5 will not vote for 90
+                     */
                     if ( (fractpart < 1e-6) && intpart )
                     {
                         votes[ i ] += hist_it->second;
-                        std::cout << "added vote " << hist_it->second << " to angle_gen " << angle_gens[i] << " due to angle " << angles[angle_id] << std::endl;
+                        if ( verbose ) std::cout << "[" << __func__ << "]: " << "added vote " << hist_it->second
+                                                 << " to angle_gen " << angle_gens[i]
+                                                 << " due to angle " << angles[angle_id] << std::endl;
                     }
-                }
-            } // for voted angles
+                } //...for generators
+            } //...for voted angle_ids
 
+            // select max voted angle \todo change to probabilistic
             int max_vote = 0, max_vote_id = 0;
-            std::cout << "votes:";
-            for ( auto it = votes.begin(); it != votes.end(); ++it )
+            if ( verbose ) std::cout << "[" << __func__ << "]: " << "votes:";
+            for ( auto vote_it = votes.begin(); vote_it != votes.end(); ++vote_it )
             {
-                std::cout << "<" << it->first << "," << it->second << ">, ";
-                if ( it->second > max_vote )
+                // first: angle_gen
+                // second: vote count
+                if ( verbose ) std::cout << "<" << vote_it->first << "," << vote_it->second << ">, ";
+                if ( vote_it->second > max_vote )
                 {
-                    max_vote = it->second;
-                    max_vote_id = it->first;
+                    max_vote    = vote_it->second;
+                    max_vote_id = vote_it->first;
                 }
             }
-            std::cout << std::endl;
+            if ( verbose ) std::cout << std::endl;
 
+            // Add, if has at least 1 non-parallel vote (parallel votes are not put into votes)
             if ( max_vote )
             {
+                /* Generate multiple from single generator
+                 * (i.e. 60 -> 0, 60, 120, 180, or 90 -> 0, 90, 180 )
+                 */
                 AnglesT single_gen;
                 genAngles( single_gen, angles[max_vote_id], angle_gens );
-                angles::appendAnglesFromGenerators( allowedAngles[it->first], single_gen, /* no_paral: */ false, true, /*inRad:*/ true );
+
+                // store angles from single generator for did
+                angles::appendAnglesFromGenerators( /*      out: */ allowedAngles[ did ]
+                                                  , /*       in: */ single_gen
+                                                  , /* no_paral: */ false
+                                                  , /*  verbose: */ true
+                                                  , /*    inRad: */ true );
             }
 
+            // clear votes to prepare for next did
             votes.clear();
-        }
-    }
+        } //...for all dids
+    } //...selectAngles()
 } //...GF2
 
 #endif // GF2_ANGLE_UTIL_HPP

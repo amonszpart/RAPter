@@ -96,14 +96,15 @@ namespace GF2
                                    , /* direction: */ revert ? d1 : d0
                                    );
 
+                out.copyTagsFrom( *this ); // added by Aron on 3/1/2015
                 // copy position id from self
-                out.setTag( GID, this->getTag(GID) );
+                //out.setTag( GID, this->getTag(GID) );
                 // copy direction id from the other
-                out.setTag( DIR_GID, other.getTag(DIR_GID) );
+                out.setTag( TAGS::DIR_GID, other.getTag(TAGS::DIR_GID) );
                 // erase chosen tag - this is a new candidate
-                out.setTag( STATUS, UNSET );
+                out.setTag( TAGS::STATUS, STATUS_VALUES::UNSET );
 
-                std::cout << "angle= " << angle << ", closest_angle_id: " << closest_angle_id << ", mult:  " << angle_multiplier << std::endl;
+                std::cout << "[" << __func__ << "]: " << "angle= " << angle << ", closest_angle_id: " << closest_angle_id << ", mult:  " << angle_multiplier << std::endl;
 
                 return true;
             } //...generateFrom
@@ -195,7 +196,7 @@ namespace GF2
             getExtent( ExtentsT                                      & minMax
                      , _PointContainerT                         const& cloud
                      , double                                   const  threshold            = 0.01
-                     , std::vector<int>                         const* indices_arg          = NULL
+                     , std::vector<PidT>                        const* indices_arg          = NULL
                      , bool                                     const  force_axis_aligned   = false ) const
             {
                 typedef Eigen::Matrix<Scalar,3,1> Position;
@@ -273,7 +274,7 @@ namespace GF2
                 _IndicesContainerT tmp_population,
                                    *pop           = &tmp_population;
                 if ( !indices )
-                    processing::getPopulationOf( tmp_population, this->getTag(GID), points );
+                    processing::getPopulationOf( tmp_population, this->getTag(TAGS::GID), points );
                 else
                     pop = indices;
 
@@ -359,7 +360,7 @@ namespace GF2
             draw( LinePrimitive                    const& line
                 , _PointContainerT                 const& cloud
                 , Scalar                           const  radius
-                , std::vector<int>                 const* indices
+                , std::vector<PidT>                const* indices
                 , pcl::visualization::PCLVisualizer::Ptr  v
                 , std::string                      const  plane_name
                 , double                           const  r

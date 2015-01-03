@@ -36,7 +36,7 @@ int ransacCli( int argc, char **argv )
 {
     typedef typename _InnerPrimitiveContainerT::value_type    PrimitiveT;
     typedef typename _PointContainerT::value_type             PointPrimitiveT;
-    typedef          std::map<int, _InnerPrimitiveContainerT> PrimitiveMapT;
+    typedef          std::map<GidT, _InnerPrimitiveContainerT> PrimitiveMapT;
     typedef typename PointPrimitiveT::Scalar                  Scalar;
     typedef typename _PclCloudT::PointType                    PclPointT;
 
@@ -56,7 +56,7 @@ int ransacCli( int argc, char **argv )
 
     // parse
     {
-        valid_input = parseInput<_InnerPrimitiveContainerT,_PclCloudT>( points, pcl_cloud, initial_primitives, patches, params, argc, argv );
+        valid_input = GF2::parseInput<_InnerPrimitiveContainerT,_PclCloudT>( points, pcl_cloud, initial_primitives, patches, params, argc, argv );
         params.modelType = pcl::console::find_switch( argc, argv, "--3D" ) ? pcl::SacModel::SACMODEL_PLANE
                                                                            : pcl::SacModel::SACMODEL_LINE;
         // weights
@@ -123,8 +123,8 @@ int ransacCli( int argc, char **argv )
                             Eigen::Matrix<Scalar,3,1> nrm = ransac.model_coefficients_.template head<3>();
                             nrm.normalize();
                             GF2::containers::add( out_prims, gid, PrimitiveT( Eigen::Matrix<Scalar,3,1>::Zero() - nrm * ransac.model_coefficients_(3), nrm) )
-                                    .setTag( PrimitiveT::GID    , gid )
-                                    .setTag( PrimitiveT::DIR_GID, gid );
+                                    .setTag( PrimitiveT::TAGS::GID    , gid )
+                                    .setTag( PrimitiveT::TAGS::DIR_GID, gid );
                             std::cout << "created " << out_prims[gid].back().toString() << ", distO: " << out_prims[gid].back().getDistance( Eigen::Matrix<Scalar,3,1>::Zero() )  << std::endl;
                         }
                     }
@@ -152,8 +152,8 @@ int ransacCli( int argc, char **argv )
                         if ( inliers.size() )
                         {
                             GF2::containers::add( out_prims, gid, PrimitiveT( ransac.model_coefficients_.template head<3>(), ransac.model_coefficients_.template segment<3>(3)) )
-                                    .setTag( PrimitiveT::GID    , gid )
-                                    .setTag( PrimitiveT::DIR_GID, gid );
+                                    .setTag( PrimitiveT::TAGS::GID    , gid )
+                                    .setTag( PrimitiveT::TAGS::DIR_GID, gid );
                             std::cout << "created " << out_prims[gid].back().toString() << std::endl;
                         }
                     }
@@ -216,7 +216,7 @@ inline int reassign( _PointContainerT &points, _PrimitiveContainerT const& primi
             tmp = std::abs( primitives[gid].getDistance(points[pid].template pos()) );
             if ( tmp < 0.f )
                 std::cerr << "asdf: " << tmp << std::endl;
-            std::pair<int,int> key( points[pid].getTag(PointPrimitiveT::GID), gid );
+            std::pair<int,int> key( points[pid].getTag(PointPrimitiveT::TAGS::GID), gid );
             #pragma omp critical
             {
                 dists[ key ].first += tmp;
@@ -229,7 +229,7 @@ inline int reassign( _PointContainerT &points, _PrimitiveContainerT const& primi
                 min_gid = gid;
             }
         }
-        points[pid].setTag( PointPrimitiveT::GID, min_gid );
+        points[pid].setTag( PointPrimitiveT::TAGS::GID, min_gid );
     }
     TOC("reassign omp",1)
     std::cout << "finishing assignment" << std::endl;
@@ -245,7 +245,7 @@ template < typename _PointContainerT
 inline int schnabelCli( int argc, char** argv )
 {
     typedef typename _PclCloudT::PointType                    PclPointT;
-    typedef          std::map<int, _InnerPrimitiveContainerT> PrimitiveMapT;
+    typedef          std::map<GidT, _InnerPrimitiveContainerT> PrimitiveMapT;
     typedef typename _PointContainerT::value_type             PointPrimitiveT;
     typedef typename _InnerPrimitiveContainerT::value_type   PrimitiveT;
     typedef typename _PclCloudT::PointType                    PclPointT;
@@ -261,7 +261,7 @@ inline int schnabelCli( int argc, char** argv )
 
     // parse
     {
-        bool valid_input = !parseInput<_InnerPrimitiveContainerT,_PclCloudT>( points, pcl_cloud, initial_primitives, patches, params, argc, argv );
+        bool valid_input = !GF2::parseInput<_InnerPrimitiveContainerT,_PclCloudT>( points, pcl_cloud, initial_primitives, patches, params, argc, argv );
 
         if ( (GF2::console::parse_argument( argc, argv, "--minsup", min_support_arg) < 0) )
         {
@@ -310,7 +310,7 @@ inline int schnabelCli( int argc, char** argv )
         vptr->spinOnce(100);
     }
 
-    typedef std::map<int,int> PidGidT;
+    typedef std::map<PidT,GidT> PidGidT;
      std::vector<GF2::PlanePrimitive> planes;
      PidGidT                          pidGid;
 
@@ -325,8 +325,8 @@ inline int schnabelCli( int argc, char** argv )
     for ( size_t gid = 0; gid != planes.size(); ++gid )
     {
         GF2::containers::add( out_prims, gid, planes[gid] )
-                .setTag( PrimitiveT::GID    , gid )
-                .setTag( PrimitiveT::DIR_GID, gid );
+                .setTag( PrimitiveT::TAGS::GID    , gid )
+                .setTag( PrimitiveT::TAGS::DIR_GID, gid );
         std::cout << "added " << out_prims[gid].back().toString() << std::endl;
     }
 
@@ -341,7 +341,7 @@ inline int schnabelCli( int argc, char** argv )
             char name[255];
             sprintf( name, "pointarrow%06d", pid );
             pnt.getVector3fMap() = points[pid].pos();
-            const int gid = points[pid].getTag( PointPrimitiveT::GID );
+            const int gid = points[pid].getTag( PointPrimitiveT::TAGS::GID );
             plane_pnt.getVector3fMap() = out_prims[gid].at(0).pos();
             vptr->addArrow( plane_pnt, pnt,  .1, .9, .5, false, name );
         }
@@ -349,7 +349,7 @@ inline int schnabelCli( int argc, char** argv )
 
 //        for ( PidGidT::const_iterator it = pidGid.begin(); it != pidGid.end(); ++it )
 //        {
-//            points[it->first].setTag( PointPrimitiveT::GID, it->second );
+//            points[it->first].setTag( PointPrimitiveT::TAGS::GID, it->second );
 //        }
     for ( size_t i = 0; i != std::min(50UL,planes.size()); ++i )
     {

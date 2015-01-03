@@ -206,7 +206,7 @@ namespace GF2
                 }
             }
             pidGid[ pid ] = min_gid;
-            points[pid].setTag( PointPrimitiveT::GID, min_gid );
+            points[pid].setTag( PointPrimitiveT::TAGS::GID, min_gid );
         }
         std::cout << "finishing assignment" << std::endl;
 #endif

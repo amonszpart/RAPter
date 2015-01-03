@@ -292,7 +292,7 @@ Solver::solve( int    argc
                             // copy to output, only, if chosen
                             if ( int(round(x_out[prim_id])) > 0 )
                             {
-                                //std::cout << "saving " << prims[l][l1].getTag(_PrimitiveT::GID) << ", " << prims[l][l1].getTag(_PrimitiveT::DIR_GID) << ", X: " << x_out[prim_id] << "\t, ";
+                                //std::cout << "saving " << prims[l][l1].getTag(_PrimitiveT::TAGS::GID) << ", " << prims[l][l1].getTag(_PrimitiveT::TAGS::DIR_GID) << ", X: " << x_out[prim_id] << "\t, ";
                                 prims[l][l1].setTag( _PrimitiveT::TAGS::STATUS, _PrimitiveT::STATUS_VALUES::ACTIVE );
                                 out_prims.back().push_back( prims[l][l1] );
                             }
@@ -387,18 +387,18 @@ Solver::datafit( int    argc
     {
         if ( verbose ) std::cout << "[" << __func__ << "]: " << "reading cloud from " << cloud_path << "...";
         io::readPoints<PointPrimitiveT>( points, cloud_path );
-        std::vector<std::pair<int,int> > points_primitives;
+        std::vector<std::pair<PidT,LidT> > points_primitives;
         io::readAssociations( points_primitives, associations_path, NULL );
         for ( size_t i = 0; i != points.size(); ++i )
         {
             // store association in point
-            points[i].setTag( PointPrimitiveT::GID, points_primitives[i].first );
+            points[i].setTag( PointPrimitiveT::TAGS::GID, points_primitives[i].first );
         }
         if ( verbose ) std::cout << "reading cloud ok\n";
     } //...read points
 
     // read primitives
-    typedef std::map<int, _InnerPrimitiveContainerT> PrimitiveMapT;
+    typedef std::map<GidT, _InnerPrimitiveContainerT> PrimitiveMapT;
     _PrimitiveContainerT prims;
     PrimitiveMapT       patches;
     {
@@ -447,8 +447,8 @@ Solver::datafit( int    argc
                 {
                     PrimitiveT const& prim = *dir_it;
 
-                    const int gid     = prim.getTag( PrimitiveT::GID     ); //lid;
-                    const int dir_gid = prim.getTag( PrimitiveT::DIR_GID ); //lid1;
+                    const int gid     = prim.getTag( PrimitiveT::TAGS::GID     ); //lid;
+                    const int dir_gid = prim.getTag( PrimitiveT::TAGS::DIR_GID ); //lid1;
 
                     Eigen::Matrix<Scalar,3,1> normal = prim.template normal<Scalar>();
                     std::cout << "line_" << gid << "_" << dir_gid << ".n = " << normal.transpose() << std::endl;
@@ -527,7 +527,7 @@ Solver::datafit( int    argc
                                               ++dir_it, ++lid1 )
                 {
                     if ( gid < -1 )
-                        gid = dir_it->getTag( PrimitiveT::GID );
+                        gid = dir_it->getTag( PrimitiveT::TAGS::GID );
 
                     // for each assigned point
                     for ( size_t pid_id = 0; pid_id != populations[gid].size(); ++pid_id )

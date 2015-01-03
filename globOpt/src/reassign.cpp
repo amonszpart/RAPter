@@ -5,6 +5,7 @@
 #include "pcl/common/common.h"
 #include "globfit2/globOpt_types.h"
 #include "globfit2/io/io.h"
+#include "globfit2/simple_types.h" //GidT,LidT
 
 int reassign( int argc, char** argv )
 {
@@ -62,7 +63,7 @@ int reassign( int argc, char** argv )
         if ( err != EXIT_SUCCESS )  std::cerr << "[" << __func__ << "]: " << "readPoints returned error " << err << std::endl;
     } //...read points
 
-    typedef std::map<int, InnerPrimitiveContainerT> PrimitiveMapT;
+    typedef std::map<GF2::GidT, InnerPrimitiveContainerT> PrimitiveMapT;
     PrimitiveContainerT planes;
     PrimitiveMapT patches;
     {
@@ -81,7 +82,7 @@ int reassign( int argc, char** argv )
             int gid = -2;
             for ( size_t lid1 = 0; lid1 != planes[lid].size(); ++lid1 )
             {
-                if ( !lid1 ) gid = planes[lid][lid1].getTag(PrimitiveT::GID);
+                if ( !lid1 ) gid = planes[lid][lid1].getTag(PrimitiveT::TAGS::GID);
 
                 tmp = planes[lid][lid1].getDistance( points[pid].pos() );
 
@@ -93,7 +94,7 @@ int reassign( int argc, char** argv )
             }
         }
         //pidGid[ pid ] = min_gid;
-        points[pid].setTag( PointPrimitiveT::GID, min_gid );
+        points[pid].setTag( PointPrimitiveT::TAGS::GID, min_gid );
     }
     std::cout << "finishing assignment" << std::endl;
     GF2::io::writeAssociations<PointPrimitiveT>( points, "./points_primitives.schnabel.csv" );

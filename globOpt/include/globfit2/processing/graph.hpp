@@ -150,10 +150,8 @@ namespace GF2
                 int num = boost::connected_components(_undigraph, &components[0]);
 
                 std::vector<int>::size_type i;
-                std::cout << "Total number of components: " << num << std::endl;
                 for (i = 0; i != components.size(); ++i)
                 {
-                    std::cout << "Vertex " << i <<" is in component " << components[i] << std::endl;
                     if ( counts ) (*counts)[ components[i] ]++;
                 }
                 std::cout << std::endl;

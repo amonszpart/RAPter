@@ -291,12 +291,13 @@ namespace GF2
                                 , /* direction: */ other.dir()
                                 );
         }
+        out.copyTagsFrom( *this );
         // copy position id from self
-        out.setTag( GID, this->getTag(GID) );
+        //out.setTag( GID, this->getTag(GID) );
         // copy direction id from the other
-        out.setTag( DIR_GID, other.getTag(DIR_GID) );
+        out.setTag( TAGS::DIR_GID, other.getTag(TAGS::DIR_GID) );
         // erase chosen tag - this is a new candidate
-        out.setTag( STATUS, UNSET );
+        out.setTag( TAGS::STATUS, STATUS_VALUES::UNSET );
 
         return true;
     } //...generateFrom
@@ -504,7 +505,7 @@ namespace GF2
         _IndicesContainerT tmp_population,
                            *pop           = &tmp_population;
         if ( !indices )
-            processing::getPopulationOf( tmp_population, this->getTag(GID), points );
+            processing::getPopulationOf( tmp_population, this->getTag(TAGS::GID), points );
         else
             pop = indices;
 

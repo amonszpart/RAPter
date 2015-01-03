@@ -37,7 +37,7 @@ int pearlCli( int argc, char **argv )
 {
     typedef typename _InnerPrimitiveContainerT::value_type    PrimitiveT;
     typedef typename _PointContainerT::value_type             PointPrimitiveT;
-    typedef          std::map<int, _InnerPrimitiveContainerT> PrimitiveMapT;
+    typedef          std::map<GidT, _InnerPrimitiveContainerT> PrimitiveMapT;
     typedef          pcl::PointCloud<pcl::PointNormal>        PclCloudT;
 
     bool valid_input = true;
@@ -135,15 +135,15 @@ int pearlCli( int argc, char **argv )
         {
             const int gid = labels[pid];
             // assign point
-            points[pid].setTag( PointPrimitiveT::GID, gid );
+            points[pid].setTag( PointPrimitiveT::TAGS::GID, gid );
 
             // add primitive
             if ( out_prims.find(gid) == out_prims.end() )
             {
                 std::cout << "[" << __func__ << "]: " << "adding primitive[" << gid << "]: " << primitives[gid].toString() << std::endl;
                 GF2::containers::add( out_prims, gid, primitives[gid] )
-                        .setTag( PrimitiveT::GID    , gid )
-                        .setTag( PrimitiveT::DIR_GID, gid );
+                        .setTag( PrimitiveT::TAGS::GID    , gid )
+                        .setTag( PrimitiveT::TAGS::DIR_GID, gid );
 
             }
         }

@@ -35,14 +35,14 @@ namespace correspondence
     }
 
     template <class _GidIntSetMap, class _PointContainerT > inline int
-    getCustomPopulations( _GidIntSetMap & populations, _PointContainerT const& points, int flag )
+    getCustomPopulations( _GidIntSetMap & populations, _PointContainerT const& points, GidT flag )
     {
         typedef typename _PointContainerT::value_type _PointPrimitiveT;
 
         for ( size_t pid = 0; pid != points.size(); ++pid )
         {
-            const int gid = points[pid].getTag( flag );
-            containers::add( populations, gid, static_cast<int>(pid) );
+            const GidT gid = points[pid].getTag( flag );
+            containers::add( populations, gid, static_cast<PidT>(pid) );
         }
 
         return EXIT_SUCCESS;
@@ -58,16 +58,16 @@ namespace correspondence
     int correspCli( int argc, char**argv )
     {
         // usual <gid, vector<primitive> > map
-        typedef std::map<int, _InnerPrimitiveContainerT> PrimitiveMapT;
+        typedef std::map<GidT, _InnerPrimitiveContainerT> PrimitiveMapT;
         // points belong to two primitives
         // (one from primtivesA and one from primitivesB),
         // so we need a second key for that)
-        enum { PNT_GID_B    = _PointPrimitiveT::GID
+        enum { PNT_GID_B    = _PointPrimitiveT::TAGS::GID
              , PNT_GID_A    = _PointPrimitiveT::USER_ID1
              };
 
         // first: GID (map key), second: linearId in vector map[gid].
-        typedef std::pair< int   , int    > GidLid;   //!< Uniquely identifies an entry in PrimitiveMapT.
+        typedef std::pair< GidT   , LidT    > GidLid;   //!< Uniquely identifies an entry in PrimitiveMapT.
         // first: primitiveA, second: primitiveB
         typedef std::map < GidLid, GidLid > CorrespT; //!< Output type, contains primitive-gt correspondances. Key: <PrimitiveGid,PrimitiveLid> => Value: <GTGid,GTLid>
 
@@ -153,7 +153,7 @@ namespace correspondence
             } //...read points
 
             // tmp var to read to, first: point id, second: primitive GID
-            std::vector<std::pair<int,int> > points_primitives;
+            std::vector<std::pair<PidT,LidT> > points_primitives;
 
             // read A associations
             {
@@ -278,7 +278,7 @@ namespace correspondence
                         CHECK( err, "getExtent" );
                     }
 
-                    if (inner_it0->getTag(_PrimitiveT::STATUS) != _PrimitiveT::STATUS_VALUES::ACTIVE) continue;
+                    if (inner_it0->getTag(_PrimitiveT::TAGS::STATUS) != _PrimitiveT::STATUS_VALUES::ACTIVE) continue;
 
 
                     if (extremaMapA[ GidLid(gidA,lidA) ].size() == 0) continue;
@@ -311,7 +311,7 @@ namespace correspondence
 
                             if ( extremaMapB[ GidLid(gidB,lidB) ].size() == 0 ) continue;
 
-                            if (inner_it1->getTag(_PrimitiveT::STATUS) != _PrimitiveT::STATUS_VALUES::ACTIVE) continue;
+                            if (inner_it1->getTag(_PrimitiveT::TAGS::STATUS) != _PrimitiveT::STATUS_VALUES::ACTIVE) continue;
 
                             // log
                             std::cout << "checking " << gidA << "." << lidA << " vs " << gidB << "." << lidB;
@@ -455,10 +455,10 @@ namespace correspondence
                 // write to file
                 corresp_f << gidLidA.first  << ","
                           << gidLidA.second << ","
-                          << prims_mapA[gidLidA.first][gidLidA.second].getTag(_PrimitiveT::DIR_GID) << ","
+                          << prims_mapA[gidLidA.first][gidLidA.second].getTag(_PrimitiveT::TAGS::DIR_GID) << ","
                           << gidLidB.first  << ","
                           << gidLidB.second  << ","
-                          << prims_mapB[gidLidB.first][gidLidB.second].getTag(_PrimitiveT::DIR_GID) << "\n";
+                          << prims_mapB[gidLidB.first][gidLidB.second].getTag(_PrimitiveT::TAGS::DIR_GID) << "\n";
 
                 // debug
                 containers::add( subs, gidLidA.first, prims_mapB[gidLidB.first][gidLidB.second] );
