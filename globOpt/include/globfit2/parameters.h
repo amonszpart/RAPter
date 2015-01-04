@@ -231,13 +231,17 @@ namespace GF2 {
         //! \brief dataterm = data_weight * freq_weight/#instances * data cost
         _Scalar                      freq_weight     = _Scalar( 0. );
 
-        static const _Scalar spatial_weight_coeff/* = 100.f*/; // E_pw = (1. + spatial_weight_coeff) * comp(P0,P1)
+        int     useAngleGen = 0;
+        _Scalar truncAngle  = 0.;
+
+        _Scalar spatial_weight_coeff = _Scalar( 10. ); // E_pw = (1. + spatial_weight_coeff) * comp(P0,P1)
+
         static const _Scalar w_mod_base          /* = 0.1f*/;  // E_data *= w_mod_base + (1. - w_mod_base) * f(#j/|P|), usually 0.1
         static const _Scalar spatial_weight_distance;          //!< \brief neighbourhood is this times scale, usually 1.0 or 2.0
     };
 
-    template <typename _Scalar>
-    const _Scalar ProblemSetupParams<_Scalar>::spatial_weight_coeff = 10.f; // 10 was good
+//    template <typename _Scalar>
+//    const _Scalar ProblemSetupParams<_Scalar>::spatial_weight_coeff = 10.f; // 10 was good
     template <typename _Scalar>
     const _Scalar ProblemSetupParams<_Scalar>::spatial_weight_distance = 2.f; // 2 was good
     template <typename _Scalar>

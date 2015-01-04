@@ -57,6 +57,8 @@ namespace correspondence
              >
     int correspCli( int argc, char**argv )
     {
+        const bool verbose = false;
+
         // usual <gid, vector<primitive> > map
         typedef std::map<GidT, _InnerPrimitiveContainerT> PrimitiveMapT;
         // points belong to two primitives
@@ -252,6 +254,7 @@ namespace correspondence
         {
             // calc distances
             int gidA, gidB, lidA, lidB;
+            int skippedPatches = 0;
             // for patches in A
             for ( outer_const_iterator outer_it0 = prims_mapA.begin(); outer_it0 != prims_mapA.end(); ++outer_it0 )
             {
@@ -259,8 +262,10 @@ namespace correspondence
                 gidA = (*outer_it0).first;
                 // start linear primitive id from 0 in this patch
                 lidA = 0;
-                if(populationsA[gidA].size() == 0){
-                    cerr << "Skipping patch without population" << endl;
+                if ( populationsA[gidA].size() == 0 )
+                {
+//                    cerr << "Skipping patch without population" << endl;
+                    ++skippedPatches;
                     continue;
                 }
 
@@ -314,7 +319,7 @@ namespace correspondence
                             if (inner_it1->getTag(_PrimitiveT::TAGS::STATUS) != _PrimitiveT::STATUS_VALUES::ACTIVE) continue;
 
                             // log
-                            std::cout << "checking " << gidA << "." << lidA << " vs " << gidB << "." << lidB;
+                            if ( verbose ) std::cout << "checking " << gidA << "." << lidA << " vs " << gidB << "." << lidB;
 
                             // calculate cost and insert into map
                             costs[ CostKey(GidLid(gidA,lidA),GidLid(gidB,lidB)) ] =
@@ -333,6 +338,9 @@ namespace correspondence
                     } //...for patchesB
                 } //...for prims in patchA
             } //...for patchesA
+
+            if ( skippedPatches )
+                cerr << "[" << skippedPatches << " times]: Skipping patch without population" << endl;
         } //...calculate costs
 
         // we now have the costs in a map,

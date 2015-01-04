@@ -247,6 +247,16 @@ paletteLightColoursEigen( int min_count = 0 )
     colours_eigen [5] << 221.f, 185.f, 169.f;
     colours_eigen [6] << 235.f, 192.f, 218.f;
 
+//    4D4D4D (gray)
+//    5DA5DA (blue)
+//    FAA43A (orange)
+//    60BD68 (green)
+//    F17CB0 (pink)
+//    B2912F (brown)
+//    B276B2 (purple)
+//    DECF3F (yellow)
+//    F15854 (red)
+
     std::vector< ::Eigen::Vector3f > out;
     while ( static_cast<int>(out.size()) < min_count )
         out.insert( out.end(), colours_eigen.begin(), colours_eigen.end() );
@@ -264,7 +274,7 @@ paletteMediumColoursEigen( int min_count = 0 )
 {
     // don't have template parameters, since we return Vector3f....
     std::vector< ::Eigen::Vector3f > colours_eigen;
-    colours_eigen.resize(7);
+    colours_eigen.resize(8);
     colours_eigen [2] << 090.f, 155.f, 212.f;
     colours_eigen [1] << 122.f, 195.f, 106.f;
     colours_eigen [0] << 241.f, 090.f, 096.f;
@@ -272,6 +282,8 @@ paletteMediumColoursEigen( int min_count = 0 )
     colours_eigen [4] << 158.f, 103.f, 171.f;
     colours_eigen [5] << 206.f, 112.f, 088.f;
     colours_eigen [6] << 215.f, 127.f, 180.f;
+    colours_eigen [7] << 241.f, 173.f, 203.f;
+    colours_eigen [8] << 178.f, 163.f, 119.f;
 
     std::vector< ::Eigen::Vector3f > out;
     while ( static_cast<int>(out.size()) < min_count )
@@ -290,7 +302,7 @@ paletteDarkColoursEigen( int min_count = 0 )
 {
     // don't have template parameters, since we return Vector3f....
     std::vector< ::Eigen::Vector3f > colours_eigen;
-    colours_eigen.resize(7);
+    colours_eigen.resize(9);
     colours_eigen [2] << 024.f, 090.f, 169.f;
     colours_eigen [1] << 000.f, 140.f, 072.f;
     colours_eigen [0] << 238.f, 046.f, 047.f;
@@ -298,6 +310,10 @@ paletteDarkColoursEigen( int min_count = 0 )
     colours_eigen [4] << 102.f, 044.f, 145.f;
     colours_eigen [5] << 162.f, 029.f, 033.f;
     colours_eigen [6] << 180.f, 056.f, 148.f;
+    colours_eigen [7] << 241.f, 124.f, 176.f;
+    colours_eigen [8] << 178.f, 145.f, 47.f;
+
+
 
     std::vector< ::Eigen::Vector3f > out;
     while ( static_cast<int>(out.size()) < min_count )

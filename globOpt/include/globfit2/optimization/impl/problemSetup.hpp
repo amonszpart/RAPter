@@ -20,6 +20,7 @@
 #include "globfit2/io/io.h"                       // readPrimitives(), readPoints()
 
 #include "globfit2/processing/graph.hpp"
+#include "globfit2/processing/angle_util.hpp" // appendAnglefromgen
 
 namespace GF2 {
 
@@ -52,6 +53,7 @@ ProblemSetup::formulateCli( int    argc
     std::string               data_cost_mode_str = "assoc";
     std::string               constr_mode_str    = "hybrid";
     std::string               energy_path        = "energy.csv";
+    int                       clustersMode       = 1;
     bool                      calc_energy        = false; // instead of writing the problem, calculate the energy of selecting all input lines.
     // parse params
     {
@@ -114,6 +116,12 @@ ProblemSetup::formulateCli( int    argc
         // freq_weight
         pcl::console::parse_argument( argc, argv, "--freq-weight", params.freq_weight );
 
+        // clusters
+        clustersMode = !pcl::console::find_argument( argc, argv, "--no-clusters" );
+
+        pcl::console::parse_argument( argc, argv, "--spat-weight", params.spatial_weight_coeff );
+        params.useAngleGen = pcl::console::find_switch( argc, argv, "--use-angle-gen" );
+        pcl::console::parse_argument( argc, argv, "--trunc-angle", params.truncAngle );
 
         if ( !valid_input || pcl::console::find_switch(argc,argv,"--help") || pcl::console::find_switch(argc,argv,"-h") || verbose )
         {
@@ -135,9 +143,13 @@ ProblemSetup::formulateCli( int    argc
                       << " [--srand " << srand_val << "]\n"
                       << " [--rod " << problem_rel_path << "]\t\tRelative output path of the output matrix files\n"
                       << " [--patch-pop-limit " << params.patch_population_limit << "]\n"
-                      << " [--freq-weight" << params.freq_weight << "]\n"
-                      << " [--energy-out" << energy_path << "]\n"
-                      << " [--no-paral\n]"
+                      << " [--freq-weight " << params.freq_weight << "]\n"
+                      << " [--energy-out " << energy_path << "]\n"
+                      << " [--no-paral]\n"
+                      << " [--no-clusters " << clustersMode << "]\n"
+                      << " [--spat-weight " << params.spatial_weight_coeff << "]\n"
+                      << " [--use-angle-gen " << params.useAngleGen << "]\n"
+                      << " [--trunc-angle " << params.truncAngle << "]\n"
                       << std::endl;
             if ( !verbose )
                 return EXIT_FAILURE;
@@ -195,6 +207,10 @@ ProblemSetup::formulateCli( int    argc
             primPrimDistFunctor = new SpatialSqrtPrimitivePrimitiveEnergyFunctor<_FiniteFiniteDistFunctor, _PointContainerT, Scalar,_PrimitiveT>
                     ( params.angles, points, params.scale );
             primPrimDistFunctor->_verbose = verbose;
+            primPrimDistFunctor->setUseAngleGen( params.useAngleGen );
+            primPrimDistFunctor->setDirIdBias  ( params.dir_id_bias );
+            primPrimDistFunctor->setTruncAngle ( params.truncAngle );
+            primPrimDistFunctor->setSpatialWeightCoeff( params.spatial_weight_coeff );
         }
         else
         {
@@ -221,9 +237,10 @@ ProblemSetup::formulateCli( int    argc
                                                        , primPrimDistFunctor
                                                        , angle_gens_in_rad
                                                        , params.patch_population_limit
-                                                       , params.dir_id_bias
+                                                       //, params.dir_id_bias
                                                        , !calc_energy && verbose
-                                                       , params.freq_weight );
+                                                       , params.freq_weight
+                                                       , clustersMode );
 
     // dump. default output: ./problem/*.csv; change by --rod
     if ( EXIT_SUCCESS == err )
@@ -282,9 +299,10 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
                        , _PrimPrimDistFunctorT                                       * const& primPrimDistFunctor // AbstractPrimitivePrimitiveEnergyFunctor<_Scalar,_PrimitiveT>
                        , AnglesT                                                       const& angle_gens_in_rad
                        , int                                                           const  patch_pop_limit
-                       , _Scalar                                                       const  dir_id_bias
+                       //, _Scalar                                                       const  dir_id_bias
                        , int                                                           const  verbose
                        , _Scalar                                                       const  freq_weight /* = 0. */
+                       , int                                                           const  clusterMode
         )
 {
     using problemSetup::OptProblemT;
@@ -298,9 +316,9 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
     // log
     if ( verbose ) { std::cout << "[" << __func__ << "]: " << "formulating problem...\n"; fflush(stdout); }
 
-    typedef std::pair<int,int> IntPair;
-    /*   */ std::map <IntPair,int> lids_varids;
-    std::set<int> chosen_varids;
+    typedef std::pair<LidT   ,LidT> IntPair;
+    /*   */ std::map <IntPair,LidT> lids_varids;
+    std::set<LidT> chosen_varids;
 
     AnglesT angles = primPrimDistFunctor->getAngles();
     if ( angle_gens_in_rad.end() != std::find_if( angle_gens_in_rad.begin(), angle_gens_in_rad.end(), [](Scalar const& angle) { return angle > 2. * M_PI; } ) )
@@ -309,7 +327,6 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
         std::cerr<<"angle_gens_in_rad:";for(size_t vi=0;vi!=angle_gens_in_rad.size();++vi)std::cerr<<angle_gens_in_rad[vi]<<" ";std::cerr << "\n";
         throw new std::runtime_error("angle_gens need to be in rad, are you sure");
     }
-
 
     // ____________________________________________________
     // Variables - Add variables to problem
@@ -407,12 +424,14 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
     if ( EXIT_SUCCESS == err )
     {
         typedef std::vector< Eigen::Matrix<_Scalar,3,1> > ExtremaT;
-        typedef std::pair<int,int> LidLid;
-        typedef std::map< LidLid, ExtremaT > ExtremaMapT;
+        typedef std::pair<LidT,LidT>                      LidLid;
+        typedef std::map< LidLid, ExtremaT >              ExtremaMapT;
         ExtremaMapT extremas;
-        typedef OptProblemT::Scalar ProblemScalar;
-        typedef typename GraphT::ComponentSizesT ComponentSizesT;
-        typedef typename GraphT::ComponentListT ComponentListT;
+        typedef OptProblemT::Scalar                       ProblemScalar;
+        typedef typename GraphT::ComponentSizesT          ComponentSizesT;
+        typedef typename GraphT::ComponentListT           ComponentListT;
+
+        std::map< DidT, AnglesT > allowedAngles;
 
         //GraphT::testGraph();
         std::set< EdgeT > edgesList;
@@ -424,11 +443,12 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
         {
             for ( size_t lid1 = 0; lid1 != prims[lid].size(); ++lid1 )
             {
-                if ( prims[lid][lid1].getTag( _PrimitiveT::TAGS::STATUS ) == _PrimitiveT::STATUS_VALUES::SMALL )
+                _PrimitiveT const& prim = prims[lid][lid1];
+                if ( prim.getTag( _PrimitiveT::TAGS::STATUS ) == _PrimitiveT::STATUS_VALUES::SMALL )
                     continue;
 
-                const int gid = prims[lid][lid1].getTag( _PrimitiveT::TAGS::GID );
-                const int did = prims[lid][lid1].getTag( _PrimitiveT::TAGS::DIR_GID );
+                const int gid = prim.getTag( _PrimitiveT::TAGS::GID );
+                const int did = prim.getTag( _PrimitiveT::TAGS::DIR_GID );
 
                 // extremas key
                 LidLid lidLid1( lid, lid1 );
@@ -447,14 +467,29 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
                 {
                     for ( size_t lid1Oth = 0; lid1Oth != prims[lidOth].size(); ++lid1Oth )
                     {
-                        if ( prims[lidOth][lid1Oth].getTag( _PrimitiveT::TAGS::STATUS ) == _PrimitiveT::STATUS_VALUES::SMALL )
+                        _PrimitiveT const& prim1 = prims[lidOth][lid1Oth];
+
+                        if ( prim1.getTag( _PrimitiveT::TAGS::STATUS ) == _PrimitiveT::STATUS_VALUES::SMALL )
                             continue;
 
                         // skip same line, that's always zero
                         if ( (lid == lidOth) && (lid1 == lid1Oth) ) continue;
 
-                        const int gidOth = prims[lidOth][lid1Oth].getTag( _PrimitiveT::TAGS::GID );
-                        const int didOth = prims[lidOth][lid1Oth].getTag( _PrimitiveT::TAGS::DIR_GID );
+                        const int gIdOther = prim1.getTag( _PrimitiveT::TAGS::GID );
+                        const int dIdOther = prim1.getTag( _PrimitiveT::TAGS::DIR_GID );
+
+                        // check for allowedAngles
+                        if (    (primPrimDistFunctor->getUseAngleGen())
+                             && (prim1.getTag(_PrimitiveT::TAGS::GEN_ANGLE) != _PrimitiveT::GEN_ANGLE_VALUES::UNSET)
+                             && (allowedAngles.find(dIdOther) == allowedAngles.end())
+                           )
+                        {
+                            angles::appendAnglesFromGenerators( allowedAngles[dIdOther]
+                                                 , AnglesT( {prim1.getTag(_PrimitiveT::TAGS::GEN_ANGLE)} )
+                                                 , false
+                                                 , false
+                                                 , /* inRad: */ true );
+                        }
 
                         // extremas key
                         LidLid lidLid1Oth( lidOth, lid1Oth );
@@ -465,18 +500,21 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
                             prims[lidOth][lid1Oth].template getExtent<_PointPrimitiveT>( extremas[lidLid1Oth]
                                                                , points
                                                                , scale
-                                                               , &(populations[gidOth]) );
+                                                               , &(populations[gIdOther]) );
                             oit = extremas.find( lidLid1Oth );
                         }
 
                         // SqrtAngle:
                         _Scalar score = primPrimDistFunctor->eval( prims[lid][lid1], (*it).second
                                                                  , prims[lidOth][lid1Oth], (*oit).second
-                                                                 , /* allowedAngles.size() ? allowedAngles[didOth] : */ angles );
+                                                                 , (    primPrimDistFunctor->getUseAngleGen()
+                                                                     && allowedAngles.find(dIdOther) != allowedAngles.end()
+                                                                   ) ? allowedAngles.at(dIdOther) : angles
+                                                                 );
 
                         // should be deprecated:
-                        if ( prims[lid][lid1].getTag(_PrimitiveT::TAGS::DIR_GID) != prims[lidOth][lid1Oth].getTag(_PrimitiveT::TAGS::DIR_GID) )
-                            score += dir_id_bias;
+                        //if ( prims[lid][lid1].getTag(_PrimitiveT::TAGS::DIR_GID) != prims[lidOth][lid1Oth].getTag(_PrimitiveT::TAGS::DIR_GID) )
+                        //    score += dir_id_bias;
 
                         // multiply by pairwise weight
                         score *= weights(1);
@@ -487,10 +525,11 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
                         problem.addQObjective( varId0, varId1, score );
 
                         // coupling
+                        if ( clusterMode )
                         {
-                            _Scalar invDist = primPrimDistFunctor->evalSpatial( prims[lid][lid1], (*it).second
+                            _Scalar invDist = primPrimDistFunctor->evalSpatial( prims[lid   ][lid1   ], (*it ).second
                                                                               , prims[lidOth][lid1Oth], (*oit).second );
-                            if ( invDist > _Scalar(0.) && (did == didOth) )
+                            if ( invDist > _Scalar(0.) && (did == dIdOther) )
                             {
                                 edgesList.insert( EdgeT(varId0, varId1, invDist) );
                             }
@@ -500,6 +539,7 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
             } // ... lid1
         } // ... lid
 
+        if ( clusterMode )
         {
             GraphT graph( lids_varids.size() );
             for ( auto it = edgesList.begin(); it != edgesList.end(); ++it )
@@ -541,7 +581,7 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
                 f << "}" << std::endl;
                 f.close();
 
-                if ( clusters.size() )
+                if ( clusterMode && clusters.size() )
                 {
                     //system( "dot -Tpng -o comps.png components.gv && (eog comps.png &)" );
 
@@ -588,7 +628,7 @@ ProblemSetup::formulate( problemSetup::OptProblemT                              
         if ( chosen_varids.size() )
         {
             OptProblemT::SparseMatrix x0( problem.getVarCount(), 1 );
-            for ( std::set<int>::const_iterator it = chosen_varids.begin(); it != chosen_varids.end(); ++it )
+            for ( std::set<LidT>::const_iterator it = chosen_varids.begin(); it != chosen_varids.end(); ++it )
             {
                 x0.insert( *it, 0 ) = 1;
             }

@@ -26,7 +26,7 @@
          <x>0</x>
          <y>0</y>
          <width>478</width>
-         <height>206</height>
+         <height>214</height>
         </rect>
        </property>
        <attribute name="label">
@@ -61,10 +61,10 @@
            <double>999999999.000000000000000</double>
           </property>
           <property name="singleStep">
-           <double>1.000000000000000</double>
+           <double>0.010000000000000</double>
           </property>
           <property name="value">
-           <double>1.000000000000000</double>
+           <double>0.010000000000000</double>
           </property>
          </widget>
         </item>
@@ -89,7 +89,7 @@
          <x>0</x>
          <y>0</y>
          <width>478</width>
-         <height>206</height>
+         <height>214</height>
         </rect>
        </property>
        <attribute name="label">

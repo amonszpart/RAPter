@@ -190,7 +190,7 @@ namespace GF2
 
                             ss << "\n";
 
-                            std::cout << ss.str();
+                            //std::cout << ss.str();
                             f << ss.str();
                         }
                     }

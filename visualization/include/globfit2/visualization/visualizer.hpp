@@ -1,6 +1,8 @@
 #ifndef __GF2_VISUALIZER_HPP__
 #define __GF2_VISUALIZER_HPP__
 
+#include "globfit2/globOpt_types.h"
+
 #if GF2_USE_PCL
 #   include "pcl/point_types.h"
 #   include "pcl/visualization/pcl_visualizer.h"
@@ -8,6 +10,8 @@
 
 #include "globfit2/visualization/visualization.h" // MyVisPtr
 #include "globfit2/processing/util.hpp"           // getPopulations()
+
+#include "qcqpcpp/optProblem.h"
 
 namespace GF2 {
     //! \brief Visualizer class to show points, primitives and their relations
@@ -58,6 +62,7 @@ namespace GF2 {
                 , bool                 const  dir_colours           = false
                 , bool                 const  no_points             = false
                 , std::set<int>        const* filter_gids           = NULL
+                , std::set<int>        const* filter_dids           = NULL
                 , std::set<int>        const* filter_status         = NULL
                 , _Scalar              const  stretch               = 1.
                 , int                  const  draw_mode             = DRAW_MODE::SIMPLE
@@ -66,13 +71,15 @@ namespace GF2 {
                 , bool                 const  save_poly             = false
                 , _Scalar              const  point_size            = 6.0
                 , bool                 const  skip_empty            = false
+                , bool                 const  show_spatial          = false
+                , std::string          const  problemPath           = ""
                 );
 
             //! \brief Shows a polygon that approximates the bounding ellipse of a cluster
             template <typename _Scalar> static inline int
             drawEllipse( vis::MyVisPtr                             vptr
                        , MyPCLCloud::Ptr                              cloud
-                       , std::vector<int>                   const& indices
+                       , std::vector<PidT>                  const& indices
                        , _Scalar                            const  scale
                        , int                                const  prim_tag
                        , Eigen::Matrix<_Scalar,3,1>         const& prim_colour
@@ -115,11 +122,12 @@ namespace GF2
                                                            , bool                 const  show_pids           /* = false */
                                                            , int                  const  show_normals        /* = 0 */
                                                            , bool                 const  show_pop            /* = false */
-                                                           , _Scalar              const  perfect_angle_limit /* = 0872664625 = 5deg*/
+                                                           , _Scalar              const  angle_limit /* = 0872664625 = 5deg*/
                                                            , bool                 const  print_perf_angles   /* = false */
                                                            , bool                 const  dir_colours         /* = false */
                                                            , bool                 const  hide_points         /* = false */
                                                            , std::set<int>        const* filter_gids         /* = NULL */
+                                                           , std::set<int>        const* filter_dids         /* = NULL */
                                                            , std::set<int>        const* filter_status       /* = NULL */
                                                            , _Scalar              const  stretch             /* = 1. */
                                                            , int                  const  draw_mode           /* = 0 */
@@ -128,8 +136,12 @@ namespace GF2
                                                            , bool                 const  save_poly           /* = false */
                                                            , _Scalar              const  point_size          /* = 6.0 */
                                                            , bool                 const  skip_empty          /* = false */
+                                                           , bool                 const  show_spatial        /* = false */
+                                                           , std::string          const  problemPath
                                                            )
     {
+        bool save_hough = true;
+
         // TYPEDEFS
         typedef typename PrimitiveContainerT::value_type::value_type    PrimitiveT;
         typedef typename PointContainerT::value_type                    PointPrimitiveT;
@@ -149,31 +161,32 @@ namespace GF2
         // --------------------------------------------------------------------
 
         // every direction or every patch gets its own colour
-        const int primColourTag = dir_colours ? PrimitiveT::DIR_GID : PrimitiveT::GID;
+        const int primColourTag = dir_colours ? PrimitiveT::TAGS::DIR_GID : PrimitiveT::TAGS::GID;
         // primitives are prepared for draw_modes: SIMPLE, AXIS_ALIGNED, QHULL, so we need to remove the rest of the flags
         const int old_draw_mode = draw_mode & (SIMPLE | AXIS_ALIGNED | QHULL);
         std::cout << "old_draw_mode: " << old_draw_mode << std::endl;
 
         // --------------------------------------------------------------------
 
-        int max_gid     = 0, max_dir_gid = 0,
-            nPrimitives = 0, nbColour    = 0;
+        GidT max_gid     = 0;
+        DidT max_dir_gid = 0;
+        LidT nPrimitives = 0, nbColour = 0;
         GidLidLid1Map gid2lidLid1;    // maps gid to a primitve (assuming only one per patch...)
-        std::map< int, int                > id2ColId;       // maps gid to a colour id
+        std::map<int, int> id2ColId;       // maps gid to a colour id
 
         // get the highest gid from points OR primitives, store into max_gid
         {
             for ( size_t pid = 0; pid != points.size(); ++pid )
-                max_gid = std::max( max_gid, points[pid].getTag(PointPrimitiveT::GID) );
+                max_gid = std::max( max_gid, points[pid].getTag(PointPrimitiveT::TAGS::GID) );
 
             for ( size_t lid = 0; lid != primitives.size(); ++lid )
             {
                 for ( size_t lid1 = 0; lid1 != primitives[lid].size(); ++lid1 )
                 {
-                    if ( primitives[lid][lid1].getTag(PrimitiveT::STATUS) != PrimitiveT::SMALL ) // TODO: use filter status
+                    if ( primitives[lid][lid1].getTag(PrimitiveT::TAGS::STATUS) != PrimitiveT::STATUS_VALUES::SMALL ) // TODO: use filter status
                     {
-                        max_gid     = std::max( max_gid    , primitives[lid][lid1].getTag(PrimitiveT::GID    ) );
-                        max_dir_gid = std::max( max_dir_gid, primitives[lid][lid1].getTag(PrimitiveT::DIR_GID) );
+                        max_gid     = std::max( max_gid    , primitives[lid][lid1].getTag(PrimitiveT::TAGS::GID    ) );
+                        max_dir_gid = std::max( max_dir_gid, primitives[lid][lid1].getTag(PrimitiveT::TAGS::DIR_GID) );
 
                         // this id has not been referenced to a color previously
                         if ( id2ColId.find(primitives[lid][lid1].getTag(primColourTag)) == id2ColId.end())
@@ -181,7 +194,7 @@ namespace GF2
                             id2ColId[ primitives[lid][lid1].getTag(primColourTag) ] = nbColour;
                             ++nbColour;
                         }
-                        gid2lidLid1[ primitives[lid][lid1].getTag(PrimitiveT::GID) ] = std::pair<int,int>(lid,lid1);
+                        gid2lidLid1[ primitives[lid][lid1].getTag(PrimitiveT::TAGS::GID) ] = std::pair<int,int>(lid,lid1);
 
                         ++nPrimitives;
                     }
@@ -208,7 +221,7 @@ namespace GF2
         // Check if we can use color palette
         const int paletteRequiredSize = id2ColId.size() + 1; // set this to 0, if you only want 7 colours
         // Defaults to true, since util replicates colours
-        bool usePalette = id2ColId.size() < util::paletteLightColoursEigen(paletteRequiredSize).size();
+        bool usePalette = id2ColId.size() <= 7; //util::paletteLightColoursEigen(paletteRequiredSize).size();
         std::vector<Eigen::Vector3f> pointColours, primColours;
         Eigen::Vector3f              unusedPointColour, unusedPrimColour;
         // Choose, and fill colour palette
@@ -217,7 +230,7 @@ namespace GF2
             {
                 cout << "Switching to nicer color palette" << endl;
 
-                pointColours = util::paletteLightColoursEigen(paletteRequiredSize);
+                pointColours = util::paletteMediumColoursEigen(paletteRequiredSize);
                 primColours  = util::paletteDarkColoursEigen(paletteRequiredSize);
 
                 unusedPointColour = util::paletteLightNeutralColour();
@@ -235,8 +248,8 @@ namespace GF2
                 for ( size_t cid = 0; cid != pointColours.size(); ++cid )
                 {
                     pointColours[cid](0) = std::min( pointColours[cid](0) * 1.6, 255.);
-                                           pointColours[cid](1) = std::min( pointColours[cid](1) * 1.6, 255.);
-                                                                  pointColours[cid](2) = std::min( pointColours[cid](2) * 1.6, 255.);
+                    pointColours[cid](1) = std::min( pointColours[cid](1) * 1.6, 255.);
+                    pointColours[cid](2) = std::min( pointColours[cid](2) * 1.6, 255.);
                 }
                 unusedPointColour = unusedPrimColour = Eigen::Vector3f::Zero();
             }
@@ -262,7 +275,7 @@ namespace GF2
             // for each point in input
             for ( size_t pid = 0; pid != points.size(); ++pid )
             {
-                const int                     point_gid      = points[pid].getTag(PointPrimitiveT::GID); // which patch is the point assigned to
+                const int                     point_gid      = points[pid].getTag(PointPrimitiveT::TAGS::GID); // which patch is the point assigned to
                 GidLidLid1Map::const_iterator gidLidIterator = gid2lidLid1.find( point_gid );            // which primitive is in this patch ( only one...:( )
                 LidLid1                       lidLid1(-1,-1);                                            // exact indices of primitive
                 Colour                        point_colour   = unusedPointColour;                        // point colour
@@ -349,7 +362,7 @@ namespace GF2
             {
                 char pname[255],ptext[255];
                 sprintf( pname, "p%d", pid );
-                sprintf( ptext, "%d", points[pid].getTag(PointPrimitiveT::GID) );
+                sprintf( ptext, "%d", points[pid].getTag(PointPrimitiveT::TAGS::GID) );
                 vptr->addText3D( ptext, cloud->at(pid), 0.005, cloud->at(pid).r/255.f, cloud->at(pid).g/255.f, cloud->at(pid).b/255.f, pname, 0 );
             }
         }
@@ -365,6 +378,23 @@ namespace GF2
         // count populations
         GidPidVectorMap populations; // populations[patch_id] = all points with GID==patch_id
         processing::getPopulations( populations, points );
+
+        // problem
+#if 0
+        typedef double OptScalar; // Mosek, and Bonmin uses double internally, so that's what we have to do...
+        typedef qcqpcpp::OptProblem<OptScalar> OptProblemT;
+        OptProblemT *p_problem = new qcqpcpp::OptProblem<OptScalar>();
+        if ( !problemPath.empty() )
+        {
+            int err = EXIT_SUCCESS;
+            err += p_problem->read( problemPath );
+            if ( EXIT_SUCCESS != err )
+            {
+                std::cerr << "[" << __func__ << "]: " << "Could not read problem, exiting" << std::endl;
+                exit(0);
+            }
+        }
+#endif
 
         // spatial significance cache variable
         Eigen::Matrix<_Scalar,Eigen::Dynamic,1> area( 1, 1 );
@@ -384,19 +414,25 @@ namespace GF2
                 {
                     // caching
                     PrimitiveT const& prim = primitives[lid][lid1];
-                    const int gid     = prim.getTag( PrimitiveT::GID     );
-                    const int dir_gid = prim.getTag( PrimitiveT::DIR_GID );
+                    const int gid     = prim.getTag( PrimitiveT::TAGS::GID     );
+                    const int dir_gid = prim.getTag( PrimitiveT::TAGS::DIR_GID );
 
                     // status filtering
-                    if ( filter_status && (*filter_status).find(primitives[lid][lid1].getTag(PrimitiveT::STATUS)) == (*filter_status).end() )
+                    if ( filter_status && (*filter_status).find(primitives[lid][lid1].getTag(PrimitiveT::TAGS::STATUS)) == (*filter_status).end() )
                         continue;
 
                     // WTF? // TODO remove
-                    //if (primitives[lid][lid1].getTag(PrimitiveT::STATUS) == PrimitiveT::SMALL)
+                    //if (primitives[lid][lid1].getTag(PrimitiveT::TAGS::STATUS) == PrimitiveT::STATUS_VALUES::SMALL)
                     //    continue;
 
                     // GID filtering
                     if ( filter_gids && (filter_gids->find(gid) == filter_gids->end()) )
+                    {
+                        continue;
+                    }
+
+                    // DIR_GID filtering
+                    if ( filter_dids && (filter_dids->find(dir_gid) == filter_dids->end()) )
                     {
                         continue;
                     }
@@ -408,15 +444,15 @@ namespace GF2
                     // cache colour
                     const int colour_id = prim.getTag( primColourTag );
                     Colour prim_colour = primColours[ id2ColId[colour_id] ] / 255.;
-                    std::cout << "reading colour " << prim_colour.transpose() << " as id2ColId[" << primColourTag << "] = "
-                              << id2ColId[primColourTag] << std::endl;
+                    //std::cout << "reading colour " << prim_colour.transpose() << " as id2ColId[" << primColourTag << "] = "
+                    //          << id2ColId[primColourTag] << std::endl;
 
                     // use assignments: if use tags, collect GID tagged point indices
-                    std::vector<int> indices;
+                    std::vector<PidT> indices;
                     if ( use_tags )
                     {
-                        for ( int pid = 0; pid != points.size(); ++pid )
-                            if ( points[pid].getTag(PointPrimitiveT::GID) == gid )
+                        for ( PidT pid = 0; pid != points.size(); ++pid )
+                            if ( points[pid].getTag(PointPrimitiveT::TAGS::GID) == gid )
                                 indices.push_back( pid );
 
                         // don't show unpopulated primitives
@@ -466,7 +502,8 @@ namespace GF2
                     {
                         char gid_name[255],gid_text[255];
                         sprintf( gid_name, "primgid%d_%d", gid, dir_gid  );
-                        sprintf( gid_text, "(%2.4f),%d,%d,%d", area(0), gid, dir_gid, primitives[lid][lid1].getTag(PrimitiveT::STATUS) );
+                        //sprintf( gid_text, "(%2.4f),%d,%d,%d", area(0), gid, dir_gid, primitives[lid][lid1].getTag(PrimitiveT::TAGS::STATUS) );
+                        sprintf( gid_text, "(%2.4f),%d,%d,%.1f", area(0), gid, dir_gid, primitives[lid][lid1].getTag(PrimitiveT::TAGS::GEN_ANGLE) * deg_multiplier );
                         Position const& pos = primitives[lid][lid1].template pos();
                         vptr->addText3D( gid_text
                                        , pclutil::asPointXYZ( pos )
@@ -477,27 +514,86 @@ namespace GF2
                     }
 
                     // draw connections
-                    if ( angles )
+                    if ( angles || show_spatial )
                     {
+                        // check for angles
+                        if ( show_spatial && !angles )
+                        {
+                            std::cerr << "need angles to show distances" << std::endl;
+                            throw new std::runtime_error("need angles");
+                        }
+
+                        typename PrimitiveT::ExtentsT extents0, extents1;
+                        SpatialSqrtPrimitivePrimitiveEnergyFunctor<MyFinitePrimitiveToFinitePrimitiveCompatFunctor<PrimitiveT>,PointContainerT,Scalar,PrimitiveT>
+                                distFunctor( *angles, points, scale );
+                        distFunctor.setDirIdBias( 0 );
+                        distFunctor.setSpatialWeightCoeff( 20 );
+                        distFunctor.setTruncAngle( 0.3 );
+                        distFunctor.setUseAngleGen( 1 );
+
                         if ( populations[gid].size() > pop_limit )
                         {
                             for ( size_t lid2 = lid; lid2 != primitives.size(); ++lid2 )
                             {
-                                if ( populations[ primitives[lid2].at(0).getTag(PrimitiveT::GID) ].size() < pop_limit )
+                                const int gid1 = primitives[lid2].at(0).getTag(PrimitiveT::TAGS::GID);
+                                if ( populations[ gid1 ].size() < pop_limit )
                                     continue;
 
                                 for ( size_t lid3 = lid1; lid3 < primitives[lid2].size(); ++lid3 )
                                 {
                                     if ( (lid == lid2) && (lid1 == lid3) ) continue;
+                                    PrimitiveT const& prim1 = primitives[lid2][lid3];
+#if 1
+                                    if ( show_spatial )
+                                    {
+                                        prim.template getExtent<PointPrimitiveT>( extents0
+                                                                                , points
+                                                                                , scale
+                                                                                , &(populations[gid]) );
+                                        prim1.template getExtent<PointPrimitiveT>( extents1
+                                                                                , points
+                                                                                , scale
+                                                                                , &(populations[gid1]) );
+
+                                        _Scalar idealAngle, spatW;
+                                        _Scalar dist = distFunctor.eval( prim, extents0, prim1, extents1, *angles, &idealAngle, &spatW );
+                                        if ( !(dist > _Scalar(0.)) ) continue;
+
+                                        {
+                                            char name[255];
+                                            sprintf( name, "dist_l%lu%lu_l%lu%lu", lid, lid1, lid2, lid3 );
+                                            vptr->addLine( pclutil::asPointXYZ( prim.pos() )
+                                                         , pclutil::asPointXYZ( prim1.pos() )
+                                                         , gray(0), gray(1), gray(2), name, 0 );
+                                            vptr->setShapeRenderingProperties( pcl::visualization::PCL_VISUALIZER_OPACITY, 0.7, name, 0 );
+
+                                            pcl::PointXYZ line_center;
+                                            line_center.getVector3fMap() = (prim.pos() + prim1.pos()) / _Scalar(2.);
+
+                                            {
+                                                char dist_str[255];
+                                                if ( spatW > _Scalar(0.) )
+                                                    sprintf( dist_str, "%.4f(%.0f,%.3f)", dist, idealAngle * deg_multiplier, spatW );
+                                                else
+                                                    sprintf( dist_str, "%.4f(%.0f)", dist, idealAngle * deg_multiplier );
+                                                vptr->addText3D( dist_str
+                                                                 , line_center, text_size, gray(0)+.1, gray(1)+.1, gray(2)+.1
+                                                                 , name + std::string("_dist"), 0 );
+                                            }
+                                        }
+
+                                        continue;
+                                    }
+#endif
 
                                     _Scalar angle = MyPrimitivePrimitiveAngleFunctor::eval( primitives[lid][lid1], primitives[lid2][lid3], *angles );
-                                    if ( (angle < perfect_angle_limit) )
+                                    if ( (angle < angle_limit) )
                                     {
                                         char name[255];
                                         sprintf( name, "conn_l%lu%lu_l%lu%lu", lid, lid1, lid2, lid3 );
                                         vptr->addLine( pclutil::asPointXYZ( primitives[lid][lid1].pos() )
-                                                       , pclutil::asPointXYZ( primitives[lid2][lid3].pos() )
-                                                       , gray(0), gray(1), gray(2), name, 0 );
+                                                     , pclutil::asPointXYZ( primitives[lid2][lid3].pos() )
+                                                     , gray(0), gray(1), gray(2), name, 0 );
                                         vptr->setShapeRenderingProperties( pcl::visualization::PCL_VISUALIZER_OPACITY, 0.7, name, 0 );
 
                                         pcl::PointXYZ line_center;
@@ -518,7 +614,7 @@ namespace GF2
                     } //...if angles
 
                     // red lines for same group id
-                    if ( angles )
+                    if ( angles && !show_spatial )
                     {
                         for ( size_t lid2 = lid; lid2 != primitives.size(); ++lid2 )
                         {
@@ -526,7 +622,7 @@ namespace GF2
                             {
                                 if ( (lid == lid2) && (lid1 == lid3) ) continue;
 
-                                if ( primitives[lid2][lid3].getTag(PrimitiveT::DIR_GID) == primitives[lid][lid1].getTag(PrimitiveT::DIR_GID) )
+                                if ( primitives[lid2][lid3].getTag(PrimitiveT::TAGS::DIR_GID) == primitives[lid][lid1].getTag(PrimitiveT::TAGS::DIR_GID) )
                                 {
                                     char name[255];
                                     sprintf( name, "same_l%lu%lu_l%lu%lu", lid, lid1, lid2, lid3 );
@@ -617,6 +713,30 @@ namespace GF2
             pcl::io::savePLYFile( "plane_mesh.ply", plane_mesh );
         }
 
+        if ( save_hough )
+        {
+            std::string     houghFilePath( "hough.csv"   );
+            std::ofstream   houghFile    ( houghFilePath );
+            if ( !houghFile.is_open() )
+            {
+                std::cerr << "[" << __func__ << "]: " << "could not open " << houghFilePath << std::endl;
+                throw new std::runtime_error("");
+            }
+
+            for ( size_t lid = 0; lid != primitives.size(); ++lid )
+                for ( size_t lid1 = 0; lid1 < primitives[lid].size(); ++lid1 )
+                {
+                    PrimitiveT const& prim = primitives[lid][lid1];
+
+                    Eigen::Matrix<Scalar,3,1> dir = prim.dir();
+                    houghFile << angleInRad( dir, Eigen::Matrix<Scalar,3,1>::UnitX().eval() ) << ","
+                              << prim.getDistance( Eigen::Matrix<Scalar,3,1>::Zero() )
+                              << std::endl;
+                }
+
+            houghFile.close();
+        }
+
         // --------------------------------------------------------------------
 
         if ( spin )
@@ -631,7 +751,7 @@ namespace GF2
     template <typename _Scalar> int
     Visualizer<PrimitiveContainerT,PointContainerT>::drawEllipse( vis::MyVisPtr                             vptr
                                                                 , MyPCLCloud::Ptr                              cloud
-                                                                , std::vector<int>                   const& indices
+                                                                , std::vector<PidT>                  const& indices
                                                                 , _Scalar                            const  scale
                                                                 , int                                const  prim_tag
                                                                 , Eigen::Matrix<_Scalar,3,1>         const& prim_colour
@@ -643,7 +763,9 @@ namespace GF2
         pcl::PCA<MyPCLPoint> pca;
         pca.setInputCloud( cloud );
         pcl::PointIndices::Ptr indices_ptr( new pcl::PointIndices() );
-        indices_ptr->indices = indices;
+        indices_ptr->indices.resize( indices.size() );
+        std::copy( indices.begin(), indices.end(), indices_ptr->indices.begin() );
+        //indices_ptr->indices = indices;
         pca.setIndices( indices_ptr );
 
         const _Scalar min_dim1 = scale * 0.25f;

@@ -178,6 +178,7 @@ namespace GF2
                            , _AliasesT               * aliases
                            )
     {
+        const bool verbose = false;
 
         const GidT gid0     = prim0.getTag( _PrimitiveT::TAGS::GID );
         const GidT gid1     = prim1.getTag( _PrimitiveT::TAGS::GID );
@@ -251,7 +252,7 @@ namespace GF2
             if ( genAngle != _PrimitiveT::GEN_ANGLE_VALUES::UNSET )
             {
                 cand0.setTag( _PrimitiveT::TAGS::GEN_ANGLE, genAngle );
-                std::cout << "[" << __func__ << "]: " << "assuming gen_angle copy: " << cand0.getTag(_PrimitiveT::TAGS::GEN_ANGLE) << std::endl;
+                if ( verbose ) std::cout << "[" << __func__ << "]: " << "assuming gen_angle copy: " << cand0.getTag(_PrimitiveT::TAGS::GEN_ANGLE) << std::endl;
                 generators.push_back( genAngle );
             } //...if genAngle filled
         } //...if generators.empty()
@@ -272,7 +273,7 @@ namespace GF2
                 angles::appendAnglesFromGenerators( /*        out: */ allowedAngles[dir_gid1]
                                                   , /* generators: */ generators
                                                   , /*   no_paral: */ false
-                                                  , /*    verbose: */ true
+                                                  , /*    verbose: */ false
                                                   , /*      inRad: */ true );
         }
         // (2) If restricted --> If angle found is in the restriction
@@ -301,17 +302,17 @@ namespace GF2
         // debug
         if ( added0 )
         {
-            std::cout << "[" << __func__ << "]: "
+            if ( verbose ) std::cout << "[" << __func__ << "]: "
                       << "added prim" << "<g" << gid0 << ",d" << dir_gid1 << "> from prim"
                       << "<g" << gid1 << ",d" << dir_gid1 << "> via angle "
                       << angles[closest_angle_id0] * 180. / M_PI;
             if ( allowedAngles.find(dir_gid1) != allowedAngles.end() )
             {
-                std::cout << " allowed angles[" << dir_gid1 << "][1]: " << allowedAngles[dir_gid1][1] * 180./M_PI << ", cand0.angle: " << cand0.getTag(_PrimitiveT::TAGS::GEN_ANGLE);
+                if ( verbose ) std::cout << " allowed angles[" << dir_gid1 << "][1]: " << allowedAngles[dir_gid1][1] * 180./M_PI << ", cand0.angle: " << cand0.getTag(_PrimitiveT::TAGS::GEN_ANGLE);
                 if ( cand0.getTag(_PrimitiveT::TAGS::GEN_ANGLE) == _PrimitiveT::GEN_ANGLE_VALUES::UNSET )
-                        std::cout << "a;sdlfj" << std::endl;
+                        std::cout << "THIS SHOULD NOT HAPPEN 123" << std::endl;
             }
-            std::cout << std::endl;
+            if ( verbose ) std::cout << std::endl;
 
             fflush( stdout );
         }
@@ -374,6 +375,8 @@ namespace GF2
                                 , bool                              const  safe_mode_arg
                                 , int                               const  var_limit )
     {
+        const bool verbose = false;
+
         // _________ typedefs _________
 
         typedef typename _PointContainerT::value_type                      _PointPrimitiveT;
@@ -533,8 +536,8 @@ namespace GF2
                 _Scalar const angleGen = primIt->getTag( _PrimitiveT::TAGS::GEN_ANGLE );
 
                 // skip, if not meaningful
-                if ( angleGen == _PrimitiveT::STATUS_VALUES::UNSET ) { std::cout << "[" << __func__ << "]: " << "skipping " << dId << "," << angleGen << std::endl; continue; }
-                else std::cout << "[" << __func__ << "]: " << "NOT skipping " << angleGen << std::endl;
+                if ( angleGen == _PrimitiveT::STATUS_VALUES::UNSET )
+                    continue;
 
                 // only add, if has not been added before (gen_angle->did is stored at every primitive with that did redundantly for now)
                 if ( allowedAngles.find(dId) == allowedAngles.end() )
@@ -653,7 +656,7 @@ namespace GF2
                     throw new CandidateGeneratorException("Alias could not be added");
                 } //...if could not output
                 else
-                    std::cout << "\nAdded alias to " << angleIt->second._prim->getTag(_PrimitiveT::TAGS::DIR_GID)
+                    if ( verbose ) std::cout << "\nAdded alias to " << angleIt->second._prim->getTag(_PrimitiveT::TAGS::DIR_GID)
                               << " as " << outPrims[gid0].back().toString()
                               << " <" << outPrims[gid0].back().getTag( _PrimitiveT::TAGS::GID ) << ","
                               << outPrims[gid0].back().getTag( _PrimitiveT::TAGS::DIR_GID ) << ">"
@@ -664,7 +667,7 @@ namespace GF2
                 angles::appendAnglesFromGenerators( /*        out: */ allowedAngles[ did ]
                                                   , /* generators: */ tmpGenerators
                                                   , /*   no_paral: */ false
-                                                  , /*    verbose: */ true
+                                                  , /*    verbose: */ false
                                                   , /*      inRad: */ true );
 
                 // add all allowed copies
@@ -755,9 +758,9 @@ namespace GF2
             // only add, if has not been added before (gen_angle->did is stored at every primitive with that did redundantly for now)
             if ( allowedAngles.find(dId) != allowedAngles.end() && (angleGen == _PrimitiveT::STATUS_VALUES::UNSET) )
             {
-                std::cout << "[" << __func__ << "]: " << "primitive(" << primIt.getGid() << "," << dId << ") "
-                             << "does not have GEN_ANGLE stored: " << angleGen
-                             << ", but allowedAngles has entry [1]: " << allowedAngles[dId][1] << std::endl;
+//                std::cout << "[" << __func__ << "]: " << "primitive(" << primIt.getGid() << "," << dId << ") "
+//                             << "does not have GEN_ANGLE stored: " << angleGen
+//                             << ", but allowedAngles has entry [1]: " << allowedAngles[dId][1] << std::endl;
                 primIt->setTag( _PrimitiveT::TAGS::GEN_ANGLE, allowedAngles[dId][1] );
             }
         } //...for outPrims
@@ -915,7 +918,7 @@ namespace GF2
         // Read desired angles
         if ( EXIT_SUCCESS == err )
         {
-            angles::appendAnglesFromGenerators( generatorParams.angles, angle_gens, no_paral, true );
+            angles::appendAnglesFromGenerators( generatorParams.angles, angle_gens, no_paral, false );
         } //...read angles
 
         // Read points

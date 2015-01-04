@@ -355,6 +355,10 @@ namespace GF2
             , _points( points )
             , _scale ( scale )
             , _verbose( false )
+            , _dirIdBias( 0. )
+            , _truncAngle( 0. )
+            , _useAngleGen( 0 )
+            , _spatialWeightCoeff( 0. )
         {}
 
         virtual ~SpatialSqrtPrimitivePrimitiveEnergyFunctor() {};
@@ -370,7 +374,7 @@ namespace GF2
                                      , _Scalar(0.) )
                                      / _scale;
 
-            return ProblemSetupParams<_Scalar>::spatial_weight_coeff * spat_w;
+            return _spatialWeightCoeff * spat_w;
         }
 
         virtual inline _Scalar
@@ -380,31 +384,34 @@ namespace GF2
             _Scalar score        ( 0. );
             _Scalar spatialWeight( 0. );
 
-            if ( p1.getTag(PrimitiveT::TAGS::DIR_GID) != p2.getTag(PrimitiveT::TAGS::DIR_GID) )
+            if ( p1.getTag(PrimitiveT::TAGS::DIR_GID) != p2.getTag(PrimitiveT::TAGS::DIR_GID)          )
             {
-                //_Scalar diff  = MyPrimitivePrimitiveAngleFunctor::eval( p1, p2, this->_angles );
-                int     idealAngleId = 0;
-                _Scalar diff         = MyPrimitivePrimitiveAngleFunctor::eval( p1, p2, allowedAngles, &idealAngleId );
-                if ( idealAngle )
-                    *idealAngle = allowedAngles[ idealAngleId ];
+                if (     !_useAngleGen
+                     || (p1.getTag(PrimitiveT::TAGS::GEN_ANGLE) == p2.getTag(PrimitiveT::TAGS::GEN_ANGLE)) )
+                {
+                    //_Scalar diff  = MyPrimitivePrimitiveAngleFunctor::eval( p1, p2, this->_angles );
+                    int     idealAngleId = 0;
+                    _Scalar diff         = MyPrimitivePrimitiveAngleFunctor::eval( p1, p2, allowedAngles, &idealAngleId );
+                    if ( idealAngle )
+                        *idealAngle = allowedAngles[ idealAngleId ];
 
-                // truncated at half degree difference
-                //_Scalar score = std::min( _Scalar(/*sqrt(0.3):*/0.5477225575), _Scalar(sqrt(diff)) ); // sqrt(0.3): 0.5477225575,0.38729833462
-                score = _Scalar( sqrt(diff) ); // sqrt(0.3): 0.5477225575,0.38729833462
-                //if ( score > 0.5477225575 ) score = _Scalar(0.);
-                //_Scalar score = _Scalar( std::sqrt(diff) );
+                    if (_truncAngle != _Scalar(0.) )
+                        score = angleFunction( std::min(diff, _truncAngle) );
+                }
+                else
+                {
+                    if ( idealAngle )
+                        *idealAngle = _Scalar( 0. );
+                    //if ( spatialWeightOut )
+                    //    spatialWeight = evalSpatial( p1, ex1, p2, ex2 );
+                }
 
                 spatialWeight = evalSpatial( p1, ex1, p2, ex2 );
                 if ( spatialWeight > _Scalar(0.) )
-                    score += ProblemSetupParams<_Scalar>::spatial_weight_coeff;
+                    score += _spatialWeightCoeff;
             }
-            else
-            {
-                if ( idealAngle )
-                    *idealAngle = _Scalar( 0. );
-                if ( spatialWeightOut )
-                    spatialWeight = evalSpatial( p1, ex1, p2, ex2 );
-            }
+
+            score += _dirIdBias;
 
             // output
             if ( spatialWeightOut )
@@ -413,16 +420,23 @@ namespace GF2
             return score;
         } //...eval()
 
-            bool
-            _verbose;
+            inline void setDirIdBias( _Scalar dirIdBias ) { _dirIdBias = dirIdBias; }
+            inline void setTruncAngle( _Scalar truncAngle ) { _truncAngle = truncAngle; }
+            inline void setUseAngleGen( int useAngleGen ) { _useAngleGen = useAngleGen; }
+            inline int getUseAngleGen() { return _useAngleGen; }
+            inline void setSpatialWeightCoeff( _Scalar spatialWeightCoeff ) { _spatialWeightCoeff = spatialWeightCoeff; }
+            inline _Scalar angleFunction( _Scalar angleDiff ) { return sqrt(angleDiff); }
+
+            bool                           _verbose;
         protected:
             _FiniteFiniteDistanceFunctor   _primPrimCompFunctor;
             _PointContainerT        const& _points;
             _Scalar                        _scale;
-
-
-
-    }; //...SqrtPrimitivePrimitiveEnergyFunctor
+            _Scalar                        _dirIdBias;
+            _Scalar                        _truncAngle;
+            int                            _useAngleGen;
+            _Scalar                        _spatialWeightCoeff;
+    }; //...SpatialSqrtPrimitivePrimitiveEnergyFunctor
 #endif
 
     template <typename Scalar, class PrimitiveT>

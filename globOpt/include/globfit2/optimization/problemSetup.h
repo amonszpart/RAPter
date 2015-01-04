@@ -208,9 +208,10 @@ namespace GF2
                      , _PrimPrimDistFunctorT                                            * const& primPrimDistFunctor
                      , AnglesT                                                            const& angle_gens
                      , int                                                                const  patch_pop_limit
-                     , _Scalar                                                            const  dir_id_bias
+                     //, _Scalar                                                            const  dir_id_bias
                      , int                                                                const  verbose                = 0
                      , _Scalar                                                            const  freq_weight            = 0.
+                     , int                                                                const  clusterMode            = 1
                      );
 
     }; //...class ProblemSetup

@@ -9,7 +9,7 @@
 >
 
 <title>Gnuplot</title>
-<desc>Produced by GNUPLOT 4.6 patchlevel 5 </desc>
+<desc>Produced by GNUPLOT 4.6 patchlevel 4 </desc>
 
 <g id="gnuplot_canvas">
 
@@ -34,55 +34,55 @@
 <g style="fill:none; color:white; stroke:currentColor; stroke-width:1.00; stroke-linecap:butt; stroke-linejoin:miter">
 </g>
 <g style="fill:none; color:black; stroke:currentColor; stroke-width:1.00; stroke-linecap:butt; stroke-linejoin:miter">
-	<path stroke='black'  d='M53.9,114.0 L62.9,114.0 M575.0,114.0 L566.0,114.0  '/>	<g transform="translate(45.6,118.5)" style="stroke:none; fill:black; font-family:Arial; font-size:12.00pt; text-anchor:end">
+	<path stroke='black'  d='M53.9,114.0 L62.9,114.0 M575.0,114.0 L566.0,114.0  h0.01'/>	<g transform="translate(45.6,118.5)" style="stroke:none; fill:black; font-family:Arial; font-size:12.00pt; text-anchor:end">
 		<text> 0</text>
 	</g>
-	<path stroke='black'  d='M53.9,97.8 L62.9,97.8 M575.0,97.8 L566.0,97.8  '/>	<g transform="translate(45.6,102.3)" style="stroke:none; fill:black; font-family:Arial; font-size:12.00pt; text-anchor:end">
+	<path stroke='black'  d='M53.9,97.8 L62.9,97.8 M575.0,97.8 L566.0,97.8  h0.01'/>	<g transform="translate(45.6,102.3)" style="stroke:none; fill:black; font-family:Arial; font-size:12.00pt; text-anchor:end">
 		<text> 0.2</text>
 	</g>
-	<path stroke='black'  d='M53.9,81.6 L62.9,81.6 M575.0,81.6 L566.0,81.6  '/>	<g transform="translate(45.6,86.1)" style="stroke:none; fill:black; font-family:Arial; font-size:12.00pt; text-anchor:end">
+	<path stroke='black'  d='M53.9,81.6 L62.9,81.6 M575.0,81.6 L566.0,81.6  h0.01'/>	<g transform="translate(45.6,86.1)" style="stroke:none; fill:black; font-family:Arial; font-size:12.00pt; text-anchor:end">
 		<text> 0.4</text>
 	</g>
-	<path stroke='black'  d='M53.9,65.3 L62.9,65.3 M575.0,65.3 L566.0,65.3  '/>	<g transform="translate(45.6,69.8)" style="stroke:none; fill:black; font-family:Arial; font-size:12.00pt; text-anchor:end">
+	<path stroke='black'  d='M53.9,65.3 L62.9,65.3 M575.0,65.3 L566.0,65.3  h0.01'/>	<g transform="translate(45.6,69.8)" style="stroke:none; fill:black; font-family:Arial; font-size:12.00pt; text-anchor:end">
 		<text> 0.6</text>
 	</g>
-	<path stroke='black'  d='M53.9,49.1 L62.9,49.1 M575.0,49.1 L566.0,49.1  '/>	<g transform="translate(45.6,53.6)" style="stroke:none; fill:black; font-family:Arial; font-size:12.00pt; text-anchor:end">
+	<path stroke='black'  d='M53.9,49.1 L62.9,49.1 M575.0,49.1 L566.0,49.1  h0.01'/>	<g transform="translate(45.6,53.6)" style="stroke:none; fill:black; font-family:Arial; font-size:12.00pt; text-anchor:end">
 		<text> 0.8</text>
 	</g>
-	<path stroke='black'  d='M53.9,32.9 L62.9,32.9 M575.0,32.9 L566.0,32.9  '/>	<g transform="translate(45.6,37.4)" style="stroke:none; fill:black; font-family:Arial; font-size:12.00pt; text-anchor:end">
+	<path stroke='black'  d='M53.9,32.9 L62.9,32.9 M575.0,32.9 L566.0,32.9  h0.01'/>	<g transform="translate(45.6,37.4)" style="stroke:none; fill:black; font-family:Arial; font-size:12.00pt; text-anchor:end">
 		<text> 1</text>
 	</g>
-	<path stroke='black'  d='M53.9,16.7 L62.9,16.7 M575.0,16.7 L566.0,16.7  '/>	<g transform="translate(45.6,21.2)" style="stroke:none; fill:black; font-family:Arial; font-size:12.00pt; text-anchor:end">
+	<path stroke='black'  d='M53.9,16.7 L62.9,16.7 M575.0,16.7 L566.0,16.7  h0.01'/>	<g transform="translate(45.6,21.2)" style="stroke:none; fill:black; font-family:Arial; font-size:12.00pt; text-anchor:end">
 		<text> 1.2</text>
 	</g>
-	<path stroke='black'  d='M53.9,114.0 L53.9,105.0 M53.9,16.7 L53.9,25.7  '/>	<g transform="translate(53.9,136.5)" style="stroke:none; fill:black; font-family:Arial; font-size:12.00pt; text-anchor:middle">
+	<path stroke='black'  d='M53.9,114.0 L53.9,105.0 M53.9,16.7 L53.9,25.7  h0.01'/>	<g transform="translate(53.9,136.5)" style="stroke:none; fill:black; font-family:Arial; font-size:12.00pt; text-anchor:middle">
 		<text> 1</text>
 	</g>
-	<path stroke='black'  d='M119.0,114.0 L119.0,105.0 M119.0,16.7 L119.0,25.7  '/>	<g transform="translate(119.0,136.5)" style="stroke:none; fill:black; font-family:Arial; font-size:12.00pt; text-anchor:middle">
+	<path stroke='black'  d='M119.0,114.0 L119.0,105.0 M119.0,16.7 L119.0,25.7  h0.01'/>	<g transform="translate(119.0,136.5)" style="stroke:none; fill:black; font-family:Arial; font-size:12.00pt; text-anchor:middle">
 		<text> 2</text>
 	</g>
-	<path stroke='black'  d='M184.2,114.0 L184.2,105.0 M184.2,16.7 L184.2,25.7  '/>	<g transform="translate(184.2,136.5)" style="stroke:none; fill:black; font-family:Arial; font-size:12.00pt; text-anchor:middle">
+	<path stroke='black'  d='M184.2,114.0 L184.2,105.0 M184.2,16.7 L184.2,25.7  h0.01'/>	<g transform="translate(184.2,136.5)" style="stroke:none; fill:black; font-family:Arial; font-size:12.00pt; text-anchor:middle">
 		<text> 3</text>
 	</g>
-	<path stroke='black'  d='M249.3,114.0 L249.3,105.0 M249.3,16.7 L249.3,25.7  '/>	<g transform="translate(249.3,136.5)" style="stroke:none; fill:black; font-family:Arial; font-size:12.00pt; text-anchor:middle">
+	<path stroke='black'  d='M249.3,114.0 L249.3,105.0 M249.3,16.7 L249.3,25.7  h0.01'/>	<g transform="translate(249.3,136.5)" style="stroke:none; fill:black; font-family:Arial; font-size:12.00pt; text-anchor:middle">
 		<text> 4</text>
 	</g>
-	<path stroke='black'  d='M314.5,114.0 L314.5,105.0 M314.5,16.7 L314.5,25.7  '/>	<g transform="translate(314.5,136.5)" style="stroke:none; fill:black; font-family:Arial; font-size:12.00pt; text-anchor:middle">
+	<path stroke='black'  d='M314.5,114.0 L314.5,105.0 M314.5,16.7 L314.5,25.7  h0.01'/>	<g transform="translate(314.5,136.5)" style="stroke:none; fill:black; font-family:Arial; font-size:12.00pt; text-anchor:middle">
 		<text> 5</text>
 	</g>
-	<path stroke='black'  d='M379.6,114.0 L379.6,105.0 M379.6,16.7 L379.6,25.7  '/>	<g transform="translate(379.6,136.5)" style="stroke:none; fill:black; font-family:Arial; font-size:12.00pt; text-anchor:middle">
+	<path stroke='black'  d='M379.6,114.0 L379.6,105.0 M379.6,16.7 L379.6,25.7  h0.01'/>	<g transform="translate(379.6,136.5)" style="stroke:none; fill:black; font-family:Arial; font-size:12.00pt; text-anchor:middle">
 		<text> 6</text>
 	</g>
-	<path stroke='black'  d='M444.7,114.0 L444.7,105.0 M444.7,16.7 L444.7,25.7  '/>	<g transform="translate(444.7,136.5)" style="stroke:none; fill:black; font-family:Arial; font-size:12.00pt; text-anchor:middle">
+	<path stroke='black'  d='M444.7,114.0 L444.7,105.0 M444.7,16.7 L444.7,25.7  h0.01'/>	<g transform="translate(444.7,136.5)" style="stroke:none; fill:black; font-family:Arial; font-size:12.00pt; text-anchor:middle">
 		<text> 7</text>
 	</g>
-	<path stroke='black'  d='M509.9,114.0 L509.9,105.0 M509.9,16.7 L509.9,25.7  '/>	<g transform="translate(509.9,136.5)" style="stroke:none; fill:black; font-family:Arial; font-size:12.00pt; text-anchor:middle">
+	<path stroke='black'  d='M509.9,114.0 L509.9,105.0 M509.9,16.7 L509.9,25.7  h0.01'/>	<g transform="translate(509.9,136.5)" style="stroke:none; fill:black; font-family:Arial; font-size:12.00pt; text-anchor:middle">
 		<text> 8</text>
 	</g>
-	<path stroke='black'  d='M575.0,114.0 L575.0,105.0 M575.0,16.7 L575.0,25.7  '/>	<g transform="translate(575.0,136.5)" style="stroke:none; fill:black; font-family:Arial; font-size:12.00pt; text-anchor:middle">
+	<path stroke='black'  d='M575.0,114.0 L575.0,105.0 M575.0,16.7 L575.0,25.7  h0.01'/>	<g transform="translate(575.0,136.5)" style="stroke:none; fill:black; font-family:Arial; font-size:12.00pt; text-anchor:middle">
 		<text> 9</text>
 	</g>
-	<path stroke='black'  d='M53.9,16.7 L53.9,114.0 L575.0,114.0 L575.0,16.7 L53.9,16.7 Z  '/></g>
+	<path stroke='black'  d='M53.9,16.7 L53.9,114.0 L575.0,114.0 L575.0,16.7 L53.9,16.7 Z  h0.01'/></g>
 	<g id="gnuplot_plot_1" ><title>gnuplot_plot_1</title>
 <g style="fill:none; color:white; stroke:black; stroke-width:2.00; stroke-linecap:butt; stroke-linejoin:miter">
 </g>
@@ -91,7 +91,7 @@
 		<text>$scriptstyle \sigma / \sigma_{GT}$</text>
 	</g>
 	<path stroke='rgb(  0,   0,   0)'  d='M516.2,78.0 L558.4,78.0 M53.9,50.0 L119.0,49.8 L184.2,49.8 L249.3,38.8 L314.5,40.8 L379.6,40.2 
-		L444.7,40.2 L509.9,40.2 L575.0,40.2  '/></g>
+		L444.7,40.2 L509.9,40.2 L575.0,40.2  h0.01'/></g>
 	</g>
 	<g id="gnuplot_plot_2" ><title>gnuplot_plot_2</title>
 <g style="fill:none; color:red; stroke:currentColor; stroke-width:2.00; stroke-linecap:butt; stroke-linejoin:miter">
@@ -99,12 +99,12 @@
 		<text>F-measure (relations)</text>
 	</g>
 	<path stroke='rgb(  0,   0,   0)'  d='M516.2,96.0 L558.4,96.0 M53.9,111.9 L119.0,108.7 L184.2,94.7 L249.3,32.9 L314.5,32.9 L379.6,32.9 
-		L444.7,32.9 L509.9,32.9 L575.0,32.9  '/></g>
+		L444.7,32.9 L509.9,32.9 L575.0,32.9  h0.01'/></g>
 	</g>
 <g style="fill:none; color:white; stroke:rgb(  0,   0,   0); stroke-width:1.00; stroke-linecap:butt; stroke-linejoin:miter">
 </g>
 <g style="fill:none; color:black; stroke:currentColor; stroke-width:1.00; stroke-linecap:butt; stroke-linejoin:miter">
-	<path stroke='black'  d='M53.9,16.7 L53.9,114.0 L575.0,114.0 L575.0,16.7 L53.9,16.7 Z  '/></g>
+	<path stroke='black'  d='M53.9,16.7 L53.9,114.0 L575.0,114.0 L575.0,16.7 L53.9,16.7 Z  h0.01'/></g>
 </g>
 </svg>
 

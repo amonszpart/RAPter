@@ -14,6 +14,10 @@ SET( PCL_DIR "${THIRD_PARTY_DIR}/pcl-trunk2/install/share/pcl-1.8/"
 
 SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-function -std=c++0x" )
 
+SET( PATH_QCQPCPP_ROOT "${WORKSPACE_DIR}/QCQPcpp/"
+        CACHE FILEPATH "Root directory of QCQPcpp library containing the \"include\" directory.")
+INCLUDE_DIRECTORIES( ${PATH_QCQPCPP_ROOT}/include )
+
 # BUILD
 SET( dir ${CMAKE_CURRENT_SOURCE_DIR}/build/${CMAKE_BUILD_TYPE} )
 SET( EXECUTABLE_OUTPUT_PATH ${dir}/bin CACHE PATH "Build directory" FORCE)

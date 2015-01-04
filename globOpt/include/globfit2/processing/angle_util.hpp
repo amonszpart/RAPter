@@ -16,7 +16,7 @@ namespace GF2
          *  \param[in] verbose        Enable logging.
          */
         template <class _AnglesContainerT> inline int
-        appendAnglesFromGenerators( _AnglesContainerT &angles, _AnglesContainerT &angle_gens, bool no_parallel, char verbose, bool inRad = false )
+        appendAnglesFromGenerators( _AnglesContainerT &angles, _AnglesContainerT angle_gens, bool no_parallel, char verbose, bool inRad = false )
         {
             typedef typename _AnglesContainerT::Scalar Scalar;
 
@@ -67,11 +67,13 @@ namespace GF2
     } //...ns angles
 
     template <typename _Scalar, class _AnglesT>
-    inline int deduceGenerators( _AnglesT &angle_gens, _AnglesT const& angles )
+    inline int deduceGenerators( _AnglesT &angle_gens, _AnglesT const& angles, const int verbose = 0 )
     {
-
-        std::cout<<"[" << __func__ << "]: " << "angles:";
-        for(size_t vi=0;vi!=angles.size();++vi)std::cout<<angles[vi]*180./M_PI<<" ";std::cout << "\n";
+        if ( verbose )
+        {
+            std::cout<<"[" << __func__ << "]: " << "angles:";
+            for(size_t vi=0;vi!=angles.size();++vi)std::cout<<angles[vi]*180./M_PI<<" ";std::cout << "\n";
+        }
 
         // first element is always the parallel generator
         angle_gens.push_back( _Scalar(0.) );
@@ -97,6 +99,7 @@ namespace GF2
 
                 double intpart = 0.;
                 double rest = modf( angles[i] / angle_gens[j], &intpart );
+                if ( verbose )
                 std::cout << "[" << __func__ << "]: "
                           << angles[i] * 180. / M_PI
                           << " / " << angle_gens[j] * 180. / M_PI
@@ -170,7 +173,7 @@ namespace GF2
     }; //... DirAnglesFunctorOuter
 
     template <typename _Scalar>
-    inline void genAngles( AnglesT &single_gen, _Scalar const& angle, AnglesT angleGensInRad )
+    inline void genAngles( AnglesT &single_gen, _Scalar const& angle, AnglesT angleGensInRad, bool const verbose = false )
     {
         if ( angle == _Scalar(0.) || angle == _Scalar(M_PI) )
             return;
@@ -193,7 +196,7 @@ namespace GF2
         }
 
         if ( single_gen.size() )
-            std::cout << "[" << __func__ << "]: " << "deduced " << single_gen[0] * 180. / M_PI << " from " << angle * 180. / M_PI << std::endl;
+            if ( verbose ) std::cout << "[" << __func__ << "]: " << "deduced " << single_gen[0] * 180. / M_PI << " from " << angle * 180. / M_PI << std::endl;
     }
 
     /*! \brief Decides, which perfect angles to allow for each direction id

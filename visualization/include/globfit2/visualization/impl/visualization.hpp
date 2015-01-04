@@ -8,6 +8,7 @@
 #include "globfit2/io/io.h"                      // readPrimitives()
 #include "globfit2/visualization/visualizer.hpp" // GF2::Visualizer
 #include "globfit2/util/pcl_util.hpp"            // cloudToVector()
+#include "globfit2/processing/angle_util.hpp" // appendAngles...
 
 template <class PrimitiveT>
 int
@@ -46,6 +47,7 @@ GF2::vis::showCli( int argc, char** argv )
                   << "\t[ --no-scale \t\t Hide scale sphere ]\n"
                   << "\t[ --print-angles \t Print angles on relation lines ]\n"
                   << "\t[ --perfect-angle 0.5\t Threshold in degrees, under which a gray line is shown indicating 'perfect relationship' ]\n\n"
+                  << "\t[ --show-spatial \t Show spatial distances ]\n"
                   << "\t[ --stretch \t\t Elong primitives by multiplying their extents with this number ]\n"
                   << "\t[ --hide-empty \t\t Don't show empty primitives' ]\n"
 
@@ -53,6 +55,7 @@ GF2::vis::showCli( int argc, char** argv )
                   << "\t[ --normals i\t\t show every i-th normal. 0: no normals, 1: every normal ]\n\n"
 
                   << "\t[ --gids \t\t Show only specific gids (comma separated) ]\n"
+                  << "\t[ --dids \t\t Show only specific directions (comma separated) ]\n"
                   << "\t[ --statuses \t\t Show only specific statuses (comma separated) ]\n\n"
 
                   << "\t[ --save-poly \t\t Save polygons ]\n"
@@ -94,6 +97,9 @@ GF2::vis::showCli( int argc, char** argv )
     std::vector<int> gids;
     pcl::console::parse_x_arguments( argc, argv, "--gids", gids );
 
+    std::vector<int> dids;
+    pcl::console::parse_x_arguments( argc, argv, "--dids", dids );
+
     std::vector<int> statuses;
     pcl::console::parse_x_arguments( argc, argv, "--statuses", statuses );
 
@@ -104,6 +110,9 @@ GF2::vis::showCli( int argc, char** argv )
 
     std::string title = "";
     pcl::console::parse_argument( argc, argv, "--title", title );
+
+    bool show_spatial = pcl::console::find_switch( argc, argv, "--show-spatial" );
+
 
     int     pop_limit           = 10;
     pcl::console::parse_argument( argc, argv, "--pop-limit", pop_limit );
@@ -161,15 +170,15 @@ GF2::vis::showCli( int argc, char** argv )
     std::string assoc_file;
     if ( (pcl::console::parse_argument(argc,argv,"--assoc",assoc_file) > 0) || (pcl::console::parse_argument(argc,argv,"-a",assoc_file) > 0) )
     {
-        std::vector<std::pair<int,int> > points_primitives;
-        std::map<int,int>                linear_indices; // <pid,lid>
+        std::vector<std::pair<PidT,LidT> > points_primitives;
+        std::map<PidT,LidT>                linear_indices; // <pid,lid>
         GF2::io::readAssociations( points_primitives, dir + "/" + assoc_file, &linear_indices );
 
         for ( size_t pid = 0; pid != points_primitives.size(); ++pid )
         {
             if ( points_primitives[pid].first < static_cast<int>(points.size()) )
             {
-                points[ pid ].setTag( PointPrimitiveT::GID, points_primitives[pid].first );
+                points[ pid ].setTag( PointPrimitiveT::TAGS::GID, points_primitives[pid].first );
             }
             else
                 std::cerr << "[" << __func__ << "]: " << "overindexed pid: " << pid << " >= " << points.size() << " points.size(), skipping..." << std::endl;
@@ -177,12 +186,12 @@ GF2::vis::showCli( int argc, char** argv )
     }
 
     // angles
-    std::vector<Scalar> angle_gens(1);
+    AnglesT angle_gens;
     if ( pcl::console::parse_x_arguments( argc, argv, "--angle-gens", angle_gens ) < 0 )
         angle_gens[0] = Scalar(90.);
 
-    std::vector<Scalar> angles;
-    processing::appendAnglesFromGenerators( angles, angle_gens, no_paral, true );
+    AnglesT angles;
+    angles::appendAnglesFromGenerators( angles, angle_gens, no_paral, true );
 
     // tags = point colours
     char use_tags = pcl::console::find_switch( argc, argv, "--use-tags" );
@@ -204,6 +213,15 @@ GF2::vis::showCli( int argc, char** argv )
         }
     }
 
+    std::set<int>didsSet;
+    {
+        didsSet.insert( dids.begin(), dids.end() );
+        if ( didsSet.size() )
+        {
+            std::cout<<"dids:";for(size_t vi=0;vi!=dids.size();++vi)std::cout<<dids[vi]<<" ";std::cout << "\n";
+        }
+    }
+
     // filter status codes UNSET, ACTIVE and SMALL
     std::set<int> statusSet;
     {
@@ -220,7 +238,7 @@ GF2::vis::showCli( int argc, char** argv )
                                                                                , /*               colour: */ (Eigen::Vector3f() << 1,0,0).finished() // probably unused
                                                                                , /*            bg_colour: */ bg_colour
                                                                                , /*                 spin: */ true
-                                                                               , /*          connections: */ dont_show_rels ? NULL : &angles
+                                                                               , /*          connections: */ (dont_show_rels && !show_spatial) ? NULL : &angles
                                                                                , /*             show_ids: */ show_ids
                                                                                , /*             use_tags: */ use_tags
                                                                                , /*            pop-limit: */ pop_limit
@@ -233,6 +251,7 @@ GF2::vis::showCli( int argc, char** argv )
                                                                                , /*          dir_colours: */ dir_colours
                                                                                , /*          hide_points: */ hide_points
                                                                                , /*          filter_gids: */ gidsSet.size  () ? &gidsSet: NULL
+                                                                               , /*          filter_dids: */ didsSet.size  () ? &didsSet: NULL
                                                                                , /*        filter_status: */ statusSet.size() ? &statusSet : NULL
                                                                                , /*              stretch: */ stretch
                                                                                , /*            draw_mode: */ draw_mode
@@ -241,6 +260,7 @@ GF2::vis::showCli( int argc, char** argv )
                                                                                , /*            save_poly: */ save_poly
                                                                                , /*           point_size: */ point_size
                                                                                , /*           show_empty: */ show_empty
+                                                                               , /*         show_spatial: */ show_spatial
                                                                                );
     return EXIT_SUCCESS;
 } // ... Solver::show()

@@ -80,6 +80,7 @@ namespace GF2
                                     , int              const  closest_angle_id
                                     , _AngleContainerT const& angles
                                     , Scalar           const  angle_multiplier = Scalar(1.)
+                                    , bool             const  verbose = false
                                     ) const
             {
                 typedef Eigen::Matrix<Scalar,3,1> Direction;
@@ -104,7 +105,7 @@ namespace GF2
                 // erase chosen tag - this is a new candidate
                 out.setTag( TAGS::STATUS, STATUS_VALUES::UNSET );
 
-                std::cout << "[" << __func__ << "]: " << "angle= " << angle << ", closest_angle_id: " << closest_angle_id << ", mult:  " << angle_multiplier << std::endl;
+                if ( verbose ) std::cout << "[" << __func__ << "]: " << "angle= " << angle << ", closest_angle_id: " << closest_angle_id << ", mult:  " << angle_multiplier << std::endl;
 
                 return true;
             } //...generateFrom
