@@ -425,6 +425,7 @@ namespace GF2
             inline void setUseAngleGen( int useAngleGen ) { _useAngleGen = useAngleGen; }
             inline int getUseAngleGen() { return _useAngleGen; }
             inline void setSpatialWeightCoeff( _Scalar spatialWeightCoeff ) { _spatialWeightCoeff = spatialWeightCoeff; }
+            inline _Scalar getSpatialWeightCoeff() { return _spatialWeightCoeff; }
             inline _Scalar angleFunction( _Scalar angleDiff ) { return sqrt(angleDiff); }
 
             bool                           _verbose;

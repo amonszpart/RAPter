@@ -26,7 +26,8 @@ namespace correspondence
                                     Scalar scale,
                                     const _Functor &f)
     {
-        std::cout << "pos: " << prim.template pos().transpose() << ", gtpos: " << gt_prim.template pos().transpose() << ", norm: " << (prim.template pos() - gt_prim.template pos()).norm() << std::endl;
+        const bool verbose = false;
+        if ( verbose ) std::cout << "pos: " << prim.template pos().transpose() << ", gtpos: " << gt_prim.template pos().transpose() << ", norm: " << (prim.template pos() - gt_prim.template pos()).norm() << std::endl;
 
         return 1.- f.eval(extrema,   prim.template pos(),
                       extremagt, gt_prim.template pos(),
@@ -333,7 +334,7 @@ namespace correspondence
                                         /*PNT_GID_A, PNT_GID_B*/ );
 
                             // log
-                            std::cout << ": " << costs[ CostKey(GidLid(gidA,lidA),GidLid(gidB,lidB)) ] << std::endl;
+                            if ( verbose ) std::cout << ": " << costs[ CostKey(GidLid(gidA,lidA),GidLid(gidB,lidB)) ] << std::endl;
                         } //...for prims in patchB
                     } //...for patchesB
                 } //...for prims in patchA

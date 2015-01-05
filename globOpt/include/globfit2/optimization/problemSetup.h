@@ -214,6 +214,50 @@ namespace GF2
                      , int                                                                const  clusterMode            = 1
                      );
 
+            /*! \brief                          Step 2. Reads the output from generate and sets up the optimization problem in form of sparse matrices.
+             *  \tparam _PrimitiveContainerT    Concept: vector< vector< \ref GF2::LinePrimitive2 > >.
+             *  \tparam _PointContainerT        Concept: vector< \ref GF2::PointPrimitive >.
+             *  \tparam _PrimPrimDistFunctorT   Concept: \ref GF2::SpatialSqrtPrimitivePrimitiveEnergyFunctor.
+             *  \param[in,out] problem          QCQPcpp::OptProblem (\ref problemSetup::OptProblemT) typed problem to append to.
+             *  \param[in] prims                Holds the input primitives to setup the optimization with.
+             *  \param[in] points               Holds the input points.
+             *  \param[in] constr_mode          See \ref ProblemSetupParams::CONSTR_MODE. \copybrief GF2::ProblemSetupParams::CONSTR_MODE.
+             *  \param[in] data_cost_mode       See \ref ProblemSetupParams::DATA_COST_MODE.
+             *  \param[in] scale                Scale of input, can be used for data cost.
+             *  \param[in] weights              Weights for problemsetup, contains data, pairwise and complexity weight in this order.
+             *  \param[in] primPrimDistFunctor  Functor, that calculates the distance between two primitives. Concept: \ref SqrtPrimitivePrimitiveEnergyFunctor.
+             *  \param[in] patch_pop_limit      Decides, whether a patch is large or small. Used in \ref problemSetup::largePatchesNeedDirectionConstraint.
+             *  \param[in] dir_id_bias          \copydoc ProblemSetupParams::dir_id_bias.
+             *  \param[in] verbose              Debug messages display.
+             *  \param[in] freq_weight          Multiplies the data cost by freq_weight / DIR_COUNT.
+             *  \return                         Outputs EXIT_SUCCESS or the error the OptProblem implementation returns.
+             *  \note                           \p points are assumed to be tagged at _PointPrimitiveT::TAGS::GID with the _PrimitiveT::TAGS::GID of the \p prims.
+             *  \sa \ref problemSetup::largePatchesNeedDirectionConstraint
+             */
+            template < class _PointPrimitiveDistanceFunctor
+                     , class _PrimitiveContainerT
+                     , class _PointContainerT
+                     , class _PrimPrimDistFunctorT
+                     , class _PrimitiveT        = typename _PrimitiveContainerT::value_type::value_type
+                     , class _PointPrimitiveT   = typename _PointContainerT::value_type
+                     , typename _Scalar         = typename _PointPrimitiveT::Scalar
+                     > static inline int
+            formulate2( problemSetup::OptProblemT                                               & problem
+                     , _PrimitiveContainerT                                               const& prims
+                     , _PointContainerT                                                   const& points
+                     , typename ProblemSetupParams<_Scalar>::CONSTR_MODE                  const  constr_mode
+                     , typename ProblemSetupParams<_Scalar>::DATA_COST_MODE               const  data_cost_mode
+                     , _Scalar                                                            const  scale
+                     , Eigen::Matrix<_Scalar,-1,1>                                        const& weights
+                     , _PrimPrimDistFunctorT                                            * const& primPrimDistFunctor
+                     , AnglesT                                                            const& angle_gens
+                     , int                                                                const  patch_pop_limit
+                     //, _Scalar                                                            const  dir_id_bias
+                     , int                                                                const  verbose                = 0
+                     , _Scalar                                                            const  freq_weight            = 0.
+                     , int                                                                const  clusterMode            = 1
+                     );
+
     }; //...class ProblemSetup
 } //...namespace GF2
 

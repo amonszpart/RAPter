@@ -24,7 +24,8 @@
 #include "globfit2/io/io.h"
 //#include "globfit2/optimization/candidateGenerator.h" // generate()
 //#include "globfit2/optimization/energyFunctors.h"     // PointLineDistanceFunctor,
-#include "globfit2/optimization/problemSetup.h"       // everyPatchNeedsDirection()
+#include "globfit2/optimization/problemSetup.h"         // everyPatchNeedsDirection()
+#include "globfit2/processing/diagnostic.hpp"           // Diagnostic
 
 namespace GF2
 {
@@ -41,7 +42,6 @@ int
 Solver::solve( int    argc
              , char** argv )
 {
-
     int                                   err           = EXIT_SUCCESS;
 
     bool                                  verbose       = false;
@@ -235,22 +235,16 @@ Solver::solve( int    argc
         {
             // copy
             std::copy( x_out.begin(), x_out.end(), scalar_x_out.begin() );
-
-            // print energy
-//            checkSolution( scalar_x_out
-//                           , p_problem->getLinObjectivesMatrix().cast<Scalar>()
-//                           , p_problem->getQuadraticObjectivesMatrix().cast<Scalar>()
-//                           , p_problem->getLinConstraintsMatrix().cast<Scalar>()
-//                           , weights );
         } //...copy output
 
         // dump
         if ( err != EXIT_SUCCESS ) // by Aron 27/12/2014
         {
-            std::cout << "err is " << err << ", now saving will happen..." << std::endl;
+            std::cout << "err is " << err << ", no saving will happen..." << std::endl;
         }
         if ( EXIT_SUCCESS == err)
         {
+            Diagnostic<OptScalar> diag( p_problem->getLinObjectivesMatrix(), p_problem->getQuadraticObjectivesMatrix() );
             {
                 std::string x_path = project_path + "/x.csv";
                 OptProblemT::SparseMatrix sp_x( x_out.size(), 1 ); // output colvector
@@ -295,6 +289,12 @@ Solver::solve( int    argc
                                 //std::cout << "saving " << prims[l][l1].getTag(_PrimitiveT::TAGS::GID) << ", " << prims[l][l1].getTag(_PrimitiveT::TAGS::DIR_GID) << ", X: " << x_out[prim_id] << "\t, ";
                                 prims[l][l1].setTag( _PrimitiveT::TAGS::STATUS, _PrimitiveT::STATUS_VALUES::ACTIVE );
                                 out_prims.back().push_back( prims[l][l1] );
+
+                                // diagnostic // 5/1/2015
+                                char name[256];
+                                sprintf( name,"p%d,%d", prims[l][l1].getTag(_PrimitiveT::TAGS::GID),prims[l][l1].getTag(_PrimitiveT::TAGS::DIR_GID) );
+                                diag.setNodeName( prim_id, name );
+                                diag.setNodePos( prim_id, prims[l][l1].template pos() );
                             }
 
                             // increment non-small primitive ids
@@ -302,6 +302,46 @@ Solver::solve( int    argc
                         }
                     } // ... for l1
                 std::cout << std::endl;
+
+                const int clusterVarsStart = prim_id;
+                std::cout << "clusterVarsStart: " << clusterVarsStart << std::endl;
+                // add rest of nodes (cluster_nodes)
+                {
+                    for ( ; prim_id < x_out.size(); ++prim_id )
+                    {
+                        char name[256];
+                        if ( int(round(x_out[prim_id])) > 0 )
+                        {
+                            sprintf( name,"%d_on", prim_id );
+                            diag.setNodeName( prim_id, name );
+                        }
+                        else
+                        {
+                            sprintf( name,"%d_off", prim_id );
+                        }
+                    }
+                }
+
+                // go over constraints
+                {
+                    typedef typename OptProblemT::SparseMatrix SparseMatrix;
+                    for ( int j = 0; j != p_problem->getConstraintCount(); ++j )
+                    {
+                        SparseMatrix Qk = p_problem->getQuadraticConstraintsMatrix( j );
+                        if ( !Qk.nonZeros() ) continue;
+
+                        for ( int row = 0; row != Qk.outerSize(); ++row )
+                        {
+                            for ( typename SparseMatrix::InnerIterator it(Qk,row); it; ++it )
+                            {
+                                std::cout << "Q" << j << " has entry "
+                                             << it.row() << "," << it.col() << " = " << it.value() << std::endl;
+                                if ( it.value() != 0. )
+                                    diag.addEdge( it.row(), it.col() );
+                            }
+                        }
+                    }
+                }
 
                 std::string parent_path = boost::filesystem::path(candidates_path).parent_path().string();
                 if ( parent_path.empty() )  parent_path = "./";
@@ -311,13 +351,22 @@ Solver::solve( int    argc
                 {
                     int iteration = 0;
                     iteration = std::max(0,util::parseIteration(candidates_path) );
-                    std::stringstream ss;
-                    ss << parent_path + rel_out_path << "/primitives_it" << iteration << "." << solver_str << ".csv";
-                    out_prim_path = ss.str();
+                    {
+                        std::stringstream ss;
+                        ss << parent_path + rel_out_path << "/primitives_it" << iteration << "." << solver_str << ".csv";
+                        out_prim_path = ss.str();
+                    }
+
+                    {
+                        std::stringstream ss;
+                        ss << parent_path + rel_out_path << "/diag_it" << iteration << ".gv";
+                        diag.draw( ss.str(), false );
+                    }
                 }
 
                 util::saveBackup    ( out_prim_path );
                 io::savePrimitives<_PrimitiveT, typename _InnerPrimitiveContainerT::const_iterator>( out_prims, out_prim_path, /* verbose: */ true );
+
             } // if --candidates
             else
             {

@@ -119,6 +119,9 @@ namespace GF2
             if ( !found_divisor )
                 angle_gens.push_back( angles[i] );
         } //...angles
+
+        return 0;
+
     } //...deduceGenerators
 
     typedef std::map< DidT, std::map<int,int> > DirAngleMapT; // <did, <angle_id, count> >

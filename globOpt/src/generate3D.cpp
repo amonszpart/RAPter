@@ -3,19 +3,19 @@
 
 #include "globfit2/optimization/candidateGenerator.h"
 
-int generate( int argc, char** argv )
+int generate3D( int argc, char** argv )
 {
-    if ( GF2::console::find_switch(argc,argv,"--generate") )
+    if ( GF2::console::find_switch(argc,argv,"--generate3D") )
     {
-        return GF2::CandidateGenerator::generateCli< GF2::_2d::PrimitiveContainerT
+        return GF2::CandidateGenerator::generateCli< GF2::_3d::PrimitiveContainerT
                                                    , GF2::PointContainerT
                                                    , GF2::Scalar
                                                    , GF2::PointPrimitiveT
-                                                   , GF2::_2d::PrimitiveT
+                                                   , GF2::_3d::PrimitiveT
                                                    >( argc, argv );
     }
     else
-        std::cerr << "[" << __func__ << "]: " << "switched to wrong place " << std::endl;
+        std::cerr << "[" << __func__ << "]: " << "switched to wrong place..." << std::endl;
 
     return EXIT_FAILURE;
 }

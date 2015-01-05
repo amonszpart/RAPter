@@ -176,7 +176,7 @@ namespace containers {
 
             inline bool operator<( PrimitiveContainerIterator const& other )
             {
-    #                       warning "[PrimitiveContainer::Iterator] HACK, assumes GIDs come in ascending order! TODO: change to iterator comparison"
+                //"[PrimitiveContainer::Iterator] HACK, assumes GIDs come in ascending order! TODO: change to iterator comparison"
                 if   ( getGid() < other.getGid() )  return true;
                 else                                return (getLid() < other.getLid());
             }

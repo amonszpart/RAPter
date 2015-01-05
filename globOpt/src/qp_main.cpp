@@ -10,8 +10,11 @@
 int subsample ( int argc, char** argv ); // subsample.cpp
 int segment   ( int argc, char** argv ); // segment.cpp
 int generate  ( int argc, char** argv ); // generate.cpp
+int generate3D( int argc, char** argv ); // generate3D.cpp
 int formulate ( int argc, char** argv ); // problemSetup.cpp
+int formulate3D( int argc, char** argv ); // problemSetup.cpp
 int solve     ( int argc, char** argv ); // solve.cpp
+int solve3D   ( int argc, char** argv ); // solve3D.cpp
 int merge     ( int argc, char** argv ); // merge.cpp
 int datafit   ( int argc, char** argv ); // datafit.cpp
 int reassign  ( int argc, char** argv );
@@ -46,19 +49,32 @@ int main( int argc, char *argv[] )
     {
        return segment( argc, argv );
     }
-    else if ( GF2::console::find_switch(argc,argv,"--generate") || GF2::console::find_switch(argc,argv,"--generate3D") )
+    else if ( GF2::console::find_switch(argc,argv,"--generate") )
     {
         return generate(argc,argv);
     }
-    else if ( GF2::console::find_switch(argc,argv,"--formulate") || GF2::console::find_switch(argc,argv,"--formulate3D"))
+    else if ( GF2::console::find_switch(argc,argv,"--generate3D") )
+    {
+        return generate3D(argc,argv);
+    }
+    else if ( GF2::console::find_switch(argc,argv,"--formulate") )
     {
         return formulate( argc, argv );
         //return GF2::ProblemSetup::formulateCli<GF2::Solver::PrimitiveContainerT, GF2::Solver::PointContainerT>( argc, argv );
     }
-    else if ( GF2::console::find_switch(argc,argv,"--solver") || GF2::console::find_switch(argc,argv,"--solver3D") ) // Note: "solver", not "solve" :-S
+    else if ( GF2::console::find_switch(argc,argv,"--formulate3D") )
+    {
+        return formulate3D( argc, argv );
+        //return GF2::ProblemSetup::formulateCli<GF2::Solver::PrimitiveContainerT, GF2::Solver::PointContainerT>( argc, argv );
+    }
+    else if ( GF2::console::find_switch(argc,argv,"--solver") ) // Note: "solver", not "solve" :-S
     {
         return solve( argc, argv );
         //return GF2::Solver::solve( argc, argv );
+    }
+    else if ( GF2::console::find_switch(argc,argv,"--solver3D") ) // Note: "solver", not "solve" :-S
+    {
+        return solve( argc, argv );
     }
     else if ( GF2::console::find_switch(argc,argv,"--datafit") || GF2::console::find_switch(argc,argv,"--datafit3D") )
     {

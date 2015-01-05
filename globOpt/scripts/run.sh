@@ -57,7 +57,7 @@ fi
 #d=`../divide.py 2 3`;
 
 anglegens="60,90"; # Values: ["60", "90", "60,90", ... ] Desired angle generators in degrees. Default: 90.
-nbExtraIter=2;  # Values: [ 1..20 ] iteration count. Default: 2.
+nbExtraIter=0;  # Values: [ 1..20 ] iteration count. Default: 2.
 dirbias="0";	# Values: [ 0, *1* ] (Not-same-dir-id cost offset. Default: 0. Don't use, if freqweight is on.)
 freqweight="0"; # Values: [ 0, *1000* ] (Dataterm = (freqweight / #instances) * datacost)
 adopt="0";      # Values: [ *0*, 1] (Adopt points argument. Default: 0)
@@ -66,11 +66,11 @@ cand_anglediv="1";# for 3D: "2.5";
 # multiply scale by this number to get the segmentation (regionGrowing) spatial distance
 segmentScaleMultiplier="1";# for 3D: "2.5";
 pwCostFunc="spatsqrt" # spatial cost function. TODO: reactivate sqrt (does not compile for now)
-unary=10000
+unary=1000
 
 noClusters="" # Values: [ "", "--no-clusters" ] (Flag that turns spatial clustering extra variables off)
 useAngleGen="" # Values: [ "", "--use-angle-gen" ] (Flag which makes not same directioned primitives not to penalize eachother)
-spatWeight=1 # Values: [ 10, 0 ] (Penalty that's added, if two primitives with different directions are closer than 2 x scale)
+spatWeight=0 # Values: [ 10, 0 ] (Penalty that's added, if two primitives with different directions are closer than 2 x scale)
 truncAngle=$anglelimit # Values: [ 0, $anglelimit, 0.15 ] (Pairwise cost truncation angle in radians)
 formParams="$noClusters $useAngleGen --spat-weight $spatWeight --trunc-angle $truncAngle"
 
@@ -84,14 +84,14 @@ startAt=0
 
 #moved to argument 6
 #smallThresh="256" # smallThresh * scale is the small threshold # 5 was good for most of the stuff, except big scenes (kinect, lanslevillard)
-smallThresh="8"
+smallThresh="4"
 smallThreshlimit="0" #last threshold
 smallThreshDiv="2"; #stepsize
 
 safeMode=""; #"--safe-mode"; #"--safe-mode" # "--safe-mode" for new, or "" for old version
 variableLimit=1100; # 1300; # Safe mode gets turned on, and generate rerun, if candidates exceed this number (1300)
 premerge=1 # call merge after segmentation 0/1
-algCode=3 # 0==B_BB, OA, QG, 3==Hyb, ECP, IFP
+algCode=0 # 0==B_BB, OA, QG, 3==Hyb, ECP, IFP
 
 echo "scale: $scale"
 echo "pw: $pw"

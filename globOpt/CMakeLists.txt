@@ -220,6 +220,7 @@ SET( GLOBOPT_HPP_LIST
     include/globfit2/processing/util.hpp
     include/globfit2/processing/angle_util.hpp
     include/globfit2/processing/graph.hpp
+    include/globfit2/processing/diagnostic.hpp
     include/globfit2/comparison/impl/reassign.hpp
 )
 
@@ -252,8 +253,11 @@ SET( GLOBOPT_SRC_LIST
     src/subsample.cpp
     src/segment.cpp
     src/generate.cpp
+    src/generate3D.cpp
     src/problemSetup.cpp
+    src/problemSetup3D.cpp
     src/solve.cpp
+    src/solve3D.cpp
     src/merge.cpp
     src/datafit.cpp
     src/reassign.cpp
