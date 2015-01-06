@@ -1,0 +1,1 @@
+[01/06/15 00:03:56] ../run.sh 0.021 0.2 10 --no-clusters  --spat-weight 10 --trunc-angle 0 --freqweight 0 --angle-limit 0.2 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 60,90 --cost-fn spatsqrt --small-thresh 24 --small-thresh-limit --smallThreshDiv 3 
