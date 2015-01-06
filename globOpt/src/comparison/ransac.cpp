@@ -109,7 +109,10 @@ int ransacCli( int argc, char **argv )
             {
                 if ( params.algo == RansacParams<Scalar>::RANSAC )
                 {
-                    typename pcl::SampleConsensusModelPlane<PclPointT>::Ptr model( new pcl::SampleConsensusModelPlane<PclPointT> (pcl_cloud, populations[gid]) );
+                    std::vector<int> indices;
+                    std::copy( populations[gid].begin(), populations[gid].end(), indices.begin() );
+
+                    typename pcl::SampleConsensusModelPlane<PclPointT>::Ptr model( new pcl::SampleConsensusModelPlane<PclPointT> (pcl_cloud, indices) );
                     pcl::RandomSampleConsensus<PclPointT> ransac (model);
                     ransac.setDistanceThreshold (params.scale);
                     if ( ransac.computeModel() )
@@ -138,9 +141,12 @@ int ransacCli( int argc, char **argv )
             {
                 if ( params.algo == RansacParams<Scalar>::RANSAC )
                 {
+                    std::vector<int> indices;
+                    std::copy( populations[gid].begin(), populations[gid].end(), indices.begin() );
+
                     std::cout << "[" << __func__ << "]: " << "doing ransac lines" << std::endl;
                     std::cout<<"populations["<<gid<<"]:";for(size_t vi=0;vi!=populations[gid].size();++vi)std::cout<<populations[gid][vi]<<" ";std::cout << "\n";
-                    typename pcl::SampleConsensusModelLine<PclPointT>::Ptr model( new pcl::SampleConsensusModelLine<PclPointT> (pcl_cloud, populations[gid]) );
+                    typename pcl::SampleConsensusModelLine<PclPointT>::Ptr model( new pcl::SampleConsensusModelLine<PclPointT> (pcl_cloud, indices) );
 
                     pcl::RandomSampleConsensus<PclPointT> ransac( model );
                     ransac.setDistanceThreshold( params.scale );

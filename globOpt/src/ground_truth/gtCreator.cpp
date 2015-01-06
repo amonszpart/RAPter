@@ -3,6 +3,7 @@
 #include <iostream>
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
+#include <opencv2/imgproc.hpp>
 
 #include "pcl/point_cloud.h"
 #include "pcl/point_types.h"
@@ -12,6 +13,7 @@
 #include "globfit2/primitives/linePrimitive.h"
 #include "globfit2/ground_truth/ground_truth.h"
 #include "globfit2/optimization/candidateGenerator.h"
+#include "pcltools/util.hpp"
 
 #if 0
 int GF2::GTCreator::run( pcl::PointCloud<PointT>::Ptr &cloud, std::string /*gt_name*/, int gt_nPoints, float gt_noise )
@@ -84,6 +86,50 @@ int GF2::GTCreator::run( pcl::PointCloud<PointT>::Ptr &cloud, std::string /*gt_n
 }
 #endif
 
+inline float RANDF(float m=1.f) {return m * rand() / (static_cast<float>(RAND_MAX) - 1.f);}
+
+int GF2::GTCreator::image_2_2DCloud( pcl::PointCloud<GF2::GTCreator::PointT>::Ptr &cloud
+                               , cv::Mat                const& img
+                               , int                         N_samples
+                               , const float                 Z          )
+    {
+    typedef GF2::GTCreator::PointT PointT;
+        const float scale = 1.f;
+
+        if ( !cloud )
+            cloud = pcl::PointCloud<PointT>::Ptr( new pcl::PointCloud<PointT>() );
+
+        cv::Mat gray;
+        if ( img.channels() > 1 )   cv::cvtColor( img, gray, cv::COLOR_RGB2GRAY );
+        else                        gray = img;
+
+        cv::threshold( gray, gray, 200., 255., cv::THRESH_BINARY );
+
+        int   pix_count = gray.cols * gray.rows - cv::countNonZero( gray );
+        float prob      = N_samples / (float)pix_count;
+        for ( int y = 0; (y < gray.rows) && (cloud->size() != (size_t)N_samples); ++y  )
+        {
+            for ( int x = 0; (x < gray.cols) && (cloud->size() != (size_t)N_samples); ++x )
+            {
+                if ( (gray.at<uchar>(y,x) < 255) && (RANDF() < prob) )
+                {
+                    PointT pnt;
+                    pnt.x = x/(float)gray.cols*scale;
+                    pnt.y = (gray.rows-y)*scale/(float)gray.rows;
+                    pnt.z = Z;
+
+                    pnt.getVector3fMap() = (Eigen::Vector3f() << 1., 0., 0.).finished();
+                    cloud->push_back( pnt );
+                }
+            }
+        }
+
+        cv::imshow( "img", gray );
+        cv::waitKey( 20 );
+
+        return EXIT_SUCCESS;
+    }
+
 int GF2::GTCreator::sampleImage( pcl::PointCloud<PointT>::Ptr &cloud
                                  , std::string                  img_path
                                  , int                          gt_nPoints
@@ -101,7 +147,7 @@ int GF2::GTCreator::sampleImage( pcl::PointCloud<PointT>::Ptr &cloud
 
     const int n_points = gt_nPoints;
     std::cout << "calling with " << n_points << ", " << gt_scene_size << std::endl;
-    CandidateGenerator::image_2_2DCloud<PCLPointAllocator<3> >( /*     out_cloud: */ *cloud
+    image_2_2DCloud/*<PCLPointAllocator<3> >*/( /*     out_cloud: */ *cloud
                                                                 , /*        path: */ img
                                                                 , /*    N_points: */ n_points
                                                                 , /*           Z: */ Z
