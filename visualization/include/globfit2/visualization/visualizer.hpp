@@ -221,7 +221,7 @@ namespace GF2
         // Check if we can use color palette
         const int paletteRequiredSize = id2ColId.size() + 1; // set this to 0, if you only want 7 colours
         // Defaults to true, since util replicates colours
-        bool usePalette = id2ColId.size() <= 7; //util::paletteLightColoursEigen(paletteRequiredSize).size();
+        bool usePalette = id2ColId.size() <= paletteRequiredSize; //util::paletteLightColoursEigen(paletteRequiredSize).size();
         std::vector<Eigen::Vector3f> pointColours, primColours;
         Eigen::Vector3f              unusedPointColour, unusedPrimColour;
         // Choose, and fill colour palette
@@ -251,7 +251,9 @@ namespace GF2
                     pointColours[cid](1) = std::min( pointColours[cid](1) * 1.6, 255.);
                     pointColours[cid](2) = std::min( pointColours[cid](2) * 1.6, 255.);
                 }
-                unusedPointColour = unusedPrimColour = Eigen::Vector3f::Zero();
+
+                unusedPointColour = util::paletteLightNeutralColour();
+                unusedPrimColour  = util::paletteDarkNeutralColour();
             }
         } // colours
 
