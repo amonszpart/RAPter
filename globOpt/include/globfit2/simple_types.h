@@ -25,6 +25,8 @@ struct AnglesT : public std::vector<__Scalar>
     AnglesT( std::vector<Scalar> const& angles ) : ParentT( angles ) {}
 };
 
+const double halfDeg = 0.00872664626; // half degree in radians, used to check generator equality
+
 } //...ns GF2
 
 #endif // GF2_SIMPLE_TYPES_H

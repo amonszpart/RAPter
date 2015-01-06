@@ -36,7 +36,7 @@ int ransacCli( int argc, char **argv )
 {
     typedef typename _InnerPrimitiveContainerT::value_type    PrimitiveT;
     typedef typename _PointContainerT::value_type             PointPrimitiveT;
-    typedef          std::map<GidT, _InnerPrimitiveContainerT> PrimitiveMapT;
+    typedef          std::map<GF2::GidT, _InnerPrimitiveContainerT> PrimitiveMapT;
     typedef typename PointPrimitiveT::Scalar                  Scalar;
     typedef typename _PclCloudT::PointType                    PclPointT;
 
@@ -245,7 +245,7 @@ template < typename _PointContainerT
 inline int schnabelCli( int argc, char** argv )
 {
     typedef typename _PclCloudT::PointType                    PclPointT;
-    typedef          std::map<GidT, _InnerPrimitiveContainerT> PrimitiveMapT;
+    typedef          std::map<GF2::GidT, _InnerPrimitiveContainerT> PrimitiveMapT;
     typedef typename _PointContainerT::value_type             PointPrimitiveT;
     typedef typename _InnerPrimitiveContainerT::value_type   PrimitiveT;
     typedef typename _PclCloudT::PointType                    PclPointT;
@@ -310,7 +310,7 @@ inline int schnabelCli( int argc, char** argv )
         vptr->spinOnce(100);
     }
 
-    typedef std::map<PidT,GidT> PidGidT;
+    typedef std::map<GF2::PidT,GF2::GidT> PidGidT;
      std::vector<GF2::PlanePrimitive> planes;
      PidGidT                          pidGid;
 

@@ -57,7 +57,7 @@ fi
 #d=`../divide.py 2 3`;
 
 anglegens="60,90"; # Values: ["60", "90", "60,90", ... ] Desired angle generators in degrees. Default: 90.
-nbExtraIter=0;  # Values: [ 1..20 ] iteration count. Default: 2.
+nbExtraIter=6;  # Values: [ 1..20 ] iteration count. Default: 2.
 dirbias="0";	# Values: [ 0, *1* ] (Not-same-dir-id cost offset. Default: 0. Don't use, if freqweight is on.)
 freqweight="0"; # Values: [ 0, *1000* ] (Dataterm = (freqweight / #instances) * datacost)
 adopt="0";      # Values: [ *0*, 1] (Adopt points argument. Default: 0)
@@ -66,12 +66,12 @@ cand_anglediv="1";# for 3D: "2.5";
 # multiply scale by this number to get the segmentation (regionGrowing) spatial distance
 segmentScaleMultiplier="1";# for 3D: "2.5";
 pwCostFunc="spatsqrt" # spatial cost function. TODO: reactivate sqrt (does not compile for now)
-unary=1000
+unary=100
 
-noClusters="" # Values: [ "", "--no-clusters" ] (Flag that turns spatial clustering extra variables off)
+noClusters="--no-clusters" # Values: [ "", "--no-clusters" ] (Flag that turns spatial clustering extra variables off)
 useAngleGen="" # Values: [ "", "--use-angle-gen" ] (Flag which makes not same directioned primitives not to penalize eachother)
-spatWeight=0 # Values: [ 10, 0 ] (Penalty that's added, if two primitives with different directions are closer than 2 x scale)
-truncAngle=$anglelimit # Values: [ 0, $anglelimit, 0.15 ] (Pairwise cost truncation angle in radians)
+spatWeight=$pw # Values: [ 10, 0 ] (Penalty that's added, if two primitives with different directions are closer than 2 x scale)
+truncAngle=$angelimit # Values: [ 0, $anglelimit, 0.15 ] (Pairwise cost truncation angle in radians)
 formParams="$noClusters $useAngleGen --spat-weight $spatWeight --trunc-angle $truncAngle"
 
 # unary 1000     anglimit 0.3 pw 10 freqweight 1000 dirbias 1 is usually ok
@@ -121,7 +121,7 @@ function save_args() {
 }
 
 # call it
-save_args $0 $@ "$formParams --freqweight" $freqweight "--angle-limit" $anglelimit "--segment-scale-mult" $segmentScaleMultiplier "--adopt" $adopt "--dirbias" $dirbias "--cand-anglediv" ${cand_anglediv} "--angle-gens" $anglegens "--cost-fn" $pwCostFunc "--small-thresh" $smallThresh "--small-thresh-limit" $smallThreshLimit "smallThreshDiv" $smallThreshDiv
+save_args $0 $@ "$formParams --freqweight" $freqweight "--angle-limit" $anglelimit "--segment-scale-mult" $segmentScaleMultiplier "--adopt" $adopt "--dirbias" $dirbias "--cand-anglediv" ${cand_anglediv} "--angle-gens" $anglegens "--cost-fn" $pwCostFunc "--small-thresh" $smallThresh "--small-thresh-limit" $smallThreshLimit "--smallThreshDiv" $smallThreshDiv
 
 #####
 # Check if the gt folder exists, in that case compute the primitive comparisons

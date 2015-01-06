@@ -334,8 +334,6 @@ Solver::solve( int    argc
                         {
                             for ( typename SparseMatrix::InnerIterator it(Qk,row); it; ++it )
                             {
-                                std::cout << "Q" << j << " has entry "
-                                             << it.row() << "," << it.col() << " = " << it.value() << std::endl;
                                 if ( it.value() != 0. )
                                     diag.addEdge( it.row(), it.col() );
                             }

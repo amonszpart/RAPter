@@ -64,6 +64,20 @@ namespace GF2
 
             return EXIT_SUCCESS;
         } //...appendAnglesFromGenerator()
+
+
+        /*! \brief Lookup a matching generator for an angle.
+         */
+        template <typename _Scalar, class _Container>
+        inline bool findAngle( _Scalar const& angle, _Container const& angles, _Scalar const eps = halfDeg /* .5 degree */ )
+        {
+            for ( typename _Container::const_iterator it = angles.begin(); it != angles.end(); ++it )
+            {
+                if ( std::abs(*it - angle) < eps )
+                    return true;
+            }
+            return false;
+        }
     } //...ns angles
 
     template <typename _Scalar, class _AnglesT>

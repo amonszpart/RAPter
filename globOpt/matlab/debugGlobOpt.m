@@ -1,4 +1,4 @@
-p=['/home/bontius/workspace/globOpt/data/scenes/square_triangle'];
+p=['/home/bontius/workspace/globOpt/data/scenes/pipeline0'];
 A = readSparseMatrix( [ p filesep 'problem/A.csv'], 1);
 for i = 1 : 17
     Qs{i} = readSparseMatrix( [ p filesep sprintf('problem/Q%d.csv',i-1)], 1);
@@ -20,3 +20,6 @@ for i = 1 : H
 end
 
 x = readSparseMatrix( [ p filesep sprintf('problem/x.csv',i)], 1);
+Qo = readSparseMatrix( [ p filesep sprintf('problem/Qo.csv',i)], 1);
+figure();
+imagesc(full(Qo>0));

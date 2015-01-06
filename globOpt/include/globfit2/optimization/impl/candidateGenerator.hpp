@@ -14,6 +14,7 @@
 //debug
 #include "pcl/point_types.h" // debug
 #include "pcl/point_cloud.h" // debug
+#include "pcl/console/parse.h"
 
 #define isSMALL(prim) (prim.getTag(_PrimitiveT::TAGS::STATUS) == _PrimitiveT::STATUS_VALUES::SMALL)
 #define notSMALL(prim) (prim.getTag(_PrimitiveT::TAGS::STATUS) != _PrimitiveT::STATUS_VALUES::SMALL)
@@ -277,7 +278,8 @@ namespace GF2
                                                   , /*      inRad: */ true );
         }
         // (2) If restricted --> If angle found is in the restriction
-        else if ( std::find(allowedAngles[dir_gid1].begin(), allowedAngles[dir_gid1].end(), bestAngle) != allowedAngles[dir_gid1].end() )
+        //else if ( std::find(allowedAngles[dir_gid1].begin(), allowedAngles[dir_gid1].end(), bestAngle) != allowedAngles[dir_gid1].end() )
+        else if ( angles::findAngle( bestAngle, allowedAngles[dir_gid1]) )
         {
             // (2.1) Output
             doOutput = true;
@@ -285,7 +287,13 @@ namespace GF2
         // (3) Restricted, and not to the found angle --> If generator exists, and no alias exists yet, make one
         else if (    aliases && generators.size()                                                // there exists a clear generator (i.e. 60 or 90, NOT 0, or 180) AND
                   && (    (  aliases          ->find(dir_gid1     ) == aliases            ->end())   // AND (there's no alias to this did yet
-                       || ((*aliases)[dir_gid1].find(generators[0]) == (*aliases)[dir_gid1].end()) ) //      OR the aliases don't have this generator yet)
+                       //|| ((*aliases)[dir_gid1].find(generators[0]) == (*aliases)[dir_gid1].end()) ) //      OR the aliases don't have this generator yet)
+                       //|| (angles::findAngle( generators[0], (*aliases)[dir_gid1])) ) //      OR the aliases don't have this generator yet)
+                         || (std::find_if( (*aliases)[dir_gid1].begin()
+                                         , (*aliases)[dir_gid1].end()
+                                         , [&generators](typename _AliasesT::mapped_type::value_type const& elem){ return std::abs(elem.first-generators[0]) < halfDeg;} )
+                             == (*aliases)[dir_gid1].end() )
+                     )
                 )
         {
             // (3.1)
@@ -372,6 +380,7 @@ namespace GF2
                                 , AnglesT                           const& angles
                                 , CandidateGeneratorParams<_Scalar> const& params
                                 , _Scalar                           const  smallThreshMult
+                                , AnglesT                           const  angle_gens_in_rad
                                 , bool                              const  safe_mode_arg
                                 , int                               const  var_limit )
     {
@@ -526,7 +535,7 @@ namespace GF2
 
         // ANGLES
         std::map<DidT,AnglesT> allowedAngles;      // final storage to store allowed angles
-        AnglesT                angle_gens_in_rad;
+        //AnglesT                angle_gens_in_rad;
         {
             // ____ (1) store generators from earlier iterations in allowedAngles, so that they are not rediscovered ____
             for ( typename PrimitiveMapT::ConstIterator primIt(inPrims); primIt.hasNext(); primIt.step() )
@@ -556,7 +565,7 @@ namespace GF2
             // ____ (2) Deduce rest from existing relations in the currently active landscape ____
 
             // 2.1 Understand from angles, which generators we got from cli (i.e. 90, or 60,90)
-            deduceGenerators<_Scalar>( angle_gens_in_rad, angles );
+            //deduceGenerators<_Scalar>( angle_gens_in_rad, angles );
             // log
             std::cout<<"[" << __func__ << "]: " << "angle_gens_in_rad:";for(size_t vi=0;vi!=angle_gens_in_rad.size();++vi)std::cout<<angle_gens_in_rad[vi]*180./M_PI<<" ";std::cout << "\n";
 
@@ -620,6 +629,9 @@ namespace GF2
                              if ( gid1 == -2               )    gid1 = prim1.getTag( _PrimitiveT::TAGS::GID );
                         else if ( gid1 != outer_it1->first )    std::cerr << "[" << __func__ << "]: " << "Not good, prims under one gid don't have same GID in inner loop..." << std::endl;
 
+                             if ( (gid0 == 140 || gid0 == 147) && (gid1 == 147 || gid1 == 140) )
+                                 std::cout << "stop " << std::endl;
+
                         addCandidate<_PrimitivePrimitiveAngleFunctorT>(
                                     prim0, prim1, lid0, lid1, safe_mode, angle_limit, angles, angle_gens_in_rad, promoted,
                                     allowedAngles, copied, generated, nlines, outPrims, &aliases );
@@ -678,6 +690,9 @@ namespace GF2
                     {
                         // cache outer primitive
                         _PrimitiveT const& prim1 = *inner_it;
+
+                        if ( (angleIt->second._prim->getTag(_PrimitiveT::TAGS::DIR_GID) == 253) && (prim1.getTag(_PrimitiveT::TAGS::GID) == 147) )
+                            std::cout << "here" << std::endl;
 
                         // copy prim0 (the alias) to all compatible receivers given allowedAngles.
                         addCandidate<_PrimitivePrimitiveAngleFunctorT,AliasesT<_PrimitiveT,_Scalar> >(
@@ -790,9 +805,9 @@ namespace GF2
         //typedef typename PointContainerT::value_type PointPrimitiveT;
         int err = EXIT_SUCCESS;
 
-        CandidateGeneratorParams<Scalar> generatorParams;
+        CandidateGeneratorParams<_Scalar> generatorParams;
         std::string                 cloud_path              = "./cloud.ply";
-        AnglesT                     angle_gens( {_Scalar(90.)} );
+        AnglesT                     angleGens( {_Scalar(90.)} );
         std::string                 mode_string             = "representative_sqr";
         std::vector<std::string>    mode_opts               = { "representative_sqr" };
         std::string                 input_prims_path        = "patches.csv";
@@ -845,7 +860,7 @@ namespace GF2
             pcl::console::parse_argument( argc, argv, "--angle-limit-div", generatorParams.angle_limit_div );
             pcl::console::parse_argument( argc, argv, "-ald", generatorParams.angle_limit_div );
             pcl::console::parse_argument( argc, argv, "--patch-dist-limit", generatorParams.patch_dist_limit_mult ); // gets multiplied by scale
-            pcl::console::parse_x_arguments( argc, argv, "--angle-gens", angle_gens );
+            pcl::console::parse_x_arguments( argc, argv, "--angle-gens", angleGens );
             pcl::console::parse_argument( argc, argv, "--patch-pop-limit", generatorParams.patch_population_limit );
             generatorParams.safe_mode = pcl::console::find_switch( argc, argv, "--safe-mode" );
             if ( generatorParams.safe_mode )
@@ -867,7 +882,7 @@ namespace GF2
             {
                 int small_mode = 0;
                 pcl::console::parse_argument( argc, argv, "--small-mode", small_mode );
-                generatorParams.small_mode = static_cast<CandidateGeneratorParams<Scalar>::SmallPatchesMode>( small_mode );
+                generatorParams.small_mode = static_cast<typename CandidateGeneratorParams<_Scalar>::SmallPatchesMode>( small_mode );
             }
 
             // print usage
@@ -890,7 +905,7 @@ namespace GF2
                     std::cout << "\t [-al,--angle-limit " << generatorParams.angle_limit << "]\n";
                     std::cout << "\t [-ald,--angle-limit-div " << generatorParams.angle_limit_div << "]\n";
                     std::cout << "\t [--patch-dist-limit " << generatorParams.patch_dist_limit_mult << "]\n";
-                    std::cout << "\t [--angle-gens "; for(size_t vi=0;vi!=angle_gens.size();++vi)std::cout<<angle_gens[vi]<<","; std::cout << "]\n";
+                    std::cout << "\t [--angle-gens "; for(size_t vi=0;vi!=angleGens.size();++vi)std::cout<<angleGens[vi]<<","; std::cout << "]\n";
                     std::cout << "\t [--patch-pop-limit " << generatorParams.patch_population_limit << "]\n";
                     std::cout << "\t [--small-mode " << generatorParams.small_mode << "\t | 0: IGNORE, 1: RECEIVE_SIMILAR, 2: RECEIVE_ALL]\n";
                     std::cout << "\t [--no-paral]\n";
@@ -916,13 +931,16 @@ namespace GF2
 
         bool no_paral = pcl::console::find_switch( argc, argv, "--no-paral");
         // Read desired angles
+        AnglesT angleGensInRad;
         if ( EXIT_SUCCESS == err )
         {
-            angles::appendAnglesFromGenerators( generatorParams.angles, angle_gens, no_paral, false );
+            angles::appendAnglesFromGenerators( generatorParams.angles, angleGens, no_paral, false );
+            for ( typename AnglesT::const_iterator it = angleGens.begin(); it != angleGens.end(); ++it )
+                angleGensInRad.push_back( *it * M_PI / _Scalar(180.) );
         } //...read angles
 
         // Read points
-        PointContainerT points;
+        _PointContainerT points;
         if ( EXIT_SUCCESS == err )
         {
             err = io::readPoints<_PointPrimitiveT>( points, cloud_path );
@@ -934,7 +952,7 @@ namespace GF2
         for ( size_t i = 0; i != points.size(); ++i )
         {
             // store association in point
-            points[i].setTag( PointPrimitiveT::TAGS::GID, points_primitives[i].first );
+            points[i].setTag( _PointPrimitiveT::TAGS::GID, points_primitives[i].first );
         }
 
         // read primitives
@@ -962,6 +980,7 @@ namespace GF2
                                                 , generatorParams.angles
                                                 , generatorParams
                                                 , generatorParams.small_thresh_mult
+                                                , angleGensInRad
                                                 , generatorParams.safe_mode
                                                 , generatorParams.var_limit );
 

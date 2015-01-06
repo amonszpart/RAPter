@@ -751,7 +751,7 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
 
                 // save dId node
                 dIdsPrimVarIds[ dId ].push_back( var_id );
-                std::cout<<"dIdsPrimVarIds["<<dId<<"]:";for(size_t vi=0;vi!=dIdsPrimVarIds[dId].size();++vi)std::cout<<dIdsPrimVarIds[dId][vi]<<" ";std::cout << "\n";
+                //std::cout<<"dIdsPrimVarIds["<<dId<<"]:";for(size_t vi=0;vi!=dIdsPrimVarIds[dId].size();++vi)std::cout<<dIdsPrimVarIds[dId][vi]<<" ";std::cout << "\n";
 
                 // save direction
                 if ( dIdsPrims.find(dId) == dIdsPrims.end() )
@@ -926,6 +926,7 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
 
                         if (    ( invDist > _Scalar(0.) )
                              && ( prim.getTag(_PrimitiveT::TAGS::   DIR_GID) != prim1.getTag(_PrimitiveT::TAGS::DIR_GID) )
+                             && ( prim.getTag(_PrimitiveT::TAGS::       GID) != prim1.getTag(_PrimitiveT::TAGS::    GID) )
                            )
                         {
                             problem.addQObjective( varId0, varId1, primPrimDistFunctor->getSpatialWeightCoeff() );
@@ -1030,17 +1031,14 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
     // ____________________________________________________
     // New dId constraint
     {
-        std::cout << "problem has " << problem.getConstraintCount() << " constraints when starting BIG" << std::endl;
         for ( auto dIdIt = dIdsPrimVarIds.begin(); dIdIt != dIdsPrimVarIds.end(); ++dIdIt )
         {
-            std::cout << "problem has " << problem.getConstraintCount() << " constraints when starting loop" << std::endl;
             const int constraintId = problem.getConstraintCount();
             // first: dId
             //        didsVarIds[didIt->first] is the varId for this direction
             // second: vector< varId > of primitives with that Id
 
             SparseMatrix cluster_constraint( 1, problem.getVarCount() );
-            //SparseMatrix quadConstraint( problem.getVarCount(), problem.getVarCount() );
             std::vector<SparseEntry> quadConstraints;
 
             // add 1 for each primitive variable
@@ -1049,25 +1047,15 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
                 // dIdIt->second[i]: prim_i
 
                 cluster_constraint.insert( 0, dIdIt->second[i] ) = -1;
-                //std::cout << " adding ^2 constraint to " << constraintId << std::endl;
-                //problem.addQConstraint( constraintId, dIdIt->second[i], dIdsVarIds[dIdIt->first], 1. );
                 quadConstraints.push_back( SparseEntry(dIdIt->second[i], dIdsVarIds[dIdIt->first], 1.) );
-                //std::cout << "problem has " << problem.getConstraintCount() << " constraints when innerloop" << std::endl;
             }
-
-            // add -1 for dId variable
-            //cluster_constraint.insert( 0, dIdsVarIds[dIdIt->first] ) = -1;
 
             problem.addConstraint( /*        type: */ OptProblemT::BOUND::GREATER_EQ
                                  , /* lower_limit: */ 0
                                  , /* upper_limit: */ problem.getINF()
                                  , /*      coeffs: */ &cluster_constraint );
-            std::cout << "problem now has " << problem.getConstraintCount() << " constraints, adding q to " << constraintId << std::endl;
             for ( int j = 0; j != quadConstraints.size(); ++j )
                 problem.addQConstraint( constraintId, quadConstraints[j].row(), quadConstraints[j].col(), quadConstraints[j].value() );
-            //problem.addQConstraints( quadConstraint );
-
-            std::cout << "problem has " << problem.getConstraintCount() << " constraints\n";
         }
 
     } //...dId constraint
@@ -1086,7 +1074,6 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
                 _PrimitiveT const* p0 = dIdsPrims[it0->first];
                 _PrimitiveT const* p1 = dIdsPrims[it1->first];
                 _Scalar score = weights(1) * sqrt( GF2::angleInRad(p0->template dir(), p1->template dir()) );
-                std::cout << "score of " << it0->first << " vs. " << it1->first << " is " << score << std::endl;
                 problem.addQObjective( it0->second, it1->second, score );
             }
 

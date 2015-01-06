@@ -58,6 +58,7 @@ namespace GF2
                     , AnglesT                          const&  angles
                     , CandidateGeneratorParams<Scalar> const&  params
                     , Scalar                           const  smallThresh
+                    , AnglesT                          const  angle_gens_in_rad
                     , bool                             const  safe_mode = false
                     , int                              const  var_limit = 0 );
 

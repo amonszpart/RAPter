@@ -123,11 +123,11 @@ int GF2::GTCreator::sampleImage( pcl::PointCloud<PointT>::Ptr &cloud
         pcl::fromPCLPointCloud2( *filtered_cloud2, *cloud );
     }
 
-    smartgeometry::addGaussianNoise<am::MyPoint>( cloud
-                                                  , NULL
-                                                  , { gt_noise, gt_noise, 0.f }
-                                                  , Eigen::Vector3f::Zero()
-                                                  , sensor_origin );
+    smartgeometry::addGaussianNoise<PointT>( cloud
+                                           , NULL
+                                           , { gt_noise, gt_noise, 0.f }
+                                           , Eigen::Vector3f::Zero()
+                                           , sensor_origin );
     return EXIT_SUCCESS;
 }
 

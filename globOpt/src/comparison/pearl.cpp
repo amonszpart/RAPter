@@ -6,6 +6,7 @@
 #include "globfit2/util/parse.h"    // console::parse_argument
 #include "globfit2/io/io.h"         // readPrimitives, readPoints
 #include "globfit2/util/containers.hpp" // add
+#include "globfit2/simple_types.h"
 
 
 template int
@@ -37,7 +38,7 @@ int pearlCli( int argc, char **argv )
 {
     typedef typename _InnerPrimitiveContainerT::value_type    PrimitiveT;
     typedef typename _PointContainerT::value_type             PointPrimitiveT;
-    typedef          std::map<GidT, _InnerPrimitiveContainerT> PrimitiveMapT;
+    typedef          std::map<GF2::GidT, _InnerPrimitiveContainerT> PrimitiveMapT;
     typedef          pcl::PointCloud<pcl::PointNormal>        PclCloudT;
 
     bool valid_input = true;
