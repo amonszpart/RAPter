@@ -45,8 +45,8 @@ gtassignfile = projectdir+'/gt/points_primitives.csv'
 compareToGt = os.path.isfile(projectfile) and os.path.isfile(gtlinesfile) and os.path.isfile(gtassignfile)
 
 sigma_ref = 1.
-angles = [0., 45., 90., 135., 180.]
-tolerance = 10.
+angles = [0., 60., 90., 120., 180.]
+tolerance = 1.
 
 if compareToGt:
     

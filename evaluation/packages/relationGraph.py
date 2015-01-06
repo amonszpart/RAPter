@@ -32,7 +32,8 @@ class RelationGraph(object):
                                 matched = True
                                 break
                     
-                        if matched: self.G.add_edge(p1.uid, p2.uid)
+                        if matched: 
+                            self.G.add_edge(p1.uid, p2.uid)
                     else:
                         self.G.add_edge(p1.uid, p2.uid)
         
