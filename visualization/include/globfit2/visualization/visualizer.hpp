@@ -221,7 +221,7 @@ namespace GF2
         // Check if we can use color palette
         const int paletteRequiredSize = id2ColId.size() + 1; // set this to 0, if you only want 7 colours
         // Defaults to true, since util replicates colours
-        bool usePalette = id2ColId.size() <= 7; //util::paletteLightColoursEigen(paletteRequiredSize).size();
+        bool usePalette = id2ColId.size() <= 9; //util::paletteLightColoursEigen(paletteRequiredSize).size();
         std::vector<Eigen::Vector3f> pointColours, primColours;
         Eigen::Vector3f              unusedPointColour, unusedPrimColour;
         // Choose, and fill colour palette
