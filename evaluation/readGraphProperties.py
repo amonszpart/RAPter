@@ -9,6 +9,12 @@ import networkx as nx
 from networkx.algorithms import isomorphism
 import numpy as np
 
+try:
+    from networkx import graphviz_layout
+    layout=nx.graphviz_layout
+except ImportError:
+    print("PyGraphviz not found; drawing with spring layout; will be slow.")
+    layout=nx.spring_layout
 
 ################################################################################
 ## UI Generation
@@ -16,8 +22,15 @@ def setupGraphUI(graph, title):
     fig, ax1 = plt.subplots()
     fig.canvas.set_window_title(title)
     
-    graph.draw()
+    lay = layout(graph.G)
+    
+    #nx.draw(graph.G, lay)
+    nx.draw_networkx_edges(graph.G, lay)
+    nx.draw_networkx_nodes(graph.G, lay, node_size=800)
+    nx.draw_networkx_labels(graph.G, lay)
 
+angles = [0., 60., 90., 120., 180.]
+tolerance = 0.1
 
 ################################################################################
 ## Command line parsing
@@ -42,7 +55,7 @@ assign_it1 = packages.io.readPointAssignementFromFiles(assignfile_it1)
 
 ################################################################################
 ## Build and display relation graphs
-graph_it1 = relgraph.RelationGraph(lines_it1, assign_it1)
+graph_it1 = relgraph.RelationGraph(lines_it1, assign_it1, angles, tolerance)
 
 print "Number of points:      ", len(cloud)
 print "Number of primitives : ",graph_it1.G.number_of_nodes()
@@ -51,6 +64,8 @@ print "Max nb of connections: ",graph_it1.G.number_of_nodes()*graph_it1.G.number
 
 max_conn = graph_it1.G.number_of_nodes()* ((graph_it1.G.number_of_nodes()-1)/2)
 print "Coverage: ",float(graph_it1.G.number_of_edges())/float(max_conn)
+
+setupGraphUI(graph_it1, "Graph")
 
 
 plt.show()

@@ -274,7 +274,7 @@ paletteMediumColoursEigen( int min_count = 0 )
 {
     // don't have template parameters, since we return Vector3f....
     std::vector< ::Eigen::Vector3f > colours_eigen;
-    colours_eigen.resize(8);
+    colours_eigen.resize(9);
     colours_eigen [2] << 090.f, 155.f, 212.f;
     colours_eigen [1] << 122.f, 195.f, 106.f;
     colours_eigen [0] << 241.f, 090.f, 096.f;
