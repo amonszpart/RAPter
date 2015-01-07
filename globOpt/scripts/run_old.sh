@@ -186,30 +186,63 @@ assoc="points_primitives.csv";
 
 if [ $startAt -le 1 ]; then
 
-    # merge before start
-    if [ $premerge -ne 0 ]; then
-        echo "performing premerge"
-        my_exec "$executable --merge$flag3D --scale $scale --adopt $adopt --prims $input -a $assoc --angle-gens $anglegens --patch-pop-limit $poplimit"
-        premergeLinesCnt=`wc -l patches.csv_merged_it-1.csv | cut -f1 -d' '`;
-        patchesLinesCnt=`wc -l patches.csv | cut -f1 -d' '`;
-        echo ">>>>>> PREMERGE produced  $premergeLinesCnt patches instead of $patchesLinesCnt";
-        # save patches
-        cp $input segments.csv
-        cp $assoc points_segments.csv
-        cp patches.csv_merged_it-1.csv $input
-        cp points_primitives_it-1.csv $assoc
-        my_exec "../globOptVis --show$flag3D --scale $scale --use-tags --pop-limit $poplimit -p patches.csv -a $assoc --normals 100 --title \"GlobOpt - PreMerge output\" --no-clusters --no-pop --no-rel --bg-colour .9,.9,.9 --angle-gens $anglegens &"
-        my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p segments.csv -a points_segments.csv --title \"GlobOpt - Segmentation output\" $visdefparam --dir-colours --no-rel &"
-    fi
+# merge before start
+if [ $premerge -ne 0 ]; then
+    echo "performing premerge"
+    my_exec "$executable --merge$flag3D --scale $scale --adopt $adopt --prims $input -a $assoc --angle-gens $anglegens --patch-pop-limit $poplimit"
+    premergeLinesCnt=`wc -l patches.csv_merged_it-1.csv | cut -f1 -d' '`;
+    patchesLinesCnt=`wc -l patches.csv | cut -f1 -d' '`;
+    echo ">>>>>> PREMERGE produced  $premergeLinesCnt patches instead of $patchesLinesCnt";
+    # save patches
+    cp $input segments.csv
+    cp $assoc points_segments.csv
+    cp patches.csv_merged_it-1.csv $input
+    cp points_primitives_it-1.csv $assoc
+    my_exec "../globOptVis --show$flag3D --scale $scale --use-tags --pop-limit $poplimit -p patches.csv -a $assoc --normals 100 --title \"GlobOpt - PreMerge output\" --no-clusters --no-pop --no-rel --bg-colour .9,.9,.9 --angle-gens $anglegens &"
+    my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p segments.csv -a points_segments.csv --title \"GlobOpt - Segmentation output\" $visdefparam --dir-colours --no-rel &"
+fi
+
+# Generate candidates. OUT: candidates_it0.csv. #small-mode : small patches don't receive any candidates
+my_exec2 "$executable --generate$flag3D -sc $scale -al $anglelimit -ald ${cand_anglediv} --small-mode 0 --patch-pop-limit $poplimit -p $input --assoc $assoc --angle-gens $anglegens --small-thresh-mult $smallThresh"
+
+# Formulate optimization problem. OUT: "problem" directory. constr-mode 2: largePatchesNeedDirectionConstraint
+my_exec "$executable --formulate$flag3D --scale $scale --cloud cloud.ply --unary $unary --pw $pw --cmp 1 --constr-mode $firstConstrMode     --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $anglegens --candidates candidates_it0.csv -a $assoc --freq-weight $freqweight --cost-fn $pwCostFunc $formParams"
+
+# Solve optimization problem. OUT: primitives_it0.bonmin.csv
+my_exec "$executable --solver$flag3D bonmin --problem problem -v --time -1 --bmode $algCode --angle-gens $anglegens --candidates candidates_it0.csv"
+
+if [ "$correspondance" = true ] ; then
+    my_exec "$correspondance_exe  $correspondance_gtprim $correspondance_gtassing primitives_it0.bonmin.csv $assoc cloud.ply $scale"
+fi
+
+# Show output of first iteration.
+my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p primitives_it0.bonmin.csv  -a $assoc --title \"GlobOpt - 0th iteration output\" $visdefparam &"
+# !! set flag3D to "3D" and recomment these two lines to work with 3D
+#energies
+
+# Merge adjacent candidates with same dir id. OUT: primitives_merged_it0.csv, points_primitives_it0.csv
+my_exec "$executable --merge$flag3D --scale $scale --adopt $adopt --prims primitives_it0.bonmin.csv -a $assoc --angle-gens $anglegens --patch-pop-limit $poplimit"
+#my_exec "$executable --merge$flag3D --scale $scale --adopt $adopt --prims primitives_it$c.bonmin.csv -a $assoc --angle-gens $anglegens --patch-pop-limit $poplimit"
+#cp primitives_it0.bonmin.csv primitives_merged_it0.csv
+#cp points_primitives.csv points_primitives_it0.csv
+
+# Show output of first merge.
+#my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p primitives_merged_it0.csv -a points_primitives_it0.csv --title \"GlobOpt - Merged 1st iteration output\" $visdefparam  &"
+#my_exec "$executable --formulate$flag3D --energy --scale $scale --cloud cloud.ply --unary $unary --pw $pw --cmp 1 --constr-mode $firstConstrMode --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $anglegens --candidates primitives_it0.bonmin.csv -a $assoc --freq-weight $freqweight --cost-fn $pwCostFunc $formParams"
+
+# generate relation graphs
+if [ "$doExecPy" = true ]; then
+    my_exec "$execPyRelGraph primitives_it0.bonmin.csv points_primitives_it0.csv cloud.ply --angles $anglegens --iteration 0"
+fi
 
 fi #startAt <= 1
 
 # if true, stay on the same level for one more iteration (too many variables)
-decrease_level=false;
+decrease_level=true;
 # converged is false, until two outputs are not distinguishable by diff
 converged=false;
 
-for c in $(seq 0 $nbExtraIter)
+for c in $(seq 1 $nbExtraIter)
 do
     # decresase, unless there is more to do on the same level
     if $decrease_level; then
@@ -234,14 +267,9 @@ do
     prevId=`expr $c - 1`;
     nextId=`expr $c + 1`;
 
+    input="primitives_merged_it$prevId.csv";
+    assoc="points_primitives_it$prevId.csv";
 
-    if [ $c -eq 0 ]; then
-        input="patches.csv";
-        assoc="points_primitives.csv";
-    else
-        input="primitives_merged_it$prevId.csv";
-        assoc="points_primitives_it$prevId.csv";
-    fi
 
     if [ $c -ge $(($startAt - 1)) ]; then
         # Generate candidates from output of first. OUT: candidates_it$c.csv. #small-mode 2: small patches receive all candidates
