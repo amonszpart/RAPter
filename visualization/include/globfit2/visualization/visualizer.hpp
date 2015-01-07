@@ -43,7 +43,7 @@ namespace GF2 {
              *  \return             The visualizer for further display and manipulation
              */
             template <typename _Scalar> static inline vis::MyVisPtr
-            show( PrimitiveContainerT  const& primitives
+            show( PrimitiveContainerT       & primitives // not const, because of new colour tags
                 , PointContainerT      const& points
                 , _Scalar              const  scale
                 , Colour               const& colour                = (Colour() << 0.f, 0.f, 1.f).finished()
@@ -73,6 +73,7 @@ namespace GF2 {
                 , bool                 const  skip_empty            = false
                 , bool                 const  show_spatial          = false
                 , std::string          const  problemPath           = ""
+                , bool                 const  paralColours          = false
                 );
 
             //! \brief Shows a polygon that approximates the bounding ellipse of a cluster
@@ -105,10 +106,66 @@ namespace GF2 {
 
 namespace GF2
 {
+    /*! \brief Assigns an id to each unique parallel direction among primitives
+     * \note !!! UNTESTED !!!
+     * \tparam        _PrimitiveContainerT  Concept: vector<vector<_PrimitiveT> >
+     * \param[in,out] primitives            The tag will be changed, so not const.
+     * \param[out]    maxId                 Maximum unique ID given to primitives.
+     * \param[in]     angDiff               Minimum angle difference for "parallelity".
+     * \param[in]     primitiveTag          The field (tagId) to store the unique ID in.
+     * \post Primitives will have a unique id stored at their USER_ID1 tag, which can be used for colours.
+     */
+    template <class _PrimitiveT, class _PrimitiveContainerT>
+    inline void getParallelColours( _PrimitiveContainerT                &primitives
+                                  , PidT                                &maxId
+                                  , PidT                          const  primitiveTag = _PrimitiveT::USER_TAGS::USER_ID1
+                                  , typename _PrimitiveT::Scalar const  angDiff = typename _PrimitiveT::Scalar( 0.5*M_PI/180.)
+                                  )
+    {
+        typedef Eigen::Matrix<typename _PrimitiveT::Scalar, 3,1> DirectionT;
+        //PidT maxId = 0;
+        maxId = 0;
+        std::map< PidT, DirectionT> dirs;
+        for ( size_t lid = 0; lid != primitives.size(); ++lid )
+        {
+            for ( size_t lid1 = 0; lid1 != primitives[lid].size(); ++lid1 )
+            {
+                _PrimitiveT & prim = primitives[lid][lid1];
+
+                PidT id = 0;
+                for ( auto it = dirs.begin(); it != dirs.end(); ++it )
+                {
+                    // first: unique id
+                    // second: direction vector of unique id
+
+                    if ( std::abs(angleInRad(prim.template dir(), it->second) < angDiff) )
+                    {
+                        id = it->first;
+                        break;
+                    }
+                }
+
+                // if match not found, store new direction-id pair
+                if ( id == 0 ) // ok, even if dirs empty, we still need to insert the first
+                {
+                    // store id
+                    id = maxId++;
+                    // store id for new direction
+                    dirs[ id ] = prim.template dir();
+                }
+
+                // make sure, the primitive knows this
+                prim.setTag( primitiveTag, id );
+            } //...lid1
+        } //...lid
+
+        --maxId; // the current value of maxId was actually never assigned.
+    } //...getParallelColours
+
     template <class PrimitiveContainerT, class PointContainerT>
     template <typename _Scalar>
     vis::MyVisPtr
-    Visualizer<PrimitiveContainerT,PointContainerT>::show( PrimitiveContainerT    const& primitives
+    Visualizer<PrimitiveContainerT,PointContainerT>::show( PrimitiveContainerT         & primitives          // not const because of new colour tags
                                                            , PointContainerT      const& points
                                                            , _Scalar              const  scale
                                                            , Colour               const& colour              /* = {0,0,1} */
@@ -138,6 +195,7 @@ namespace GF2
                                                            , bool                 const  skip_empty          /* = false */
                                                            , bool                 const  show_spatial        /* = false */
                                                            , std::string          const  problemPath
+                                                           , bool                 const  paralColours /* = false */
                                                            )
     {
         bool save_hough = true;
@@ -161,7 +219,9 @@ namespace GF2
         // --------------------------------------------------------------------
 
         // every direction or every patch gets its own colour
-        const int primColourTag = dir_colours ? PrimitiveT::TAGS::DIR_GID : PrimitiveT::TAGS::GID;
+        const int primColourTag = dir_colours ? PrimitiveT::TAGS::DIR_GID
+                                              : paralColours ? PrimitiveT::USER_TAGS::USER_ID1
+                                                             : PrimitiveT::TAGS::GID;
         // primitives are prepared for draw_modes: SIMPLE, AXIS_ALIGNED, QHULL, so we need to remove the rest of the flags
         const int old_draw_mode = draw_mode & (SIMPLE | AXIS_ALIGNED | QHULL);
         std::cout << "old_draw_mode: " << old_draw_mode << std::endl;
@@ -172,7 +232,10 @@ namespace GF2
         DidT max_dir_gid = 0;
         LidT nPrimitives = 0, nbColour = 0;
         GidLidLid1Map gid2lidLid1;    // maps gid to a primitve (assuming only one per patch...)
-        std::map<int, int> id2ColId;       // maps gid to a colour id
+        std::map<int, int> id2ColId;  // maps gid to a colour id
+        PidT maxUid      = 0;
+        if ( paralColours ) //untested
+            getParallelColours<PrimitiveT>( primitives, maxUid, primColourTag );
 
         // get the highest gid from points OR primitives, store into max_gid
         {

@@ -411,7 +411,7 @@ namespace GF2
             }
         }
 
-#if 1
+#if 0
         Scalar step = Scalar(1. * M_PI) / Scalar(180.);
 
         Scalar limits[2] = { Scalar(0.), M_PI/Scalar(2.) };
