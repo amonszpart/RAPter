@@ -32,7 +32,6 @@ class Colours(object):
         nbCol   = len(self.colListMedium)
         
         for idx, did in enumerate(ids):
-            print idx, idx%nbCol, self.colListMedium[idx%nbCol]
             cmap[did] = self.colListMedium[idx%nbCol]
         
         return cmap, gfilter

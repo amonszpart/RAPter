@@ -28,10 +28,6 @@ def setupGraphUI(graph, primitives, title):
     CmapObject = colours.Colours()
     cmap, gfilter = CmapObject.getDIDColourMap(primitives)
     
-    print cmap
-    print gfilter
-    
-    #nx.draw(graph.G, lay)
     nx.draw_networkx_edges(graph.G, lay)
     for did, colour in cmap.iteritems():    
         nx.draw_networkx_nodes(graph.G, lay, node_size=800, nodelist=gfilter[did], node_color=colour)
