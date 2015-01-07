@@ -15,7 +15,7 @@
 /*!   \brief GlobOpt main namespace. */
 namespace GF2 {
 
-    typedef std::map   < GidT, int >        GidIntMap;
+    typedef std::map   < GidT, PidT >        GidIntMap;
     typedef std::set   < PidT >              PidSet;
     typedef std::vector< PidT >              PidVector;
     typedef std::map   < GidT, PidSet >      GidPidSetMap;

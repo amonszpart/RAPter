@@ -70,7 +70,7 @@ int subsample( int argc, char** argv )
     float chance = N / (float)cloud.size();
     for ( size_t pid = 0; pid != cloud.size(); ++pid )
     {
-        if ( (rand() / (float)RAND_MAX) < chance )
+        if ( (N<=0) || ((rand() / (float)RAND_MAX) < chance) )
         {
             auto pnt = cloud.at(pid);
 

@@ -422,6 +422,7 @@ namespace GF2
 
             inline void setDirIdBias( _Scalar dirIdBias ) { _dirIdBias = dirIdBias; }
             inline void setTruncAngle( _Scalar truncAngle ) { _truncAngle = truncAngle; }
+            inline _Scalar getTruncAngle() { return _truncAngle; }
             inline void setUseAngleGen( int useAngleGen ) { _useAngleGen = useAngleGen; }
             inline int getUseAngleGen() { return _useAngleGen; }
             inline void setSpatialWeightCoeff( _Scalar spatialWeightCoeff ) { _spatialWeightCoeff = spatialWeightCoeff; }

@@ -629,7 +629,7 @@ namespace GF2
                              if ( gid1 == -2               )    gid1 = prim1.getTag( _PrimitiveT::TAGS::GID );
                         else if ( gid1 != outer_it1->first )    std::cerr << "[" << __func__ << "]: " << "Not good, prims under one gid don't have same GID in inner loop..." << std::endl;
 
-                             if ( (gid0 == 140 || gid0 == 147) && (gid1 == 147 || gid1 == 140) )
+                             if ( (gid0 == 130 || gid0 == 123) && (gid1 == 130 || gid1 == 123) )
                                  std::cout << "stop " << std::endl;
 
                         addCandidate<_PrimitivePrimitiveAngleFunctorT>(
@@ -972,21 +972,35 @@ namespace GF2
         //PrimitiveContainerT primitives;
         PrimitiveMapT primitives;
         int ret = EXIT_SUCCESS;
+        int attempts = 0, attemptLimit = 1;
         if ( EXIT_SUCCESS == err )
         {
-            ret = CandidateGenerator::generate< MyPrimitivePrimitiveAngleFunctor, MyPointPrimitiveDistanceFunctor, _PrimitiveT >
-                                              ( primitives, patches, points
-                                                , generatorParams.scale
-                                                , generatorParams.angles
-                                                , generatorParams
-                                                , generatorParams.small_thresh_mult
-                                                , angleGensInRad
-                                                , generatorParams.safe_mode
-                                                , generatorParams.var_limit );
+            // runs once, 0<1, unless too many actives in output,
+            // in which case, runs twice (0<1, 1<2) with safe_mode on second run
+            while ( attempts < attemptLimit )
+            {
+                ++attempts;
 
-            //if ( err != EXIT_SUCCESS ) std::cerr << "[" << __func__ << "]: " << "generate exited with error! Code: " << err << std::endl;
-            if ( ret != 0 )
-                std::cout << "not all patches were promoted( " << ret << " left), will need rerun on same threshold..." << std::endl;
+                ret = CandidateGenerator::generate< MyPrimitivePrimitiveAngleFunctor, MyPointPrimitiveDistanceFunctor, _PrimitiveT >
+                        ( primitives, patches, points
+                          , generatorParams.scale
+                          , generatorParams.angles
+                          , generatorParams
+                          , generatorParams.small_thresh_mult
+                          , angleGensInRad
+                          , generatorParams.safe_mode
+                          , generatorParams.var_limit );
+
+                //if ( err != EXIT_SUCCESS ) std::cerr << "[" << __func__ << "]: " << "generate exited with error! Code: " << err << std::endl;
+                if ( ret > 0 )
+                    std::cout << "not all patches were promoted( " << ret << " left), will need rerun on same threshold..." << std::endl;
+                else if ( ret < 0 )
+                {
+                    std::cout << "rerunning in safe mode, all active..." << std::endl;
+                    attemptLimit = 2;
+                    generatorParams.safe_mode = true;
+                }
+            }
         } //...generate
 
     #if 0 // these shouldn't change here

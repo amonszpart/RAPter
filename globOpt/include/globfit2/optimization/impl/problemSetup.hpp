@@ -867,6 +867,8 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
         GidPidVectorMap populations;
         processing::getPopulations( populations, points );
 
+
+
         for ( size_t lid = 0; lid != prims.size(); ++lid )
         {
             for ( size_t lid1 = 0; lid1 != prims[lid].size(); ++lid1 )
@@ -926,10 +928,11 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
 
                         if (    ( invDist > _Scalar(0.) )
                              && ( prim.getTag(_PrimitiveT::TAGS::   DIR_GID) != prim1.getTag(_PrimitiveT::TAGS::DIR_GID) )
-                             && ( prim.getTag(_PrimitiveT::TAGS::       GID) != prim1.getTag(_PrimitiveT::TAGS::    GID) )
+                             //&& ( MyPrimitivePrimitiveAngleFunctor::eval( prim, prim1, angles, NULL ) < primPrimDistFunctor->getTruncAngle() ) // added 6/1/2015 18:14 BEWARE
+                             && ( prim.getTag(_PrimitiveT::TAGS::       GID) != prim1.getTag(_PrimitiveT::TAGS::    GID) ) // we don't want to pollute problem with unnecessary edges
                            )
                         {
-                            problem.addQObjective( varId0, varId1, primPrimDistFunctor->getSpatialWeightCoeff() );
+                            problem.addQObjective( varId0, varId1, primPrimDistFunctor->getSpatialWeightCoeff()/_Scalar(2.) ); // /2, since it's going to be added both ways Aron 6/1/2015
                         }
 
                         // coupling
@@ -1436,7 +1439,7 @@ namespace problemSetup {
                             , _PointContainerT     const& points
                             , _AssocT              const& lids_varids
                             , _WeightsT            const& weights
-                            , _Scalar              const  /*scale*/
+                            , _Scalar              const  scale
                             , _Scalar              const freq_weight
                             , bool                 const verbose )
     {
@@ -1446,6 +1449,10 @@ namespace problemSetup {
                       w_mod_base_inv = _Scalar(1.) - w_mod_base;
 
         int err = EXIT_SUCCESS;
+
+        // count patch populations
+        GidPidVectorMap populations; // populations[patch_id] = all points with GID==patch_id
+        processing::getPopulations( populations, points );
 
         // INSTANCES
         // added 17/09/2014 by Aron
@@ -1480,6 +1487,13 @@ namespace problemSetup {
                 if ( prims[lid][lid1].getTag( _PrimitiveT::TAGS::STATUS ) == _PrimitiveT::STATUS_VALUES::SMALL )
                     continue;
 
+                typename _PrimitiveT::ExtremaT extrema;
+                err = prims[lid][lid1].template getExtent<_PointPrimitiveT>
+                        ( extrema
+                        , points
+                        , scale
+                        , populations[gid].size() ? &(populations[gid]) : NULL );
+
                 // point count for normalization
                 unsigned cnt = 0;
                 // data-cost coefficient (output)
@@ -1491,7 +1505,18 @@ namespace problemSetup {
                     if ( points[pid].getTag( _PointPrimitiveT::TAGS::GID ) == gid )
                     {
                         // if within scale, add unary cost
-                        _Scalar dist = _PointPrimitiveDistanceFunctor::template eval<_Scalar>( points[pid], prims[lid][lid1] );
+
+                        // changed by Aron on 6/1/2015
+                         _Scalar dist = std::numeric_limits<_Scalar>::max();
+                        if ( err == EXIT_SUCCESS )
+                        {
+                            dist = MyPointFiniteLineDistanceFunctor::eval( extrema, prims[lid][lid1], points[pid].template pos() );
+                        }
+                        else
+                        {
+                            throw new std::runtime_error("asdf");
+                            dist = _PointPrimitiveDistanceFunctor::template eval<_Scalar>( points[pid], prims[lid][lid1] );
+                        }
                         unary_i += dist * dist; //changed on 18/09/14
                         ++cnt;              // normalizer
                     }
@@ -1500,7 +1525,14 @@ namespace problemSetup {
                 // average data cost
                 _Scalar coeff = cnt ? /* unary: */ weights(0) * unary_i / _Scalar(cnt)
                                     : /* unary: */ weights(0) * _Scalar(2);            // add large weight, if no points assigned
+//                std::cout << "coeff(" << gid
+//                          << ","
+//                          << prims[lid][lid1].getTag(_PrimitiveT::TAGS::DIR_GID) << ") = "
+//                          << coeff
+//                          << ", unary: " << unary_i << ", cnt: " << cnt << ", weights(0): " << weights(0)
+//                          << std::endl;
 
+#if 0
                 // prefer dominant directions
                 if ( freq_weight > _Scalar(0.) )
                 {
@@ -1529,6 +1561,7 @@ namespace problemSetup {
                     if ( verbose && dir_instances[dir_gid] )
                         std::cout << coeff << " since dirpop: " << dir_instances[dir_gid] << std::endl;
                 }
+#endif
 
                 // complexity cost:
                 coeff += weights(2); // changed by Aron on 21/9/2014

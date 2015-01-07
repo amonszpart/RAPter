@@ -122,7 +122,7 @@ namespace GF2
                                 , _PointContainerT     const& points
                                 , _AssocT              const& lids_varids
                                 , _WeightsT            const& weights
-                                , _Scalar              const  /*scale*/
+                                , _Scalar              const  scale
                                 , _Scalar              const  freq_weight
                                 , bool                 const  verbose );
 

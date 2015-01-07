@@ -41,3 +41,4 @@ globOpt/tex/*.aux
 globOpt/tex/*.dvi
 globOpt/tex/*.log
 globOpt/tex/*.gz
+data/scenes

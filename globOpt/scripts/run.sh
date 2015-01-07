@@ -3,6 +3,7 @@ executable="../glob_opt";
 execLog="lastRun.log"
 execPyRelGraph="python ../readGraphProperties.py"
 execPyStats="python ../collectStatistics.py"
+doExecPy=false # set to true if generating graphs
 
 ###############################################
 
@@ -59,8 +60,8 @@ fi
 
 #d=`../divide.py 2 3`;
 
-anglegens="90"; # Values: ["60", "90", "60,90", ... ] Desired angle generators in degrees. Default: 90.
-nbExtraIter=100;  # Values: [ 1..20 ] iteration count. Default: 2.
+anglegens="0"; # Values: ["60", "90", "60,90", ... ] Desired angle generators in degrees. Default: 90.
+nbExtraIter=15;  # Values: [ 1..20 ] iteration count. Default: 2.
 dirbias="0";	# Values: [ 0, *1* ] (Not-same-dir-id cost offset. Default: 0. Don't use, if freqweight is on.)
 freqweight="0"; # Values: [ 0, *1000* ] (Dataterm = (freqweight / #instances) * datacost)
 adopt="0";      # Values: [ *0*, 1] (Adopt points argument. Default: 0)
@@ -73,7 +74,7 @@ unary=1000 #1000000
 
 noClusters="--no-clusters" # Values: [ "", "--no-clusters" ] (Flag that turns spatial clustering extra variables off)
 useAngleGen="" # Values: [ "", "--use-angle-gen" ] (Flag which makes not same directioned primitives not to penalize eachother)
-spatWeight=10 # Values: [ 10, 0 ] (Penalty that's added, if two primitives with different directions are closer than 2 x scale)
+spatWeight=0 # Values: [ 10, 0 ] (Penalty that's added, if two primitives with different directions are closer than 2 x scale)
 truncAngle=$anglelimit # Values: [ 0, $anglelimit, 0.15 ] (Pairwise cost truncation angle in radians)
 formParams="$noClusters $useAngleGen --spat-weight $spatWeight --trunc-angle $truncAngle"
 
@@ -259,7 +260,9 @@ my_exec "$executable --merge$flag3D --scale $scale --adopt $adopt --prims primit
 my_exec "$executable --formulate$flag3D --energy --scale $scale --cloud cloud.ply --unary $unary --pw $pw --cmp 1 --constr-mode $firstConstrMode --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $anglegens --candidates primitives_it0.bonmin.csv -a $assoc --freq-weight $freqweight --cost-fn $pwCostFunc $formParams"
 
 # generate relation graphs
-my_exec "$execPyRelGraph primitives_it0.bonmin.csv points_primitives_it0.csv cloud.ply --angles $anglegens --iteration 0" 
+if [ "$doExecPy" = true ]; then
+    my_exec "$execPyRelGraph primitives_it0.bonmin.csv points_primitives_it0.csv cloud.ply --angles $anglegens --iteration 0"
+fi
 
 fi #startAt <= 1
 
@@ -334,7 +337,9 @@ do
         my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p primitives_it$c.bonmin.csv -a $assoc --title \"GlobOpt - $c iteration output\" $visdefparam &"
         
         # Generate relation graphs
-        my_exec "$execPyRelGraph primitives_it$c.bonmin.csv points_primitives_it$c.csv cloud.ply --angles $anglegens --iteration $c" 
+        if [ "$doExecPy" = true ]; then
+            my_exec "$execPyRelGraph primitives_it$c.bonmin.csv points_primitives_it$c.csv cloud.ply --angles $anglegens --iteration $c"
+        fi
 
         if [ $c -lt $nbExtraIter ]; then
             # Merge adjacent candidates with same dir id. OUT: primitives_merged_it$c.csv, points_primitives_it$c.csv
@@ -353,7 +358,9 @@ do
     #echo $(diff primitives_it$prevId.csv primitives_it$nextId.csv)
 done
 
-my_exec "$execPyStats .  --angles $anglegens"
+if [ "$doExecPy" = true ]; then
+    my_exec "$execPyStats .  --angles $anglegens"
+fi
 
 #energies
 # ../pearl --scale 0.05 --cloud cloud.ply --prims patches.csv --assoc points_primitives.csv --pw 1000 --cmp 1000
