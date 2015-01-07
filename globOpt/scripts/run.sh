@@ -1,6 +1,8 @@
 #    Executable path
 executable="../glob_opt";
 execLog="lastRun.log"
+execPyRelGraph="python ../readGraphProperties.py"
+execPyStats="python ../collectStatistics.py"
 
 ###############################################
 
@@ -256,6 +258,9 @@ my_exec "$executable --merge$flag3D --scale $scale --adopt $adopt --prims primit
 #my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p primitives_merged_it0.csv -a points_primitives_it0.csv --title \"GlobOpt - Merged 1st iteration output\" $visdefparam  &"
 my_exec "$executable --formulate$flag3D --energy --scale $scale --cloud cloud.ply --unary $unary --pw $pw --cmp 1 --constr-mode $firstConstrMode --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $anglegens --candidates primitives_it0.bonmin.csv -a $assoc --freq-weight $freqweight --cost-fn $pwCostFunc $formParams"
 
+# generate relation graphs
+my_exec "$execPyRelGraph primitives_it0.bonmin.csv points_primitives_it0.csv cloud.ply --angles $anglegens --iteration 0" 
+
 fi #startAt <= 1
 
 # if true, stay on the same level for one more iteration (too many variables)
@@ -327,6 +332,9 @@ do
 
         # Show output of first iteration.
         my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p primitives_it$c.bonmin.csv -a $assoc --title \"GlobOpt - $c iteration output\" $visdefparam &"
+        
+        # Generate relation graphs
+        my_exec "$execPyRelGraph primitives_it$c.bonmin.csv points_primitives_it$c.csv cloud.ply --angles $anglegens --iteration $c" 
 
         if [ $c -lt $nbExtraIter ]; then
             # Merge adjacent candidates with same dir id. OUT: primitives_merged_it$c.csv, points_primitives_it$c.csv
@@ -344,6 +352,8 @@ do
     #echo "diff primitives_it$prevId.csv primitives_it$nextId.csv"
     #echo $(diff primitives_it$prevId.csv primitives_it$nextId.csv)
 done
+
+my_exec "$execPyStats .  --angles $anglegens"
 
 #energies
 # ../pearl --scale 0.05 --cloud cloud.ply --prims patches.csv --assoc points_primitives.csv --pw 1000 --cmp 1000
