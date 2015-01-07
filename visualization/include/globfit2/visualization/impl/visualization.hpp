@@ -32,6 +32,7 @@ GF2::vis::showCli( int argc, char** argv )
                   << "\t[ --point-size \t\t Point render size (6.0) ]\n"
                   << "\t[ --bg-colour \t\t Visualizer background colour i.e. 0.1,0.1,0.1 ]\n"
                   << "\t[ --dir-colours \t colourcode direction IDs' ]\n"
+                  << "\t[ --paral-colours \t colourcode parallel directions ]\n"
                   << "\t[ --draw-mode \t\t 0: classic, 1: axis aligned, 2: qhull\n"
                   << "\t              \t\t 4: reprojected, 8: hide primitives, 16: hide unassigned points;  i.e. 28=4+8+16 ]\n"
                   << "\t[ --hull-alpha \t\t QHull alpha parameter ]\n\n"
@@ -76,7 +77,8 @@ GF2::vis::showCli( int argc, char** argv )
     float   perfect_angle_limit = 10.e-5;
     pcl::console::parse_argument( argc, argv, "--perfect-angle", perfect_angle_limit );
 
-    bool    dir_colours         = pcl::console::find_switch( argc, argv, "--dir-colours" );
+    bool    paralColours        = pcl::console::find_switch( argc, argv, "--paral-colours" );
+    bool    dir_colours         = !paralColours && pcl::console::find_switch( argc, argv, "--dir-colours" );
     bool    hide_points         = pcl::console::find_switch( argc, argv, "--hide-pts" ) || pcl::console::find_switch( argc, argv, "--no-pts" );
 
     Scalar stretch(1.);
@@ -261,6 +263,8 @@ GF2::vis::showCli( int argc, char** argv )
                                                                                , /*           point_size: */ point_size
                                                                                , /*           show_empty: */ show_empty
                                                                                , /*         show_spatial: */ show_spatial
+                                                                               , /* problemPath (unused): */ ""
+                                                                               , /*      parallelColours: */ paralColours
                                                                                );
     return EXIT_SUCCESS;
 } // ... Solver::show()
