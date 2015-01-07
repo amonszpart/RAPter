@@ -3,6 +3,7 @@ import packages.primitive as primitive
 import packages.processing
 import packages.relationGraph as relgraph
 import packages.io
+import packages.colours as colours
 import argparse
 import matplotlib.pyplot as plt
 import networkx as nx
@@ -15,18 +16,25 @@ try:
 except ImportError:
     print("PyGraphviz not found; drawing with spring layout; will be slow.")
     layout=nx.spring_layout
-
+    
 ################################################################################
 ## UI Generation
-def setupGraphUI(graph, title):
+def setupGraphUI(graph, primitives, title):
     fig, ax1 = plt.subplots()
     fig.canvas.set_window_title(title)
     
     lay = layout(graph.G)
+
+    CmapObject = colours.Colours()
+    cmap, gfilter = CmapObject.getDIDColourMap(primitives)
+    
+    print cmap
+    print gfilter
     
     #nx.draw(graph.G, lay)
     nx.draw_networkx_edges(graph.G, lay)
-    nx.draw_networkx_nodes(graph.G, lay, node_size=800)
+    for did, colour in cmap.iteritems():    
+        nx.draw_networkx_nodes(graph.G, lay, node_size=800, nodelist=gfilter[did], node_color=colour)
     nx.draw_networkx_labels(graph.G, lay)
 
 angles = [0., 60., 90., 120., 180.]
@@ -65,7 +73,7 @@ print "Max nb of connections: ",graph_it1.G.number_of_nodes()*graph_it1.G.number
 max_conn = graph_it1.G.number_of_nodes()* ((graph_it1.G.number_of_nodes()-1)/2)
 print "Coverage: ",float(graph_it1.G.number_of_edges())/float(max_conn)
 
-setupGraphUI(graph_it1, "Graph")
+setupGraphUI(graph_it1, lines_it1, "Graph")
 
 
 plt.show()
