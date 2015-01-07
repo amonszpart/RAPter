@@ -37,11 +37,13 @@ def readPrimitivesFromFile(path):
         if line[0] != '#':
             seqline = line.split(',')
             
-            pos    = np.float32(np.array(seqline[0:3]))
-            normal = np.float32(np.array(seqline[3:6]))
-            uid    = int(seqline[6])
-            did    = int(seqline[7])
+            if (int(seqline[8]) == 1): # Pick only active primitives
             
-            primitives.append(Primitive( uid, did, pos, normal ))
+                pos    = np.float32(np.array(seqline[0:3]))
+                normal = np.float32(np.array(seqline[3:6]))
+                uid    = int(seqline[6])
+                did    = int(seqline[7])
+                
+                primitives.append(Primitive( uid, did, pos, normal ))
 
     return primitives

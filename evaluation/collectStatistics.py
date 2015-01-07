@@ -46,7 +46,7 @@ compareToGt = os.path.isfile(projectfile) and os.path.isfile(gtlinesfile) and os
 
 sigma_ref = 1.
 angles = [0., 60., 90., 120., 180.]
-tolerance = 1.
+tolerance = 0.1
 
 if compareToGt:
     
@@ -97,11 +97,12 @@ for it in range(itmin, itmax):
     
     ################################################################################
     ## analyse angle distributions
+    ## here we assume INT angles (degrees)
     graph_it  = relgraph.RelationGraph(lines_it, assign_it, angles, tolerance)
     
     anglesDistrib = []
     def collectAngles(p1, p2):
-        anglesDistrib.append(math.fmod(p1.angleInDegree(p2), 180.))
+        anglesDistrib.append(round(math.fmod(p1.angleInDegree(p2), 180.)))
     graph_it.processConnectedNodes(collectAngles)
     
     polarplot.generatePolarPlot(anglesDistrib, linesfile_it)
