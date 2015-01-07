@@ -1,5 +1,6 @@
-# Executable path
+#    Executable path
 executable="../glob_opt";
+execLog="lastRun.log"
 
 ###############################################
 
@@ -56,8 +57,8 @@ fi
 
 #d=`../divide.py 2 3`;
 
-anglegens="60,90"; # Values: ["60", "90", "60,90", ... ] Desired angle generators in degrees. Default: 90.
-nbExtraIter=6;  # Values: [ 1..20 ] iteration count. Default: 2.
+anglegens="90"; # Values: ["60", "90", "60,90", ... ] Desired angle generators in degrees. Default: 90.
+nbExtraIter=100;  # Values: [ 1..20 ] iteration count. Default: 2.
 dirbias="0";	# Values: [ 0, *1* ] (Not-same-dir-id cost offset. Default: 0. Don't use, if freqweight is on.)
 freqweight="0"; # Values: [ 0, *1000* ] (Dataterm = (freqweight / #instances) * datacost)
 adopt="0";      # Values: [ *0*, 1] (Adopt points argument. Default: 0)
@@ -66,12 +67,12 @@ cand_anglediv="1";# for 3D: "2.5";
 # multiply scale by this number to get the segmentation (regionGrowing) spatial distance
 segmentScaleMultiplier="1";# for 3D: "2.5";
 pwCostFunc="spatsqrt" # spatial cost function. TODO: reactivate sqrt (does not compile for now)
-unary=100
+unary=1000 #1000000
 
 noClusters="--no-clusters" # Values: [ "", "--no-clusters" ] (Flag that turns spatial clustering extra variables off)
 useAngleGen="" # Values: [ "", "--use-angle-gen" ] (Flag which makes not same directioned primitives not to penalize eachother)
-spatWeight=$pw # Values: [ 10, 0 ] (Penalty that's added, if two primitives with different directions are closer than 2 x scale)
-truncAngle=$angelimit # Values: [ 0, $anglelimit, 0.15 ] (Pairwise cost truncation angle in radians)
+spatWeight=10 # Values: [ 10, 0 ] (Penalty that's added, if two primitives with different directions are closer than 2 x scale)
+truncAngle=$anglelimit # Values: [ 0, $anglelimit, 0.15 ] (Pairwise cost truncation angle in radians)
 formParams="$noClusters $useAngleGen --spat-weight $spatWeight --trunc-angle $truncAngle"
 
 # unary 1000     anglimit 0.3 pw 10 freqweight 1000 dirbias 1 is usually ok
@@ -80,11 +81,15 @@ formParams="$noClusters $useAngleGen --spat-weight $spatWeight --trunc-angle $tr
 visdefparam="--angle-gens $anglegens --use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-rel --no-scale --bg-colour .9,.9,.9" #"--use-tags --no-clusters" #--ids
 firstConstrMode="patch" # what to add in the first run formulate. Default: 0 (everyPatchNeedsDirection), experimental: 2 (largePatchesNeedDirection).
 iterationConstrMode="patch" # what to add in the second iteration formulate. Default: 0 (everyPatchNeedsDirection), experimental: 2 (largePatchesNeedDirection).
+
+# startAt=0: do segment
+# startAt=1: don't do segment, do iteration 0
+# startAt=2: don't do iteration 0, do iteration 1
 startAt=0
 
 #moved to argument 6
 #smallThresh="256" # smallThresh * scale is the small threshold # 5 was good for most of the stuff, except big scenes (kinect, lanslevillard)
-smallThresh="4"
+#smallThresh="128"
 smallThreshlimit="0" #last threshold
 smallThreshDiv="2"; #stepsize
 
@@ -102,6 +107,8 @@ echo "freq-weight: $freqweight"
 echo "region-grow-scale-mult: $segmentScaleMultiplier"
 echo "smallThresh: " $smallThresh
 echo "pw cost: " $pwCostFunc
+
+rm $execLog
 
 # save run.log arguments to "run.log"
 function save_args() {
@@ -139,6 +146,7 @@ fi
 function my_exec() {
 	echo "__________________________________________________________";
 	echo -e "\n\n[CALLING] $1";
+        echo -e $1"\n" >>$execLog
         eval $1;
   	if [ "$?" -ne "0" ]; then
 	    echo "Error detected ($?). ABORT."
@@ -150,6 +158,7 @@ function my_exec() {
 function my_exec2() {
         echo "__________________________________________________________";
         echo -e "\n\n[CALLING] $1";
+        echo -e $1"\n" >>$execLog
         eval $1;
         ret=$?;
         if [ "$ret" -ne "0" ]; then
@@ -205,17 +214,21 @@ if [ $premerge -ne 0 ]; then
     premergeLinesCnt=`wc -l patches.csv_merged_it-1.csv | cut -f1 -d' '`;
     patchesLinesCnt=`wc -l patches.csv | cut -f1 -d' '`;
     echo ">>>>>> PREMERGE produced  $premergeLinesCnt patches instead of $patchesLinesCnt";
+    # save patches
+    cp $input segments.csv
+    cp $assoc points_segments.csv
     cp patches.csv_merged_it-1.csv $input
     cp points_primitives_it-1.csv $assoc
-    my_exec "../globOptVis --show$flag3D --scale $scale --use-tags --pop-limit $poplimit -p patches.csv -a $assoc --normals 100 --title \"GlobOpt - PreMerge output\" --no-clusters --no-pop --no-rel --bg-colour .9,.9,.9 &"
+    my_exec "../globOptVis --show$flag3D --scale $scale --use-tags --pop-limit $poplimit -p patches.csv -a $assoc --normals 100 --title \"GlobOpt - PreMerge output\" --no-clusters --no-pop --no-rel --bg-colour .9,.9,.9 --angle-gens $anglegens &"
+    my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p segments.csv -a points_segments.csv --title \"GlobOpt - Segmentation output\" $visdefparam --dir-colours --no-rel &"
 fi
 
 # Generate candidates. OUT: candidates_it0.csv. #small-mode : small patches don't receive any candidates
 my_exec2 "$executable --generate$flag3D -sc $scale -al $anglelimit -ald ${cand_anglediv} --small-mode 0 --patch-pop-limit $poplimit -p $input --assoc $assoc --angle-gens $anglegens --small-thresh-mult $smallThresh"
-if [ ! -z $safeMode ] && [ $(countLines patches.csv) -gt $variableLimit ]; then
-    echo ">>>>>>>>>>>>>>>>>>>>> RERUNNING WITH SAFE_MODE($(countLines patches.csv) > $variableLimit)";
-    my_exec "$executable $safeMode --generate$flag3D -sc $scale -al $anglelimit -ald ${cand_anglediv} --small-mode 0 --patch-pop-limit $poplimit -p $input --assoc $assoc --angle-gens $anglegens --small-thresh-mult $smallThresh"
-fi
+#if [ ! -z $safeMode ] && [ $(countLines patches.csv) -gt $variableLimit ]; then
+#    echo ">>>>>>>>>>>>>>>>>>>>> RERUNNING WITH SAFE_MODE($(countLines patches.csv) > $variableLimit)";
+#    my_exec "$executable $safeMode --generate$flag3D -sc $scale -al $anglelimit -ald ${cand_anglediv} --small-mode 0 --patch-pop-limit $poplimit -p $input --assoc $assoc --angle-gens $anglegens --small-thresh-mult $smallThresh"
+#fi
 
 #my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p candidates_it0.csv -a $assoc --statuses -1,1 --title \"Candidates\" $visdefparam &"
 
@@ -230,7 +243,7 @@ if [ "$correspondance" = true ] ; then
 fi
 
 # Show output of first iteration.
-my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p primitives_it0.bonmin.csv -a $assoc --title \"GlobOpt - 1st iteration output\" $visdefparam --ids# &"
+my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p primitives_it0.bonmin.csv -a $assoc --title \"GlobOpt - 0th iteration output\" $visdefparam --ids# &"
 # !! set flag3D to "3D" and recomment these two lines to work with 3D
 #energies
 
@@ -264,7 +277,7 @@ do
     if [ $smallThresh -lt $smallThreshlimit ] || [ $smallThresh -eq "0" ]; then
         smallThresh=$smallThreshlimit
         #smallThresh=1
-        adopt="1"
+        #adopt="1"
     fi
 
     #if [ $c -ge 5 ]; then
@@ -281,9 +294,10 @@ do
     input="primitives_merged_it$prevId.csv";
     assoc="points_primitives_it$prevId.csv";
 
-    if [ $c -ge $startAt ]; then
+
+    if [ $c -ge $(($startAt - 1)) ]; then
         # Generate candidates from output of first. OUT: candidates_it$c.csv. #small-mode 2: small patches receive all candidates
-        my_exec2 "$executable --generate$flag3D -sc $scale -al $anglelimit -ald ${cand_anglediv} --small-mode 0 --patch-pop-limit $poplimit --angle-gens $anglegens -p $input --assoc $assoc --small-thresh-mult $smallThresh --var-limit $variableLimit"
+        my_exec2 "$executable $safeMode --generate$flag3D -sc $scale -al $anglelimit -ald ${cand_anglediv} --small-mode 0 --patch-pop-limit $poplimit --angle-gens $anglegens -p $input --assoc $assoc --small-thresh-mult $smallThresh --var-limit $variableLimit"
         echo "CNT: $myresult"
         if [ $myresult -ne "0" ]; then
             decrease_level=false;
@@ -312,7 +326,7 @@ do
         fi
 
         # Show output of first iteration.
-        my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p primitives_it$c.bonmin.csv -a $assoc --title \"GlobOpt - $nextId iteration output\" $visdefparam &"
+        my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p primitives_it$c.bonmin.csv -a $assoc --title \"GlobOpt - $c iteration output\" $visdefparam &"
 
         if [ $c -lt $nbExtraIter ]; then
             # Merge adjacent candidates with same dir id. OUT: primitives_merged_it$c.csv, points_primitives_it$c.csv
@@ -321,10 +335,10 @@ do
             # Show output of second iteration.
             #my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit 0 --angle-gens $anglegens --prims primitives_merged_it$c.csv -a points_primitives_it$c.csv --title \"GlobOpt - Merged $nextId iteration output\" $visdefparam &"
         else
-            my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p primitives_it$c.bonmin.csv -a $assoc --title \"GlobOpt - [Dir-Colours] $nextId iteration output\" $visdefparam --dir-colours --no-rel &"
+            my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p primitives_it$c.bonmin.csv -a $assoc --title \"GlobOpt - [Dir-Colours] $c iteration output\" $visdefparam --dir-colours --no-rel &"
         fi
 
-        my_exec "$executable --energy --formulate$flag3D --scale $scale --cloud cloud.ply --unary $unary --pw $pw --cmp 1 --constr-mode $iterationConstrMode --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $anglegens --candidates primitives_it$c.bonmin.csv -a $assoc --freq-weight $freqweight  --cost-fn $pwCostFunc $formParams"
+        #my_exec "$executable --energy --formulate$flag3D --scale $scale --cloud cloud.ply --unary $unary --pw $pw --cmp 1 --constr-mode $iterationConstrMode --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $anglegens --candidates primitives_it$c.bonmin.csv -a $assoc --freq-weight $freqweight  --cost-fn $pwCostFunc $formParams"
     fi
 
     #echo "diff primitives_it$prevId.csv primitives_it$nextId.csv"
@@ -333,3 +347,7 @@ done
 
 #energies
 # ../pearl --scale 0.05 --cloud cloud.ply --prims patches.csv --assoc points_primitives.csv --pw 1000 --cmp 1000
+
+# remove safemode
+# put back startat
+# put back adopt?
