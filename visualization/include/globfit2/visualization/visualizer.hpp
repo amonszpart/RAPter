@@ -251,7 +251,9 @@ namespace GF2
                     pointColours[cid](1) = std::min( pointColours[cid](1) * 1.6, 255.);
                     pointColours[cid](2) = std::min( pointColours[cid](2) * 1.6, 255.);
                 }
-                unusedPointColour = unusedPrimColour = Eigen::Vector3f::Zero();
+
+                unusedPointColour = util::paletteLightNeutralColour();
+                unusedPrimColour  = util::paletteDarkNeutralColour();
             }
         } // colours
 

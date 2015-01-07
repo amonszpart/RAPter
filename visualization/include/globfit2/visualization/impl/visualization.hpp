@@ -186,7 +186,7 @@ GF2::vis::showCli( int argc, char** argv )
     }
 
     // angles
-    AnglesT angle_gens;
+    AnglesT angle_gens ({Scalar(90.)});
     if ( pcl::console::parse_x_arguments( argc, argv, "--angle-gens", angle_gens ) < 0 )
         angle_gens[0] = Scalar(90.);
 
