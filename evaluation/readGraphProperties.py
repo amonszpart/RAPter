@@ -3,7 +3,9 @@ import packages.primitive as primitive
 import packages.processing
 import packages.relationGraph as relgraph
 import packages.io
+import packages.utils as utils
 import packages.colours as colours
+import packages.orderedSet as orderedSet
 import argparse
 import matplotlib.pyplot as plt
 import networkx as nx
@@ -33,7 +35,6 @@ def setupGraphUI(graph, primitives, title):
         nx.draw_networkx_nodes(graph.G, lay, node_size=800, nodelist=gfilter[did], node_color=colour)
     nx.draw_networkx_labels(graph.G, lay)
 
-angles = [0., 60., 90., 120., 180.]
 tolerance = 0.1
 
 ################################################################################
@@ -42,10 +43,12 @@ parser = argparse.ArgumentParser(description='Simply read a graph an output its 
 parser.add_argument('primitives')
 parser.add_argument('point_primitives')
 parser.add_argument('cloud')
+parser.add_argument('--angles', nargs='*')
 
 args = parser.parse_args()
 
 projectdir = args.primitives
+angles = utils.parseAngles(args.angles)
 
 linesfile_it1  = args.primitives
 assignfile_it1 = args.point_primitives

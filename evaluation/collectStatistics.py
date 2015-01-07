@@ -25,6 +25,7 @@ itmax=20
 ## Command line parsing
 parser = argparse.ArgumentParser(description='Collect full run statistics.')
 parser.add_argument('projectdir')
+parser.add_argument('--angles', nargs='*')
 
 args = parser.parse_args()
 
@@ -45,7 +46,7 @@ gtassignfile = projectdir+'/gt/points_primitives.csv'
 compareToGt = os.path.isfile(projectfile) and os.path.isfile(gtlinesfile) and os.path.isfile(gtassignfile)
 
 sigma_ref = 1.
-angles = [0., 60., 90., 120., 180.]
+angles = utils.parseAngles(args.angles)
 tolerance = 0.1
 
 if compareToGt:
