@@ -359,6 +359,27 @@ namespace GF2
         }
     };
 
+    /*! \brief Stores candidate count for each direction ID. Is sortable by count.
+     *         Used to filter out directions with only one instance amongst candidates.
+     *         If there's only one candidate, we don't want it to be chosen,
+     *         because it was not copied anywhere.
+     * \note   Added by Aron on 7/1/2015 13:47
+     */
+    class CompareDirHistElements {
+        public:
+            typedef std::pair<DidT,LidT> ParentT;
+            bool operator()(ParentT const& a, ParentT const& b ) { return a.second < b.second; }
+    };
+
+//    struct DirHistElemT : std::pair<DidT,LidT>
+//    {
+//        typedef std::pair<DidT,LidT> ParentT;
+//        bool operator<( const ParentT& other ) const
+//        {
+//            return this->second < other.second;
+//        }
+//    };
+
     /*! \brief Main functionality to generate lines from points.
      *
      *  \tparam _PointPrimitiveDistanceFunctorT Concept: \ref MyPointPrimitiveDistanceFunctor.
@@ -764,6 +785,7 @@ namespace GF2
         } // filter
 
         // ___________ (6) Make sure allowed angles stick _______________
+        std::map<DidT,LidT> directionPopulation; // counts, how many candidates have a direction
         for ( typename PrimitiveMapT::Iterator primIt(outPrims); primIt.hasNext(); primIt.step() )
         {
             // _PrimitiveT prim = *primIt;
@@ -778,7 +800,20 @@ namespace GF2
 //                             << ", but allowedAngles has entry [1]: " << allowedAngles[dId][1] << std::endl;
                 primIt->setTag( _PrimitiveT::TAGS::GEN_ANGLE, allowedAngles[dId][1] );
             }
+
+            // 6.2 Histogram direction ID-s, and list the ones, that are alone (will not get chosen anyway)
+            directionPopulation[ dId ]++;
         } //...for outPrims
+
+        // 6.3 Filter primitives with only one direction among candidates
+        auto tmp = outPrims; outPrims.clear();
+        for ( typename PrimitiveMapT::Iterator primIt(tmp); primIt.hasNext(); primIt.step() )
+        {
+            // _PrimitiveT prim = *primIt;
+            DidT const dId      = primIt->getTag( _PrimitiveT::TAGS::DIR_GID );
+            if ( (directionPopulation[dId] > 1) || (primIt->getTag(_PrimitiveT::TAGS::STATUS) == _PrimitiveT::STATUS_VALUES::SMALL) )
+                containers::add( outPrims, primIt.getGid(), *primIt );
+        }
 
         // log
         std::cout << "[" << __func__ << "]: " << "finished generating, we now have " << nlines << " candidates" << std::endl;

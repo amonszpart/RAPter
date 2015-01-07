@@ -61,7 +61,7 @@ fi
 #d=`../divide.py 2 3`;
 
 anglegens="0"; # Values: ["60", "90", "60,90", ... ] Desired angle generators in degrees. Default: 90.
-nbExtraIter=15;  # Values: [ 1..20 ] iteration count. Default: 2.
+nbExtraIter=50;  # Values: [ 1..20 ] iteration count. Default: 2.
 dirbias="0";	# Values: [ 0, *1* ] (Not-same-dir-id cost offset. Default: 0. Don't use, if freqweight is on.)
 freqweight="0"; # Values: [ 0, *1000* ] (Dataterm = (freqweight / #instances) * datacost)
 adopt="0";      # Values: [ *0*, 1] (Adopt points argument. Default: 0)
@@ -88,7 +88,7 @@ iterationConstrMode="patch" # what to add in the second iteration formulate. Def
 # startAt=0: do segment
 # startAt=1: don't do segment, do iteration 0
 # startAt=2: don't do iteration 0, do iteration 1
-startAt=0
+startAt=5
 
 #moved to argument 6
 #smallThresh="256" # smallThresh * scale is the small threshold # 5 was good for most of the stuff, except big scenes (kinect, lanslevillard)
@@ -285,7 +285,9 @@ do
     if [ $smallThresh -lt $smallThreshlimit ] || [ $smallThresh -eq "0" ]; then
         smallThresh=$smallThreshlimit
         #smallThresh=1
-        #adopt="1"
+        #if [ $startAt -eq 0 ]; then
+            adopt="1"
+        #fi
     fi
 
     #if [ $c -ge 5 ]; then
