@@ -44,35 +44,36 @@ parser.add_argument('primitives')
 parser.add_argument('point_primitives')
 parser.add_argument('cloud')
 parser.add_argument('--angles', nargs='*')
+parser.add_argument('--iteration', default=" unknown")
 
 args = parser.parse_args()
 
 projectdir = args.primitives
-angles = utils.parseAngles(args.angles)
+angles     = utils.parseAngles(args.angles)
+itId       = args.iteration
 
-linesfile_it1  = args.primitives
-assignfile_it1 = args.point_primitives
-cloud    = packages.io.readPointCloudFromPly(args.cloud)
+linesfile  = args.primitives
+assignfile = args.point_primitives
+cloud      = packages.io.readPointCloudFromPly(args.cloud)
 
 ################################################################################
 ## Reading input files
 
-lines_it1  = primitive.readPrimitivesFromFile(linesfile_it1)
-assign_it1 = packages.io.readPointAssignementFromFiles(assignfile_it1)
+lines  = primitive.readPrimitivesFromFile(linesfile)
+assign = packages.io.readPointAssignementFromFiles(assignfile)
 
 ################################################################################
 ## Build and display relation graphs
-graph_it1 = relgraph.RelationGraph(lines_it1, assign_it1, angles, tolerance)
+graph = relgraph.RelationGraph(lines, assign, angles, tolerance)
 
 print "Number of points:      ", len(cloud)
-print "Number of primitives : ",graph_it1.G.number_of_nodes()
-print "Number of connections: ",graph_it1.G.number_of_edges()
-print "Max nb of connections: ",graph_it1.G.number_of_nodes()*graph_it1.G.number_of_nodes()
+print "Number of primitives : ",graph.G.number_of_nodes()
+print "Number of connections: ",graph.G.number_of_edges()
+print "Max nb of connections: ",graph.G.number_of_nodes()*graph.G.number_of_nodes()
 
-max_conn = graph_it1.G.number_of_nodes()* ((graph_it1.G.number_of_nodes()-1)/2)
-print "Coverage: ",float(graph_it1.G.number_of_edges())/float(max_conn)
+max_conn = graph.G.number_of_nodes()* ((graph.G.number_of_nodes()-1)/2)
+print "Coverage: ",float(graph.G.number_of_edges())/float(max_conn)
 
-setupGraphUI(graph_it1, lines_it1, "Graph")
+setupGraphUI(graph, lines, "Iteration "+itId)
 
-
-plt.show()
+plt.savefig("relationGraphs_it"+itId+".svg")
