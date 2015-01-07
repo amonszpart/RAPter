@@ -14,7 +14,7 @@ class RelationGraph(object):
         
         # First create the nodes
         for p in primArray:
-            self.G.add_node(p.uid, w=0)
+            self.G.add_node(p.uid, w=0, uid=p.uid, did = p.did)
             self.indexedPrimArray[p.uid] = p
             
         useAngles = len(angles) != 0
