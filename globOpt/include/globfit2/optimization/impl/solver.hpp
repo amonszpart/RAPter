@@ -51,6 +51,7 @@ Solver::solve( int    argc
     int                                   bmode         = 0; // Bonmin solver mode, B_Bb by default
     std::string                           rel_out_path  = ".";
     std::string                           x0_path       = "";
+    int                                   attemptCount    = 0;
 
     // parse
     {
@@ -129,252 +130,271 @@ Solver::solve( int    argc
         } //...if valid_input
     } //...parse
 
-    // select solver
-    typedef double OptScalar; // Mosek, and Bonmin uses double internally, so that's what we have to do...
-    typedef qcqpcpp::OptProblem<OptScalar> OptProblemT;
-    OptProblemT *p_problem = NULL;
-    if ( EXIT_SUCCESS == err )
+    err = DO_RETRY; // flip to enter
+    while ( (err == DO_RETRY) && (attemptCount < 2) )
     {
-        switch ( solver )
-        {
-#ifdef GF2_WITH_MOSEK
-            case MOSEK:
-                p_problem = new qcqpcpp::MosekOpt<OptScalar>( /* env: */ NULL );
-                break;
-#endif
-            case BONMIN:
-                p_problem = new qcqpcpp::BonminOpt<OptScalar>();
-                break;
+        err = EXIT_SUCCESS; // reset flag
 
-            default:
-                std::cerr << "[" << __func__ << "]: " << "Unrecognized solver type, exiting" << std::endl;
-                err = EXIT_FAILURE;
-                break;
-        } //...switch
-    } //...select solver
-
-    // problem.read()
-    if ( EXIT_SUCCESS == err )
-    {
-        err += p_problem->read( project_path );
-        if ( EXIT_SUCCESS != err )
-            std::cerr << "[" << __func__ << "]: " << "Could not read problem, exiting" << std::endl;
-    } //...problem.read()PrimitiveT
-
-    // problem.parametrize()
-    {
-        if ( max_time > 0 )
-            p_problem->setTimeLimit( max_time );
-        if ( solver == BONMIN )
-        {
-#           ifdef GF2_WITH_BONMIN
-            static_cast<qcqpcpp::BonminOpt<OptScalar>*>(p_problem)->setAlgorithm( Bonmin::Algorithm(bmode) );
-            OptProblemT::SparseMatrix x0;
-            if ( !x0_path.empty() )
-            {
-                x0 = qcqpcpp::io::readSparseMatrix<OptScalar>( x0_path, 0 );
-                static_cast<qcqpcpp::BonminOpt<OptScalar>*>(p_problem)->setStartingPoint( x0 );
-            }
-
-#           endif // WITH_BONMIN
-        }
-    }
-
-    // problem.update()
-    OptProblemT::ReturnType r = 0;
-    if ( EXIT_SUCCESS == err )
-    {
-        // log
-        if ( verbose ) { std::cout << "[" << __func__ << "]: " << "calling problem update..."; fflush(stdout); }
-
-        // update
-        r = p_problem->update();
-
-#ifdef GF2_WITH_MOSEK
-        // check output
-        if ( r != MSK_RES_OK )
-        {
-            std::cerr << "[" << __func__ << "]: " << "ooo...update didn't work with code " << r << std::endl;
-            err = EXIT_FAILURE;
-        }
-#endif
-
-        // log
-        if ( verbose ) { std::cout << "[" << __func__ << "]: " << "problem update finished\n"; fflush(stdout); }
-    } //...problem.update()
-
-    // problem.optimize()
-    if ( EXIT_SUCCESS == err )
-    {
-        // optimize
-        std::vector<OptScalar> x_out;
-        if ( r == p_problem->getOkCode() )
-        {
-            // log
-            if ( verbose ) { std::cout << "[" << __func__ << "]: " << "calling problem optimize...\n"; fflush(stdout); }
-
-            // work
-            r = p_problem->optimize( &x_out, OptProblemT::OBJ_SENSE::MINIMIZE );
-
-            // check output
-            if ( r != p_problem->getOkCode() )
-            {
-                std::cerr << "[" << __func__ << "]: " << "ooo...optimize didn't work with code " << r << std::endl; fflush(stderr);
-                err = r;
-                if ( !x_out.size() )
-                {
-                    std::cerr << "No output from optimizer, exiting" << std::endl;
-
-                }
-            }
-        } //...optimize
-
-        // copy output
-        std::vector<Scalar> scalar_x_out( x_out.size() );
+        // select solver
+        typedef double OptScalar; // Mosek, and Bonmin uses double internally, so that's what we have to do...
+        typedef qcqpcpp::OptProblem<OptScalar> OptProblemT;
+        OptProblemT *p_problem = NULL;
         if ( EXIT_SUCCESS == err )
         {
-            // copy
-            std::copy( x_out.begin(), x_out.end(), scalar_x_out.begin() );
-        } //...copy output
-
-        // dump
-        if ( err != EXIT_SUCCESS ) // by Aron 27/12/2014
-        {
-            std::cout << "err is " << err << ", no saving will happen..." << std::endl;
-        }
-        if ( EXIT_SUCCESS == err)
-        {
-            Diagnostic<OptScalar> diag( p_problem->getLinObjectivesMatrix(), p_problem->getQuadraticObjectivesMatrix() );
+            switch ( solver )
             {
-                std::string x_path = project_path + "/x.csv";
-                OptProblemT::SparseMatrix sp_x( x_out.size(), 1 ); // output colvector
-                for ( size_t i = 0; i != x_out.size(); ++i )
+    #ifdef GF2_WITH_MOSEK
+                case MOSEK:
+                    p_problem = new qcqpcpp::MosekOpt<OptScalar>( /* env: */ NULL );
+                    break;
+    #endif
+                case BONMIN:
+                    p_problem = new qcqpcpp::BonminOpt<OptScalar>();
+                    break;
+
+                default:
+                    std::cerr << "[" << __func__ << "]: " << "Unrecognized solver type, exiting" << std::endl;
+                    err = EXIT_FAILURE;
+                    break;
+            } //...switch
+        } //...select solver
+
+        // problem.read()
+        if ( EXIT_SUCCESS == err )
+        {
+            err += p_problem->read( project_path );
+            if ( EXIT_SUCCESS != err )
+                std::cerr << "[" << __func__ << "]: " << "Could not read problem, exiting" << std::endl;
+        } //...problem.read()PrimitiveT
+
+        // problem.parametrize()
+        {
+            if ( max_time > 0 )
+                p_problem->setTimeLimit( max_time );
+            if ( solver == BONMIN )
+            {
+    #           ifdef GF2_WITH_BONMIN
+                qcqpcpp::BonminOpt<OptScalar>* p_bonminProblem = static_cast<qcqpcpp::BonminOpt<OptScalar>*>(p_problem);
+                p_bonminProblem->setAlgorithm( Bonmin::Algorithm(bmode) );
+                std::cout << "[" << __func__ << "]: " << "setting attemptCount to " << (1 + attemptCount) * 100 << std::endl;
+                p_bonminProblem->setNodeLimit( (1 + attemptCount) * 100 );
+                if ( attemptCount )
                 {
-                    if ( int(round(x_out[i])) > 0 )
-                    {
-                        sp_x.insert(i,0) = x_out[i];
-                    }
+                    p_bonminProblem->setMaxSolutions( 1 );
                 }
-                qcqpcpp::io::writeSparseMatrix<OptScalar>( sp_x, x_path, 0 );
-                std::cout << "[" << __func__ << "]: " << "wrote output to " << x_path << std::endl;
-            }
-
-            std::string candidates_path;
-            if ( pcl::console::parse_argument( argc, argv, "--candidates", candidates_path ) >= 0 )
-            {
-                // read primitives
-                _PrimitiveContainerT prims;
+                OptProblemT::SparseMatrix x0;
+                if ( !x0_path.empty() )
                 {
-                    if ( verbose ) std::cout << "[" << __func__ << "]: " << "reading primitives from " << candidates_path << "...";
-                    io::readPrimitives<_PrimitiveT, _InnerPrimitiveContainerT>( prims, candidates_path );
-                    if ( verbose ) std::cout << "reading primitives ok\n";
-                } //...read primitives
+                    x0 = qcqpcpp::io::readSparseMatrix<OptScalar>( x0_path, 0 );
+                    static_cast<qcqpcpp::BonminOpt<OptScalar>*>(p_problem)->setStartingPoint( x0 );
+                }
 
-                // save selected primitives
-                _PrimitiveContainerT out_prims( 1 );
-                int prim_id = 0;
-                for ( size_t l = 0; l != prims.size(); ++l )
-                    for ( size_t l1 = 0; l1 != prims[l].size(); ++l1 )
+    #           endif // WITH_BONMIN
+            }
+        }
+
+        // problem.update()
+        OptProblemT::ReturnType r = 0;
+        if ( EXIT_SUCCESS == err )
+        {
+            // log
+            if ( verbose ) { std::cout << "[" << __func__ << "]: " << "calling problem update..."; fflush(stdout); }
+
+            // update
+            r = p_problem->update();
+
+    #ifdef GF2_WITH_MOSEK
+            // check output
+            if ( r != MSK_RES_OK )
+            {
+                std::cerr << "[" << __func__ << "]: " << "ooo...update didn't work with code " << r << std::endl;
+                err = EXIT_FAILURE;
+            }
+    #endif
+
+            // log
+            if ( verbose ) { std::cout << "[" << __func__ << "]: " << "problem update finished\n"; fflush(stdout); }
+        } //...problem.update()
+
+        // problem.optimize()
+        if ( EXIT_SUCCESS == err )
+        {
+            // optimize
+            std::vector<OptScalar> x_out;
+            if ( r == p_problem->getOkCode() )
+            {
+                // log
+                if ( verbose ) { std::cout << "[" << __func__ << "]: " << "calling problem optimize...\n"; fflush(stdout); }
+
+                // work
+                r = p_problem->optimize( &x_out, OptProblemT::OBJ_SENSE::MINIMIZE );
+
+                // check output
+                if ( r != p_problem->getOkCode() )
+                {
+                    std::cerr << "[" << __func__ << "]: " << "ooo...optimize didn't work with code " << r << std::endl; fflush(stderr);
+                    err = r;
+                }
+            } //...optimize
+
+            if ( !x_out.size() || std::accumulate(x_out.begin(),x_out.end(),0) == 0 )
+            {
+                std::cerr << "No output from optimizer, exiting" << std::endl;
+                {
+                    err = DO_RETRY;
+                    ++attemptCount;
+                }
+            }
+            else
+                std::cout << "accumulate: " << std::accumulate(x_out.begin(),x_out.end(),0) << std::endl;
+
+            // copy output
+            std::vector<Scalar> scalar_x_out( x_out.size() );
+            if ( EXIT_SUCCESS == err )
+            {
+                // copy
+                std::copy( x_out.begin(), x_out.end(), scalar_x_out.begin() );
+            } //...copy output
+
+            // dump
+            if ( EXIT_SUCCESS != err ) // by Aron 27/12/2014
+            {
+                std::cout << "err is " << err << ", no saving will happen..." << std::endl;
+            }
+            if ( EXIT_SUCCESS == err)
+            {
+                Diagnostic<OptScalar> diag( p_problem->getLinObjectivesMatrix(), p_problem->getQuadraticObjectivesMatrix() );
+                {
+                    std::string x_path = project_path + "/x.csv";
+                    OptProblemT::SparseMatrix sp_x( x_out.size(), 1 ); // output colvector
+                    for ( size_t i = 0; i != x_out.size(); ++i )
                     {
-                        if ( prims[l][l1].getTag( _PrimitiveT::TAGS::STATUS ) == _PrimitiveT::STATUS_VALUES::SMALL )
+                        if ( int(round(x_out[i])) > 0 )
                         {
-                            // copy small, keep for later iterations
-                            out_prims.back().push_back( prims[l][l1] );
+                            sp_x.insert(i,0) = x_out[i];
                         }
-                        else
+                    }
+                    qcqpcpp::io::writeSparseMatrix<OptScalar>( sp_x, x_path, 0 );
+                    std::cout << "[" << __func__ << "]: " << "wrote output to " << x_path << std::endl;
+                }
+
+                std::string candidates_path;
+                if ( pcl::console::parse_argument( argc, argv, "--candidates", candidates_path ) >= 0 )
+                {
+                    // read primitives
+                    _PrimitiveContainerT prims;
+                    {
+                        if ( verbose ) std::cout << "[" << __func__ << "]: " << "reading primitives from " << candidates_path << "...";
+                        io::readPrimitives<_PrimitiveT, _InnerPrimitiveContainerT>( prims, candidates_path );
+                        if ( verbose ) std::cout << "reading primitives ok\n";
+                    } //...read primitives
+
+                    // save selected primitives
+                    _PrimitiveContainerT out_prims( 1 );
+                    int prim_id = 0;
+                    for ( size_t l = 0; l != prims.size(); ++l )
+                        for ( size_t l1 = 0; l1 != prims[l].size(); ++l1 )
                         {
-                            // copy to output, only, if chosen
+                            if ( prims[l][l1].getTag( _PrimitiveT::TAGS::STATUS ) == _PrimitiveT::STATUS_VALUES::SMALL )
+                            {
+                                // copy small, keep for later iterations
+                                out_prims.back().push_back( prims[l][l1] );
+                            }
+                            else
+                            {
+                                // copy to output, only, if chosen
+                                if ( int(round(x_out[prim_id])) > 0 )
+                                {
+                                    //std::cout << "saving " << prims[l][l1].getTag(_PrimitiveT::TAGS::GID) << ", " << prims[l][l1].getTag(_PrimitiveT::TAGS::DIR_GID) << ", X: " << x_out[prim_id] << "\t, ";
+                                    prims[l][l1].setTag( _PrimitiveT::TAGS::STATUS, _PrimitiveT::STATUS_VALUES::ACTIVE );
+                                    out_prims.back().push_back( prims[l][l1] );
+
+                                    // diagnostic // 5/1/2015
+                                    char name[256];
+                                    sprintf( name,"p%d,%d", prims[l][l1].getTag(_PrimitiveT::TAGS::GID),prims[l][l1].getTag(_PrimitiveT::TAGS::DIR_GID) );
+                                    diag.setNodeName( prim_id, name );
+                                    diag.setNodePos( prim_id, prims[l][l1].template pos() );
+                                }
+
+                                // increment non-small primitive ids
+                                ++prim_id;
+                            }
+                        } // ... for l1
+                    std::cout << std::endl;
+
+                    const int clusterVarsStart = prim_id;
+                    std::cout << "clusterVarsStart: " << clusterVarsStart << std::endl;
+                    // add rest of nodes (cluster_nodes)
+                    {
+                        for ( ; prim_id < x_out.size(); ++prim_id )
+                        {
+                            char name[256];
                             if ( int(round(x_out[prim_id])) > 0 )
                             {
-                                //std::cout << "saving " << prims[l][l1].getTag(_PrimitiveT::TAGS::GID) << ", " << prims[l][l1].getTag(_PrimitiveT::TAGS::DIR_GID) << ", X: " << x_out[prim_id] << "\t, ";
-                                prims[l][l1].setTag( _PrimitiveT::TAGS::STATUS, _PrimitiveT::STATUS_VALUES::ACTIVE );
-                                out_prims.back().push_back( prims[l][l1] );
-
-                                // diagnostic // 5/1/2015
-                                char name[256];
-                                sprintf( name,"p%d,%d", prims[l][l1].getTag(_PrimitiveT::TAGS::GID),prims[l][l1].getTag(_PrimitiveT::TAGS::DIR_GID) );
+                                sprintf( name,"%d_on", prim_id );
                                 diag.setNodeName( prim_id, name );
-                                diag.setNodePos( prim_id, prims[l][l1].template pos() );
                             }
-
-                            // increment non-small primitive ids
-                            ++prim_id;
-                        }
-                    } // ... for l1
-                std::cout << std::endl;
-
-                const int clusterVarsStart = prim_id;
-                std::cout << "clusterVarsStart: " << clusterVarsStart << std::endl;
-                // add rest of nodes (cluster_nodes)
-                {
-                    for ( ; prim_id < x_out.size(); ++prim_id )
-                    {
-                        char name[256];
-                        if ( int(round(x_out[prim_id])) > 0 )
-                        {
-                            sprintf( name,"%d_on", prim_id );
-                            diag.setNodeName( prim_id, name );
-                        }
-                        else
-                        {
-                            sprintf( name,"%d_off", prim_id );
-                        }
-                    }
-                }
-
-                // go over constraints
-                {
-                    typedef typename OptProblemT::SparseMatrix SparseMatrix;
-                    for ( int j = 0; j != p_problem->getConstraintCount(); ++j )
-                    {
-                        SparseMatrix Qk = p_problem->getQuadraticConstraintsMatrix( j );
-                        if ( !Qk.nonZeros() ) continue;
-
-                        for ( int row = 0; row != Qk.outerSize(); ++row )
-                        {
-                            for ( typename SparseMatrix::InnerIterator it(Qk,row); it; ++it )
+                            else
                             {
-                                if ( it.value() != 0. )
-                                    diag.addEdge( it.row(), it.col() );
+                                sprintf( name,"%d_off", prim_id );
                             }
                         }
                     }
-                }
 
-                std::string parent_path = boost::filesystem::path(candidates_path).parent_path().string();
-                if ( parent_path.empty() )  parent_path = "./";
-                else                        parent_path += "/";
+                    // go over constraints
+                    {
+                        typedef typename OptProblemT::SparseMatrix SparseMatrix;
+                        for ( int j = 0; j != p_problem->getConstraintCount(); ++j )
+                        {
+                            SparseMatrix Qk = p_problem->getQuadraticConstraintsMatrix( j );
+                            if ( !Qk.nonZeros() ) continue;
 
-                std::string out_prim_path = parent_path + rel_out_path + "/primitives." + solver_str + ".csv";
+                            for ( int row = 0; row != Qk.outerSize(); ++row )
+                            {
+                                for ( typename SparseMatrix::InnerIterator it(Qk,row); it; ++it )
+                                {
+                                    if ( it.value() != 0. )
+                                        diag.addEdge( it.row(), it.col() );
+                                }
+                            }
+                        }
+                    }
+
+                    std::string parent_path = boost::filesystem::path(candidates_path).parent_path().string();
+                    if ( parent_path.empty() )  parent_path = "./";
+                    else                        parent_path += "/";
+
+                    std::string out_prim_path = parent_path + rel_out_path + "/primitives." + solver_str + ".csv";
+                    {
+                        int iteration = 0;
+                        iteration = std::max(0,util::parseIteration(candidates_path) );
+                        {
+                            std::stringstream ss;
+                            ss << parent_path + rel_out_path << "/primitives_it" << iteration << "." << solver_str << ".csv";
+                            out_prim_path = ss.str();
+                        }
+
+                        {
+                            std::stringstream ss;
+                            ss << parent_path + rel_out_path << "/diag_it" << iteration << ".gv";
+                            diag.draw( ss.str(), false );
+                        }
+                    }
+
+                    util::saveBackup    ( out_prim_path );
+                    io::savePrimitives<_PrimitiveT, typename _InnerPrimitiveContainerT::const_iterator>( out_prims, out_prim_path, /* verbose: */ true );
+
+                } // if --candidates
+                else
                 {
-                    int iteration = 0;
-                    iteration = std::max(0,util::parseIteration(candidates_path) );
-                    {
-                        std::stringstream ss;
-                        ss << parent_path + rel_out_path << "/primitives_it" << iteration << "." << solver_str << ".csv";
-                        out_prim_path = ss.str();
-                    }
+                    std::cout << "[" << __func__ << "]: " << "You didn't provide candidates, could not save primitives" << std::endl;
+                } // it no --candidates
+            }
 
-                    {
-                        std::stringstream ss;
-                        ss << parent_path + rel_out_path << "/diag_it" << iteration << ".gv";
-                        diag.draw( ss.str(), false );
-                    }
-                }
+        } //...problem.optimize()
 
-                util::saveBackup    ( out_prim_path );
-                io::savePrimitives<_PrimitiveT, typename _InnerPrimitiveContainerT::const_iterator>( out_prims, out_prim_path, /* verbose: */ true );
-
-            } // if --candidates
-            else
-            {
-                std::cout << "[" << __func__ << "]: " << "You didn't provide candidates, could not save primitives" << std::endl;
-            } // it no --candidates
-        }
-
-    } //...problem.optimize()
-
-    if ( p_problem ) { delete p_problem; p_problem = NULL; }
+        if ( p_problem ) { delete p_problem; p_problem = NULL; }
+    } //...err == doRetry || exit_SUCCESS
 
     return err;
 }

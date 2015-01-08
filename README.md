@@ -18,6 +18,8 @@ All dependencies are assumed to be available in a workspace folder and a `3rdpar
 
 GlobOpt also requires OpenCV and PointCloudLibrary, and we recommend to use respectively the last stable release and the development branch for these packages (tested with Ubuntu 14.04 and Debian Testing).
 
+Ubuntu packages: python-pygraphviz
+
 ###CoinBonmin
 First, download Bonmin in `${WORKSPACE}/3rdparty`:
 ```

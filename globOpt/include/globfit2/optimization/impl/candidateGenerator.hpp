@@ -359,6 +359,27 @@ namespace GF2
         }
     };
 
+    /*! \brief Stores candidate count for each direction ID. Is sortable by count.
+     *         Used to filter out directions with only one instance amongst candidates.
+     *         If there's only one candidate, we don't want it to be chosen,
+     *         because it was not copied anywhere.
+     * \note   Added by Aron on 7/1/2015 13:47
+     */
+    class CompareDirHistElements {
+        public:
+            typedef std::pair<DidT,LidT> ParentT;
+            bool operator()(ParentT const& a, ParentT const& b ) { return a.second < b.second; }
+    };
+
+//    struct DirHistElemT : std::pair<DidT,LidT>
+//    {
+//        typedef std::pair<DidT,LidT> ParentT;
+//        bool operator<( const ParentT& other ) const
+//        {
+//            return this->second < other.second;
+//        }
+//    };
+
     /*! \brief Main functionality to generate lines from points.
      *
      *  \tparam _PointPrimitiveDistanceFunctorT Concept: \ref MyPointPrimitiveDistanceFunctor.
@@ -629,7 +650,7 @@ namespace GF2
                              if ( gid1 == -2               )    gid1 = prim1.getTag( _PrimitiveT::TAGS::GID );
                         else if ( gid1 != outer_it1->first )    std::cerr << "[" << __func__ << "]: " << "Not good, prims under one gid don't have same GID in inner loop..." << std::endl;
 
-                             if ( (gid0 == 140 || gid0 == 147) && (gid1 == 147 || gid1 == 140) )
+                             if ( (gid0 == 130 || gid0 == 123) && (gid1 == 130 || gid1 == 123) )
                                  std::cout << "stop " << std::endl;
 
                         addCandidate<_PrimitivePrimitiveAngleFunctorT>(
@@ -764,6 +785,7 @@ namespace GF2
         } // filter
 
         // ___________ (6) Make sure allowed angles stick _______________
+        std::map<DidT,LidT> directionPopulation; // counts, how many candidates have a direction
         for ( typename PrimitiveMapT::Iterator primIt(outPrims); primIt.hasNext(); primIt.step() )
         {
             // _PrimitiveT prim = *primIt;
@@ -778,7 +800,20 @@ namespace GF2
 //                             << ", but allowedAngles has entry [1]: " << allowedAngles[dId][1] << std::endl;
                 primIt->setTag( _PrimitiveT::TAGS::GEN_ANGLE, allowedAngles[dId][1] );
             }
+
+            // 6.2 Histogram direction ID-s, and list the ones, that are alone (will not get chosen anyway)
+            directionPopulation[ dId ]++;
         } //...for outPrims
+
+        // 6.3 Filter primitives with only one direction among candidates
+        auto tmp = outPrims; outPrims.clear();
+        for ( typename PrimitiveMapT::Iterator primIt(tmp); primIt.hasNext(); primIt.step() )
+        {
+            // _PrimitiveT prim = *primIt;
+            DidT const dId      = primIt->getTag( _PrimitiveT::TAGS::DIR_GID );
+            if ( (directionPopulation[dId] > 1) || (primIt->getTag(_PrimitiveT::TAGS::STATUS) == _PrimitiveT::STATUS_VALUES::SMALL) )
+                containers::add( outPrims, primIt.getGid(), *primIt );
+        }
 
         // log
         std::cout << "[" << __func__ << "]: " << "finished generating, we now have " << nlines << " candidates" << std::endl;
@@ -972,21 +1007,35 @@ namespace GF2
         //PrimitiveContainerT primitives;
         PrimitiveMapT primitives;
         int ret = EXIT_SUCCESS;
+        int attempts = 0, attemptLimit = 1;
         if ( EXIT_SUCCESS == err )
         {
-            ret = CandidateGenerator::generate< MyPrimitivePrimitiveAngleFunctor, MyPointPrimitiveDistanceFunctor, _PrimitiveT >
-                                              ( primitives, patches, points
-                                                , generatorParams.scale
-                                                , generatorParams.angles
-                                                , generatorParams
-                                                , generatorParams.small_thresh_mult
-                                                , angleGensInRad
-                                                , generatorParams.safe_mode
-                                                , generatorParams.var_limit );
+            // runs once, 0<1, unless too many actives in output,
+            // in which case, runs twice (0<1, 1<2) with safe_mode on second run
+            while ( attempts < attemptLimit )
+            {
+                ++attempts;
 
-            //if ( err != EXIT_SUCCESS ) std::cerr << "[" << __func__ << "]: " << "generate exited with error! Code: " << err << std::endl;
-            if ( ret != 0 )
-                std::cout << "not all patches were promoted( " << ret << " left), will need rerun on same threshold..." << std::endl;
+                ret = CandidateGenerator::generate< MyPrimitivePrimitiveAngleFunctor, MyPointPrimitiveDistanceFunctor, _PrimitiveT >
+                        ( primitives, patches, points
+                          , generatorParams.scale
+                          , generatorParams.angles
+                          , generatorParams
+                          , generatorParams.small_thresh_mult
+                          , angleGensInRad
+                          , generatorParams.safe_mode
+                          , generatorParams.var_limit );
+
+                //if ( err != EXIT_SUCCESS ) std::cerr << "[" << __func__ << "]: " << "generate exited with error! Code: " << err << std::endl;
+                if ( ret > 0 )
+                    std::cout << "not all patches were promoted( " << ret << " left), will need rerun on same threshold..." << std::endl;
+                else if ( ret < 0 )
+                {
+                    std::cout << "rerunning in safe mode, all active..." << std::endl;
+                    attemptLimit = 2;
+                    generatorParams.safe_mode = true;
+                }
+            }
         } //...generate
 
     #if 0 // these shouldn't change here

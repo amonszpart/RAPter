@@ -1,8 +1,8 @@
 % takes a 2D image, an prepares it for sampling
-if 0
+if 1
     close all;
     figure();
-    p = '/home/bontius/workspace/globOpt/data/scenes/floorplan_niloy/floorplan.png'
+    p = '/home/bontius/workspace/globOpt/data/scenes/floorplan_niloy/floorplan_mod2.png'
     H = 2; W = 2; k = 1;
 
     I = imread(p);
@@ -21,19 +21,20 @@ if 0
     imshow( bw );
 end
 
-N = 100000.
-[ H, W ] = size( bw );
+I = G;
+N = 0
+[ H, W ] = size( I );
 rat = N / (H * W);
 P = zeros(0,2);
 for y = 1 : H
     for x = 1 : W
-        if ( rand < rat && bw(y,x) > 0)
-            P(end+1,:) = [ x/W, y/H ];
+        if ( I(y,x) < 20)
+            P(end+1,:) = [ x/W, 1.-y/H ];
         end
     end
 end
 
-fid = fopen('out.ply','w','n','UTF-8' );
+fid = fopen([p '.ply'],'w','n','UTF-8' );
 fprintf( fid, ['ply\n' ...
                'format ascii 1.0\n' ...
                 'comment Aron generated\n' ...

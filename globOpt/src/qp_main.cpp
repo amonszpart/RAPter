@@ -74,7 +74,7 @@ int main( int argc, char *argv[] )
     }
     else if ( GF2::console::find_switch(argc,argv,"--solver3D") ) // Note: "solver", not "solve" :-S
     {
-        return solve( argc, argv );
+        return solve3D( argc, argv );
     }
     else if ( GF2::console::find_switch(argc,argv,"--datafit") || GF2::console::find_switch(argc,argv,"--datafit3D") )
     {

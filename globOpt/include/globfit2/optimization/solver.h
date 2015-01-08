@@ -17,6 +17,8 @@ struct SolverParams
 class Solver
 {
     public:
+        static const int DO_RETRY = -11; // signal to tell solveCli to run again
+
         //typedef Eigen::Matrix<Scalar,3,1>                   Vector;
         typedef Eigen::SparseMatrix<Scalar,Eigen::RowMajor> SparseMatrix;
 
