@@ -403,9 +403,21 @@ namespace GF2
                 if ( show_normals || save_poly )
                 {
                     pcl::Normal normal;
-                    normal.normal_x = points[pid].template dir()(0);
-                    normal.normal_y = points[pid].template dir()(1);
-                    normal.normal_z = points[pid].template dir()(2);
+                    if ( DRAW_MODE::REPROJECT & draw_mode )
+                    {
+                        if ( gidLidIterator == gid2lidLid1.end() )
+                            std::cout << "[" << __func__ << "]: " << "can't find primitive the point is assigned to, wtf...point_gid: " << point_gid << std::endl;
+                        Position normalVec = primitives.at( lidLid1.first ).at( lidLid1.second ).template normal();
+                        normal.normal_x = normalVec(0);
+                        normal.normal_y = normalVec(1);
+                        normal.normal_z = normalVec(2);
+                    }
+                    else
+                    {
+                        normal.normal_x = points[pid].template dir()(0);
+                        normal.normal_y = points[pid].template dir()(1);
+                        normal.normal_z = points[pid].template dir()(2);
+                    }
                     normals->push_back( normal );
                 } // ...show normals
             } //...for points
@@ -809,25 +821,28 @@ namespace GF2
                     pnt.normal[1] = normals->at(pid).normal_y; //points[pid].template dir()(1);
                     pnt.normal[2] = normals->at(pid).normal_z; //points[pid].template dir()(2);
 
-                    if ( DRAW_MODE::REPROJECT & draw_mode )
-                    {
-                        // get primitive groupId assigned to point (-1, if unassigned)
-                        const GidT  gid = points[pid].getTag( PointPrimitiveT::TAGS::GID );
-                        // get primitive unique ID
-                        LidLid1     lids(-1,-1);
-                        // if primitive exists (gid != -1)
-                        if ( gid2lidLid1.find( gid ) != gid2lidLid1.end() )
-                        {
-                            // get unique ID
-                            lids = gid2lidLid1[ gid ];
-                            // get primitive normal using unique ID
-                            normal = primitives[ lids.first ][ lids.second ].template normal();
-                            // save normal to point
-                            pnt.normal[0] = normal(0);
-                            pnt.normal[1] = normal(1);
-                            pnt.normal[2] = normal(2);
-                        } //...if primitive exists
-                    } //...if reproject
+//                    if ( DRAW_MODE::REPROJECT & draw_mode )
+//                    {
+//                        // get primitive groupId assigned to point (-1, if unassigned)
+//                        const GidT  gid = points[pid].getTag( PointPrimitiveT::TAGS::GID );
+//                        // get primitive unique ID
+//                        LidLid1     lids(-1,-1);
+//                        // if primitive exists (gid != -1)
+//                        if ( gid2lidLid1.find( gid ) != gid2lidLid1.end() )
+//                        {
+//                            // get unique ID
+//                            lids = gid2lidLid1[ gid ];
+//                            // get primitive normal using unique ID
+//                            normal = primitives[ lids.first ][ lids.second ].template normal();
+//                            // save normal to point
+//                            pnt.normal[0] = normal(0);
+//                            pnt.normal[1] = normal(1);
+//                            pnt.normal[2] = normal(2);
+//                            std::cout << "point normal is now " << pnt.normal[0] << "," << pnt.normal[1] << "," << pnt.normal[2] << std::endl;
+//                        } //...if primitive exists
+//                        else
+//                            std::cout << "point normal STAYED " << pnt.normal[0] << "," << pnt.normal[1] << "," << pnt.normal[2] << std::endl;
+//                    } //...if reproject
 
                     // save point to output cloud
                     splats.push_back( pnt );
@@ -962,3 +977,4 @@ namespace GF2
 #undef FILTER_STATUS
 
 #endif // __GF2_VISUALIZER_HPP__
+
