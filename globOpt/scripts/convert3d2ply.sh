@@ -29,9 +29,6 @@ echo "element vertex $numv"  >>$out
 echo "property float x"  >>$out
 echo "property float y"  >>$out
 echo "property float z" >>$out
-#property uchar red
-#property uchar green
-#property uchar blue
 #property float nx
 #property float ny
 #property float nz
@@ -40,3 +37,6 @@ echo "end_header" >>$out
 cat "_tmp.ply" >>$out
 
 rm "_tmp.ply"
+
+# Then run:
+# /home/bontius/workspace/globOpt/globOpt/build/Release/bin/glob_opt --subsample --N 0 --scene-size 0 --cloud koblenz.ply --origin 0,0,0

@@ -1,77 +1,86 @@
 #! /bin/bash
 
-## These are scripts how to run a representative problem
+function reprEcho()
+{
+	echo -e "[runRepr] $1\n" >&1;
+}
 
-scale=0.02
-unary=1000
-pw=10000
-poplimit=5
-angleGens="60,90"
-cands="candidates_it0.csv"
-pwCostFunc="spatsqrt"
-freqweight=1000
-flag3D=""
-prims="primitives_it6.bonmin.csv"
-assoc="points_primitives_it5.csv"
-anglelimit=0.1
-algCode=0
+function printReprUsage()
+{
+	reprEcho "\n\nrunRepr usage: primitives_it\?.bonmin.csv points_primitives_it\?-1.csv iteration\n";
+	exit 1
+}
 
-# representatives
-cmd="../glob_opt --represent -p $prims -a $assoc -sc $scale --cloud cloud.ply"
-echo $cmd
-`$cmd >/dev/null 2>/dev/null`
-repr="representatives.csv"
+function runRepr() {
+	if [[ -z "$1" ]]; then printReprUsage; exit 1; else rprPrims=$1; fi
+	if [[ -z "$2" ]]; then printReprUsage; exit 1; else rprAssoc=$2; fi
+	if [[ -z "$3" ]]; then printReprUsage; exit 1; else rprIter=$3; fi	
 
-# ShowRepr
-cmd="../globOptVis --show --scale $scale --pop-limit $poplimit --title \"Representatives\" --angle-gens $angleGens --use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-scale --bg-colour .9,.9,.9 --ids --no-rel -p $repr -a $assoc"
-echo $cmd
-`$cmd >/dev/null 2>/dev/null`
+ 	reprEcho "Running with prims: $rprPrims, assoc: $rprAssoc, iteration: $rprIter\n"
+	
+	rprRepr="representatives_it$rprIter.csv" # representatives output, contains one patch for each dId
+	rprReprAssoc="points_representatives_it$rprIter.csv" # representatives output, contains associations for representative primitives only
+	rprCands="candidates_representatives_it$rprIter.csv" # candidates generated from representatives
+	rprReprOpt="representatives_it$rprIter.bonmin.csv" # new representatives chosen from candidates
+	rprPrimBak="`cutExt $rprPrims`".lvl1.csv
 
-# Generate from Repr
-cmd="../glob_opt --generate -sc $scale -al $anglelimit -ald 1 --small-mode 0 --patch-pop-limit $poplimit --angle-gens $angleGens --small-thresh-mult 1 -p $repr --assoc $assoc"
-echo $cmd
-`$cmd >/dev/null 2>/dev/null`
+	#prevId=`expr $c - 1`;
+	rprNextId=`expr $c + 1`; #candidates will output here automatically...so we need to know
+	rprPw=`my_mult $pw $reprPwMult`
 
-# Show candidates
-cp candidates_it0.csv candidates_it0_tmp.csv
-cmd="../globOptVis --show --scale $scale --pop-limit $poplimit -p candidates_it0.csv -a points_representatives.csv --title \"GlobOpt-repr_candidates\" --angle-gens $angleGens --use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-scale --bg-colour .9,.9,.9 --ids --no-rel"
-echo $cmd
-`$cmd >/dev/null 2>/dev/null`
-cp candidates_it0.csv candidates_representatives.csv
-cp candidates_it0_tmp.csv candidates_it0.csv
-cands="candidates_representatives.csv"
-assoc="points_representatives.csv"
+	# representatives
+	#cmd="../glob_opt --represent$flag3D -p $prims -a $assoc -sc $scale --cloud cloud.ply --angle-gens $angleGens"
+	my_exec "$executable --represent$flag3D -p $rprPrims -a $rprAssoc -sc $scale --cloud cloud.ply --angle-gens $anglegens"
+	mv representatives.csv $rprRepr
+	mv points_representatives.csv $rprReprAssoc
 
-# Formulate
-cmd="../glob_opt --formulate --scale $scale --cloud cloud.ply --unary $unary --pw $pw --cmp 1 --constr-mode patch --dir-bias 0 --patch-pop-limit $poplimit --angle-gens $angleGens --candidates $cands -a $assoc --freq-weight $freqweight --cost-fn $pwCostFunc"
-echo $cmd
-`$cmd >/dev/null 2>/dev/null`
+	# ShowRepr
+	#cmd="../globOptVis --show$flag3D--scale $scale --pop-limit $poplimit --title \"Representatives\" --angle-gens $angleGens --use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-scale --bg-colour .9,.9,.9 --ids --no-rel -p $repr -a $assoc $"
+	#my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p $rprRepr -a $rprReprAssoc --title \"Representatives\" $visdefparam &"
 
-cp primitives_it0.bonmin.csv primitives_it0_tmp.csv
-cmd="../glob_opt --solver$flag3D bonmin --problem problem -v --time -1 --angle-gens $angleGens --bmode $algCode --candidates $cands"
-echo $cmd
-`$cmd >log.tmp 2>/dev/null`
-cp primitives_it0.bonmin.csv representatives.bonmin.csv
-cp primitives_it0_tmp.csv primitives_it0.bonmin.csv
-cat log.tmp
+	# Generate from Repr
+	#cmd="../glob_opt --generate$flag3D -sc $scale -al $anglelimit -ald 1 --small-mode 0 --patch-pop-limit $poplimit --angle-gens $angleGens --small-thresh-mult 1 -p $repr --assoc $assoc"
+	mv candidates_it$rprNextId.csv candidates_it$rprNextId_tmp.csv # move tmp out of the way
+	my_exec "$executable --generate$flag3D -sc $scale -al $anglelimit -ald ${cand_anglediv} --small-mode 0 --patch-pop-limit $poplimit --angle-gens $anglegens --small-thresh-mult $smallThresh -p $rprRepr --assoc $rprReprAssoc --keep-singles"
+	mv candidates_it$rprNextId.csv $rprCands
+	mv candidates_it$rprNextId_tmp.csv candidates_it$rprNextId.csv # move back tmp
+	
+	# Show candidates
+	#my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p $rprCands -a $rprReprAssoc --title \"GlobOpt-repr_candidates\" $visdefparam &"
 
-cmd="../globOptVis --show --scale $scale --pop-limit $poplimit --title \"GlobOpt - ReprOpt output\" --angle-gens $angleGens --use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-scale --bg-colour .3,.3,.3 --ids --no-rel -p representatives.bonmin.csv -a points_representatives.csv --show-spatial"
-echo $cmd
-`$cmd >/dev/null 2>/dev/null`
+	# Formulate
+	my_exec "$executable --formulate$flag3D --scale $scale --cloud cloud.ply --unary $unary --pw $rprPw --cmp $cmp --constr-mode patch --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $angleGens --candidates $rprCands -a $rprReprAssoc --freq-weight $freqweight --cost-fn $pwCostFunc"
 
-out=representatives.bonmin.csv
-cmd="../glob_opt --energy --formulate --scale $scale --cloud cloud.ply --unary $unary --pw $pw --cmp 1 --constr-mode patch --dir-bias 0 --patch-pop-limit $poplimit --angle-gens $angleGens --candidates $out -a $assoc --freq-weight $freqweight --cost-fn spatsqrt"
-echo $cmd
-`$cmd >log.tmp`
-cat log.tmp
+	cp primitives_it$rprIter.bonmin.csv primitives_it$rprIter_rprtmp.csv
+	my_exec "$executable --solver$flag3D bonmin --problem problem -v --time -1 --angle-gens $anglegens --bmode $algCode --candidates $rprCands"
+	cp primitives_it$rprIter.bonmin.csv $rprReprOpt
+	cp primitives_it$rprIter_rprtmp.csv primitives_it$rprIter.bonmin.csv
 
-out=representatives.bonmin.csv.my
-cmd="../glob_opt --energy --formulate --scale $scale --cloud cloud.ply --unary $unary --pw $pw --cmp 1 --constr-mode patch --dir-bias 0 --patch-pop-limit $poplimit --angle-gens $angleGens --candidates $out -a $assoc --freq-weight $freqweight --cost-fn spatsqrt"
-echo $cmd
-`$cmd >log.tmp`
-cat log.tmp
+	#my_exec "../globOptVis --show$flag3D -p $rprReprOpt -a $rprReprAssoc --title \"GlobOpt-RepresentativesOptimized\" --scale $scale --pop-limit $poplimit $visdefparam &"
 
-# ../glob_opt --energy --formulate --scale 0.015 --cloud cloud.ply --unary 10000 --pw 15 --cmp 1 --constr-mode patch --dir-bias 0 --patch-pop-limit 5 --angle-gens 60,90 --candidates primitives_it.bonmin.csv -a --freq-weight 1000 --cost-fn spatsqrt
+	# apply representatives - outputs subs.csv
+	my_exec "$executable --representBack$flag3D --repr $rprReprOpt -p $rprPrims -a $rprAssoc -sc $scale --cloud cloud.ply --angle-gens $anglegens"
+	mv $rprPrims $rprPrimBak
+	mv subs.csv $rprPrims #substitue for input
 
-# showmy
-# ../globOptVis --show --scale 0.02 --pop-limit 5 --title "GlobOpt - ReprOpt output" --angle-gens 60,90 --use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-scale --bg-colour .3,.3,.3 --ids --no-rel -p representatives.bonmin.csv.my -a points_representatives.csv --show-spatial
+	#my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit --title \"GlobOpt - ReprBack output\" --angle-gens $angleGens --use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-scale --bg-colour .3,.3,.3 --ids --no-rel -p subs.csv -a $oldAssoc"
+	my_exec "../globOptVis --show$flag3D -p $rprPrims -a $rprAssoc --title \"GlobOpt-ReprOutput\" --scale $scale --pop-limit $poplimit $visdefparam &"
+	
+	# ../glob_opt --energy --formulate --scale 0.015 --cloud cloud.ply --unary 10000 --pw 15 --cmp $cmp --constr-mode patch --dir-bias 0 --patch-pop-limit 5 --angle-gens 60,90 --candidates primitives_it.bonmin.csv -a --freq-weight 1000 --cost-fn spatsqrt
+
+	# showmy
+	# ../globOptVis --show --scale 0.02 --pop-limit 5 --title "GlobOpt - ReprOpt output" --angle-gens 60,90 --use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-scale --bg-colour .3,.3,.3 --ids --no-rel -p representatives.bonmin.csv.my -a points_representatives.csv --show-spatial
+}
+
+
+
+
+
+	#out=representatives.bonmin.csv
+	#cmd="../glob_opt --energy --formulate$flag3D --scale $scale --cloud cloud.ply --unary $unary --pw $pw --cmp $cmp --constr-mode patch --dir-bias 0 --patch-pop-limit $poplimit --angle-gens $angleGens --candidates $out -a $assoc --freq-weight $freqweight --cost-fn spatsqrt"
+
+	#out=representatives.bonmin.csv.my
+	#cmd="../glob_opt --energy --formulate$flag3D --scale $scale --cloud cloud.ply --unary $unary --pw $pw --cmp $cmp --constr-mode patch --dir-bias 0 --patch-pop-limit $poplimit --angle-gens $angleGens --candidates $out -a $assoc --freq-weight $freqweight --cost-fn spatsqrt"
+	#echo $cmd
+	#`$cmd >log.tmp`
+	#cat log.tmp

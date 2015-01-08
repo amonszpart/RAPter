@@ -13,12 +13,14 @@ else
 	prev=$(($iteration-1))
 fi
 
+if [[ -z "$2" ]]; then flag3D=""; else flag3D="$2"; fi
+
 prims="primitives_it$iteration.bonmin.csv";
 assignments="points_primitives_it$prev.csv";
 echo "$prims $assignments"
-../globOptVis --show --scale 0.019 --pop-limit 5 -p $prims -a $assignments --title "GlobOpt - $iteration iteration output" --angle-gens 60,90 --use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-scale --bg-colour .9,.9,.9 --ids --no-rel &
+../globOptVis --show$flag3D --scale 0.019 --pop-limit 5 -p $prims -a $assignments --title "GlobOpt - $iteration iteration output" --angle-gens 60,90 --use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-scale --bg-colour .9,.9,.9 --ids --no-rel &
 
-echo "../globOptVis --show --scale 0.019 --pop-limit 5 -p $prims -a $assignments --title \"GlobOpt - $iteration iteration output\" --angle-gens 60,90 --use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-scale --bg-colour .9,.9,.9 --ids --no-rel"
+echo "../globOptVis --show$flag3D --scale 0.019 --pop-limit 5 -p $prims -a $assignments --title \"GlobOpt - $iteration iteration output\" --angle-gens 60,90 --use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-scale --bg-colour .9,.9,.9 --ids --no-rel"
 
 
 
