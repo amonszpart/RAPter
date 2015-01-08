@@ -15,9 +15,10 @@ def parseAngles(strAngle):
 
     for genAngle in strAngle:
         a = float(genAngle)
-        while a <= 180.:
-            angles.add(a)
-            a+= float(genAngle)
+        if a != 0.:
+            while a <= 180.:
+                angles.add(a)
+                a+= float(genAngle)
     
     return angles
     
