@@ -104,6 +104,9 @@ namespace GF2 {
 #include "globfit2/util/util.hpp" // util::nColoursEigen
 #include "globfit2/optimization/energyFunctors.h"
 
+#define FILTER_STATUS (filter_status && \
+                       (*filter_status).find(primitives[lid][lid1].getTag(PrimitiveT::TAGS::STATUS)) == (*filter_status).end())
+
 namespace GF2
 {
     /*! \brief Assigns an id to each unique parallel direction among primitives
@@ -133,7 +136,8 @@ namespace GF2
                 _PrimitiveT & prim = primitives[lid][lid1];
 
                 PidT id = 0;
-                for ( auto it = dirs.begin(); it != dirs.end(); ++it )
+                auto it = dirs.begin();
+                for ( ; it != dirs.end(); ++it )
                 {
                     // first: unique id
                     // second: direction vector of unique id
@@ -146,7 +150,7 @@ namespace GF2
                 }
 
                 // if match not found, store new direction-id pair
-                if ( id == 0 ) // ok, even if dirs empty, we still need to insert the first
+                if ( it == dirs.end() || dirs.empty() )
                 {
                     // store id
                     id = maxId++;
@@ -246,7 +250,11 @@ namespace GF2
             {
                 for ( size_t lid1 = 0; lid1 != primitives[lid].size(); ++lid1 )
                 {
-                    if ( primitives[lid][lid1].getTag(PrimitiveT::TAGS::STATUS) != PrimitiveT::STATUS_VALUES::SMALL ) // TODO: use filter status
+                    auto const primStatus = primitives[lid][lid1].getTag(PrimitiveT::TAGS::STATUS);
+                    if ( (filter_status && filter_status->find(primStatus) != filter_status->end())
+                         || (primStatus  != PrimitiveT::STATUS_VALUES::SMALL)
+                       )
+                    //if ( !FILTER_STATUS )
                     {
                         max_gid     = std::max( max_gid    , primitives[lid][lid1].getTag(PrimitiveT::TAGS::GID    ) );
                         max_dir_gid = std::max( max_dir_gid, primitives[lid][lid1].getTag(PrimitiveT::TAGS::DIR_GID) );
@@ -348,6 +356,8 @@ namespace GF2
                 // get primitive of point
                 if ( gidLidIterator != gid2lidLid1.end() )
                     lidLid1 = gidLidIterator->second;
+                else if (draw_mode & HIDE_UNASSIGNED_PTS)
+                    continue;
 
                 // retrieve point colour
                 if ( gidLidIterator != gid2lidLid1.end() )
@@ -390,7 +400,7 @@ namespace GF2
                 cloud->push_back( pnt );
 
                 // Add point normal, will be used, if needed
-                if ( show_normals )
+                if ( show_normals || save_poly )
                 {
                     pcl::Normal normal;
                     normal.normal_x = points[pid].template dir()(0);
@@ -483,7 +493,8 @@ namespace GF2
                     const int dir_gid = prim.getTag( PrimitiveT::TAGS::DIR_GID );
 
                     // status filtering
-                    if ( filter_status && (*filter_status).find(primitives[lid][lid1].getTag(PrimitiveT::TAGS::STATUS)) == (*filter_status).end() )
+                    //if ( filter_status && (*filter_status).find(primitives[lid][lid1].getTag(PrimitiveT::TAGS::STATUS)) == (*filter_status).end() )
+                    if ( FILTER_STATUS )
                         continue;
 
                     // WTF? // TODO remove
@@ -766,17 +777,67 @@ namespace GF2
 
         // --------------------------------------------------------------------
 
+        // Output mesh and pointcloud
         if ( save_poly && (PrimitiveT::EmbedSpaceDim == 3) )
         {
+            // QHull -> "mesh.ply"
             if ( draw_mode & DRAW_MODE::QHULL )
             {
                 std::cout << "mesh_accum.size: " << hull_mesh_accum.cloud.width << ", and " << hull_mesh_accum.polygons.size() << " polygons" << std::endl;
                 pcl::io::savePLYFile( "mesh.ply", hull_mesh_accum );
             }
+
+            // Planes as shown in GL -> "plane_mesh.ply"
             pcl::toPCLPointCloud2( plane_mesh_cloud, plane_mesh.cloud );
             std::cout << "plane_mesh.size: " << plane_mesh.cloud.width << ", and " << plane_mesh.polygons.size() << " polygons" << std::endl;
             pcl::io::savePLYFile( "plane_mesh.ply", plane_mesh );
-        }
+
+            //if ( !boost::filesystem::exists("./cloudRGBNormal.ply") )
+            {
+                // at this stage, cloud has all the [visible] points (use HIDE_UNASSIGNED to filter it more up in the code)
+                // cloud is a pclPointCloud, points is a vector if PointPrimitives, don't use points, since the pids may not be in sync
+                pcl::PointCloud< pcl::PointXYZRGBNormal > splats; // output cloud
+                pcl::PointXYZRGBNormal pnt;
+                Position               normal;
+                splats.reserve( cloud->size() );
+                for ( size_t pid = 0; pid != cloud->size(); ++pid )
+                {
+                    pnt.getVector3fMap() = cloud->at(pid).getVector3fMap();
+                    pnt.rgb = cloud->at(pid).rgb;
+                    // original normal
+                    pnt.normal[0] = normals->at(pid).normal_x; //points[pid].template dir()(0); // points[pid] might not match cloud[pid]
+                    pnt.normal[1] = normals->at(pid).normal_y; //points[pid].template dir()(1);
+                    pnt.normal[2] = normals->at(pid).normal_z; //points[pid].template dir()(2);
+
+                    if ( DRAW_MODE::REPROJECT & draw_mode )
+                    {
+                        // get primitive groupId assigned to point (-1, if unassigned)
+                        const GidT  gid = points[pid].getTag( PointPrimitiveT::TAGS::GID );
+                        // get primitive unique ID
+                        LidLid1     lids(-1,-1);
+                        // if primitive exists (gid != -1)
+                        if ( gid2lidLid1.find( gid ) != gid2lidLid1.end() )
+                        {
+                            // get unique ID
+                            lids = gid2lidLid1[ gid ];
+                            // get primitive normal using unique ID
+                            normal = primitives[ lids.first ][ lids.second ].template normal();
+                            // save normal to point
+                            pnt.normal[0] = normal(0);
+                            pnt.normal[1] = normal(1);
+                            pnt.normal[2] = normal(2);
+                        } //...if primitive exists
+                    } //...if reproject
+
+                    // save point to output cloud
+                    splats.push_back( pnt );
+                } //...for each point in cloud
+                // save point to disk
+                pcl::PLYWriter w;
+                w.write<pcl::PointXYZRGBNormal>( "./cloudRGBNormal.ply", splats, /*binary: */ true, /*use_camera:*/ false );
+                //pcl::io::savePLYFileBinary( "./cloudRGBNormal.ply", splats );
+            } //...save cloudRGBNormal.ply
+        } //...if save_poly
 
         if ( save_hough )
         {
@@ -897,5 +958,7 @@ namespace GF2
         return 0;
     } // ... Visulazier::drawEllipse
 } // ns gf2
+
+#undef FILTER_STATUS
 
 #endif // __GF2_VISUALIZER_HPP__
