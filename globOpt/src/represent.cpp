@@ -41,10 +41,16 @@ static inline int representCli( int argc, char** argv )
     typedef typename GraphT::ComponentListT                                 ComponentListT;
     typedef typename GraphT::ClustersT                                      ClustersT;
 
-    bool valid_input = GF2::parseInput<InnerPrimitiveContainerT,PclCloudT>(
-                        points, pcl_cloud, prims, patches, params, argc, argv );
+    int ret = GF2::parseInput<InnerPrimitiveContainerT,PclCloudT>(
+                points, pcl_cloud, prims, patches, params, argc, argv );
+    std::cout << "[" << __func__ << "]: " << "parseInput ret: " << ret << std::endl;
+    bool valid_input = (EXIT_SUCCESS == ret);
+
     AnglesT angle_gens;
-    parseAngles( params.angles, argc, argv, &angle_gens );
+    valid_input &= (EXIT_SUCCESS == parseAngles(params.angles, argc, argv, &angle_gens) );
+
+    if ( !valid_input )
+    { std::cout << "Usage: --represent[3D] -p prims.csv -a points_primitives.csv -sc scale --cloud cloud.ply --angle-gens 90" << std::endl; return EXIT_FAILURE; }
 
     GidPidVectorMap populations;
     processing::getPopulations( populations, points );
@@ -191,6 +197,127 @@ static inline int representCli( int argc, char** argv )
     return !valid_input;
 } //...representCli
 
+/*! \brief Takes ran representatives, and changes prims accordingly.
+ */
+template <
+           class _PrimitiveContainerT
+         , class _PointContainerT
+         , class _PrimitiveT /*         = typename _PrimitiveContainerT::value_type::value_type*/
+         , class _PointPrimitiveT     /*= typename _PointContainerT::value_type*/
+         , class _FiniteFiniteDistFunctor
+         >
+static inline int representBackCli( int argc, char** argv )
+{
+    const int verbose = 1;
+    // input
+    typedef typename _PrimitiveContainerT::value_type        InnerPrimitiveContainerT;
+    typedef containers::PrimitiveContainer<_PrimitiveT>      PrimitiveMapT;
+    typedef typename _PrimitiveT::Scalar                     Scalar;
+    typedef typename _PrimitiveT::ExtentsT                   ExtentsT;
+    PointContainerT         points;
+    PclCloudPtrT            pcl_cloud;
+    PrimitiveMapT           patches,reprPatches;
+    RepresentParams<Scalar> params;
+
+    // Graphs
+    typedef Graph<Scalar, typename MyGraphConfig<Scalar>::UndirectedGraph > GraphT;
+    typedef typename graph::EdgeT<Scalar>                                   EdgeT;
+    typedef typename GraphT::ComponentListT                                 ComponentListT;
+    typedef typename GraphT::ClustersT                                      ClustersT;
+
+    // read input
+    bool valid_input = true;
+    {
+        _PrimitiveContainerT prims;
+        valid_input = ( EXIT_SUCCESS == GF2::parseInput<InnerPrimitiveContainerT,PclCloudT>(
+                                 points, pcl_cloud, prims, patches, params, argc, argv, true ) );
+        if ( !valid_input ) std::cout << "failed first" << std::endl;
+    }
+
+    // read angles
+    AnglesT angle_gens;
+    valid_input &= (EXIT_SUCCESS == parseAngles(params.angles, argc, argv, &angle_gens) );
+    if ( !valid_input ) std::cout << "failed angles" << std::endl;
+
+    // read finished representatives
+    std::string representativesPath;
+    valid_input &= (0 <= GF2::console::parse_argument(argc, argv, "--repr", representativesPath));
+    if ( !valid_input ) std::cout << "failed reprpath" << std::endl;
+    {
+        _PrimitiveContainerT representatives;
+        valid_input &= (EXIT_SUCCESS == GF2::io::readPrimitives<_PrimitiveT, InnerPrimitiveContainerT>( representatives, representativesPath, &reprPatches) );
+        if ( !valid_input ) std::cout << "failed read" << std::endl;
+    }
+
+    if ( !valid_input )
+    { std::cerr << "Usage: --representBack[3D] -p prims.csv -a points_primitives.csv -sc scale --cloud cloud.ply --repr representatives.bonmin.csv --angle-gens 90" << std::endl; return EXIT_FAILURE; }
+
+    GidPidVectorMap populations;
+    processing::getPopulations( populations, points );
+
+    std::cout << "reprback" << std::endl;
+
+    // loop over representative output to check for ID matches
+    std::map<DidT, _PrimitiveT const*> subs;
+    for ( typename PrimitiveMapT::Iterator it(reprPatches); it.hasNext(); it.step() )
+    {
+        if ( patches[ it.getGid() ].size() > 1 )
+        {
+            std::cerr << "[" << __func__ << "]: " << "can't handle more than one primitive per patch!" << std::endl;
+            return 1;
+        }
+        const int dId = patches[ it.getGid() ].at(0).getTag(_PrimitiveT::TAGS::DIR_GID);
+        std::cout << "did at " << it.getGid() << " is " << dId << std::endl;
+
+        if ( it.getDid() != dId )
+        {
+            if ( verbose ) std::cout << "found subst: " << it.getDid() << " instead of " << dId << " at gid << " << it.getGid() << std::endl;
+            if (    (subs.find( dId )                              != subs.end() )
+                 && (subs[dId]->getTag(_PrimitiveT::TAGS::DIR_GID) != it.getDid()) )
+                std::cerr << "duplicate subs for patch " << it.getGid() << ": " << subs[dId]->getTag(_PrimitiveT::TAGS::DIR_GID) << ", " << it.getDid() << "!" << std::endl;
+            else
+                subs[ dId ] = &(*it);
+        }
+    }
+
+    _PrimitiveContainerT outPrims;
+    for ( typename PrimitiveMapT::Iterator it(patches); it.hasNext(); it.step() )
+    {
+        bool copy = false;
+        if ( subs.find(it.getDid()) != subs.end() )
+        {
+            _PrimitiveT const* subExample = subs[ it.getDid() ]; // pattern, to copy direction from
+            std::cout << "substituting " << it.getGid() << "," << it.getDid() << " <- " << subExample->getTag(_PrimitiveT::TAGS::DIR_GID) << std::endl;
+
+            int closest_angle_id = 0;
+            _PrimitiveT sub;
+            Scalar angdiff = MyPrimitivePrimitiveAngleFunctor::template eval<Scalar>( *it, *subExample
+                                                                                    , params.angles
+                                                                                    , &closest_angle_id );
+            if ( angdiff > 0.1 )
+                std::cerr << "[" << __func__ << "]: " << "really? substitute dId, but best angdiff: " << angdiff << std::endl;
+
+            if ( !it->generateFrom(/* out */ sub, /* example: */ *subExample, closest_angle_id, params.angles, /* sign, unused: */ Scalar(1.)) )
+            {
+                std::cerr << "[" << __func__ << "]: " << "could not generate candidate" << std::endl;
+                copy = true;
+            }
+            else
+            {
+                sub.setTag( _PrimitiveT::TAGS::STATUS, it->getTag(_PrimitiveT::TAGS::STATUS) );
+                containers::add( outPrims, it.getGid(), sub );
+            }
+        }
+        else
+            copy = true;
+
+        if ( copy )
+            containers::add( outPrims, it.getGid(), *it );
+    }
+
+    return io::savePrimitives<_PrimitiveT, typename InnerPrimitiveContainerT::const_iterator >( outPrims, "subs.csv" );
+} //...representBack
+
 } //...GF2
 
 int represent( int argc, char** argv )
@@ -205,7 +332,7 @@ int represent( int argc, char** argv )
                  , GF2::_3d::MyFinitePlaneToFinitePlaneCompatFunctor
                  >( argc, argv );
      }
-     else
+     else if ( GF2::console::find_switch(argc,argv,"--represent") )
      {
          return GF2::representCli< GF2::_2d::PrimitiveContainerT
                                  , GF2::PointContainerT
@@ -214,6 +341,27 @@ int represent( int argc, char** argv )
                                  , GF2::_2d::MyFiniteLineToFiniteLineCompatFunctor
                                  >( argc, argv );
      }
+     else if ( GF2::console::find_switch(argc,argv,"--representBack3D") )
+     {
+         return GF2::representBackCli< GF2::_3d::PrimitiveContainerT
+                 , GF2::PointContainerT
+                 , GF2::_3d::PrimitiveT
+                 , GF2::PointPrimitiveT
+                 , GF2::_3d::MyFinitePlaneToFinitePlaneCompatFunctor
+                 >( argc, argv );
+     }
+     else if ( GF2::console::find_switch(argc,argv,"--representBack") )
+     {
+         return GF2::representCli< GF2::_2d::PrimitiveContainerT
+                 , GF2::PointContainerT
+                 , GF2::_2d::PrimitiveT
+                 , GF2::PointPrimitiveT
+                 , GF2::_2d::MyFiniteLineToFiniteLineCompatFunctor
+                 >( argc, argv );
+     }
+     else
+         std::cerr << "[" << __func__ << "]: " << "switch error" << std::endl;
+
 #endif
 
      return 0;

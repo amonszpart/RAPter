@@ -116,7 +116,8 @@ inline int parseInput( _PointContainerT         &points
 inline int parseAngles( AnglesT &angles, int argc, char** argv, AnglesT* angle_gens_out = NULL, bool no_paral = false, bool verbose = false, bool inRad = false )
 {
     AnglesT angle_gens;
-    pcl::console::parse_x_arguments( argc, argv, "--angle-gens", angle_gens );
+    if ( pcl::console::parse_x_arguments( argc, argv, "--angle-gens", angle_gens ) < 0 )
+        return EXIT_FAILURE;
 
     angles::appendAnglesFromGenerators( angles, angle_gens, no_paral, verbose, inRad );
 

@@ -60,7 +60,8 @@ namespace GF2
                     , Scalar                           const  smallThresh
                     , AnglesT                          const  angle_gens_in_rad
                     , bool                             const  safe_mode = false
-                    , int                              const  var_limit = 0 );
+                    , int                              const  var_limit = 0
+                    , bool                             const  keepSingles = false );
 
     }; //...class CandidateGenerator
 } // ...ns::GF2

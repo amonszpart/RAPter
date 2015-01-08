@@ -99,7 +99,8 @@ int main( int argc, char *argv[] )
     {
         return reassign( argc, argv );
     }
-    else if ( GF2::console::find_switch(argc,argv,"--represent") || GF2::console::find_switch(argc,argv,"--represent3D") )
+    else if ( GF2::console::find_switch(argc,argv,"--represent") || GF2::console::find_switch(argc,argv,"--represent3D")
+              || GF2::console::find_switch(argc,argv,"--representBack") || GF2::console::find_switch(argc,argv,"--representBack3D") )
     {
         return represent( argc, argv );
     }

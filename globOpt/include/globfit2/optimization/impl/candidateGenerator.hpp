@@ -213,7 +213,8 @@ namespace GF2
 //                }
 
         // prim0 needs to be close to prim1 in angle
-        add0 &= angdiff0 < angle_limit;
+        if ( notPROMOTED(gid0,lid0) ) // don't bias small patches, copy best match to promoted patches
+            add0 &= angdiff0 < angle_limit;
 
         // was this direction-angle pair already covered?
         if ( copied[gid0].find(DidAid(dir_gid1,closest_angle_id0)) != copied[gid0].end() )
@@ -403,7 +404,8 @@ namespace GF2
                                 , _Scalar                           const  smallThreshMult
                                 , AnglesT                           const  angle_gens_in_rad
                                 , bool                              const  safe_mode_arg
-                                , int                               const  var_limit )
+                                , int                               const  var_limit
+                                , bool                              const  keepSingles )
     {
         const bool verbose = false;
 
@@ -751,6 +753,7 @@ namespace GF2
             if ( active_count >= var_limit )
             {
                 std::cerr << "[" << __func__ << "]: " << "!!!!!!!! ALL " << nlines << " ACTIVE or ACTIVEs " << active_count << " > " << var_limit << "var_limit, cannot limit vars! !!!!!!!" << std::endl;
+                ret = -1;
             }
             else
             {
@@ -806,13 +809,30 @@ namespace GF2
         } //...for outPrims
 
         // 6.3 Filter primitives with only one direction among candidates
-        auto tmp = outPrims; outPrims.clear();
-        for ( typename PrimitiveMapT::Iterator primIt(tmp); primIt.hasNext(); primIt.step() )
+        if ( !keepSingles )
         {
-            // _PrimitiveT prim = *primIt;
-            DidT const dId      = primIt->getTag( _PrimitiveT::TAGS::DIR_GID );
-            if ( (directionPopulation[dId] > 1) || (primIt->getTag(_PrimitiveT::TAGS::STATUS) == _PrimitiveT::STATUS_VALUES::SMALL) )
-                containers::add( outPrims, primIt.getGid(), *primIt );
+            std::map<GidT,LidT> thrownCnt;
+            auto tmp = outPrims; outPrims.clear();
+            for ( typename PrimitiveMapT::Iterator primIt(tmp); primIt.hasNext(); primIt.step() )
+            {
+                // _PrimitiveT prim = *primIt;
+                DidT const dId      = primIt->getTag( _PrimitiveT::TAGS::DIR_GID );
+                if ( (directionPopulation[dId] > 1) || (primIt->getTag(_PrimitiveT::TAGS::STATUS) == _PrimitiveT::STATUS_VALUES::SMALL) )
+                    containers::add( outPrims, primIt.getGid(), *primIt );
+                else
+                {
+                    thrownCnt[primIt.getGid()]++;
+                }
+            }
+
+            for ( auto it = thrownCnt.begin(); it != thrownCnt.end(); ++it )
+            {
+                if ( outPrims[ it->first ].size() == 0 )
+                {
+                    std::cerr << "[" << __func__ << "]: " << "throwing away everything from gid " << it->first << std::endl;
+                    throw std::runtime_error("gid");
+                }
+            }
         }
 
         // log
@@ -847,6 +867,7 @@ namespace GF2
         std::vector<std::string>    mode_opts               = { "representative_sqr" };
         std::string                 input_prims_path        = "patches.csv";
         std::string                 associations_path       = "points_primitives.csv";
+        bool                        keepSingles             = false; // throw away single dId-s
 
         // parse input
         if ( err == EXIT_SUCCESS )
@@ -920,6 +941,11 @@ namespace GF2
                 generatorParams.small_mode = static_cast<typename CandidateGeneratorParams<_Scalar>::SmallPatchesMode>( small_mode );
             }
 
+            // keepSingles
+            {
+                keepSingles = pcl::console::find_switch( argc, argv, "--keep-singles" );
+            }
+
             // print usage
             {
                 if ( !valid_input || pcl::console::find_switch(argc,argv,"--help") || pcl::console::find_switch(argc,argv,"-h") )
@@ -946,6 +972,7 @@ namespace GF2
                     std::cout << "\t [--no-paral]\n";
                     std::cout << "\t [--safe-mode]\n";
                     std::cout << "\t [--var-limit " << generatorParams.var_limit << "\t Decides how many variables we want as output. 0 means unlimited.]\n";
+                    std::cout << "\t [--keep-singles " << (keepSingles?"YES":"NO") << "\t Decides, if we should throw away single directions]\n";
                     std::cout << std::endl;
 
                     return EXIT_FAILURE;
@@ -1024,7 +1051,9 @@ namespace GF2
                           , generatorParams.small_thresh_mult
                           , angleGensInRad
                           , generatorParams.safe_mode
-                          , generatorParams.var_limit );
+                          , generatorParams.var_limit
+                          , keepSingles
+                          );
 
                 //if ( err != EXIT_SUCCESS ) std::cerr << "[" << __func__ << "]: " << "generate exited with error! Code: " << err << std::endl;
                 if ( ret > 0 )

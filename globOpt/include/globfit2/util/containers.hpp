@@ -161,6 +161,11 @@ namespace containers {
                 return _outer_it->first;
             }
 
+            inline DidT getDid() const
+            {
+                return _inner_it->getTag( _PrimitiveT::TAGS::DIR_GID );
+            }
+
             inline LidT getLid() const
             {
                 return _lid;
