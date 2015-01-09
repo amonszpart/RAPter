@@ -402,8 +402,10 @@ namespace GF2
                 // Add point normal, will be used, if needed
                 if ( show_normals || save_poly )
                 {
+                    bool usePrimNormal = (gidLidIterator != gid2lidLid1.end()) && (DRAW_MODE::REPROJECT & draw_mode); // HACK! 9/1/2015
+
                     pcl::Normal normal;
-                    if ( DRAW_MODE::REPROJECT & draw_mode )
+                    if ( usePrimNormal )
                     {
                         if ( gidLidIterator == gid2lidLid1.end() )
                             std::cout << "[" << __func__ << "]: " << "can't find primitive the point is assigned to, wtf...point_gid: " << point_gid << std::endl;
