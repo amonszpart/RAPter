@@ -1,0 +1,1 @@
+../globOptVis --show3D --scale 0.004 --pop-limit 3 -p primitives_it26.bonmin.csv -a points_primitives_it25.csv --title GlobOpt - [Dir-Colours] 23 iteration output --angle-gens 0 --use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-rel --no-scale --bg-colour .9,.9,.9 --paral-colours --no-rel --save-poly --draw-mode 28
