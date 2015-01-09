@@ -823,29 +823,6 @@ namespace GF2
                     pnt.normal[1] = normals->at(pid).normal_y; //points[pid].template dir()(1);
                     pnt.normal[2] = normals->at(pid).normal_z; //points[pid].template dir()(2);
 
-//                    if ( DRAW_MODE::REPROJECT & draw_mode )
-//                    {
-//                        // get primitive groupId assigned to point (-1, if unassigned)
-//                        const GidT  gid = points[pid].getTag( PointPrimitiveT::TAGS::GID );
-//                        // get primitive unique ID
-//                        LidLid1     lids(-1,-1);
-//                        // if primitive exists (gid != -1)
-//                        if ( gid2lidLid1.find( gid ) != gid2lidLid1.end() )
-//                        {
-//                            // get unique ID
-//                            lids = gid2lidLid1[ gid ];
-//                            // get primitive normal using unique ID
-//                            normal = primitives[ lids.first ][ lids.second ].template normal();
-//                            // save normal to point
-//                            pnt.normal[0] = normal(0);
-//                            pnt.normal[1] = normal(1);
-//                            pnt.normal[2] = normal(2);
-//                            std::cout << "point normal is now " << pnt.normal[0] << "," << pnt.normal[1] << "," << pnt.normal[2] << std::endl;
-//                        } //...if primitive exists
-//                        else
-//                            std::cout << "point normal STAYED " << pnt.normal[0] << "," << pnt.normal[1] << "," << pnt.normal[2] << std::endl;
-//                    } //...if reproject
-
                     // save point to output cloud
                     splats.push_back( pnt );
                 } //...for each point in cloud

@@ -153,6 +153,8 @@ static inline int representCli( int argc, char** argv )
 
     for ( typename PrimitiveMapT::Iterator it0(patches); it0.hasNext(); it0.step() )
     {
+        if ( it0->getTag(_PrimitiveT::TAGS::STATUS) == _PrimitiveT::STATUS_VALUES::SMALL ) continue; // added 9 / 1 / 2015
+
         // cache
         _PrimitiveT const* prim = &(*it0);
         const DidT did = prim->getTag( _PrimitiveT::TAGS::DIR_GID );
@@ -284,7 +286,10 @@ static inline int representBackCli( int argc, char** argv )
     for ( typename PrimitiveMapT::Iterator it(patches); it.hasNext(); it.step() )
     {
         bool copy = false;
-        if ( subs.find(it.getDid()) != subs.end() )
+
+        copy = (it->getTag(_PrimitiveT::TAGS::STATUS) == _PrimitiveT::STATUS_VALUES::SMALL );
+
+        if ( !copy && (subs.find(it.getDid()) != subs.end()) )
         {
             _PrimitiveT const* subExample = subs[ it.getDid() ]; // pattern, to copy direction from
             std::cout << "substituting " << it.getGid() << "," << it.getDid() << " <- " << subExample->getTag(_PrimitiveT::TAGS::DIR_GID) << std::endl;
@@ -312,7 +317,9 @@ static inline int representBackCli( int argc, char** argv )
             copy = true;
 
         if ( copy )
+        {
             containers::add( outPrims, it.getGid(), *it );
+        }
     }
 
     return io::savePrimitives<_PrimitiveT, typename InnerPrimitiveContainerT::const_iterator >( outPrims, "subs.csv" );

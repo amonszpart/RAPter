@@ -61,7 +61,9 @@ namespace GF2
                     , AnglesT                          const  angle_gens_in_rad
                     , bool                             const  safe_mode = false
                     , int                              const  var_limit = 0
-                    , bool                             const  keepSingles = false );
+                    , bool                             const  keepSingles = false
+                    , bool                             const  allowPromoted = false
+                    );
 
     }; //...class CandidateGenerator
 } // ...ns::GF2

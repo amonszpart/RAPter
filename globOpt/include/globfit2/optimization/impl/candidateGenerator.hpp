@@ -166,7 +166,8 @@ namespace GF2
                            , _PrimitiveT        const& prim1
                            , LidT               const  lid0
                            , LidT               const  lid1
-                           , bool               const  safe_mode
+                           , int                const  safe_mode
+                           , int                const  allow_promoted
                            , _Scalar            const  angle_limit
                            , _AnglesT           const& angles
                            , _AnglesT           const& angle_gens_in_rad
@@ -188,7 +189,9 @@ namespace GF2
 
         bool add0 = false;
 
-        add0 = notSMALL(prim0) && notSMALL(prim1) && notPROMOTED(gid1,lid1);
+        add0 = notSMALL(prim0) && notSMALL(prim1);
+        if ( !allow_promoted )
+            add0 &= notPROMOTED(gid1,lid1); // sender cannot be promoted
         // changed by Aron 08:15, 26/09/2014 to prevent many candidates, trust originals, don't add anything to them, just add to promoted ones
         if ( safe_mode )
             add0 &= isPROMOTED(gid0,lid0); // add cand0 only, if prim0 was promoted
@@ -405,7 +408,8 @@ namespace GF2
                                 , AnglesT                           const  angle_gens_in_rad
                                 , bool                              const  safe_mode_arg
                                 , int                               const  var_limit
-                                , bool                              const  keepSingles )
+                                , bool                              const  keepSingles
+                                , bool                              const  allowPromoted )
     {
         const bool verbose = false;
 
@@ -656,10 +660,10 @@ namespace GF2
                                  std::cout << "stop " << std::endl;
 
                         addCandidate<_PrimitivePrimitiveAngleFunctorT>(
-                                    prim0, prim1, lid0, lid1, safe_mode, angle_limit, angles, angle_gens_in_rad, promoted,
+                                    prim0, prim1, lid0, lid1, safe_mode, allowPromoted, angle_limit, angles, angle_gens_in_rad, promoted,
                                     allowedAngles, copied, generated, nlines, outPrims, &aliases );
                         addCandidate<_PrimitivePrimitiveAngleFunctorT>(
-                                    prim1, prim0, lid1, lid0, safe_mode, angle_limit, angles, angle_gens_in_rad, promoted,
+                                    prim1, prim0, lid1, lid0, safe_mode, allowPromoted, angle_limit, angles, angle_gens_in_rad, promoted,
                                     allowedAngles, copied, generated, nlines, outPrims, &aliases );
                     } //...for l3
                 } //...for l2
@@ -719,7 +723,7 @@ namespace GF2
 
                         // copy prim0 (the alias) to all compatible receivers given allowedAngles.
                         addCandidate<_PrimitivePrimitiveAngleFunctorT,AliasesT<_PrimitiveT,_Scalar> >(
-                            prim1, prim0, lid1, lid0, safe_mode, angle_limit, angles, angle_gens_in_rad, promoted,
+                            prim1, prim0, lid1, lid0, safe_mode, allowPromoted, angle_limit, angles, angle_gens_in_rad, promoted,
                             allowedAngles, copied, generated, nlines, outPrims, nullptr );
 
                     } //...inner for
@@ -868,6 +872,7 @@ namespace GF2
         std::string                 input_prims_path        = "patches.csv";
         std::string                 associations_path       = "points_primitives.csv";
         bool                        keepSingles             = false; // throw away single dId-s
+        bool                        allowPromoted           = false;
 
         // parse input
         if ( err == EXIT_SUCCESS )
@@ -944,6 +949,7 @@ namespace GF2
             // keepSingles
             {
                 keepSingles = pcl::console::find_switch( argc, argv, "--keep-singles" );
+                allowPromoted= pcl::console::find_switch( argc, argv, "--allow-promoted" );
             }
 
             // print usage
@@ -973,6 +979,7 @@ namespace GF2
                     std::cout << "\t [--safe-mode]\n";
                     std::cout << "\t [--var-limit " << generatorParams.var_limit << "\t Decides how many variables we want as output. 0 means unlimited.]\n";
                     std::cout << "\t [--keep-singles " << (keepSingles?"YES":"NO") << "\t Decides, if we should throw away single directions]\n";
+                    std::cout << "\t [--allow-promoted " << (allowPromoted?"YES":"NO") << "\t Decides, if we should allow promoted patches to distribute their directions]\n";
                     std::cout << std::endl;
 
                     return EXIT_FAILURE;
@@ -1044,7 +1051,9 @@ namespace GF2
                 ++attempts;
 
                 ret = CandidateGenerator::generate< MyPrimitivePrimitiveAngleFunctor, MyPointPrimitiveDistanceFunctor, _PrimitiveT >
-                        ( primitives, patches, points
+                        (   /* out: */ primitives
+                          , /*  in: */ patches
+                          , points
                           , generatorParams.scale
                           , generatorParams.angles
                           , generatorParams
@@ -1053,6 +1062,7 @@ namespace GF2
                           , generatorParams.safe_mode
                           , generatorParams.var_limit
                           , keepSingles
+                          , allowPromoted
                           );
 
                 //if ( err != EXIT_SUCCESS ) std::cerr << "[" << __func__ << "]: " << "generate exited with error! Code: " << err << std::endl;
@@ -1062,7 +1072,13 @@ namespace GF2
                 {
                     std::cout << "rerunning in safe mode, all active..." << std::endl;
                     attemptLimit = 2;
-                    generatorParams.safe_mode = true;
+                    generatorParams.safe_mode = 1;
+                    primitives.clear();
+
+                    // demote back all promoted
+                    for ( typename containers::PrimitiveContainer<_PrimitiveT>::Iterator it(patches); it.hasNext(); it.step() )
+                        if ( it->getTag(_PrimitiveT::TAGS::STATUS) == _PrimitiveT::STATUS_VALUES::UNSET )
+                             it->setTag( _PrimitiveT::TAGS::STATUS, _PrimitiveT::STATUS_VALUES::SMALL );
                 }
             }
         } //...generate

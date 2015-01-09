@@ -303,6 +303,7 @@ int Merging::adoptPoints( _PointContainerT          & points
     int err = EXIT_SUCCESS;
 
     bool changed = false;
+    int haCount = 0, orphanReCount = 0;
 
     // Loop over all points, and select orphans
     do
@@ -369,8 +370,13 @@ int Merging::adoptPoints( _PointContainerT          & points
                             // store minimum distance
                             if ( dist < minDist )
                             {
-                                minDist = dist;
-                                minGid  = gid;
+                                if ( it2->getDistance(pos) < scale ) // added by Aron on 8/1/2015
+                                {
+                                    minDist = dist;
+                                    minGid  = gid;
+                                }
+                                else
+                                    ++haCount;
                             }
                         }
                     }
@@ -381,13 +387,19 @@ int Merging::adoptPoints( _PointContainerT          & points
                 {
                     // reassign point
                     points[pid].setTag( _PointPrimitiveT::TAGS::GID, minGid );
-                    std::cout << pid << " " << minGid << ", ";
+                    ++orphanReCount;
+                    if ( !(orphanReCount % 1000) )
+                        std::cout << orphanReCount << " points, ";
+                    //std::cout << pid << " " << minGid << ", ";
                     changed = true;
+
                 }
             } //...if reassign point
         }//...for all points
     } while (changed);
     std::cout << std::endl;
+
+    std::cout << "HA, did not add orphan to segment" << haCount << " times!" << std::endl;
 
     return EXIT_SUCCESS;
 } //...adoptPoints()
@@ -615,7 +627,7 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
                              , _Scalar                     const  scale
                              , _Scalar                     const  spatial_threshold
                              , _Scalar                     const  parallel_limit
-                             , _PatchPatchDistanceFunctorT const& patchPatchDistFunct
+                             , _PatchPatchDistanceFunctorT const& /*patchPatchDistFunct*/
                              , _PrimitiveDecideMergeFunctorT const& primitiveDecideMergeFunct
                              , bool preserveSmallPatches  )
 {

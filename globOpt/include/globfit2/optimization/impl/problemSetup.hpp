@@ -21,6 +21,7 @@
 
 #include "globfit2/processing/graph.hpp"
 #include "globfit2/processing/angle_util.hpp" // appendAnglefromgen
+#include "omp.h"
 
 namespace GF2 {
 
@@ -1448,7 +1449,7 @@ namespace problemSetup {
         const _Scalar w_mod_base     = ProblemSetupParams<_Scalar>::w_mod_base,
                       w_mod_base_inv = _Scalar(1.) - w_mod_base;
 
-        int err = EXIT_SUCCESS;
+        //int err = EXIT_SUCCESS;
 
         // count patch populations
         GidPidVectorMap populations; // populations[patch_id] = all points with GID==patch_id
@@ -1469,7 +1470,8 @@ namespace problemSetup {
                 ++active_count;
             }
 
-        for ( size_t lid = 0; lid != prims.size(); ++lid )
+#       pragma omp parallel for
+        for ( size_t lid = 0; lid < prims.size(); ++lid )
         {
             // check, if any directions for patch
             if ( !prims[lid].size() )
@@ -1482,13 +1484,13 @@ namespace problemSetup {
             const int gid = prims[lid][0].getTag( _PrimitiveT::TAGS::GID );
 
             // for each direction
-            for ( size_t lid1 = 0; lid1 != prims[lid].size(); ++lid1 )
+            for ( size_t lid1 = 0; lid1 < prims[lid].size(); ++lid1 )
             {
                 if ( prims[lid][lid1].getTag( _PrimitiveT::TAGS::STATUS ) == _PrimitiveT::STATUS_VALUES::SMALL )
                     continue;
 
                 typename _PrimitiveT::ExtremaT extrema;
-                err = prims[lid][lid1].template getExtent<_PointPrimitiveT>
+                int err = prims[lid][lid1].template getExtent<_PointPrimitiveT>
                         ( extrema
                         , points
                         , scale
@@ -1567,12 +1569,15 @@ namespace problemSetup {
                 coeff += weights(2); // changed by Aron on 21/9/2014
 
                 // add to problem
-                problem.addLinObjective( /* var_id: */ lids_varids.at( IntPair(lid,lid1) )
-                                       , /*  value: */ coeff );
+#               pragma omp critical
+                {
+                    problem.addLinObjective( /* var_id: */ lids_varids.at( IntPair(lid,lid1) )
+                                           , /*  value: */ coeff );
+                }
             } //...for each direction
         } //...for each patch
 
-        return err;
+        return EXIT_SUCCESS;
     } //...associationBasedDataCost
 
 #if 0
