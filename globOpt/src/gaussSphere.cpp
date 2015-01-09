@@ -8,81 +8,72 @@
 namespace GF2
 {
 
-template <typename _Scalar>
-struct GaussSphereParams
-{
-    _Scalar scale;
-    AnglesT angles;
-};
+    /*! \brief Takes oriented, coloured points and saves the normals to a new cloud
+     */
+    int gaussSphere( int argc, char** argv )
+    {
+        if ( (argc < 2) || pcl::console::find_switch(argc,argv,"--help") || pcl::console::find_switch(argc,argv,"-h")  )
+        {
+            std::cout << "Usage: " << argv[0] << " cloudRGBNormal.ply [out_name.ply] [--ascii]" << std::endl;
+            return EXIT_SUCCESS;
+        }
+        bool ascii = pcl::console::find_argument( argc, argv, "--ascii" );
 
-template <
-           class _PrimitiveContainerT
-         , class _PointContainerT
-         , class _PrimitiveT /*         = typename _PrimitiveContainerT::value_type::value_type*/
-         , class _PointPrimitiveT     /*= typename _PointContainerT::value_type*/
-         , class _FiniteFiniteDistFunctor
-         >
-static inline int gaussSphereCli( int argc, char** argv )
-{
-    // input
-    typedef typename _PrimitiveContainerT::value_type        InnerPrimitiveContainerT;
-    typedef containers::PrimitiveContainer<_PrimitiveT>      PrimitiveMapT;
-    typedef typename _PrimitiveT::Scalar                     Scalar;
-    typedef typename _PrimitiveT::ExtentsT                   ExtentsT;
-    PointContainerT         points;
-    PclCloudPtrT            pcl_cloud;
-    _PrimitiveContainerT    prims;
-    PrimitiveMapT           patches;
-    GaussSphereParams<Scalar> params;
+        std::string inPath = argv[1], outPath = "";
+        if ( !boost::filesystem::exists(inPath) )
+        {
+            std::cerr << "[" << __func__ << "]: " << "file does not exist, exiting. " << inPath << std::endl;
+            return EXIT_FAILURE;
+        }
 
-    // Graphs
-    typedef Graph<Scalar, typename MyGraphConfig<Scalar>::UndirectedGraph > GraphT;
-    typedef typename graph::EdgeT<Scalar>                                   EdgeT;
-    typedef typename GraphT::ComponentListT                                 ComponentListT;
-    typedef typename GraphT::ClustersT                                      ClustersT;
+        if ( argc > 2 ) outPath = argv[1];
+        else
+        {
+            boost::filesystem::path inBoostPath( inPath );
+            if ( inBoostPath.parent_path().empty() )
+                outPath = ".";
+            else
+                outPath = inBoostPath.parent_path().string();
+            outPath += "/" + inBoostPath.stem().string() + "_gaussSphere.ply";
+        }
+        typedef pcl::PointXYZRGBNormal PclPointT;
+        typedef pcl::PointCloud<PclPointT> PclCloudT;
+        typedef Eigen::Map< const Eigen::Matrix<float,3,1> > ConstMap3;
+        typedef Eigen::Map< Eigen::Matrix<float,3,1> > Map3;
 
-    int ret = GF2::parseInput<InnerPrimitiveContainerT,PclCloudT>(
-                points, pcl_cloud, prims, patches, params, argc, argv );
-    std::cout << "[" << __func__ << "]: " << "parseInput ret: " << ret << std::endl;
-    bool valid_input = (EXIT_SUCCESS == ret);
+        typename PclCloudT::Ptr cloud( new PclCloudT() );
+        pcl::io::loadPLYFile( inPath, *cloud );
+        if ( !cloud->size() )
+        {
+            std::cerr << "[" << __func__ << "]: " << "cloud has zero size, exiting" << std::endl;
+            return EXIT_FAILURE;
+        }
 
-    AnglesT angle_gens;
-    valid_input &= (EXIT_SUCCESS == parseAngles(params.angles, argc, argv, &angle_gens) );
+        typename PclCloudT::Ptr normals( new PclCloudT() );
+        normals->reserve( cloud->size() );
+        for ( PclCloudT::const_iterator it = cloud->begin(); it != cloud->end(); ++it )
+        {
+            PclPointT pnt;
+            pnt.getVector3fMap() = ConstMap3( it->normal, 3 );
+            pnt.rgb              = it->rgb;
+            Map3 pntNormal( pnt.normal, 3 );
+            pntNormal = it->getVector3fMap();
 
-    if ( !valid_input )
-    { std::cout << "Usage: [--3D] -p prims.csv -a points_primitives.csv -sc scale --cloud cloud.ply --angle-gens 90" << std::endl; return EXIT_FAILURE; }
+            normals->push_back( pnt );
+        }
 
-    GidPidVectorMap populations;
-    processing::getPopulations( populations, points );
+        std::cout << "writing to " << outPath << "..."; fflush(stdout);
+        pcl::PLYWriter w;
+        int err = w.write( outPath, *normals, /* binary_mode: */ !ascii, /* use_camera: */ false );
+        std::cout << "...write returned " << err << std::endl;
 
-    std::cout << "[" << __func__ << "]: " << "gids: " << patches.size() << ", points: " << points.size() << ", scale: " << params.scale << std::endl;
-
-    //for ( )
-
-    return EXIT_SUCCESS;
-} //...gaussSphereCli
+        return err;
+    }
 } //...ns GF2
 
 int main( int argc, char *argv[] )
 {
-    if ( GF2::console::find_switch(argc,argv,"--3D") || GF2::console::find_switch(argc,argv,"--3d") )
-    {
-        return GF2::gaussSphereCli< GF2::_3d::PrimitiveContainerT
-                , GF2::PointContainerT
-                , GF2::_3d::PrimitiveT
-                , GF2::PointPrimitiveT
-                , GF2::_3d::MyFinitePlaneToFinitePlaneCompatFunctor
-                >( argc, argv );
-    }
-    else
-    {
-        return GF2::gaussSphereCli< GF2::_2d::PrimitiveContainerT
-                                , GF2::PointContainerT
-                                , GF2::_2d::PrimitiveT
-                                , GF2::PointPrimitiveT
-                                , GF2::_2d::MyFiniteLineToFiniteLineCompatFunctor
-                                >( argc, argv );
-    }
+    return GF2::gaussSphere( argc, argv );
 
     return 0;
 }

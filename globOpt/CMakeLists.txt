@@ -45,6 +45,7 @@ ENDIF()
 SET( WITH_PEARL ON CACHE BINARY "Compile pearl executable.")
 #SET( WITH_PEARL YES CACHE BINARY "Compile pearl executable." FORCE)
 SET( WITH_RSAC ON CACHE BINARY "Compile ransac executable." FORCE)
+SET( WITH_GAUSSSPHERE ON CACHE BINARY "Compile gaussSphere." )
 SET( WITH_PLYCONVERTER ON CACHE BINARY "Compile ply-converter executable.")
 SET( WITH_CORRESP ON CACHE BINARY "Correspondance miniprogram compilation.")
 
@@ -417,3 +418,21 @@ ENDIF(WITH_RSAC)
 #TARGET_LINK_LIBRARIES( ${TEST_TARGET}
 #    ${PCL_LIBRARIES}
 #)
+
+## _____________________________________PLY CONVERTER____________________________________________________
+IF(WITH_GAUSSSPHERE)
+    SET( GAUSSSPHERE_TARGET "gaussSphere" )
+    SET( GAUSSSPHERE_SRC
+        src/gaussSphere.cpp
+    )
+
+    add_executable( ${GAUSSSPHERE_TARGET} ${GAUSSSPHERE_SRC} ${GAUSSSPHERE_H})
+    TARGET_LINK_LIBRARIES( ${GAUSSSPHERE_TARGET}
+        opencv_calib3d
+        opencv_highgui
+        opencv_imgproc
+        opencv_core
+        ${PCL_LIBRARIES}
+        boost_filesystem
+    )
+ENDIF(WITH_GAUSSSPHERE)
