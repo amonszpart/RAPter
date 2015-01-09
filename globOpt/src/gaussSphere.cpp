@@ -8,9 +8,9 @@
 namespace GF2
 {
 
-    /*! \brief Takes oriented, coloured points and saves the normals to a new cloud
+    /*! \brief Takes oriented, coloured points and saves the normals to a new cloud.
      */
-    int gaussSphere( int argc, char** argv )
+    int gaussSphereCli( int argc, char** argv )
     {
         if ( (argc < 2) || pcl::console::find_switch(argc,argv,"--help") || pcl::console::find_switch(argc,argv,"-h")  )
         {
@@ -73,7 +73,7 @@ namespace GF2
 
 int main( int argc, char *argv[] )
 {
-    return GF2::gaussSphere( argc, argv );
+    return GF2::gaussSphereCli( argc, argv );
 
     return 0;
 }

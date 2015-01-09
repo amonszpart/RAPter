@@ -26,7 +26,7 @@ saveBackup( std::string path )
 
         } while ( boost::filesystem::exists(bak_path) );
 
-        std::cout << "saving backup of " << path << " to " << bak_path << std::endl;
+        std::cout << "[" << __func__ << "]: " << "saving backup of " << path << " to " << bak_path << std::endl;
         boost::filesystem::copy( path, bak_path );
     }
 

@@ -230,9 +230,33 @@ GF2::vis::showCli( int argc, char** argv )
         statusSet.insert( statuses.begin(), statuses.end() );
         if ( statusSet.size() )
         {
-            std::cout<<"statuses:";for(size_t vi=0;vi!=statuses.size();++vi)std::cout<<statuses[vi]<<" ";std::cout << "\n";
+            std::cout<<"[" << __func__ << "]: " << "statuses:";
+            for(size_t vi=0;vi!=statuses.size();++vi)std::cout<<statuses[vi]<<" ";std::cout << "\n";
         }
     }
+
+    // --save-poly will output "cloudRGBNormal" + outStem + ".ply",
+    //                     and "plane_mesh"     + outStem + ".ply",
+    //                     and "hough"          + outStem + ".ply"
+    std::string outStem( "" );
+    {
+        // Parse ****_itXX.***** to XX in inputPath.
+        int iterationFromPath = util::parseIteration( primitives_file );
+        // If not, try to find "segments" (regionGrow output), and then "patches" (preMerge output).
+        if ( iterationFromPath < 0 )
+        {
+            if ( primitives_file.find("segments") != std::string::npos )
+                outStem = "_segments";
+            else if ( primitives_file.find("patches") != std::string::npos )
+                outStem = "_patches";
+        } //...if iteration number not found
+        else
+        {
+            std::stringstream ss;
+            ss << "_it" << iterationFromPath;
+            outStem = ss.str();
+        }
+    } //...outStem parsing
 
     GF2::Visualizer<PrimitiveContainerT,PointContainerT>::template show<Scalar>( primitives
                                                                                , points
@@ -265,6 +289,7 @@ GF2::vis::showCli( int argc, char** argv )
                                                                                , /*         show_spatial: */ show_spatial
                                                                                , /* problemPath (unused): */ ""
                                                                                , /*      parallelColours: */ paralColours
+                                                                               , /*              outStem: */ outStem
                                                                                );
     return EXIT_SUCCESS;
 } // ... Solver::show()

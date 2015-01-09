@@ -20,8 +20,8 @@ namespace GF2
         {
             typedef typename _AnglesContainerT::Scalar Scalar;
 
-            if ( !inRad )
-                std::cout << "[" << __func__ << "]: " << "ASSUMING DEGREES" << std::endl;
+            //if ( !inRad )
+            //    std::cout << "[" << __func__ << "]: " << "ASSUMING DEGREES" << std::endl;
 
             std::set<Scalar> angles_set;
             // copy
@@ -37,7 +37,7 @@ namespace GF2
 
                 if ( angle_gen_rad == Scalar(0.) )
                 {
-                    std::cerr << "[" << __func__ << "]: " << "skipping 0 as generator" << std::endl;
+                    //std::cerr << "[" << __func__ << "]: " << "skipping 0 as generator" << std::endl;
                     continue;
                 }
 

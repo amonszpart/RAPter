@@ -234,11 +234,11 @@ nColoursEigen( int n, Scalar scale, bool random_shuffle, float min_value = 50.f,
 }
 
 inline std::vector< ::Eigen::Vector3f >
-paletteLightColoursEigen( int min_count = 0 )
+paletteLightColoursEigen( int min_count = 0, bool repeat = false )
 {
     // don't have template parameters, since we return Vector3f....
     std::vector< ::Eigen::Vector3f > colours_eigen;
-    colours_eigen.resize(7);
+    colours_eigen.resize(9);
     colours_eigen [2] << 184.f, 210.f, 236.f;
     colours_eigen [1] << 217.f, 228.f, 170.f;
     colours_eigen [0] << 242.f, 175.f, 173.f;
@@ -246,6 +246,9 @@ paletteLightColoursEigen( int min_count = 0 )
     colours_eigen [4] << 213.f, 178.f, 212.f;
     colours_eigen [5] << 221.f, 185.f, 169.f;
     colours_eigen [6] << 235.f, 192.f, 218.f;
+    colours_eigen [7] << 241.f, 173.f, 203.f; // added by Aron
+    colours_eigen [8] << 237.f, 209.f, 129.f; // added by Aron
+    colours_eigen [9] << 180.f, 180.f, 180.f; // added by Aron
 
 //    4D4D4D (gray)
 //    5DA5DA (blue)
@@ -258,8 +261,11 @@ paletteLightColoursEigen( int min_count = 0 )
 //    F15854 (red)
 
     std::vector< ::Eigen::Vector3f > out;
-    while ( static_cast<int>(out.size()) < min_count )
+    do
+    {
         out.insert( out.end(), colours_eigen.begin(), colours_eigen.end() );
+    }
+    while ( repeat && static_cast<int>(out.size()) < min_count );
 
     return out;
 }
@@ -270,11 +276,11 @@ paletteLightNeutralColour(){
 }
 
 inline std::vector< ::Eigen::Vector3f >
-paletteMediumColoursEigen( int min_count = 0 )
+paletteMediumColoursEigen( int min_count = 0, bool repeat = false )
 {
     // don't have template parameters, since we return Vector3f....
     std::vector< ::Eigen::Vector3f > colours_eigen;
-    colours_eigen.resize(9);
+    colours_eigen.resize( 10 );
     colours_eigen [2] << 090.f, 155.f, 212.f;
     colours_eigen [1] << 122.f, 195.f, 106.f;
     colours_eigen [0] << 241.f, 090.f, 096.f;
@@ -282,12 +288,16 @@ paletteMediumColoursEigen( int min_count = 0 )
     colours_eigen [4] << 158.f, 103.f, 171.f;
     colours_eigen [5] << 206.f, 112.f, 088.f;
     colours_eigen [6] << 215.f, 127.f, 180.f;
-    colours_eigen [7] << 241.f, 173.f, 203.f;
-    colours_eigen [8] << 178.f, 163.f, 119.f;
+    colours_eigen [7] << 241.f, 124.f, 176.f; // added by Aron
+    colours_eigen [8] << 182.f, 160.f,  96.f; // added by Aron
+    colours_eigen [9] << 136.f, 136.f, 136.f; // added by Aron
 
     std::vector< ::Eigen::Vector3f > out;
-    while ( static_cast<int>(out.size()) < min_count )
+    do
+    {
         out.insert( out.end(), colours_eigen.begin(), colours_eigen.end() );
+    }
+    while ( repeat && static_cast<int>(out.size()) < min_count );
 
     return out;
 }
@@ -298,11 +308,11 @@ paletteMediumNeutralColour(){
 }
 
 inline std::vector< ::Eigen::Vector3f >
-paletteDarkColoursEigen( int min_count = 0 )
+paletteDarkColoursEigen( int min_count = 0, bool repeat = false )
 {
     // don't have template parameters, since we return Vector3f....
     std::vector< ::Eigen::Vector3f > colours_eigen;
-    colours_eigen.resize(9);
+    colours_eigen.resize( 10 );
     colours_eigen [2] << 024.f, 090.f, 169.f;
     colours_eigen [1] << 000.f, 140.f, 072.f;
     colours_eigen [0] << 238.f, 046.f, 047.f;
@@ -310,14 +320,16 @@ paletteDarkColoursEigen( int min_count = 0 )
     colours_eigen [4] << 102.f, 044.f, 145.f;
     colours_eigen [5] << 162.f, 029.f, 033.f;
     colours_eigen [6] << 180.f, 056.f, 148.f;
-    colours_eigen [7] << 241.f, 124.f, 176.f;
-    colours_eigen [8] << 178.f, 145.f, 47.f;
-
-
+    colours_eigen [7] << 209.f,  71.f, 132.f; // added by Aron
+    colours_eigen [8] << 178.f, 144.f,  41.f; // added by Aron
+    colours_eigen [9] <<  77.f,  77.f,  77.f; // added by Aron
 
     std::vector< ::Eigen::Vector3f > out;
-    while ( static_cast<int>(out.size()) < min_count )
+    do
+    {
         out.insert( out.end(), colours_eigen.begin(), colours_eigen.end() );
+    }
+    while ( repeat && static_cast<int>(out.size()) < min_count );
 
     return out;
 }
@@ -341,6 +353,10 @@ inline std::string timestamp2Str()
     return std::string( buffer );
 } //...timestamp2Str()
 
+/*! \brief Finds "_itXXX." in file_name, and parses XX to int.
+ *         Looks for "_it" to begin with, and ends search at next "." .
+ *  \return -1, if not found, atoi(XX) otherwise.
+ */
 inline int parseIteration( std::string const& input_prims_path )
 {
     int iteration = 0;
@@ -351,7 +367,8 @@ inline int parseIteration( std::string const& input_prims_path )
     else
     {
         iteration = atoi( input_prims_path.substr( it_loc+3,
-                                                       input_prims_path.find(".",it_loc)).c_str() );
+                                                   input_prims_path.find(".",it_loc)).c_str()
+                        );
         //iteration = atoi( input_prims_path.substr( it_loc+3,1 ).c_str() );
     }
 
