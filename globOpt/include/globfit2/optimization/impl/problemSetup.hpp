@@ -299,6 +299,11 @@ ProblemSetup::formulateCli( int    argc
     return err;
 } //...ProblemSetup::formulateCli()
 
+inline void calculateNeighbourhoods( _PointContainerT const& points )
+{
+
+}
+
 template < class _PointPrimitiveDistanceFunctor
          , class _PrimitiveContainerT
          , class _PointContainerT
