@@ -112,13 +112,16 @@ fi
 # Backup energy.csv
 mv energy.csv energy.csv.bak
 
+input="patches.csv";
+assoc="points_primitives.csv";
+
 # [0] Segmentation. OUTPUT: patches.csv, points_primitives.csv
 if [ $startAt -eq 0 ]; then
     my_exec "$executable --segment$flag3D --angle-limit $anglelimit --scale $scale --dist-limit-mult $segmentScaleMultiplier --angle-gens $anglegens"
+    # save output
+    cp $input "segments.csv"
+    cp $assoc "points_segments.csv"
 fi
-
-input="patches.csv";
-assoc="points_primitives.csv";
 
 # PreMerge?
 if [ $startAt -le 1 ]; then
@@ -128,8 +131,6 @@ if [ $startAt -le 1 ]; then
         my_exec "$executable --merge$flag3D --scale $scale --adopt $adopt --prims $input -a $assoc --angle-gens $anglegens --patch-pop-limit $poplimit"
 
         # save patches
-        cp $input segments.csv
-        cp $assoc points_segments.csv
         cp patches.csv_merged_it-1.csv $input
         cp points_primitives_it-1.csv $assoc
         my_exec "../globOptVis --show$flag3D --scale $scale --use-tags --pop-limit $poplimit -p patches.csv -a $assoc --normals 100 --title \"GlobOpt - PreMerge output\" --no-clusters --no-pop --no-rel --bg-colour .9,.9,.9 --angle-gens $anglegens &"
