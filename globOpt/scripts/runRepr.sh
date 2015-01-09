@@ -42,7 +42,9 @@ function runRepr() {
 	#cmd="../glob_opt --generate$flag3D -sc $scale -al $anglelimit -ald 1 --small-mode 0 --patch-pop-limit $poplimit --angle-gens $angleGens --small-thresh-mult 1 -p $repr --assoc $assoc"
 	mv candidates_it$rprNextId.csv candidates_it$rprNextId_tmp.csv # move tmp out of the way
 	my_exec "$executable --generate$flag3D -sc $scale -al $anglelimit -ald ${cand_anglediv} --small-mode 0 --patch-pop-limit $poplimit --angle-gens $anglegens --small-thresh-mult $smallThresh -p $rprRepr --assoc $rprReprAssoc --keep-singles"
+	echo "mv candidates_it$rprNextId.csv $rprCands"
 	mv candidates_it$rprNextId.csv $rprCands
+	echo "mv candidates_it$rprNextId_tmp.csv candidates_it$rprNextId.csv"
 	mv candidates_it$rprNextId_tmp.csv candidates_it$rprNextId.csv # move back tmp
 	
 	# Show candidates

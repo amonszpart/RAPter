@@ -11,14 +11,15 @@ noVis=false             # Only show premerge and final output
 # startAt=0: do segment
 # startAt=1: don't do segment, do premerge
 # startAt=2: don't do premerge, do iteration 0
-startAt=0
+startAt=1
 nbExtraIter=40          # Values: [ 1..20 ] iteration count. Default: 2.
 reprPwMult=3            # Values: [ 1, 5 ,10]. Multiplies pw with this number when doing lvl2 (representatives)
 use90=24                # Values: [ 100 ] Will be re-set by runscript
 extendedAngleGens="90"  # Values: [ "0", "90", ... ]
+premerge=0              # Call merge after segmentation 0/1
 
 anglegens="0"           # Values: ["0", "60", "90", "60,90", ... ] Desired angle generators in degrees. Default: 90.
-unary=100000            # Values: [1000, 1000000]
+unary=1000000           # Values: [1000, 1000000]
 spatWeight=0            # Values: [ 10, 0 ] (Penalty that's added, if two primitives with different directions are closer than 2 x scale)
 truncAngle=$anglelimit  # Values: [ 0, $anglelimit, 0.15 ] (Pairwise cost truncation angle in radians)
 smallThreshDiv="2"      # Values: [ 2, 3, ... ] Stepsize of working scale.
@@ -77,7 +78,6 @@ iterationConstrMode="patch" # what to add in the second iteration formulate. Def
 
 safeMode="";                #"--safe-mode"; #"--safe-mode" # "--safe-mode" for new, or "" for old version
 variableLimit=1100; # 1300; # Safe mode gets turned on, and generate rerun, if candidates exceed this number (1300)
-premerge=1                  # Call merge after segmentation 0/1
 algCode=0                   # 0==B_BB, OA, QG, 3==Hyb, ECP, IFP
 #######################################
 #######################################
@@ -121,6 +121,9 @@ if [ $startAt -eq 0 ]; then
     # save output
     cp $input "segments.csv"
     cp $assoc "points_segments.csv"
+    if [ "$noVis" = false ] ; then
+            my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p segments.csv -a points_segments.csv --title \"GlobOpt - Segmentation output\" $visdefparam --dir-colours --no-rel &"
+    fi
 fi
 
 # PreMerge?
@@ -134,9 +137,6 @@ if [ $startAt -le 1 ]; then
         cp patches.csv_merged_it-1.csv $input
         cp points_primitives_it-1.csv $assoc
         my_exec "../globOptVis --show$flag3D --scale $scale --use-tags --pop-limit $poplimit -p patches.csv -a $assoc --normals 100 --title \"GlobOpt - PreMerge output\" --no-clusters --no-pop --no-rel --bg-colour .9,.9,.9 --angle-gens $anglegens &"
-        if [ "$noVis" = false ] ; then
-            my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p segments.csv -a points_segments.csv --title \"GlobOpt - Segmentation output\" $visdefparam --dir-colours --no-rel &"
-        fi
     fi #...if premerge
 fi #...startAt <= 1
 

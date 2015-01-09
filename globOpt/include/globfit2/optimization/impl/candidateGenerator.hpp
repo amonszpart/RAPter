@@ -821,7 +821,11 @@ namespace GF2
             {
                 // _PrimitiveT prim = *primIt;
                 DidT const dId      = primIt->getTag( _PrimitiveT::TAGS::DIR_GID );
-                if ( (directionPopulation[dId] > 1) || (primIt->getTag(_PrimitiveT::TAGS::STATUS) == _PrimitiveT::STATUS_VALUES::SMALL) )
+                if (    (directionPopulation[dId] > 1)
+                     || (primIt->getTag(_PrimitiveT::TAGS::STATUS) == _PrimitiveT::STATUS_VALUES::SMALL)
+                     || (    (populations.find(primIt.getGid()) != populations.end()      )
+                          && (populations[primIt.getGid()].size() > params.patch_population_limit * 2) ) // add if, at least double poplimit points in it
+                   )
                     containers::add( outPrims, primIt.getGid(), *primIt );
                 else
                 {
