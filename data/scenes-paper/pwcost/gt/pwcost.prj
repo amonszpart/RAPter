@@ -1,0 +1,14 @@
+<!DOCTYPE pwcost>
+<scene name="pwcost">
+ <primitives>
+  <primitive dim="-0.6054 0" dir="1 0 0" uid="0" did="0" pos="0.257812 0.1524 0"/>
+  <primitive dim="-0.6054 0" dir="1 0 0" uid="2" did="2" pos="0.455114 0.1524 0"/>
+  <primitive dim="-0.605428 0" dir="0.965928 -0.258812 0" uid="4" did="4" pos="0.6353 0.1559 0"/>
+ </primitives>
+ <samplers>
+  <sampler typeId="0" spacing="0.01"/>
+ </samplers>
+ <displacements>
+  <kernel typeId="1" distributionMean="0" enabled="1" distributionStdDev="0.01"/>
+ </displacements>
+</scene>
