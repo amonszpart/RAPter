@@ -794,6 +794,7 @@ namespace GF2
                                 {
                                     MyPCLPoint pnt;
                                     pnt.getVector3fMap() = minMax[i];
+                                    pnt.getBGRVector3cMap() << (255. * prim_colour).cast<uint8_t>().reverse().eval();
                                     plane_mesh_cloud.push_back( pnt );
                                     plane_mesh      .polygons.back().vertices.push_back( pid_offs + i );
                                 }
