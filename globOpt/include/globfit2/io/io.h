@@ -13,12 +13,17 @@
 
 #include "globfit2/util/pcl_util.hpp"
 #include "globfit2/util/containers.hpp"
+#include "globfit2/my_types.h"
 
 
 namespace GF2
 {
     namespace io
     {
+        //typedef          pcl::PointNormal           PclPointT;
+        //typedef          pcl::PointCloud<PclPointT> PclCloudT;
+        //typedef typename PclCloudT::Ptr             PclCloudPtrT;
+
         //! \brief Dumps primitives with GID and DIR_GID to disk.
         //! \tparam PrimitiveT Concept: PrimitiveContainerT::value_type::value_type aka GF2::LinePrimitive2.
         //! \tparam PrimitiveContainerT Concept: vector< vector< GF2::LinePrimitive2 > >.
@@ -42,12 +47,12 @@ namespace GF2
             std::ofstream out_file( out_file_name );
             if ( !out_file.is_open() ) { std::cerr << "could not open file..." << out_file_name << std::endl; return EXIT_FAILURE; }
 
-            int lid = 0;
+            LidT lid = 0;
             outer_const_iterator gid_end_it = primitives.end();
             for ( outer_const_iterator gid_it = primitives.begin(); gid_it != gid_end_it; ++gid_it, ++lid )
             //for ( size_t lid = 0; lid != primitives.size(); ++lid )
             {
-                int lid1 = 0;
+                LidT lid1 = 0;
                 _inner_const_iterator lid_end_it = containers::valueOf<PrimitiveT>(gid_it).end();
                 for ( _inner_const_iterator lid_it = containers::valueOf<PrimitiveT>(gid_it).begin(); lid_it != lid_end_it; ++lid_it, ++lid1 )
                 //for ( size_t lid1 = 0; lid1 != primitives[lid].size(); ++lid1 )
@@ -99,8 +104,8 @@ namespace GF2
             }
 
             std::map<GidT, PatchT> tmp_lines;
-            int lid        = 0; // deprecated, tracks linear id
-            int line_count = 0;
+            LidT lid        = 0; // deprecated, tracks linear id
+            LidT line_count = 0;
             std::string line;
             while ( getline(file, line) )
             {
@@ -205,14 +210,14 @@ namespace GF2
                 return EXIT_FAILURE;
             }
 
-            std::set< std::pair<int,int> > lines;
+            std::set< std::pair<LidT,LidT> > lines;
             std::string line;
             while ( getline(f, line) )
             {
                 if ( line[0] == '#' )
                     continue;
 
-                std::vector<int> ints;
+                std::vector<LidT> ints;
                 std::istringstream iss( line );
                 std::string        tmp_str;
                 while ( /**/ (ints.size() < 3)
@@ -227,10 +232,10 @@ namespace GF2
                 }
 
                 // 2d indices (lid,lid1)
-                if ( static_cast<int>(points_primitives.size()) <= ints[0] )
-                    points_primitives.resize( ints[0]+1, std::pair<int,int>(-1,-1) );
-                points_primitives[ ints[0] ] = std::pair<int,int>( ints[1], ints[2] );
-                lines.insert( std::pair<int,int>(ints[1], ints[2]) );
+                if ( static_cast<LidT>(points_primitives.size()) <= ints[0] )
+                    points_primitives.resize( ints[0]+1, std::pair<LidT,LidT>(-1,-1) );
+                points_primitives[ ints[0] ] = std::pair<LidT,LidT>( ints[1], ints[2] );
+                lines.insert( std::pair<LidT,LidT>(ints[1], ints[2]) );
 
                 // 1d indices (line_id)
                 if ( linear_indices )
@@ -287,12 +292,13 @@ namespace GF2
         inline int
         readPoints( _PointContainerT &points
                   , std::string        path
-                  , pcl::PointCloud<pcl::PointNormal>::Ptr *cloud_arg = NULL )
+                  //, pcl::PointCloud<pcl::PointNormal>::Ptr *cloud_arg = NULL )
+                  , PclCloudPtrT *cloud_arg = NULL )
         {
             pcl::PointCloud<pcl::PointNormal>::Ptr cloud;
 
             // sample image
-            if ( !cloud ) cloud.reset( new pcl::PointCloud<pcl::PointNormal>() );
+            if ( !cloud ) cloud.reset( new PclCloudT() );
             if ( path.find("ply") != std::string::npos )
                 pcl::io::loadPLYFile( path, *cloud );
             else
@@ -302,7 +308,7 @@ namespace GF2
             std::vector<typename _PointT::VectorType> raw_points;
             pclutil::cloudToVector<typename _PointT::RawAllocator>( raw_points, cloud );
 
-            // convert to tagged vector
+            // convert to tagged v  ector
             points.reserve( raw_points.size() );
             for ( size_t pid = 0; pid != raw_points.size(); ++pid )
             {

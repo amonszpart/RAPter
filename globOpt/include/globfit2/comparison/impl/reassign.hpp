@@ -69,7 +69,7 @@ namespace GF2
             char name[255];
             for ( typename _PrimitiveContainerT::const_iterator it = primitives.begin(); it != primitives.end(); ++it )
             {
-                for ( int lid = 0; lid != it->size(); ++lid )
+                for ( LidT lid = 0; lid != it->size(); ++lid )
                 {
                     PrimitiveT const& prim = it->at( lid );
                     sprintf( name, "prim%06d_%06d", prim.getTag( PrimitiveT::TAGS::GID ), lid );
@@ -83,23 +83,23 @@ namespace GF2
         }
 
         {
-            const int num_pixels = pcl_cloud->size();
-            const int num_labels = plane_count;
+            const LidT num_pixels = pcl_cloud->size();
+            const LidT num_labels = plane_count;
 
             Scalar *result = new Scalar[num_pixels];   // stores result of optimization
 
             // first set up the array for data costs
-            std::map< int, std::pair<int,int> > labelMap;
+            std::map< LidT, std::pair<LidT,LidT> > labelMap;
             std::cout << "[" << __func__ << "]: " << "setting data labels..." << std::endl; fflush(stdout);
             Scalar *data = new Scalar[num_pixels*num_labels];
 
             #pragma omp for schedule(dynamic,8)
-            for ( int pid = 0; pid < num_pixels; pid++ )
+            for ( PidT pid = 0; pid < num_pixels; pid++ )
             {
-                int label = 0;
-                int lid0 = 0;
+                LidT label = 0;
+                LidT lid0 = 0;
                 for ( typename _PrimitiveContainerT::const_iterator it = primitives.begin(); it != primitives.end(); ++it, ++lid0 )
-                    for ( int lid1 = 0; lid1 != it->size(); ++lid1, ++label )
+                    for ( LidT lid1 = 0; lid1 != it->size(); ++lid1, ++label )
                     {
                         Scalar dist = it->at(lid1).getDistance( points[pid] );
                         data[ pid*num_labels + label] = Scalar(100.) * dist * dist;

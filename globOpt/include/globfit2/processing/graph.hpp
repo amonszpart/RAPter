@@ -18,10 +18,10 @@ namespace GF2
         template <typename _Scalar>
         struct EdgeT
         {
-            int _v0, _v1;
+            LidT _v0, _v1;
             _Scalar _w;
 
-            EdgeT( int v0, int v1, _Scalar w ) : _v0(v0), _v1(v1), _w(w) {}
+            EdgeT( LidT v0, LidT v1, _Scalar w ) : _v0(v0), _v1(v1), _w(w) {}
 
             bool operator<( EdgeT<_Scalar> const& other ) const
             {
@@ -83,7 +83,7 @@ namespace GF2
             typedef typename boost::graph_traits< _UndirectedGraph >::out_edge_iterator OutEdgeIteratorT;
 
             typedef std::vector<int> ComponentListT;
-            typedef std::map<int,size_t> ComponentSizesT;
+            typedef std::map<LidT,size_t> ComponentSizesT;
 
             static inline int testGraph()
             {
@@ -107,9 +107,11 @@ namespace GF2
                   for (boost::tie(in, in_end) = in_edges(zero, undigraph); in != in_end; ++in)
                     std::cout << ' ' << *in;
                   std::cout << std::endl;
+
+                  return 0;
             }
 
-            Graph( const int vertex_count )
+            Graph( const PidT vertex_count )
                 : _undigraph( vertex_count )
             {}
 
@@ -121,7 +123,7 @@ namespace GF2
             }
 
             inline std::pair<EdgeT, bool>
-            addEdge( const int v0, const int v1, _Scalar const weight )
+            addEdge( const LidT v0, const LidT v1, _Scalar const weight )
             {
                 //throw new std::runtime_exception("todo" );
                 return boost::add_edge( v0, v1, _undigraph );
@@ -129,7 +131,7 @@ namespace GF2
             }
 
             inline std::string
-            addVertexName( const int v, std::string const& name )
+            addVertexName( const LidT v, std::string const& name )
             {
                 if ( _names.find(v) != _names.end() )
                     std::cerr << "[" << __func__ << "]: " << "adding name to already named node!" << std::endl;
@@ -147,7 +149,7 @@ namespace GF2
                 if ( counts ) counts->clear();
 
                 components.resize( boost::num_vertices(_undigraph) );
-                int num = boost::connected_components(_undigraph, &components[0]);
+                LidT num = boost::connected_components(_undigraph, &components[0]);
 
                 std::vector<int>::size_type i;
                 for (i = 0; i != components.size(); ++i)
@@ -167,11 +169,11 @@ namespace GF2
                 f << "graph {\n";
 
                 OutEdgeIteratorT out,out_end;
-                for ( int vid = 0; vid != boost::num_vertices(_undigraph); ++vid )
+                for ( LidT vid = 0; vid != boost::num_vertices(_undigraph); ++vid )
                 {
                     for ( boost::tie(out, out_end) = boost::out_edges(boost::vertex(vid,_undigraph), _undigraph); out != out_end; ++out )
                     {
-                        int v0 = boost::source(*out,_undigraph), v1 = boost::target(*out,_undigraph);
+                        LidT v0 = boost::source(*out,_undigraph), v1 = boost::target(*out,_undigraph);
 
                         if ( v0 < v1 )
                         {

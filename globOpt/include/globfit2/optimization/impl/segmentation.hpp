@@ -47,7 +47,7 @@ Segmentation::orientPoints( _PointContainerT          &points
 
     // (1) local fit lines from pcl cloud
     std::vector<_PrimitiveT> fit_lines;
-    std::vector<int        > point_ids;
+    std::vector<PidT       > point_ids;
     {
         if ( verbose ) std::cout << "[" << __func__ << "]: " << "calling fit local" << std::endl;
         fitLocal( /* [out]       lines: */ fit_lines
@@ -60,9 +60,9 @@ Segmentation::orientPoints( _PointContainerT          &points
                , verbose ); // contains point id for fit_line
 
         // copy line direction into point
-        for ( int pid_id = 0; pid_id != point_ids.size(); ++pid_id )
+        for ( PidT pid_id = 0; pid_id != point_ids.size(); ++pid_id )
         {
-            const int pid = point_ids[pid_id];
+            const PidT pid = point_ids[pid_id];
             points[pid].coeffs().template segment<3>(3) = fit_lines.at(pid).dir();
         }
     } // ... (1) local fit
@@ -82,7 +82,7 @@ Segmentation:: fitLocal( _PrimitiveContainerT        & primitives
                        , int                    const  K
                        , float                  const  radius
                        , bool                   const  soft_radius
-                       , std::vector<int>            * point_ids
+                       , std::vector<PidT>            * point_ids
                        , int                    const  verbose
                        )
 {
@@ -116,7 +116,7 @@ Segmentation:: fitLocal( _PrimitiveContainerT        & primitives
 
     // every point proposes primitive[s] using its neighbourhood
     unsigned int step_count;
-    int skipped = 0;
+    LidT skipped = 0;
     for ( size_t pid = 0; pid != neighs.size(); ++pid )
     {
         // can't fit a line to 0 or 1 points
@@ -330,7 +330,7 @@ Segmentation::regionGrow( _PointContainerT                       & points
                         , _PatchesT                              & groups_arg
                         , _Scalar                           const  /*scale*/
                         , _PatchPatchDistanceFunctorT       const& patchPatchDistanceFunctor
-                        , int                               const  gid_tag_name
+                        , GidT                              const  gid_tag_name
                         , int                               const  nn_K
                         , bool                              const  verbose
                         )
@@ -343,8 +343,8 @@ Segmentation::regionGrow( _PointContainerT                       & points
     typedef          std::vector<PatchT>     Patches;
 
     // create patches with a single point in them
-    std::deque<int> starting_cands;
-    for ( int pid = 0; pid != points.size(); ++pid )
+    std::deque<PidT> starting_cands;
+    for ( PidT pid = 0; pid != points.size(); ++pid )
     {
         //const int pid = point_ids_arg ? (*point_ids_arg)[ pid_id ] : pid_id;
         if ( std::abs(_Scalar(1)-points[pid].template dir().norm()) > _Scalar(1.e-2) )
@@ -376,7 +376,7 @@ Segmentation::regionGrow( _PointContainerT                       & points
 
     std::vector<float>  sqr_dists( nn_K );
     std::vector< int >  neighs( nn_K );
-    int                 found_points_count  = 0;
+    PidT                found_points_count  = 0;
     pcl::PointXYZ       searchPoint;
     const _Scalar       max_dist            = patchPatchDistanceFunctor.getSpatialThreshold();// * _Scalar(3.5); // longest axis of ellipse)
 
@@ -385,7 +385,7 @@ Segmentation::regionGrow( _PointContainerT                       & points
     while ( starting_cands.size() )
     {
         // remove point from unassigned
-        int pid = starting_cands.front();
+        PidT pid = starting_cands.front();
         starting_cands.pop_front();
         if ( verbose && !(++step_count % 100) ) std::cout << starting_cands.size() << " ";
 
@@ -415,7 +415,7 @@ Segmentation::regionGrow( _PointContainerT                       & points
 
         for ( size_t pid_id = 0; pid_id != neighs.size(); ++pid_id )
         {
-            const int pid2 = neighs[ pid_id ];
+            const PidT pid2 = neighs[ pid_id ];
             if ( !assigned[pid2] )
             {
                 _Scalar dist_diff = sqrt(sqr_dists[pid_id]);
@@ -655,28 +655,28 @@ template < class    _PointPrimitiveT
 Segmentation::_tagPointsFromGroups( _PointContainerT                 & points
                                   , _PatchT                     const& groups
                                   , _PointPatchDistanceFunctorT const& pointPatchDistanceFunctor
-                                  , int                         const  gid_tag_name )
+                                  , GidT                        const  gid_tag_name )
 {
     // set group tag for grouped points
     std::vector<bool> visited( points.size(), false );
-    for ( int gid = 0; gid != groups.size(); ++gid )
+    for ( GidT gid = 0; gid != groups.size(); ++gid )
         for ( size_t pid_id = 0; pid_id != groups[gid].size(); ++pid_id )
         {
-            const int pid = groups[gid][pid_id].first;
+            const PidT pid = groups[gid][pid_id].first;
 
             visited.at(pid) = true; // TODO: change to []
             points[pid].setTag( gid_tag_name, gid );
         }
 
     // add left out points to closest patch
-    for ( int pid = 0; pid != points.size(); ++pid )
+    for ( PidT pid = 0; pid != points.size(); ++pid )
     {
         if ( visited[pid] )
             continue;
 
         _Scalar     min_dist = std::numeric_limits<_Scalar>::max(), dist;
-        int         min_gid  = 0;
-        for ( int gid = 1; gid != groups.size(); ++gid )
+        GidT         min_gid  = 0;
+        for ( GidT gid = 1; gid != groups.size(); ++gid )
         {
             if ( (dist = pointPatchDistanceFunctor.template evalSpatial<_PointPrimitiveT>(pid, groups[gid], points)) < min_dist )
             {

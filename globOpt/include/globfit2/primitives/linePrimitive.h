@@ -209,12 +209,12 @@ namespace GF2
                 }
 
                 // select inliers
-                std::vector<int> inliers;
+                std::vector<PidT> inliers;
                 inliers.reserve( cloud.size() );
-                const int stop_at = indices_arg ? indices_arg->size() : cloud.size();
-                for ( int i = 0; i != stop_at; ++i )
+                const PidT stop_at = indices_arg ? indices_arg->size() : cloud.size();
+                for ( PidT i = 0; i != stop_at; ++i )
                 {
-                    const int pid = indices_arg ? (*indices_arg)[i] : i;
+                    const PidT pid = indices_arg ? (*indices_arg)[i] : i;
                     if ( this->getDistance( cloud[pid].template pos() ) < threshold )
                         inliers.push_back( pid );
                 }
@@ -224,16 +224,16 @@ namespace GF2
 
                 // project cloud
                 std::vector<Position> on_line_cloud;
-                for ( int pid_id = 0; pid_id != inliers.size(); ++pid_id )
+                for ( PidT pid_id = 0; pid_id != inliers.size(); ++pid_id )
                 {
-                    const int pid = inliers[ pid_id ];
+                    const PidT pid = inliers[ pid_id ];
                     on_line_cloud.push_back( this->projectPoint(cloud[pid].template pos()) );
                 }
 
 
                 // select min-max inliier from projected cloud
                 Scalar min_dist = 0.f, max_dist = 0.f;
-                int     min_id   = 0  , max_id   = 0;
+                PidT     min_id   = 0  , max_id   = 0;
                 Position    p0       = on_line_cloud[0];
                 Position    line_dir = this->dir();
 
@@ -446,7 +446,7 @@ namespace GF2
                 cloud_projected.resize(indices->size());
 
                 // get assigned points, project them to the plane and store as PCL cloud
-                int i = 0;
+                PidT i = 0;
                 for ( typename _IndicesContainerT::const_iterator it = indices->begin(); it != indices->end(); ++i, ++it )
                 {
                     cloud_projected.at(i).getVector3fMap() = plane.projectPoint(points[*it].pos()).template cast<float>();
@@ -455,7 +455,7 @@ namespace GF2
                 concave_hull.setAlpha( alpha );
                 concave_hull.setInputCloud( cloud_projected.makeShared() );
                 concave_hull.reconstruct( cloud_hull, polygons );
-                int max_size = 0, max_id = 0;
+                PidT max_size = 0, max_id = 0;
                 for ( i = 0; i != polygons.size(); ++i )
                 {
                     if ( polygons[i].vertices.size() >max_size)

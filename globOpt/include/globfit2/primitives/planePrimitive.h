@@ -332,13 +332,13 @@ namespace GF2
 
 #ifdef GF2_USE_PCL
 
-        std::vector<int> inliers;
+        std::vector<LidT> inliers;
         {
             inliers.reserve( cloud.size() );
-            const int stop_at = indices_arg ? indices_arg->size() : cloud.size();
-            for ( int i = 0; i != stop_at; ++i )
+            const PidT stop_at = indices_arg ? indices_arg->size() : cloud.size();
+            for ( PidT i = 0; i != stop_at; ++i )
             {
-                const int pid = indices_arg ? (*indices_arg)[i] : i;
+                const PidT pid = indices_arg ? (*indices_arg)[i] : i;
                 if ( this->getDistance( cloud[pid].template pos() ) < threshold )
                     inliers.push_back( pid );
             }
@@ -352,9 +352,9 @@ namespace GF2
         // project cloud
         _PointContainerT on_plane_cloud;
         on_plane_cloud.reserve( inliers.size() );
-        for ( int pid_id = 0; pid_id != inliers.size(); ++pid_id )
+        for ( PidT pid_id = 0; pid_id != inliers.size(); ++pid_id )
         {
-            const int pid = inliers[ pid_id ];
+            const PidT pid = inliers[ pid_id ];
             on_plane_cloud.push_back( _PointPrimitiveT(this->projectPoint(cloud[pid].template pos()), cloud[pid].template dir()) );
         }
 
@@ -364,7 +364,7 @@ namespace GF2
             pcl::PointCloud<pcl::PointXYZRGB>::Ptr c ( new pcl::PointCloud<pcl::PointXYZRGB>() );
             pcl::visualization::PCLVisualizer::Ptr vptr( new pcl::visualization::PCLVisualizer("on_plane_cloud") );
             vptr->setBackgroundColor( .5, .6, .6 );
-            for ( int pid = 0; pid != on_plane_cloud.size(); ++pid )
+            for ( PidT pid = 0; pid != on_plane_cloud.size(); ++pid )
             {
                 pcl::PointXYZRGB pnt;
                 pnt.getVector3fMap() = on_plane_cloud[pid].template pos();
@@ -375,7 +375,7 @@ namespace GF2
             vptr->setPointCloudRenderingProperties( pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3.f, "onplane" );
 
             pcl::PointCloud<pcl::PointXYZRGB>::Ptr c1 ( new pcl::PointCloud<pcl::PointXYZRGB>() );
-            for ( int pid_id = 0; pid_id != inliers.size(); ++pid_id )
+            for ( PidT pid_id = 0; pid_id != inliers.size(); ++pid_id )
             {
                 pcl::PointXYZRGB pnt;
                 pnt.getVector3fMap() = cloud[ inliers[pid_id] ].template pos();
@@ -718,7 +718,7 @@ namespace GF2
         cloud_projected->resize(indices->size());
 
         // get assigned points, project them to the plane and store as PCL cloud
-        int i = 0;
+        PidT i = 0;
         for ( typename _IndicesContainerT::const_iterator it = indices->begin(); it != indices->end(); ++i, ++it )
         {
             cloud_projected->at(i).getVector3fMap() = plane.projectPoint(points[*it].pos()).template cast<float>();
@@ -730,7 +730,7 @@ namespace GF2
 
         if ( polygons.size() )
         {
-            int max_size = 0, max_id = 0;
+            PidT max_size = 0, max_id = 0;
             for ( i = 0; i != polygons.size(); ++i )
             {
                 if ( polygons[i].vertices.size() >max_size)

@@ -359,7 +359,7 @@ int represent( int argc, char** argv )
      }
      else if ( GF2::console::find_switch(argc,argv,"--representBack") )
      {
-         return GF2::representCli< GF2::_2d::PrimitiveContainerT
+         return GF2::representBackCli< GF2::_2d::PrimitiveContainerT
                  , GF2::PointContainerT
                  , GF2::_2d::PrimitiveT
                  , GF2::PointPrimitiveT

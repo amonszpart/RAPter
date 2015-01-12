@@ -8,6 +8,7 @@ namespace GF2
 {
 
 typedef long GidT; // GroupId type
+typedef unsigned long ULidT;
 typedef GidT UidT; // UniqueId in containers.hpp
 typedef GidT DidT; // DirectionId type // don't ever set to unsigned!!!!
 typedef GidT PidT;

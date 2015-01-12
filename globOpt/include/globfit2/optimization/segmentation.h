@@ -5,6 +5,8 @@
 #include <vector>
 #include "Eigen/Dense"
 
+#include "globfit2/simple_types.h"
+
 namespace GF2 {
 
 namespace segmentation {
@@ -172,7 +174,7 @@ class Segmentation
                   , _PatchesT                        & groups_arg
                   , _Scalar                     const  /*scale*/
                   , _PatchPatchDistanceFunctorT const& patchPatchDistanceFunctor
-                  , int                         const  gid_tag_name              //= _PointT::GID
+                  , GidT                        const  gid_tag_name              //= _PointT::GID
                   , int                         const  nn_K
                   , bool                        const  verbose
                   );
@@ -191,7 +193,7 @@ class Segmentation
                 , int                  const  K
                 , float                const  radius
                 , bool                 const  soft_radius
-                , std::vector<int>          * mapping
+                , std::vector<PidT>          * mapping
                 , int                    const  verbose
                 );
     protected:
@@ -204,7 +206,7 @@ class Segmentation
         _tagPointsFromGroups( _PointContainerT                 & points
                             , _PatchT                     const& groups
                             , _PointPatchDistanceFunctorT const& pointPatchDistanceFunctor
-                            , int                         const  gid_tag_name );
+                            , GidT                        const  gid_tag_name );
 }; //...Segmentation
 
 } //...ns GF2

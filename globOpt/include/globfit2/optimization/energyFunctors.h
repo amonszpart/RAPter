@@ -68,7 +68,7 @@ namespace GF2
             // we can then extract the min/max of these distances, and compute the volume
             // of the box.
             Eigen::Matrix<_Scalar, Eigen::Dynamic, 3> relativePoints (points.size(), 3);
-            for(unsigned int i = 0; i != points.size(); ++i)
+            for(unsigned long i = 0; i != points.size(); ++i)
                 relativePoints.row(i) = (points(i) - center).transpose();
 
             Eigen::Matrix<_Scalar, 3, 3> projMatrix = relativePoints * es.eigenvectors();
@@ -119,7 +119,7 @@ namespace GF2
             // we can then extract the min/max of these distances, and compute the volume
             // of the box.
             Eigen::Matrix<_Scalar, Eigen::Dynamic, 2> relativePoints (points.size(), 2);
-            for(unsigned int i = 0; i != points.size(); ++i)
+            for(unsigned long i = 0; i != points.size(); ++i)
                 relativePoints.row(i) << points.at(i).transpose();
 
             Eigen::Matrix<_Scalar, Eigen::Dynamic, 2> projMatrix = relativePoints * es.eigenvectors();

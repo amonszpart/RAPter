@@ -165,9 +165,11 @@ ProblemSetup::formulateCli( int    argc
 
     // read points
     _PointContainerT     points;
+
+    PclCloudPtrT pclCloud( new PclCloudT() );
     {
         if ( verbose ) std::cout << "[" << __func__ << "]: " << "reading cloud from " << cloud_path << "...";
-        io::readPoints<_PointPrimitiveT>( points, cloud_path );
+        io::readPoints<_PointPrimitiveT>( points, cloud_path, &pclCloud );
         if ( verbose ) std::cout << "reading cloud ok\n";
     } //...read points
 
@@ -230,19 +232,20 @@ ProblemSetup::formulateCli( int    argc
         angle_gens_in_rad.push_back( *angle_it * M_PI / 180. );
 #if 1
     int err = formulate2<_PointPrimitiveDistanceFunctor>( problem
-                                                       , prims
-                                                       , points
-                                                       , params.constr_mode
-                                                       , params.data_cost_mode
-                                                       , params.scale
-                                                       , params.weights
-                                                       , primPrimDistFunctor
-                                                       , angle_gens_in_rad
-                                                       , params.patch_population_limit
-                                                       //, params.dir_id_bias
-                                                       , !calc_energy && verbose
-                                                       , params.freq_weight
-                                                       , clustersMode );
+                                                        , prims
+                                                        , points
+                                                        , params.constr_mode
+                                                        , params.data_cost_mode
+                                                        , params.scale
+                                                        , params.weights
+                                                        , primPrimDistFunctor
+                                                        , angle_gens_in_rad
+                                                        , params.patch_population_limit
+                                                        , pclCloud
+                                                        , !calc_energy && verbose
+                                                        , params.freq_weight
+                                                        , clustersMode
+                                                        );
 #else
     int err = formulate<_PointPrimitiveDistanceFunctor>( problem
                                                            , prims
@@ -299,10 +302,20 @@ ProblemSetup::formulateCli( int    argc
     return err;
 } //...ProblemSetup::formulateCli()
 
+/*! \brief              Calculate vicinityy of patches based on smallest point-point distance.
+ */
+template <typename _PointContainerT>
 inline void calculateNeighbourhoods( _PointContainerT const& points )
 {
+    pclutil::PclSearchTreePtrT tree = buildAnn( points );
 
-}
+    #pragma omp for
+    for ( size_t i = 0; i < points.size(); ++i )
+    {
+
+    }
+
+} //...calculateNeighbourhoods
 
 template < class _PointPrimitiveDistanceFunctor
          , class _PrimitiveContainerT
@@ -322,7 +335,7 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
                        , _PrimPrimDistFunctorT                                       * const& primPrimDistFunctor // AbstractPrimitivePrimitiveEnergyFunctor<_Scalar,_PrimitiveT>
                        , AnglesT                                                       const& angle_gens_in_rad
                        , int                                                           const  patch_pop_limit
-                       //, _Scalar                                                       const  dir_id_bias
+                       , PclCloudPtrT                                                            & pclCloud
                        , int                                                           const  verbose
                        , _Scalar                                                       const  freq_weight /* = 0. */
                        , int                                                           const  clusterMode
@@ -376,12 +389,12 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
                     continue;
 
                 // add var
-                int gId = prims[lid][lid1].getTag( _PrimitiveT::TAGS::GID     );
-                int dId = prims[lid][lid1].getTag( _PrimitiveT::TAGS::DIR_GID );
+                GidT gId = prims[lid][lid1].getTag( _PrimitiveT::TAGS::GID     );
+                LidT dId = prims[lid][lid1].getTag( _PrimitiveT::TAGS::DIR_GID );
                 sprintf( name, "x_%d_%d", gId, dId );
 
                 // store var_id for later, add binary variable
-                const int var_id = problem.addVariable( OptProblemT::BOUND::RANGE, 0.0, 1.0, OptProblemT::VAR_TYPE::INTEGER
+                const UidT var_id = problem.addVariable( OptProblemT::BOUND::RANGE, 0.0, 1.0, OptProblemT::VAR_TYPE::INTEGER
                                                       , OptProblemT::LINEARITY::LINEAR, name ); // changed to nonlinear by Aron on 29.12.2014
                 lids_varids[ IntPair(lid,lid1) ] = var_id;
 
@@ -410,7 +423,7 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
             sprintf( name, "dId%uL", dId );
 
             // store varId for later, add binary variable
-            const int varId = problem.addVariable( OptProblemT::BOUND::RANGE, 0.0, 1.0, OptProblemT::VAR_TYPE::BINARY
+            const LidT varId = problem.addVariable( OptProblemT::BOUND::RANGE, 0.0, 1.0, OptProblemT::VAR_TYPE::BINARY
                                                  , OptProblemT::LINEARITY::NON_LINEAR, name );
             // record
             dIdsVarIds[ dId ] = varId;
@@ -508,7 +521,7 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
         processing::getPopulations( populations, points );
 
 
-
+        if ( primPrimDistFunctor->getSpatialWeightCoeff() != _Scalar(0.) || clusterMode )
         for ( size_t lid = 0; lid != prims.size(); ++lid )
         {
             for ( size_t lid1 = 0; lid1 != prims[lid].size(); ++lid1 )
@@ -517,8 +530,8 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
                 if ( prim.getTag( _PrimitiveT::TAGS::STATUS ) == _PrimitiveT::STATUS_VALUES::SMALL )
                     continue;
 
-                const int gid = prim.getTag( _PrimitiveT::TAGS::GID );
-                const int did = prim.getTag( _PrimitiveT::TAGS::DIR_GID );
+                const GidT gid = prim.getTag( _PrimitiveT::TAGS::GID );
+                const DidT did = prim.getTag( _PrimitiveT::TAGS::DIR_GID );
 
                 // extremas key
                 LidLid lidLid1( lid, lid1 );
@@ -545,8 +558,8 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
                         // skip same line, that's always zero
                         if ( (lid == lidOth) && (lid1 == lid1Oth) ) continue;
 
-                        const int gIdOther = prim1.getTag( _PrimitiveT::TAGS::GID );
-                        const int dIdOther = prim1.getTag( _PrimitiveT::TAGS::DIR_GID );
+                        const GidT gIdOther = prim1.getTag( _PrimitiveT::TAGS::GID );
+                        const DidT dIdOther = prim1.getTag( _PrimitiveT::TAGS::DIR_GID );
 
                         // extremas key
                         LidLid lidLid1Oth( lidOth, lid1Oth );
@@ -563,8 +576,8 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
 
                         _Scalar invDist = primPrimDistFunctor->evalSpatial( prims[lid   ][lid1   ], (*it ).second
                                                                           , prims[lidOth][lid1Oth], (*oit).second );
-                        const int varId0 = lids_varids.at( IntPair(lid,lid1) );
-                        const int varId1 = lids_varids.at( IntPair(lidOth,lid1Oth) );
+                        const LidT varId0 = lids_varids.at( IntPair(lid,lid1) );
+                        const LidT varId1 = lids_varids.at( IntPair(lidOth,lid1Oth) );
 
                         if (    ( invDist > _Scalar(0.) )
                              && ( prim.getTag(_PrimitiveT::TAGS::   DIR_GID) != prim1.getTag(_PrimitiveT::TAGS::DIR_GID) )
@@ -572,6 +585,7 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
                              && ( prim.getTag(_PrimitiveT::TAGS::       GID) != prim1.getTag(_PrimitiveT::TAGS::    GID) ) // we don't want to pollute problem with unnecessary edges
                            )
                         {
+                            std::cout << "adding spatw " << primPrimDistFunctor->getSpatialWeightCoeff()/_Scalar(2.) << std::endl;
                             problem.addQObjective( varId0, varId1, primPrimDistFunctor->getSpatialWeightCoeff()/_Scalar(2.) ); // /2, since it's going to be added both ways Aron 6/1/2015
                         }
 
@@ -590,13 +604,15 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
 
         if ( clusterMode )
         {
+            throw new std::runtime_error("turn off clusterMode!");
+
             GraphT graph( lids_varids.size() );
             for ( auto it = edgesList.begin(); it != edgesList.end(); ++it )
             {
                 graph.addEdge( it->_v0, it->_v1, /* not used right now: */ it->_w );
             }
 
-            for ( int i = 0; i != lids_varids.size(); ++i )
+            for ( LidT i = 0; i != lids_varids.size(); ++i )
             {
                 if ( !problem.getVarName(i).empty() )
                     graph.addVertexName( i, problem.getVarName(i) );
@@ -610,8 +626,8 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
                 ComponentSizesT compSizes;
                 graph.getComponents( components, &compSizes );
 
-                std::map< int, std::vector<int> > clusters; // [ cluster0: [v0, v10,...], cluster1: [v3, v5, ...], ... ]
-                for ( int varId = 0; varId != components.size(); ++varId )
+                std::map< PidT, std::vector<PidT> > clusters; // [ cluster0: [v0, v10,...], cluster1: [v3, v5, ...], ... ]
+                for ( LidT varId = 0; varId != components.size(); ++varId )
                 {
                     if ( compSizes[ components[varId] ] < 2 )
                         continue;
@@ -637,14 +653,14 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
                     // work
                     typename OptProblemT::SparseMatrix cluster_constraint( 1, problem.getVarCount()+1 );
                     char name[255];
-                    int clusterId = 0;
+                    LidT clusterId = 0;
                     for ( auto it = clusters.begin(); it != clusters.end(); ++it, ++clusterId )
                     {
                         sprintf(name,"cl_%d", clusterId );
-                        int varid = problem.addVariable( OptProblemT::BOUND::RANGE, 0.0, 1.0, OptProblemT::VAR_TYPE::INTEGER
+                        LidT varid = problem.addVariable( OptProblemT::BOUND::RANGE, 0.0, 1.0, OptProblemT::VAR_TYPE::INTEGER
                                                          , OptProblemT::LINEARITY::LINEAR, name );
 
-                        for ( int i = 0; i != it->second.size(); ++i )
+                        for ( LidT i = 0; i != it->second.size(); ++i )
                         {
                             cluster_constraint.insert( 0, it->second[i] ) = -1;
                         }
@@ -676,7 +692,7 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
     {
         for ( auto dIdIt = dIdsPrimVarIds.begin(); dIdIt != dIdsPrimVarIds.end(); ++dIdIt )
         {
-            const int constraintId = problem.getConstraintCount();
+            const LidT constraintId = problem.getConstraintCount();
             // first: dId
             //        didsVarIds[didIt->first] is the varId for this direction
             // second: vector< varId > of primitives with that Id
@@ -685,7 +701,7 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
             std::vector<SparseEntry> quadConstraints;
 
             // add 1 for each primitive variable
-            for ( int i = 0; i != dIdIt->second.size(); ++i )
+            for ( LidT i = 0; i != dIdIt->second.size(); ++i )
             {
                 // dIdIt->second[i]: prim_i
 
@@ -697,7 +713,7 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
                                  , /* lower_limit: */ 0
                                  , /* upper_limit: */ problem.getINF()
                                  , /*      coeffs: */ &cluster_constraint );
-            for ( int j = 0; j != quadConstraints.size(); ++j )
+            for ( LidT j = 0; j != quadConstraints.size(); ++j )
                 problem.addQConstraint( constraintId, quadConstraints[j].row(), quadConstraints[j].col(), quadConstraints[j].value() );
         }
 
@@ -910,7 +926,7 @@ namespace problemSetup {
         typedef typename _AssocT::key_type      IntPair;        // <lid,lid1> pair to retrieve the linear index of a variable in the problem using lids_varids
         typedef typename _OptProblemT::Scalar   ProblemScalar;  // Scalar in OptProblem, usually has to be double because of the implementation
         typedef std::vector<ProblemScalar>      RowInA;         // "A" is the constraint matrix
-        std::pair<int,int> stats(0,0); // debug
+        std::pair<PidT,PidT> stats(0,0); // debug
 
         int err = EXIT_SUCCESS;
 
@@ -931,7 +947,7 @@ namespace problemSetup {
         {
             if ( !prims[lid].size() ) continue;
             // cache patch group id
-            const int gid = prims[lid].at(0).getTag(_PrimitiveT::TAGS::GID);
+            const GidT gid = prims[lid].at(0).getTag(_PrimitiveT::TAGS::GID);
             // check for population size
 //            if ( populations[gid].size() < pop_limit )
 //            { // small patch
@@ -1097,8 +1113,8 @@ namespace problemSetup {
         // INSTANCES
         // added 17/09/2014 by Aron
         // modified 22/09/2014 by Aron
-        std::map< int, int > dir_instances;
-        int active_count = 0;
+        std::map< GidT, LidT > dir_instances;
+        LidT active_count = 0;
         for ( size_t lid = 0; lid != prims.size(); ++lid )
             for ( size_t lid1 = 0; lid1 != prims[lid].size(); ++lid1 )
             {
@@ -1120,7 +1136,7 @@ namespace problemSetup {
             }
 
             // cache patch group id to match with point group ids
-            const int gid = prims[lid][0].getTag( _PrimitiveT::TAGS::GID );
+            const GidT gid = prims[lid][0].getTag( _PrimitiveT::TAGS::GID );
 
             // for each direction
             for ( size_t lid1 = 0; lid1 < prims[lid].size(); ++lid1 )
@@ -1177,7 +1193,7 @@ namespace problemSetup {
                 // prefer dominant directions
                 if ( freq_weight > _Scalar(0.) )
                 {
-                    const int dir_gid = prims[lid][lid1].getTag( _PrimitiveT::TAGS::GID );
+                    const DidT dir_gid = prims[lid][lid1].getTag( _PrimitiveT::TAGS::GID );
 
                     if ( verbose && dir_instances[dir_gid] )
                         std::cout << "[" << __func__ << "]: " << "changed " << coeff << " to ";

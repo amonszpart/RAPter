@@ -51,7 +51,8 @@ Solver::solve( int    argc
     int                                   bmode         = 0; // Bonmin solver mode, B_Bb by default
     std::string                           rel_out_path  = ".";
     std::string                           x0_path       = "";
-    int                                   attemptCount    = 0;
+    int                                   attemptCount  = 0;
+    std::string                           energy_path        = "energy.csv";
 
     // parse
     {
@@ -137,7 +138,8 @@ Solver::solve( int    argc
 
         // select solver
         typedef double OptScalar; // Mosek, and Bonmin uses double internally, so that's what we have to do...
-        typedef qcqpcpp::OptProblem<OptScalar> OptProblemT;
+        typedef qcqpcpp::OptProblem<OptScalar>  OptProblemT;
+        typedef OptProblemT::SparseMatrix       SparseMatrix;
         OptProblemT *p_problem = NULL;
         if ( EXIT_SUCCESS == err )
         {
@@ -291,7 +293,7 @@ Solver::solve( int    argc
 
                     // save selected primitives
                     _PrimitiveContainerT out_prims( 1 );
-                    int prim_id = 0;
+                    LidT prim_id = 0;
                     for ( size_t l = 0; l != prims.size(); ++l )
                         for ( size_t l1 = 0; l1 != prims[l].size(); ++l1 )
                         {
@@ -322,7 +324,7 @@ Solver::solve( int    argc
                         } // ... for l1
                     std::cout << std::endl;
 
-                    const int clusterVarsStart = prim_id;
+                    const LidT clusterVarsStart = prim_id;
                     std::cout << "clusterVarsStart: " << clusterVarsStart << std::endl;
                     // add rest of nodes (cluster_nodes)
                     {
@@ -344,12 +346,12 @@ Solver::solve( int    argc
                     // go over constraints
                     {
                         typedef typename OptProblemT::SparseMatrix SparseMatrix;
-                        for ( int j = 0; j != p_problem->getConstraintCount(); ++j )
+                        for ( LidT j = 0; j != p_problem->getConstraintCount(); ++j )
                         {
                             SparseMatrix Qk = p_problem->getQuadraticConstraintsMatrix( j );
                             if ( !Qk.nonZeros() ) continue;
 
-                            for ( int row = 0; row != Qk.outerSize(); ++row )
+                            for ( LidT row = 0; row != Qk.outerSize(); ++row )
                             {
                                 for ( typename SparseMatrix::InnerIterator it(Qk,row); it; ++it )
                                 {
@@ -389,7 +391,25 @@ Solver::solve( int    argc
                 {
                     std::cout << "[" << __func__ << "]: " << "You didn't provide candidates, could not save primitives" << std::endl;
                 } // it no --candidates
-            }
+
+                // calc Energy
+                {
+                    std::string parent_path = boost::filesystem::path(project_path).parent_path().string();
+                    SparseMatrix xOut( x_out.size(), 1 );
+                    size_t varId = 0;
+                    for ( auto it = x_out.begin(); it != x_out.end(); ++it, ++varId )
+                        xOut.insert( varId, 0 ) = *it;
+
+                    OptScalar dataC     = (xOut.transpose() * p_problem->getLinObjectivesMatrix()).eval().coeff(0,0);
+                    OptScalar pairwiseC = (xOut.transpose() * p_problem->getQuadraticObjectivesMatrix() * xOut ).eval().coeff(0,0);
+                    std::cout << "E = " << dataC + pairwiseC << " = "
+                              << dataC << " (data) + " << pairwiseC << "(pw)"
+                              << std::endl;
+                    std::ofstream fenergy( parent_path + "/" + energy_path, std::ofstream::out | std::ofstream::app );
+                    fenergy << dataC + pairwiseC << "," << dataC << "," << pairwiseC << "," << 0 << std::endl;
+                    fenergy.close();
+                } //...calcEnergy
+            } //...if exit_success (solved)
 
         } //...problem.optimize()
 

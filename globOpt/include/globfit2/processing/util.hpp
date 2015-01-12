@@ -9,6 +9,7 @@
 #include "globfit2/util/containers.hpp" // add()
 #include "globfit2/simple_types.h"      // GidT
 #include "pcl/search/kdtree.h"
+#include "globfit2/simple_types.h"
 
 // #include "pcl/common/common.h" //debug: getminmax3D
 
@@ -109,7 +110,7 @@ namespace GF2 {
         {
             typedef typename _PrimitiveContainerT::iterator outer_iterator;
 
-            int ret = 0;
+            LidT ret = 0;
 
             // for all patches
             for ( outer_iterator outer_it  = primitives.begin();
@@ -134,12 +135,12 @@ namespace GF2 {
                  >
         inline Eigen::Matrix<_Scalar,3,1> getCentroid( _PointContainerT const& points, _IndicesContainerT const* indices = NULL )
         {
-            const int N = indices ? indices->size() : points.size();
+            const LidT N = indices ? indices->size() : points.size();
 
             Eigen::Matrix<_Scalar,3,1> centroid( Eigen::Matrix<_Scalar,3,1>::Zero() );
-            for ( int pid_id = 0; pid_id != N; ++pid_id )
+            for ( PidT pid_id = 0; pid_id != N; ++pid_id )
             {
-                const unsigned int pid = indices ? (*indices)[pid_id] : pid_id;
+                const unsigned long pid = indices ? (*indices)[pid_id] : pid_id;
                 centroid += points[ pid ].template pos();
             }
 
@@ -171,13 +172,13 @@ namespace GF2 {
                                           , _IndicesContainerT    const* indices   = NULL
                                           , _WeightsContainerT    const* weights   = NULL )
         {
-            const int N = indices ? indices->size() : points.size();
+            const LidT N = indices ? indices->size() : points.size();
 
             cov.setZero();
             _Scalar sumW( 0. );
             for ( size_t point_id = 0; point_id != N; ++point_id )
             {
-                const unsigned int pid = indices ? (*indices)[point_id] : point_id;
+                const ULidT pid = indices ? (*indices)[point_id] : point_id;
                 _Position pos = points[ pid ].template pos() - centroid; // eigen expression template
 
                 if ( weights )
@@ -211,21 +212,21 @@ namespace GF2 {
                  , class _FunctorT
                  , class _PrimitiveContainerT
                  >
-        int filterPrimitives( _PrimitiveContainerT  const& primitives
+        LidT filterPrimitives( _PrimitiveContainerT  const& primitives
                             , _FunctorT                  & functor
                             )
         {
             typedef typename _PrimitiveContainerT::const_iterator       outer_const_iterator;
             typedef typename _InnerPrimitiveContainerT::const_iterator  inner_const_iterator;
 
-            int ret = 0;
+            LidT ret = 0;
 
             // for all patches
             for ( outer_const_iterator outer_it  = primitives.begin();
                                        outer_it != primitives.end();
                                      ++outer_it )
             {
-                int lid = 0;
+               LidT lid = 0;
                 for (  inner_const_iterator inner_it  = containers::valueOf<_PrimitiveT>(outer_it).begin();
                                             inner_it != containers::valueOf<_PrimitiveT>(outer_it).end();
                                           ++inner_it, ++lid )
@@ -252,13 +253,13 @@ namespace GF2 {
                  , class _FunctorT
                  , class _PrimitiveContainerT
                  >
-        int erasePrimitives( _PrimitiveContainerT  & primitives
+        LidT erasePrimitives( _PrimitiveContainerT  & primitives
                             , _FunctorT            & functor
                             )
         {
             typedef typename _PrimitiveContainerT::iterator outer_iterator;
 
-            int ret = 0;
+            LidT ret = 0;
 
             // for all patches
             for ( outer_iterator outer_it  = primitives.begin();
@@ -310,7 +311,7 @@ namespace GF2 {
                  , class _PointContainerT
                  , class _PrimitiveContainerT
                  >
-        int eraseNonAssignedPrimitives( _PrimitiveContainerT   & primitives,
+        LidT eraseNonAssignedPrimitives( _PrimitiveContainerT   & primitives,
                                          _PointContainerT const & points,
                                         bool preserveSmall) {
             // In a first run over all points, collect all used GID
@@ -318,7 +319,7 @@ namespace GF2 {
             typedef typename _PointContainerT::value_type PointT;
 
             struct {
-                std::set<int> gids;
+                std::set<GidT> gids;
                 bool _preserveSmall;
 
                 //! Return true when the id cannot be found in the set -> induce destruction
@@ -364,7 +365,7 @@ namespace GF2 {
             typedef Eigen::Matrix<Scalar,3,1> Position;
 
             // number of points to take into account
-            const int N = p_indices ? p_indices->size() : cloud.size();
+            const PidT N = p_indices ? p_indices->size() : cloud.size();
 
             // skip, if not enought points found to fit to
             if ( N < 2 ) { std::cerr << "[" << __func__ << "]: " << "can't fit line to less then 2 points..." << std::endl; return EXIT_FAILURE; }
@@ -411,7 +412,7 @@ namespace GF2 {
                 Scalar sumW = 0;
                 for ( size_t point_id = 0; point_id != N; ++point_id )
                 {
-                    const unsigned int id = p_indices ? (*p_indices)[point_id] : point_id;
+                    const unsigned long id = p_indices ? (*p_indices)[point_id] : point_id;
                     centroid += cloud[ id ].pos() * weights[ point_id ];
                     sumW     +=                     weights[ point_id ];
                 }
@@ -429,7 +430,7 @@ namespace GF2 {
                 Eigen::Matrix<Scalar,3,3> cov( Eigen::Matrix<Scalar,3,3>::Zero() );
                 for ( size_t point_id = 0; point_id != N; ++point_id )
                 {
-                    const unsigned int id = p_indices ? (*p_indices)[point_id] : point_id;
+                    const unsigned long id = p_indices ? (*p_indices)[point_id] : point_id;
                     Position pos = cloud[ id ].template pos() - centroid; // eigen expression template
                     cov   += pos * pos.transpose() * weights[ point_id ];
                 }                
@@ -527,7 +528,7 @@ namespace GF2 {
                                 )
         {
             // prepare output
-            const int   N              = indices_arg ? indices_arg->size() : cloud->size();
+            const PidT   N              = indices_arg ? indices_arg->size() : cloud->size();
             const bool  doRadiusSearch = radius > 0.f;
 
             neighbour_indices.resize( N );
@@ -546,7 +547,7 @@ namespace GF2 {
 
             MyPointT            searchPoint;
             std::vector<float>  sqr_dists;
-            int                 found_points_count = 0;
+            PidT                found_points_count = 0;
             for ( size_t pid = 0; pid != N; ++pid )
             {
                 // copy search point

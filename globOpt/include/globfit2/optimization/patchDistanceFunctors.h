@@ -105,7 +105,7 @@ struct AbstractPatchPatchDistanceFunctorT
 
     // relay spatial query to template class _SpatialpointPatchDistanceFunctorT
     template <class _PointT /*= typename _PointContainerT::value_type*/, class _PatchT, class _PointContainerT>
-    static inline _Scalar evalSpatial( int const point_id, _PatchT const& patch0, _PointContainerT const& points )
+    static inline _Scalar evalSpatial( PidT const point_id, _PatchT const& patch0, _PointContainerT const& points )
     {
         _PatchT patch1; patch1.push_back( typename _PatchT::value_type( point_id, -1 ) );
         return _SpatialPatchPatchDistanceFunctorT::template eval<_PointT>( patch0, patch1, points, NULL );

@@ -39,9 +39,9 @@ namespace GF2
                     std::cerr << "[" << __func__ << "]: " << "out_prims not empty...it was assumed to be empty..." << std::endl;
             }
 
-            inline int eval( _PrimitiveT const& prim, LidT lid )
+            inline LidT eval( _PrimitiveT const& prim, LidT lid )
             {
-                const int gid = prim.getTag(_PrimitiveT::TAGS::GID);
+                const GidT gid = prim.getTag(_PrimitiveT::TAGS::GID);
                 //const GidLid gidLid( gid, lid );
 
                 // all promoted, and their derivatives fail here, since they have it set to the original lid
@@ -100,7 +100,7 @@ namespace GF2
         typedef typename _PrimitiveT::Scalar Scalar;
 
         // filter similar
-        for ( int i = 0; i != out_prims[gid].size(); ++i )
+        for ( LidT i = 0; i != out_prims[gid].size(); ++i )
         {
             if ( cand.getTag(_PrimitiveT::TAGS::DIR_GID) == out_prims[gid][i].getTag(_PrimitiveT::TAGS::DIR_GID) )
             {
@@ -138,7 +138,7 @@ namespace GF2
         ++nlines;                                                     // keep track of output size
 
         // debug
-        int tmp_size = copied[ cand.getTag(_PrimitiveT::TAGS::GID) ].size();
+        LidT tmp_size = copied[ cand.getTag(_PrimitiveT::TAGS::GID) ].size();
 
         // keep track of instances
         DidAid didAid( cand.getTag(_PrimitiveT::TAGS::DIR_GID),closest_angle_id ); // direction id, closest angle id
@@ -216,7 +216,7 @@ namespace GF2
 //                }
 
         // prim0 needs to be close to prim1 in angle
-        if ( notPROMOTED(gid0,lid0) ) // don't bias small patches, copy best match to promoted patches
+        //if ( notPROMOTED(gid0,lid0) ) // don't bias small patches, copy best match to promoted patches
             add0 &= angdiff0 < angle_limit;
 
         // was this direction-angle pair already covered?
@@ -226,6 +226,9 @@ namespace GF2
         // are we still adding it?
         if ( !add0 )
             return false;
+
+        if ( gid0 == 57755 && (gid1 == 60691) )
+            std::cout << "itt" << std::endl;
 
         // can candidate be created?
         _PrimitiveT cand0;
@@ -411,7 +414,7 @@ namespace GF2
                                 , bool                              const  keepSingles
                                 , bool                              const  allowPromoted )
     {
-        const bool verbose = false;
+        const bool verbose = true;
 
         // _________ typedefs _________
 
@@ -422,8 +425,8 @@ namespace GF2
         //typedef typename outer_const_iterator::value_type::const_iterator inner_const_iterator;
         typedef typename InnerContainerT::const_iterator                   inner_const_iterator;
         typedef typename InnerContainerT::iterator                         inner_iterator;
-        typedef          std::map< GidLid, int >                           GeneratedMapT;
-        typedef          std::pair<std::pair<int,int>,int>                 GeneratedEntryT;
+        typedef          std::map< GidLid, LidT >                          GeneratedMapT;
+        typedef          std::pair<std::pair<GidT,LidT>,unsigned long>     GeneratedEntryT;
         typedef          containers::PrimitiveContainer<_PrimitiveT>       PrimitiveMapT; //!< Iterable by single loop using PrimitiveMapT::Iterator
 
         // cache, so that it can be turned off
@@ -454,12 +457,12 @@ namespace GF2
         processing::getPopulations( populations, points );
 
         // debug
-        typedef pcl::PointXYZRGB PCLPointT;
-        typedef pcl::PointCloud<PCLPointT> PCLCloudT;
-        typedef typename PCLCloudT::Ptr PCLCloudPtrT;
-        PCLCloudPtrT cloud( new PCLCloudT() );
-        _PointPrimitiveT::template toCloud<PCLCloudPtrT, _PointContainerT, PCLPointAllocator<_PointPrimitiveT::Dim> >
-                ( cloud, points );
+//        typedef pcl::PointXYZRGB PCLPointT;
+//        typedef pcl::PointCloud<PCLPointT> PCLCloudT;
+//        typedef typename PCLCloudT::Ptr PCLCloudPtrT;
+//        PCLCloudPtrT cloud( new PCLCloudT() );
+//        _PointPrimitiveT::template toCloud<PCLCloudPtrT, _PointContainerT, PCLPointAllocator<_PointPrimitiveT::Dim> >
+//                ( cloud, points );
 
         // _________ (1) promotion _________
 
@@ -473,6 +476,7 @@ namespace GF2
             // either all (patches), or none (second iteration) have to be unset
             int unset_count = 0, input_count = 0;
             // for all input primitives
+            // #pragma omp parallel for private(spatialSignif)
             for ( outer_iterator outer_it0 = inPrims.begin(); outer_it0 != inPrims.end(); ++outer_it0 )
             {
                 int gid = (*outer_it0).first;
@@ -481,11 +485,14 @@ namespace GF2
                 {
                     // cache vars
                     _PrimitiveT& prim         = *inner_it0;
-                    int          prim_status  = prim      .getTag(_PrimitiveT::TAGS::STATUS);
+                    int          prim_status  = prim.getTag(_PrimitiveT::TAGS::STATUS);
 
                     // bookkeeping
                     if ( prim_status == _PrimitiveT::STATUS_VALUES::UNSET )
+                    {
+//#                       pragma omp critical CRIT_UNSET_COUNT
                         ++unset_count;
+                    }
 
                     // if unset (first iteration) or small (second+ iteration ), threshold it
                     if (    (prim_status == _PrimitiveT::STATUS_VALUES::SMALL)      // promotable OR
@@ -496,7 +503,10 @@ namespace GF2
                         {
                             // store primitives, that have just been promoted to large from small
                             if ( (prim_status == _PrimitiveT::STATUS_VALUES::SMALL) )
+                            {
+//#                               pragma omp critical CRIT_UNSET_PROMOTED
                                 promoted.insert( GidLid(gid,lid) );
+                            }
 
                             prim.setTag( _PrimitiveT::TAGS::STATUS, _PrimitiveT::STATUS_VALUES::UNSET ); // set to unset, so that formulate can distinguish between promoted and
                         }
@@ -718,8 +728,8 @@ namespace GF2
                         // cache outer primitive
                         _PrimitiveT const& prim1 = *inner_it;
 
-                        if ( (angleIt->second._prim->getTag(_PrimitiveT::TAGS::DIR_GID) == 253) && (prim1.getTag(_PrimitiveT::TAGS::GID) == 147) )
-                            std::cout << "here" << std::endl;
+                        if ( /*(angleIt->second._prim->getTag(_PrimitiveT::TAGS::DIR_GID) == 253) && */(prim1.getTag(_PrimitiveT::TAGS::GID) == 57755) )
+                            std::cout << "here, adding alias to 57755" << std::endl;
 
                         // copy prim0 (the alias) to all compatible receivers given allowedAngles.
                         addCandidate<_PrimitivePrimitiveAngleFunctorT,AliasesT<_PrimitiveT,_Scalar> >(
@@ -735,7 +745,7 @@ namespace GF2
         int ret = EXIT_SUCCESS;
         if ( (var_limit > 0) && (nlines > var_limit) )
         {
-            int active_count = nlines; // records how many variables actives generated among themselves, these we cannot filter
+            LidT active_count = nlines; // records how many variables actives generated among themselves, these we cannot filter
 
             // (1) sort promoted patches descending based on how many variables they generated
             // in: generated, containing < <gid,lid> , generated count> entries for promoted locations only (no actives)
@@ -758,6 +768,21 @@ namespace GF2
             {
                 std::cerr << "[" << __func__ << "]: " << "!!!!!!!! ALL " << nlines << " ACTIVE or ACTIVEs " << active_count << " > " << var_limit << "var_limit, cannot limit vars! !!!!!!!" << std::endl;
                 ret = -1;
+                // demote!
+                LidT demoted = 0;
+                for ( auto pit = promoted.begin(); pit != promoted.end(); ++pit )
+                {
+                    _PrimitiveT &prim = inPrims.at( (*pit).first  )
+                                               .at( (*pit).second );
+
+                    if ( prim.getTag(_PrimitiveT::TAGS::STATUS ) == _PrimitiveT::STATUS_VALUES::ACTIVE )
+                        std::cerr << "demoting active " << prim.getTag(_PrimitiveT::TAGS::GID) << "(gid) ????" << std::endl;
+                    else
+                        ++demoted;
+
+                    prim.setTag(_PrimitiveT::TAGS::STATUS, _PrimitiveT::STATUS_VALUES::SMALL);
+                }
+                std::cout << "[" << __func__ << "]: " << "demoted " << demoted << " primitives" << std::endl;
             }
             else
             {
@@ -770,8 +795,8 @@ namespace GF2
                 std::cout << "var_limit: " << var_limit << ", active: " << active_count << ", nlines: " << nlines << std::endl;
                 std::set< GidLid > chosen;
                 {
-                    int vars = active_count;
-                    for ( int i = 0; i != ranks.size(); ++i )
+                    LidT vars = active_count;
+                    for ( LidT i = 0; i != ranks.size(); ++i )
                     {
                         vars += ranks[i].second;
                         if ( vars <= var_limit )
@@ -793,7 +818,7 @@ namespace GF2
 
         // ___________ (6) Make sure allowed angles stick _______________
         std::map<DidT,LidT> directionPopulation; // counts, how many candidates have a direction
-        for ( typename PrimitiveMapT::Iterator primIt(outPrims); primIt.hasNext(); primIt.step() )
+        for ( typename PrimitiveMapT::Iterator primIt(outPrims); primIt.hasNext() && (ret != -1); primIt.step() )
         {
             // _PrimitiveT prim = *primIt;
             DidT    const dId      = primIt->getTag( _PrimitiveT::TAGS::DIR_GID   );
@@ -813,7 +838,7 @@ namespace GF2
         } //...for outPrims
 
         // 6.3 Filter primitives with only one direction among candidates
-        if ( !keepSingles )
+        if ( !keepSingles  && (ret != -1) )
         {
             std::map<GidT,LidT> thrownCnt;
             auto tmp = outPrims; outPrims.clear();
@@ -826,7 +851,11 @@ namespace GF2
                      || (    (populations.find(primIt.getGid()) != populations.end()      )
                           && (populations[primIt.getGid()].size() > params.patch_population_limit * 2) ) // add if, at least double poplimit points in it
                    )
+                {
+                    if ( primIt.getGid() == 57755 )
+                        std::cout << "adding " << primIt.getDid() << " to " << primIt.getGid() << std::endl;
                     containers::add( outPrims, primIt.getGid(), *primIt );
+                }
                 else
                 {
                     thrownCnt[primIt.getGid()]++;

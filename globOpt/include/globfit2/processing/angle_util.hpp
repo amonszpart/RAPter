@@ -138,7 +138,7 @@ namespace GF2
 
     } //...deduceGenerators
 
-    typedef std::map< DidT, std::map<int,int> > DirAngleMapT; // <did, <angle_id, count> >
+    typedef std::map< DidT, std::map<int,LidT> > DirAngleMapT; // <did, <angle_id, count> >
 
     template <typename _PrimitiveT, typename _PrimitiveContainerT, typename _AnglesT>
     struct DirAnglesFunctorInner
@@ -152,7 +152,7 @@ namespace GF2
 
         inline DirAnglesFunctorInner( _PrimitiveT const& prim0, _AnglesT const& angles, DirAngleMapT &dirAngles ) : _prim0( prim0 ), _angles( angles ), _dirAngles(dirAngles) {}
 
-        inline int eval( _PrimitiveT const& prim1, int /*lid*/ )
+        inline LidT eval( _PrimitiveT const& prim1, LidT /*lid*/ )
         {
             if (
                     ( _prim0.getTag(_PrimitiveT::TAGS::DIR_GID) != prim1.getTag(_PrimitiveT::TAGS::DIR_GID) ) // have same ID
@@ -182,7 +182,7 @@ namespace GF2
         _AnglesT             const& _angles;
         DirAngleMapT              & _dirAngles; // output
 
-        inline int eval( _PrimitiveT const& prim, int /*lid*/ )
+        inline LidT eval( _PrimitiveT const& prim, LidT /*lid*/ )
         {
             DirAnglesFunctorInner<_PrimitiveT,_PrimitiveContainerT,_AnglesT> _innerFunctor( prim, _angles, _dirAngles );
             return processing::filterPrimitives<_PrimitiveT,typename _PrimitiveContainerT::mapped_type>( _primitives, _innerFunctor );
@@ -233,7 +233,7 @@ namespace GF2
         typedef          DirAngleMapT::mapped_type  AngleHistogramT;
         typedef typename AnglesT::value_type        Scalar;
 
-        std::map<Scalar,int> votes; // { <angle_gen, votecount>, ... }
+        std::map<Scalar,LidT> votes; // { <angle_gen, votecount>, ... }
 
         // for all did-s
         DirAngleMapT::const_iterator end_it = dirAngles.end();
@@ -248,7 +248,7 @@ namespace GF2
             if ( allowedAngles.find(did) != allowedAngles.end() ) continue;
 
             // deduce generators \todo Aron: replace with deduceGenerators? maybe not doing the same...
-            int j = 0;
+            size_t j = 0;
             for ( AngleHistogramT::const_iterator hist_it = hist.begin(); hist_it != hist.end(); ++hist_it, ++j )
             {
                 // first: angle_id
@@ -263,7 +263,7 @@ namespace GF2
                     std::cout << "[" << __func__ << "]: " << "not skipping " << angles[angle_id] << std::endl;
 
                 // for each generator, check, if the angle is an integer divisor of it
-                for ( int i = 0; i != angle_gens.size(); ++i )
+                for ( size_t i = 0; i != angle_gens.size(); ++i )
                 {
                     // skip parallel
                     if ( (angle_gens[i] == Scalar(0.)) || (angle_gens[i] == Scalar(M_PI)) )
@@ -291,7 +291,7 @@ namespace GF2
             } //...for voted angle_ids
 
             // select max voted angle \todo change to probabilistic
-            int max_vote = 0, max_vote_id = 0;
+            LidT max_vote = 0, max_vote_id = 0;
             if ( verbose ) std::cout << "[" << __func__ << "]: " << "votes:";
             for ( auto vote_it = votes.begin(); vote_it != votes.end(); ++vote_it )
             {

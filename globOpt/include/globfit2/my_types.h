@@ -40,8 +40,9 @@ namespace GF2
 
 #if GF2_USE_PCL
 
-    typedef pcl::PointCloud<pcl::PointNormal> PclCloudT;
-    typedef typename pcl::PointCloud<pcl::PointNormal>::Ptr PclCloudPtrT;
+    typedef          pcl::PointNormal                PclPointT;
+    typedef          pcl::PointCloud<PclPointT>      PclCloudT;
+    typedef typename pcl::PointCloud<PclPointT>::Ptr PclCloudPtrT;
 
     template <int Dim>
     struct PCLPointAllocator

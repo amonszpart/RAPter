@@ -253,6 +253,7 @@ namespace GF2
                      , AnglesT                                                            const& angle_gens
                      , int                                                                const  patch_pop_limit
                      //, _Scalar                                                            const  dir_id_bias
+                     , PclCloudPtrT                                                            & pclCloud
                      , int                                                                const  verbose                = 0
                      , _Scalar                                                            const  freq_weight            = 0.
                      , int                                                                const  clusterMode            = 1
