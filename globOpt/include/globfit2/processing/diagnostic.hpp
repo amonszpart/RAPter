@@ -31,7 +31,7 @@ namespace GF2
             template <class _Derived>
             void setNodePos( LidT nodeId, _Derived const& pos )
             {
-                _nodePos[ nodeId ] = pos.template head(2);
+                _nodePos[ nodeId ] = pos.template head(2).template cast<_Scalar>();
             }
 
             void addEdge( LidT v0, LidT v1 )
