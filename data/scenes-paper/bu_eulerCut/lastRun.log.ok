@@ -1,0 +1,990 @@
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims patches.csv -a points_primitives.csv --angle-gens 0 --patch-pop-limit 3
+
+../globOptVis --show3D --scale 0.004 --use-tags --pop-limit 3 -p patches.csv -a points_primitives.csv --normals 100 --title "GlobOpt - PreMerge output" --no-clusters --no-pop --no-rel --bg-colour .9,.9,.9 --angle-gens 0 &
+
+../glob_opt --generate3D --allow-promoted --keep-singles -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p patches.csv --assoc points_primitives.csv --angle-gens 0 --small-thresh-mult 64 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it0.csv -a points_primitives.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it0.csv
+
+python ../readGraphProperties.py primitives_it0.bonmin.csv points_primitives.csv cloud.ply --angles 0 --iteration 0 &
+
+../glob_opt --represent3D -p primitives_it0.bonmin.csv -a points_primitives.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 64 -p representatives_it0.csv --assoc points_representatives_it0.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it0.csv -a points_representatives_it0.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it0.csv
+
+../glob_opt --representBack3D --repr representatives_it0.bonmin.csv -p primitives_it0.bonmin.csv -a points_primitives.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it0.bonmin.csv -a points_primitives.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D --allow-promoted --keep-singles -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it0.csv --assoc points_primitives_it0.csv --angle-gens 0 --small-thresh-mult 32 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it1.csv -a points_primitives_it0.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it1.csv
+
+python ../readGraphProperties.py primitives_it1.bonmin.csv points_primitives_it0.csv cloud.ply --angles 0 --iteration 1 &
+
+../glob_opt --represent3D -p primitives_it1.bonmin.csv -a points_primitives_it0.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 32 -p representatives_it1.csv --assoc points_representatives_it1.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it1.csv -a points_representatives_it1.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it1.csv
+
+../glob_opt --representBack3D --repr representatives_it1.bonmin.csv -p primitives_it1.bonmin.csv -a points_primitives_it0.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it1.bonmin.csv -a points_primitives_it0.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D --allow-promoted -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it1.csv --assoc points_primitives_it1.csv --angle-gens 0 --small-thresh-mult 16 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it2.csv -a points_primitives_it1.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it2.csv
+
+python ../readGraphProperties.py primitives_it2.bonmin.csv points_primitives_it1.csv cloud.ply --angles 0 --iteration 2 &
+
+../glob_opt --represent3D -p primitives_it2.bonmin.csv -a points_primitives_it1.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 16 -p representatives_it2.csv --assoc points_representatives_it2.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it2.csv -a points_representatives_it2.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it2.csv
+
+../glob_opt --representBack3D --repr representatives_it2.bonmin.csv -p primitives_it2.bonmin.csv -a points_primitives_it1.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it2.bonmin.csv -a points_primitives_it1.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D --allow-promoted -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it2.csv --assoc points_primitives_it2.csv --angle-gens 0 --small-thresh-mult 16 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it3.csv -a points_primitives_it2.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it3.csv
+
+python ../readGraphProperties.py primitives_it3.bonmin.csv points_primitives_it2.csv cloud.ply --angles 0 --iteration 3 &
+
+../glob_opt --represent3D -p primitives_it3.bonmin.csv -a points_primitives_it2.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 16 -p representatives_it3.csv --assoc points_representatives_it3.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it3.csv -a points_representatives_it3.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it3.csv
+
+../glob_opt --representBack3D --repr representatives_it3.bonmin.csv -p primitives_it3.bonmin.csv -a points_primitives_it2.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it3.bonmin.csv -a points_primitives_it2.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it3.csv --assoc points_primitives_it3.csv --angle-gens 0 --small-thresh-mult 16 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it4.csv -a points_primitives_it3.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it4.csv
+
+python ../readGraphProperties.py primitives_it4.bonmin.csv points_primitives_it3.csv cloud.ply --angles 0 --iteration 4 &
+
+../glob_opt --represent3D -p primitives_it4.bonmin.csv -a points_primitives_it3.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 16 -p representatives_it4.csv --assoc points_representatives_it4.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it4.csv -a points_representatives_it4.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it4.csv
+
+../glob_opt --representBack3D --repr representatives_it4.bonmin.csv -p primitives_it4.bonmin.csv -a points_primitives_it3.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it4.bonmin.csv -a points_primitives_it3.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it4.csv --assoc points_primitives_it4.csv --angle-gens 0 --small-thresh-mult 16 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it5.csv -a points_primitives_it4.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it5.csv
+
+python ../readGraphProperties.py primitives_it5.bonmin.csv points_primitives_it4.csv cloud.ply --angles 0 --iteration 5 &
+
+../glob_opt --represent3D -p primitives_it5.bonmin.csv -a points_primitives_it4.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 16 -p representatives_it5.csv --assoc points_representatives_it5.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it5.csv -a points_representatives_it5.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it5.csv
+
+../glob_opt --representBack3D --repr representatives_it5.bonmin.csv -p primitives_it5.bonmin.csv -a points_primitives_it4.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it5.bonmin.csv -a points_primitives_it4.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it5.csv --assoc points_primitives_it5.csv --angle-gens 0 --small-thresh-mult 8 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it6.csv -a points_primitives_it5.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it6.csv
+
+python ../readGraphProperties.py primitives_it6.bonmin.csv points_primitives_it5.csv cloud.ply --angles 0 --iteration 6 &
+
+../glob_opt --represent3D -p primitives_it6.bonmin.csv -a points_primitives_it5.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 8 -p representatives_it6.csv --assoc points_representatives_it6.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it6.csv -a points_representatives_it6.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it6.csv
+
+../glob_opt --representBack3D --repr representatives_it6.bonmin.csv -p primitives_it6.bonmin.csv -a points_primitives_it5.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it6.bonmin.csv -a points_primitives_it5.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it6.csv --assoc points_primitives_it6.csv --angle-gens 0 --small-thresh-mult 8 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it7.csv -a points_primitives_it6.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it7.csv
+
+python ../readGraphProperties.py primitives_it7.bonmin.csv points_primitives_it6.csv cloud.ply --angles 0 --iteration 7 &
+
+../glob_opt --represent3D -p primitives_it7.bonmin.csv -a points_primitives_it6.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 8 -p representatives_it7.csv --assoc points_representatives_it7.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it7.csv -a points_representatives_it7.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it7.csv
+
+../glob_opt --representBack3D --repr representatives_it7.bonmin.csv -p primitives_it7.bonmin.csv -a points_primitives_it6.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it7.bonmin.csv -a points_primitives_it6.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it7.csv --assoc points_primitives_it7.csv --angle-gens 0 --small-thresh-mult 8 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it8.csv -a points_primitives_it7.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it8.csv
+
+python ../readGraphProperties.py primitives_it8.bonmin.csv points_primitives_it7.csv cloud.ply --angles 0 --iteration 8 &
+
+../glob_opt --represent3D -p primitives_it8.bonmin.csv -a points_primitives_it7.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 8 -p representatives_it8.csv --assoc points_representatives_it8.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it8.csv -a points_representatives_it8.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it8.csv
+
+../glob_opt --representBack3D --repr representatives_it8.bonmin.csv -p primitives_it8.bonmin.csv -a points_primitives_it7.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it8.bonmin.csv -a points_primitives_it7.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it8.csv --assoc points_primitives_it8.csv --angle-gens 0 --small-thresh-mult 8 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it9.csv -a points_primitives_it8.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it9.csv
+
+python ../readGraphProperties.py primitives_it9.bonmin.csv points_primitives_it8.csv cloud.ply --angles 0 --iteration 9 &
+
+../glob_opt --represent3D -p primitives_it9.bonmin.csv -a points_primitives_it8.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 8 -p representatives_it9.csv --assoc points_representatives_it9.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it9.csv -a points_representatives_it9.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it9.csv
+
+../glob_opt --representBack3D --repr representatives_it9.bonmin.csv -p primitives_it9.bonmin.csv -a points_primitives_it8.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it9.bonmin.csv -a points_primitives_it8.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it9.csv --assoc points_primitives_it9.csv --angle-gens 0 --small-thresh-mult 8 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it10.csv -a points_primitives_it9.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it10.csv
+
+python ../readGraphProperties.py primitives_it10.bonmin.csv points_primitives_it9.csv cloud.ply --angles 0 --iteration 10 &
+
+../glob_opt --represent3D -p primitives_it10.bonmin.csv -a points_primitives_it9.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 8 -p representatives_it10.csv --assoc points_representatives_it10.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it10.csv -a points_representatives_it10.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it10.csv
+
+../glob_opt --representBack3D --repr representatives_it10.bonmin.csv -p primitives_it10.bonmin.csv -a points_primitives_it9.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it10.bonmin.csv -a points_primitives_it9.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it10.csv --assoc points_primitives_it10.csv --angle-gens 0 --small-thresh-mult 8 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it11.csv -a points_primitives_it10.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it11.csv
+
+python ../readGraphProperties.py primitives_it11.bonmin.csv points_primitives_it10.csv cloud.ply --angles 0 --iteration 11 &
+
+../glob_opt --represent3D -p primitives_it11.bonmin.csv -a points_primitives_it10.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 8 -p representatives_it11.csv --assoc points_representatives_it11.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it11.csv -a points_representatives_it11.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it11.csv
+
+../glob_opt --representBack3D --repr representatives_it11.bonmin.csv -p primitives_it11.bonmin.csv -a points_primitives_it10.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it11.bonmin.csv -a points_primitives_it10.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it11.csv --assoc points_primitives_it11.csv --angle-gens 0 --small-thresh-mult 4 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it12.csv -a points_primitives_it11.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it12.csv
+
+python ../readGraphProperties.py primitives_it12.bonmin.csv points_primitives_it11.csv cloud.ply --angles 0 --iteration 12 &
+
+../glob_opt --represent3D -p primitives_it12.bonmin.csv -a points_primitives_it11.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 4 -p representatives_it12.csv --assoc points_representatives_it12.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it12.csv -a points_representatives_it12.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it12.csv
+
+../glob_opt --representBack3D --repr representatives_it12.bonmin.csv -p primitives_it12.bonmin.csv -a points_primitives_it11.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it12.bonmin.csv -a points_primitives_it11.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it12.csv --assoc points_primitives_it12.csv --angle-gens 0 --small-thresh-mult 4 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it13.csv -a points_primitives_it12.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it13.csv
+
+python ../readGraphProperties.py primitives_it13.bonmin.csv points_primitives_it12.csv cloud.ply --angles 0 --iteration 13 &
+
+../glob_opt --represent3D -p primitives_it13.bonmin.csv -a points_primitives_it12.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 4 -p representatives_it13.csv --assoc points_representatives_it13.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it13.csv -a points_representatives_it13.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it13.csv
+
+../glob_opt --representBack3D --repr representatives_it13.bonmin.csv -p primitives_it13.bonmin.csv -a points_primitives_it12.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it13.bonmin.csv -a points_primitives_it12.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it13.csv --assoc points_primitives_it13.csv --angle-gens 0 --small-thresh-mult 4 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it14.csv -a points_primitives_it13.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it14.csv
+
+python ../readGraphProperties.py primitives_it14.bonmin.csv points_primitives_it13.csv cloud.ply --angles 0 --iteration 14 &
+
+../glob_opt --represent3D -p primitives_it14.bonmin.csv -a points_primitives_it13.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 4 -p representatives_it14.csv --assoc points_representatives_it14.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it14.csv -a points_representatives_it14.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it14.csv
+
+../glob_opt --representBack3D --repr representatives_it14.bonmin.csv -p primitives_it14.bonmin.csv -a points_primitives_it13.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it14.bonmin.csv -a points_primitives_it13.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it14.csv --assoc points_primitives_it14.csv --angle-gens 0 --small-thresh-mult 4 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it15.csv -a points_primitives_it14.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it15.csv
+
+python ../readGraphProperties.py primitives_it15.bonmin.csv points_primitives_it14.csv cloud.ply --angles 0 --iteration 15 &
+
+../glob_opt --represent3D -p primitives_it15.bonmin.csv -a points_primitives_it14.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 4 -p representatives_it15.csv --assoc points_representatives_it15.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it15.csv -a points_representatives_it15.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it15.csv
+
+../glob_opt --representBack3D --repr representatives_it15.bonmin.csv -p primitives_it15.bonmin.csv -a points_primitives_it14.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it15.bonmin.csv -a points_primitives_it14.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it15.csv --assoc points_primitives_it15.csv --angle-gens 0 --small-thresh-mult 4 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it16.csv -a points_primitives_it15.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it16.csv
+
+python ../readGraphProperties.py primitives_it16.bonmin.csv points_primitives_it15.csv cloud.ply --angles 0 --iteration 16 &
+
+../glob_opt --represent3D -p primitives_it16.bonmin.csv -a points_primitives_it15.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 4 -p representatives_it16.csv --assoc points_representatives_it16.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it16.csv -a points_representatives_it16.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it16.csv
+
+../glob_opt --representBack3D --repr representatives_it16.bonmin.csv -p primitives_it16.bonmin.csv -a points_primitives_it15.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it16.bonmin.csv -a points_primitives_it15.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it16.csv --assoc points_primitives_it16.csv --angle-gens 0 --small-thresh-mult 4 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it17.csv -a points_primitives_it16.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it17.csv
+
+python ../readGraphProperties.py primitives_it17.bonmin.csv points_primitives_it16.csv cloud.ply --angles 0 --iteration 17 &
+
+../glob_opt --represent3D -p primitives_it17.bonmin.csv -a points_primitives_it16.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 4 -p representatives_it17.csv --assoc points_representatives_it17.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it17.csv -a points_representatives_it17.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it17.csv
+
+../glob_opt --representBack3D --repr representatives_it17.bonmin.csv -p primitives_it17.bonmin.csv -a points_primitives_it16.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it17.bonmin.csv -a points_primitives_it16.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it17.csv --assoc points_primitives_it17.csv --angle-gens 0 --small-thresh-mult 4 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it18.csv -a points_primitives_it17.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it18.csv
+
+python ../readGraphProperties.py primitives_it18.bonmin.csv points_primitives_it17.csv cloud.ply --angles 0 --iteration 18 &
+
+../glob_opt --represent3D -p primitives_it18.bonmin.csv -a points_primitives_it17.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 4 -p representatives_it18.csv --assoc points_representatives_it18.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it18.csv -a points_representatives_it18.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it18.csv
+
+../glob_opt --representBack3D --repr representatives_it18.bonmin.csv -p primitives_it18.bonmin.csv -a points_primitives_it17.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it18.bonmin.csv -a points_primitives_it17.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it18.csv --assoc points_primitives_it18.csv --angle-gens 0 --small-thresh-mult 4 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it19.csv -a points_primitives_it18.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it19.csv
+
+python ../readGraphProperties.py primitives_it19.bonmin.csv points_primitives_it18.csv cloud.ply --angles 0 --iteration 19 &
+
+../glob_opt --represent3D -p primitives_it19.bonmin.csv -a points_primitives_it18.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 4 -p representatives_it19.csv --assoc points_representatives_it19.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it19.csv -a points_representatives_it19.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it19.csv
+
+../glob_opt --representBack3D --repr representatives_it19.bonmin.csv -p primitives_it19.bonmin.csv -a points_primitives_it18.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it19.bonmin.csv -a points_primitives_it18.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it19.csv --assoc points_primitives_it19.csv --angle-gens 0 --small-thresh-mult 4 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it20.csv -a points_primitives_it19.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it20.csv
+
+python ../readGraphProperties.py primitives_it20.bonmin.csv points_primitives_it19.csv cloud.ply --angles 0 --iteration 20 &
+
+../glob_opt --represent3D -p primitives_it20.bonmin.csv -a points_primitives_it19.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 4 -p representatives_it20.csv --assoc points_representatives_it20.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it20.csv -a points_representatives_it20.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it20.csv
+
+../glob_opt --representBack3D --repr representatives_it20.bonmin.csv -p primitives_it20.bonmin.csv -a points_primitives_it19.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it20.bonmin.csv -a points_primitives_it19.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it20.csv --assoc points_primitives_it20.csv --angle-gens 0 --small-thresh-mult 4 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it21.csv -a points_primitives_it20.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it21.csv
+
+python ../readGraphProperties.py primitives_it21.bonmin.csv points_primitives_it20.csv cloud.ply --angles 0 --iteration 21 &
+
+../glob_opt --represent3D -p primitives_it21.bonmin.csv -a points_primitives_it20.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 4 -p representatives_it21.csv --assoc points_representatives_it21.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it21.csv -a points_representatives_it21.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it21.csv
+
+../glob_opt --representBack3D --repr representatives_it21.bonmin.csv -p primitives_it21.bonmin.csv -a points_primitives_it20.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it21.bonmin.csv -a points_primitives_it20.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it21.csv --assoc points_primitives_it21.csv --angle-gens 0 --small-thresh-mult 4 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it22.csv -a points_primitives_it21.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it22.csv
+
+python ../readGraphProperties.py primitives_it22.bonmin.csv points_primitives_it21.csv cloud.ply --angles 0 --iteration 22 &
+
+../glob_opt --represent3D -p primitives_it22.bonmin.csv -a points_primitives_it21.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 4 -p representatives_it22.csv --assoc points_representatives_it22.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it22.csv -a points_representatives_it22.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it22.csv
+
+../glob_opt --representBack3D --repr representatives_it22.bonmin.csv -p primitives_it22.bonmin.csv -a points_primitives_it21.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it22.bonmin.csv -a points_primitives_it21.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it22.csv --assoc points_primitives_it22.csv --angle-gens 0 --small-thresh-mult 4 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it23.csv -a points_primitives_it22.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it23.csv
+
+python ../readGraphProperties.py primitives_it23.bonmin.csv points_primitives_it22.csv cloud.ply --angles 0 --iteration 23 &
+
+../glob_opt --represent3D -p primitives_it23.bonmin.csv -a points_primitives_it22.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 4 -p representatives_it23.csv --assoc points_representatives_it23.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it23.csv -a points_representatives_it23.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it23.csv
+
+../glob_opt --representBack3D --repr representatives_it23.bonmin.csv -p primitives_it23.bonmin.csv -a points_primitives_it22.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it23.bonmin.csv -a points_primitives_it22.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it23.csv --assoc points_primitives_it23.csv --angle-gens 0 --small-thresh-mult 4 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it24.csv -a points_primitives_it23.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it24.csv
+
+python ../readGraphProperties.py primitives_it24.bonmin.csv points_primitives_it23.csv cloud.ply --angles 0 --iteration 24 &
+
+../glob_opt --represent3D -p primitives_it24.bonmin.csv -a points_primitives_it23.csv -sc 0.004 --cloud cloud.ply --angle-gens 90
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 90 --small-thresh-mult 4 -p representatives_it24.csv --assoc points_representatives_it24.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it24.csv -a points_representatives_it24.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 90 --bmode 0 --candidates candidates_representatives_it24.csv
+
+../glob_opt --representBack3D --repr representatives_it24.bonmin.csv -p primitives_it24.bonmin.csv -a points_primitives_it23.csv -sc 0.004 --cloud cloud.ply --angle-gens 90
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it24.bonmin.csv -a points_primitives_it23.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it24.csv --assoc points_primitives_it24.csv --angle-gens 0 --small-thresh-mult 4 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it25.csv -a points_primitives_it24.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it25.csv
+
+python ../readGraphProperties.py primitives_it25.bonmin.csv points_primitives_it24.csv cloud.ply --angles 0 --iteration 25 &
+
+../glob_opt --represent3D -p primitives_it25.bonmin.csv -a points_primitives_it24.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 4 -p representatives_it25.csv --assoc points_representatives_it25.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it25.csv -a points_representatives_it25.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it25.csv
+
+../glob_opt --representBack3D --repr representatives_it25.bonmin.csv -p primitives_it25.bonmin.csv -a points_primitives_it24.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it25.bonmin.csv -a points_primitives_it24.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it25.csv --assoc points_primitives_it25.csv --angle-gens 0 --small-thresh-mult 4 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it26.csv -a points_primitives_it25.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it26.csv
+
+python ../readGraphProperties.py primitives_it26.bonmin.csv points_primitives_it25.csv cloud.ply --angles 0 --iteration 26 &
+
+../glob_opt --represent3D -p primitives_it26.bonmin.csv -a points_primitives_it25.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 4 -p representatives_it26.csv --assoc points_representatives_it26.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it26.csv -a points_representatives_it26.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it26.csv
+
+../glob_opt --representBack3D --repr representatives_it26.bonmin.csv -p primitives_it26.bonmin.csv -a points_primitives_it25.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it26.bonmin.csv -a points_primitives_it25.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it26.csv --assoc points_primitives_it26.csv --angle-gens 0 --small-thresh-mult 4 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it27.csv -a points_primitives_it26.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it27.csv
+
+python ../readGraphProperties.py primitives_it27.bonmin.csv points_primitives_it26.csv cloud.ply --angles 0 --iteration 27 &
+
+../glob_opt --represent3D -p primitives_it27.bonmin.csv -a points_primitives_it26.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 4 -p representatives_it27.csv --assoc points_representatives_it27.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it27.csv -a points_representatives_it27.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it27.csv
+
+../glob_opt --representBack3D --repr representatives_it27.bonmin.csv -p primitives_it27.bonmin.csv -a points_primitives_it26.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it27.bonmin.csv -a points_primitives_it26.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it27.csv --assoc points_primitives_it27.csv --angle-gens 0 --small-thresh-mult 2 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it28.csv -a points_primitives_it27.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it28.csv
+
+python ../readGraphProperties.py primitives_it28.bonmin.csv points_primitives_it27.csv cloud.ply --angles 0 --iteration 28 &
+
+../glob_opt --represent3D -p primitives_it28.bonmin.csv -a points_primitives_it27.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 2 -p representatives_it28.csv --assoc points_representatives_it28.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it28.csv -a points_representatives_it28.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it28.csv
+
+../glob_opt --representBack3D --repr representatives_it28.bonmin.csv -p primitives_it28.bonmin.csv -a points_primitives_it27.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it28.bonmin.csv -a points_primitives_it27.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it28.csv --assoc points_primitives_it28.csv --angle-gens 0 --small-thresh-mult 2 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it29.csv -a points_primitives_it28.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it29.csv
+
+python ../readGraphProperties.py primitives_it29.bonmin.csv points_primitives_it28.csv cloud.ply --angles 0 --iteration 29 &
+
+../glob_opt --represent3D -p primitives_it29.bonmin.csv -a points_primitives_it28.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 2 -p representatives_it29.csv --assoc points_representatives_it29.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it29.csv -a points_representatives_it29.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it29.csv
+
+../glob_opt --representBack3D --repr representatives_it29.bonmin.csv -p primitives_it29.bonmin.csv -a points_primitives_it28.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it29.bonmin.csv -a points_primitives_it28.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it29.csv --assoc points_primitives_it29.csv --angle-gens 0 --small-thresh-mult 2 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it30.csv -a points_primitives_it29.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it30.csv
+
+python ../readGraphProperties.py primitives_it30.bonmin.csv points_primitives_it29.csv cloud.ply --angles 0 --iteration 30 &
+
+../glob_opt --represent3D -p primitives_it30.bonmin.csv -a points_primitives_it29.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 2 -p representatives_it30.csv --assoc points_representatives_it30.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it30.csv -a points_representatives_it30.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it30.csv
+
+../glob_opt --representBack3D --repr representatives_it30.bonmin.csv -p primitives_it30.bonmin.csv -a points_primitives_it29.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it30.bonmin.csv -a points_primitives_it29.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it30.csv --assoc points_primitives_it30.csv --angle-gens 0 --small-thresh-mult 2 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it31.csv -a points_primitives_it30.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it31.csv
+
+python ../readGraphProperties.py primitives_it31.bonmin.csv points_primitives_it30.csv cloud.ply --angles 0 --iteration 31 &
+
+../glob_opt --represent3D -p primitives_it31.bonmin.csv -a points_primitives_it30.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 2 -p representatives_it31.csv --assoc points_representatives_it31.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it31.csv -a points_representatives_it31.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it31.csv
+
+../glob_opt --representBack3D --repr representatives_it31.bonmin.csv -p primitives_it31.bonmin.csv -a points_primitives_it30.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it31.bonmin.csv -a points_primitives_it30.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it31.csv --assoc points_primitives_it31.csv --angle-gens 0 --small-thresh-mult 1 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it32.csv -a points_primitives_it31.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it32.csv
+
+python ../readGraphProperties.py primitives_it32.bonmin.csv points_primitives_it31.csv cloud.ply --angles 0 --iteration 32 &
+
+../glob_opt --represent3D -p primitives_it32.bonmin.csv -a points_primitives_it31.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 1 -p representatives_it32.csv --assoc points_representatives_it32.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it32.csv -a points_representatives_it32.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it32.csv
+
+../glob_opt --representBack3D --repr representatives_it32.bonmin.csv -p primitives_it32.bonmin.csv -a points_primitives_it31.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it32.bonmin.csv -a points_primitives_it31.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it32.csv --assoc points_primitives_it32.csv --angle-gens 0 --small-thresh-mult 1 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it33.csv -a points_primitives_it32.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it33.csv
+
+python ../readGraphProperties.py primitives_it33.bonmin.csv points_primitives_it32.csv cloud.ply --angles 0 --iteration 33 &
+
+../glob_opt --represent3D -p primitives_it33.bonmin.csv -a points_primitives_it32.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 1 -p representatives_it33.csv --assoc points_representatives_it33.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it33.csv -a points_representatives_it33.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it33.csv
+
+../glob_opt --representBack3D --repr representatives_it33.bonmin.csv -p primitives_it33.bonmin.csv -a points_primitives_it32.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it33.bonmin.csv -a points_primitives_it32.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it33.csv --assoc points_primitives_it33.csv --angle-gens 0 --small-thresh-mult 1 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it34.csv -a points_primitives_it33.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it34.csv
+
+python ../readGraphProperties.py primitives_it34.bonmin.csv points_primitives_it33.csv cloud.ply --angles 0 --iteration 34 &
+
+../glob_opt --represent3D -p primitives_it34.bonmin.csv -a points_primitives_it33.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 1 -p representatives_it34.csv --assoc points_representatives_it34.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it34.csv -a points_representatives_it34.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it34.csv
+
+../glob_opt --representBack3D --repr representatives_it34.bonmin.csv -p primitives_it34.bonmin.csv -a points_primitives_it33.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it34.bonmin.csv -a points_primitives_it33.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it34.csv --assoc points_primitives_it34.csv --angle-gens 0 --small-thresh-mult 1 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it35.csv -a points_primitives_it34.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it35.csv
+
+python ../readGraphProperties.py primitives_it35.bonmin.csv points_primitives_it34.csv cloud.ply --angles 0 --iteration 35 &
+
+../glob_opt --represent3D -p primitives_it35.bonmin.csv -a points_primitives_it34.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 1 -p representatives_it35.csv --assoc points_representatives_it35.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it35.csv -a points_representatives_it35.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it35.csv
+
+../glob_opt --representBack3D --repr representatives_it35.bonmin.csv -p primitives_it35.bonmin.csv -a points_primitives_it34.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it35.bonmin.csv -a points_primitives_it34.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it35.csv --assoc points_primitives_it35.csv --angle-gens 0 --small-thresh-mult 1 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it36.csv -a points_primitives_it35.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it36.csv
+
+python ../readGraphProperties.py primitives_it36.bonmin.csv points_primitives_it35.csv cloud.ply --angles 0 --iteration 36 &
+
+../glob_opt --represent3D -p primitives_it36.bonmin.csv -a points_primitives_it35.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 1 -p representatives_it36.csv --assoc points_representatives_it36.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it36.csv -a points_representatives_it36.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it36.csv
+
+../glob_opt --representBack3D --repr representatives_it36.bonmin.csv -p primitives_it36.bonmin.csv -a points_primitives_it35.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it36.bonmin.csv -a points_primitives_it35.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it36.csv --assoc points_primitives_it36.csv --angle-gens 0 --small-thresh-mult 1 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it37.csv -a points_primitives_it36.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it37.csv
+
+python ../readGraphProperties.py primitives_it37.bonmin.csv points_primitives_it36.csv cloud.ply --angles 0 --iteration 37 &
+
+../glob_opt --represent3D -p primitives_it37.bonmin.csv -a points_primitives_it36.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 1 -p representatives_it37.csv --assoc points_representatives_it37.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it37.csv -a points_representatives_it37.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it37.csv
+
+../glob_opt --representBack3D --repr representatives_it37.bonmin.csv -p primitives_it37.bonmin.csv -a points_primitives_it36.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it37.bonmin.csv -a points_primitives_it36.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it37.csv --assoc points_primitives_it37.csv --angle-gens 0 --small-thresh-mult 1 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it38.csv -a points_primitives_it37.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it38.csv
+
+python ../readGraphProperties.py primitives_it38.bonmin.csv points_primitives_it37.csv cloud.ply --angles 0 --iteration 38 &
+
+../glob_opt --represent3D -p primitives_it38.bonmin.csv -a points_primitives_it37.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 1 -p representatives_it38.csv --assoc points_representatives_it38.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it38.csv -a points_representatives_it38.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it38.csv
+
+../glob_opt --representBack3D --repr representatives_it38.bonmin.csv -p primitives_it38.bonmin.csv -a points_primitives_it37.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it38.bonmin.csv -a points_primitives_it37.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it38.csv --assoc points_primitives_it38.csv --angle-gens 0 --small-thresh-mult 1 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it39.csv -a points_primitives_it38.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it39.csv
+
+python ../readGraphProperties.py primitives_it39.bonmin.csv points_primitives_it38.csv cloud.ply --angles 0 --iteration 39 &
+
+../glob_opt --represent3D -p primitives_it39.bonmin.csv -a points_primitives_it38.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 1 -p representatives_it39.csv --assoc points_representatives_it39.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it39.csv -a points_representatives_it39.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it39.csv
+
+../glob_opt --representBack3D --repr representatives_it39.bonmin.csv -p primitives_it39.bonmin.csv -a points_primitives_it38.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it39.bonmin.csv -a points_primitives_it38.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it39.csv --assoc points_primitives_it39.csv --angle-gens 0 --small-thresh-mult 1 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it40.csv -a points_primitives_it39.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it40.csv
+
+python ../readGraphProperties.py primitives_it40.bonmin.csv points_primitives_it39.csv cloud.ply --angles 0 --iteration 40 &
+
+../glob_opt --represent3D -p primitives_it40.bonmin.csv -a points_primitives_it39.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 1 -p representatives_it40.csv --assoc points_representatives_it40.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it40.csv -a points_representatives_it40.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it40.csv
+
+../glob_opt --representBack3D --repr representatives_it40.bonmin.csv -p primitives_it40.bonmin.csv -a points_primitives_it39.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it40.bonmin.csv -a points_primitives_it39.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it40.csv --assoc points_primitives_it40.csv --angle-gens 0 --small-thresh-mult 1 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it41.csv -a points_primitives_it40.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it41.csv
+
+python ../readGraphProperties.py primitives_it41.bonmin.csv points_primitives_it40.csv cloud.ply --angles 0 --iteration 41 &
+
+../glob_opt --represent3D -p primitives_it41.bonmin.csv -a points_primitives_it40.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 1 -p representatives_it41.csv --assoc points_representatives_it41.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it41.csv -a points_representatives_it41.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it41.csv
+
+../glob_opt --representBack3D --repr representatives_it41.bonmin.csv -p primitives_it41.bonmin.csv -a points_primitives_it40.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it41.bonmin.csv -a points_primitives_it40.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it41.csv --assoc points_primitives_it41.csv --angle-gens 0 --small-thresh-mult 1 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it42.csv -a points_primitives_it41.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it42.csv
+
+python ../readGraphProperties.py primitives_it42.bonmin.csv points_primitives_it41.csv cloud.ply --angles 0 --iteration 42 &
+
+../glob_opt --represent3D -p primitives_it42.bonmin.csv -a points_primitives_it41.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 1 -p representatives_it42.csv --assoc points_representatives_it42.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it42.csv -a points_representatives_it42.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it42.csv
+
+../glob_opt --representBack3D --repr representatives_it42.bonmin.csv -p primitives_it42.bonmin.csv -a points_primitives_it41.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it42.bonmin.csv -a points_primitives_it41.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it42.csv --assoc points_primitives_it42.csv --angle-gens 0 --small-thresh-mult 1 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it43.csv -a points_primitives_it42.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it43.csv
+
+python ../readGraphProperties.py primitives_it43.bonmin.csv points_primitives_it42.csv cloud.ply --angles 0 --iteration 43 &
+
+../glob_opt --represent3D -p primitives_it43.bonmin.csv -a points_primitives_it42.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 1 -p representatives_it43.csv --assoc points_representatives_it43.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it43.csv -a points_representatives_it43.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it43.csv
+
+../glob_opt --representBack3D --repr representatives_it43.bonmin.csv -p primitives_it43.bonmin.csv -a points_primitives_it42.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it43.bonmin.csv -a points_primitives_it42.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it43.csv --assoc points_primitives_it43.csv --angle-gens 0 --small-thresh-mult 1 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it44.csv -a points_primitives_it43.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it44.csv
+
+python ../readGraphProperties.py primitives_it44.bonmin.csv points_primitives_it43.csv cloud.ply --angles 0 --iteration 44 &
+
+../glob_opt --represent3D -p primitives_it44.bonmin.csv -a points_primitives_it43.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 1 -p representatives_it44.csv --assoc points_representatives_it44.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it44.csv -a points_representatives_it44.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it44.csv
+
+../glob_opt --representBack3D --repr representatives_it44.bonmin.csv -p primitives_it44.bonmin.csv -a points_primitives_it43.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it44.bonmin.csv -a points_primitives_it43.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it44.csv --assoc points_primitives_it44.csv --angle-gens 0 --small-thresh-mult 1 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it45.csv -a points_primitives_it44.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it45.csv
+
+python ../readGraphProperties.py primitives_it45.bonmin.csv points_primitives_it44.csv cloud.ply --angles 0 --iteration 45 &
+
+../glob_opt --represent3D -p primitives_it45.bonmin.csv -a points_primitives_it44.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 1 -p representatives_it45.csv --assoc points_representatives_it45.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it45.csv -a points_representatives_it45.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it45.csv
+
+../glob_opt --representBack3D --repr representatives_it45.bonmin.csv -p primitives_it45.bonmin.csv -a points_primitives_it44.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it45.bonmin.csv -a points_primitives_it44.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it45.csv --assoc points_primitives_it45.csv --angle-gens 0 --small-thresh-mult 1 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it46.csv -a points_primitives_it45.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it46.csv
+
+python ../readGraphProperties.py primitives_it46.bonmin.csv points_primitives_it45.csv cloud.ply --angles 0 --iteration 46 &
+
+../glob_opt --represent3D -p primitives_it46.bonmin.csv -a points_primitives_it45.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 1 -p representatives_it46.csv --assoc points_representatives_it46.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it46.csv -a points_representatives_it46.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it46.csv
+
+../glob_opt --representBack3D --repr representatives_it46.bonmin.csv -p primitives_it46.bonmin.csv -a points_primitives_it45.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it46.bonmin.csv -a points_primitives_it45.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it46.csv --assoc points_primitives_it46.csv --angle-gens 0 --small-thresh-mult 1 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it47.csv -a points_primitives_it46.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it47.csv
+
+python ../readGraphProperties.py primitives_it47.bonmin.csv points_primitives_it46.csv cloud.ply --angles 0 --iteration 47 &
+
+../glob_opt --represent3D -p primitives_it47.bonmin.csv -a points_primitives_it46.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 1 -p representatives_it47.csv --assoc points_representatives_it47.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it47.csv -a points_representatives_it47.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it47.csv
+
+../glob_opt --representBack3D --repr representatives_it47.bonmin.csv -p primitives_it47.bonmin.csv -a points_primitives_it46.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it47.bonmin.csv -a points_primitives_it46.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it47.csv --assoc points_primitives_it47.csv --angle-gens 0 --small-thresh-mult 1 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it48.csv -a points_primitives_it47.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it48.csv
+
+python ../readGraphProperties.py primitives_it48.bonmin.csv points_primitives_it47.csv cloud.ply --angles 0 --iteration 48 &
+
+../glob_opt --represent3D -p primitives_it48.bonmin.csv -a points_primitives_it47.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --generate3D -sc 0.004 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 3 --angle-gens 0 --small-thresh-mult 1 -p representatives_it48.csv --assoc points_representatives_it48.csv --keep-singles
+
+../glob_opt --formulate3D --no-clusters --spat-weight 0 --trunc-angle --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 10.000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens --candidates candidates_representatives_it48.csv -a points_representatives_it48.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --angle-gens 0 --bmode 0 --candidates candidates_representatives_it48.csv
+
+../glob_opt --representBack3D --repr representatives_it48.bonmin.csv -p primitives_it48.bonmin.csv -a points_primitives_it47.csv -sc 0.004 --cloud cloud.ply --angle-gens 0
+
+../glob_opt --merge3D --scale 0.002 --adopt 0 --prims primitives_it48.bonmin.csv -a points_primitives_it47.csv --angle-gens 0 --patch-pop-limit 3
+
+../glob_opt --generate3D -sc 0.004 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 3 -p primitives_merged_it48.csv --assoc points_primitives_it48.csv --angle-gens 0 --small-thresh-mult 0 --var-limit 1100 
+
+../glob_opt --formulate3D --scale 0.004 --cloud cloud.ply --unary 1000000 --pw 5 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 3 --angle-gens 0 --candidates candidates_it49.csv -a points_primitives_it48.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0 --trunc-angle 
+
+../glob_opt --solver3D bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 0 --candidates candidates_it49.csv
+
