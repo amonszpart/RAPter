@@ -87,7 +87,76 @@ namespace merging
 
             std::map<DidT,LidT> _arities;
     };
-}
+
+    /*! \brief  Function that performs the merge as a single operation, called once from MergCli.
+     *          When splitting the scene, we can call this for each split.
+     * \note    Added by Aron on 12/1/2015, 16:30
+     */
+    template <
+           class    _PointPrimitiveT
+         , class    _PrimitiveT
+         , class    _PointContainerT
+         , class    _PrimitiveMapT
+         , class    _ParamsT
+         >
+    void inline doMerge( _PrimitiveMapT              & out_prims
+                       , _PointContainerT           & points
+                       , _PrimitiveMapT         const& prims_map
+                       , _ParamsT              const& params
+                       )
+    {
+        typedef typename _PrimitiveT::Scalar Scalar;
+        //typedef std::vector<_PrimitiveT>    PatchT;
+        //typedef std::map   < GidT, PatchT >  PrimitiveMapT;
+
+        //_PrimitiveContainerT prims;
+
+        // MERGE
+        std::cout << "starting mergeSameDirGids" << std::endl; fflush(stdout);
+        RepresentativeSqrPatchPatchDistanceFunctorT<Scalar, SpatialPatchPatchSingleDistanceFunctorT<Scalar> >
+                patchPatchDistFunct( params.scale * params.patch_dist_limit_mult
+                                   , params.angle_limit
+                                   , params.scale
+                                   , params.patch_spatial_weight
+                                   );
+
+        _PrimitiveMapT prims_map_copy = prims_map;
+        _PrimitiveMapT *in  = &prims_map_copy,
+                      *out = &out_prims;
+
+        //some test here, nothing really worked.
+        // The idea was to try to generate the right functor to merge either lines or planes
+        //auto decideMergeFunct = params.is3D ? DecideMergePlaneFunctor() : DecideMergeLineFunctor();
+        //auto decideMergeFunct = *(params.is3D ? ((void*)(&(DecideMergePlaneFunctor))) : ((void*)(&(DecideMergeLineFunctor()))));
+        //
+        // nico: This is ugly, but I didn't find a nice way to handle that (something like lazy type evaluation)
+        bool preserveSmallPatches = !params.do_adopt;
+
+        if ( params.is3D )
+        {
+            while(
+                  Merging::mergeSameDirGids<_PrimitiveT, _PointPrimitiveT, typename _PrimitiveMapT::mapped_type/*::const_iterator*/>
+                  ( *out, points, *in, params.scale, params.spatial_threshold_mult * params.scale, params.parallel_limit, patchPatchDistFunct, DecideMergePlaneFunctor(), preserveSmallPatches ))
+            {
+                _PrimitiveMapT* tmp = out;
+                out = in;
+                in  = tmp;
+            } //...while
+        } //...3D
+        else
+        {// 2D
+            while(
+                  Merging::mergeSameDirGids<_PrimitiveT, _PointPrimitiveT, typename _PrimitiveMapT::mapped_type/*::const_iterator*/>
+                  ( *out, points, *in, params.scale, params.spatial_threshold_mult * params.scale, params.parallel_limit, patchPatchDistFunct, DecideMergeLineFunctor(), preserveSmallPatches ))
+            {
+                _PrimitiveMapT* tmp = out;
+                out = in;
+                in  = tmp;
+            } //...while
+        } //...else2D
+    }//...doMerge
+
+} //...merging
 
 template < class    _PrimitiveContainerT
          , class    _PointContainerT
@@ -196,46 +265,9 @@ Merging::mergeCli( int argc, char** argv )
                     ( points, prims_map, params.scale, params.do_adopt, params.patch_population_limit );
     }
 
-    // MERGE
-    std::cout << "starting mergeSameDirGids" << std::endl; fflush(stdout);
-    RepresentativeSqrPatchPatchDistanceFunctorT<_Scalar, SpatialPatchPatchSingleDistanceFunctorT<_Scalar> >
-            patchPatchDistFunct( params.scale * params.patch_dist_limit_mult
-                               , params.angle_limit
-                               , params.scale
-                                 , params.patch_spatial_weight );
-
-    PrimitiveMapT prims_map_copy = prims_map;
-    PrimitiveMapT out_prims,
-            *in  = &prims_map_copy,
-            *out = &out_prims;
-
-    //some test here, nothing really worked.
-    // The idea was to try to generate the right functor to merge either lines or planes
-    //auto decideMergeFunct = params.is3D ? DecideMergePlaneFunctor() : DecideMergeLineFunctor();
-    //auto decideMergeFunct = *(params.is3D ? ((void*)(&(DecideMergePlaneFunctor))) : ((void*)(&(DecideMergeLineFunctor()))));
-    //
-    // nico: This is ugly, but I didn't find a nice way to handle that (something like lazy type evaluation)
-    bool preserveSmallPatches = ! params.do_adopt;
-
-    if (params.is3D){
-    while(
-          mergeSameDirGids<_PrimitiveT, _PointPrimitiveT, typename PrimitiveMapT::mapped_type/*::const_iterator*/>
-          ( *out, points, *in, params.scale, params.spatial_threshold_mult * params.scale, params.parallel_limit, patchPatchDistFunct, DecideMergePlaneFunctor(), preserveSmallPatches ))
-    {
-        PrimitiveMapT* tmp = out;
-        out = in;
-        in  = tmp;
-    }
-    }else {// 2D
-        while(
-              mergeSameDirGids<_PrimitiveT, _PointPrimitiveT, typename PrimitiveMapT::mapped_type/*::const_iterator*/>
-              ( *out, points, *in, params.scale, params.spatial_threshold_mult * params.scale, params.parallel_limit, patchPatchDistFunct, DecideMergeLineFunctor(), preserveSmallPatches ))
-        {
-            PrimitiveMapT* tmp = out;
-            out = in;
-            in  = tmp;
-        }
-    }
+    PrimitiveMapT out_prims;
+    merging::doMerge<_PointPrimitiveT,_PrimitiveT, _PointContainerT>
+            ( /* out: */ out_prims, points, /* in: */ prims_map, params );
 
     // SAVE
     std::string o_path;
@@ -247,7 +279,7 @@ Merging::mergeCli( int argc, char** argv )
         std::string fname = prims_path.substr( 0, it_loc );
         ss << fname << "_merged_it" << iteration << ".csv";
         o_path = ss.str();
-        io::savePrimitives   <_PrimitiveT, typename PrimitiveMapT::mapped_type::const_iterator>( *out, o_path );
+        io::savePrimitives   <_PrimitiveT, typename PrimitiveMapT::mapped_type::const_iterator>( out_prims, o_path );
         std::cout << "wrote " << o_path << std::endl;
     }
 
