@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function print_usage() {
-        echo "usage:\t showcands.sh iteration" 
+        echo "usage:\t showcands.sh iteration [3D] [dids]" 
 }
 
 # parse iteration
@@ -14,15 +14,22 @@ else
 fi
 
 if [[ ! -z "$2" ]]; then
-	dids=$2
+	if [[ ! $2 == "3D" ]]; then
+		dids=$2
+	else
+		flag3D="3D"
+		if [[ ! -z "$3" ]]; then
+			dids="--dids $3"
+		fi
+	fi
 fi
 
 prims="candidates_it$iteration.csv";
 assignments="points_primitives_it$prev.csv";
 echo "$prims $assignments"
-../globOptVis --show --scale 0.019 --pop-limit 5 -p $prims -a $assignments --title "GlobOpt - $iteration iteration candidates ($dids)" --angle-gens 60,90 --use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-scale --bg-colour .9,.9,.9 --ids --no-rel --dids $dids &
+../globOptVis --show$flag3D --scale 0.1 --pop-limit 2 --title "GlobOpt - $iteration iteration candidates ($dids)" --angle-gens 90 --use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-scale --bg-colour .9,.9,.9 --no-rel $dids -p $prims -a $assignments &
 
-echo "../globOptVis --show --scale 0.019 --pop-limit 5 -p $prims -a $assignments --title \"GlobOpt - $iteration iteration candidates\" --angle-gens 60,90 --use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-scale --bg-colour .9,.9,.9 --ids --no-rel"
+echo "../globOptVis --show$flag3D --scale 0.1 --pop-limit 2 --title \"GlobOpt - $iteration iteration candidates ($dids)\" --angle-gens 90 --use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-scale --bg-colour .9,.9,.9 --no-rel $dids -p $prims -a $assignments &"
 
 
 

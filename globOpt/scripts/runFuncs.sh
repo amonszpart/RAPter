@@ -60,5 +60,6 @@ function my_exec2() {
 }
 
 function my_mult() {
-	eval "bc <<< 'scale=5; $1 * $2'"
+	#eval "bc <<< 'scale=5; $1 * $2'"
+	eval "bc <<< 'scale=5; $1 * $2'" | awk '{printf "%.6f", $0}'
 }

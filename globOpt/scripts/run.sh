@@ -4,25 +4,27 @@ execLog="lastRun.log"
 execPyRelGraph="python ../readGraphProperties.py"
 execPyStats="python ../collectStatistics.py"
 ###############################################
-doExecPy=true           # Set to true if generating graphs
-dryRun=false            # Values: [true/false]. If "true", don't execute, just show calls
-noVis=false             # Only show premerge and final output
+doExecPy=true          # Set to true if generating graphs
+dryRun=false           # Values: [true/false]. If "true", don't execute, just show calls
+noVis=false            # Only show premerge and final output
 
 # startAt=0: do segment
 # startAt=1: don't do segment, do premerge
 # startAt=2: don't do premerge, do iteration 0
-startAt=1
-nbExtraIter=40          # Values: [ 1..20 ] iteration count. Default: 2.
-reprPwMult=3            # Values: [ 1, 5 ,10]. Multiplies pw with this number when doing lvl2 (representatives)
-use90=24                # Values: [ 100 ] Will be re-set by runscript
+startAt=0
+nbExtraIter=100         # Values: [ 1..20 ] iteration count. Default: 2.
+reprPwMult=2            # Values: [ 1, 5 ,10]. Multiplies pw with this number when doing lvl2 (representatives)
+use90=25                # Values: [ 100 ] Will be re-set by runscript
 extendedAngleGens="90"  # Values: [ "0", "90", ... ]
-premerge=0              # Call merge after segmentation 0/1
+premerge=1              # Call merge after segmentation 0/1
+mergeMult="0.5"
 
 anglegens="0"           # Values: ["0", "60", "90", "60,90", ... ] Desired angle generators in degrees. Default: 90.
 unary=1000000           # Values: [1000, 1000000]
 spatWeight=0            # Values: [ 10, 0 ] (Penalty that's added, if two primitives with different directions are closer than 2 x scale)
 truncAngle=$anglelimit  # Values: [ 0, $anglelimit, 0.15 ] (Pairwise cost truncation angle in radians)
 smallThreshDiv="2"      # Values: [ 2, 3, ... ] Stepsize of working scale.
+safeMode="";                #"--safe-mode"; #"--safe-mode" # "--safe-mode" for new, or "" for old version
 
 # Parse runScripts
 runFileName=`basename $0`;
@@ -48,7 +50,7 @@ if [ -n "$4" ]; then poplimit=$4; else poplimit=5; fi
 # parse 3D
 if [ -n "$5" ]; then flag3D=$5; else flag3D=""; fi
 # parse smallThresh (a size(spatialSignificance) threshold for primitives to work with)
-if [ -n "$6" ]; then smallThresh=$6; else smallThresh="1"; fi
+if [ -n "$6" ]; then smallThresh=$6; else smallThresh="0"; fi
 
 ########################################
 #### We usually don't change the following:
@@ -76,9 +78,9 @@ pwCostFunc="spatsqrt"       # Spatial cost function.
 visdefparam="--angle-gens $anglegens --use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-rel --no-scale --bg-colour .9,.9,.9" #"--use-tags --no-clusters" #--ids
 iterationConstrMode="patch" # what to add in the second iteration formulate. Default: 0 (everyPatchNeedsDirection), experimental: 2 (largePatchesNeedDirection).
 
-safeMode="";                #"--safe-mode"; #"--safe-mode" # "--safe-mode" for new, or "" for old version
-variableLimit=1100; # 1300; # Safe mode gets turned on, and generate rerun, if candidates exceed this number (1300)
+variableLimit=1300; # 1300; # Safe mode gets turned on, and generate rerun, if candidates exceed this number (1300)
 algCode=0                   # 0==B_BB, OA, QG, 3==Hyb, ECP, IFP
+candAngleGens=$anglegens    # used to mirror anglegens, but keep const "0" for generate
 #######################################
 #######################################
 
@@ -131,7 +133,9 @@ if [ $startAt -le 1 ]; then
     # merge before start
     if [ $premerge -ne 0 ]; then
         echo "performing premerge"
-        my_exec "$executable --merge$flag3D --scale $scale --adopt $adopt --prims $input -a $assoc --angle-gens $anglegens --patch-pop-limit $poplimit"
+        mergeScale=`my_mult $scale $mergeMult`
+        echo "mergeScale: $mergeScale"
+        my_exec "$executable --merge$flag3D --scale $mergeScale --adopt $adopt --prims $input -a $assoc --angle-gens $anglegens --patch-pop-limit $poplimit"
 
         # save patches
         cp patches.csv_merged_it-1.csv $input
@@ -149,7 +153,7 @@ promRem=0   # Count of remaining patches to promote
 while [ $c -le $nbExtraIter ];
 do
     # decresase, unless there is more to do on the same level
-    if $decrease_level; then
+    if [ "${decrease_level}" = true ] && [ $c -ge $(($startAt - 2)) ]; then
         smallThresh=`../divide.py $smallThresh $smallThreshDiv`;
         smallThresh=$smallThresh;
     fi
@@ -159,7 +163,7 @@ do
         smallThresh=$smallThreshlimit           # make sure it's integer
         if $decrease_level; then                # if we don't have to promote any more patches on this level
             adopt="1"                           # if we promoted all patches, we can allow points to get re-assigned
-            if ! $adoptChanged; then
+            if [ ! $adoptChanged ] ; then
                 use90=$(( $c + 1 ));            # if we promoted all patches in the scene, do a 90 round
                 nbExtraIter=$(( $use90 + 3 ))   # do k more rounds after the 90 round
                 adoptChanged=true               # only enter here once
@@ -187,7 +191,7 @@ do
 
     if [ $c -ge $(($startAt - 2)) ]; then
         # Generate candidates from output of first. OUT: candidates_it$c.csv. #small-mode 2: small patches receive all candidates
-        my_exec2 "$executable --generate$flag3D $allowPromoted $keepSingles -sc $scale -al $anglelimit -ald ${cand_anglediv} --small-mode 0 --patch-pop-limit $poplimit -p $input --assoc $assoc --angle-gens $anglegens --small-thresh-mult $smallThresh --var-limit $variableLimit $safeMode"
+        my_exec2 "$executable --generate$flag3D $allowPromoted $keepSingles -sc $scale -al $anglelimit -ald ${cand_anglediv} --small-mode 0 --patch-pop-limit $poplimit -p $input --assoc $assoc --angle-gens $candAngleGens --small-thresh-mult $smallThresh --var-limit $variableLimit $safeMode"
         echo "Remaining smalls to promote: $myresult"
         # count of remaining patches to promote
         promRem=$myresult 
@@ -202,7 +206,7 @@ do
         my_exec "$executable --solver$flag3D bonmin --problem problem -v --time -1 --bmode $algCode --angle-gens $anglegens --candidates candidates_it$c.csv"
         
         if [ "$correspondance" = true ] ; then
-            my_exec "$correspondance_exe  $correspondance_gtprim $correspondance_gtassing primitives_it$c.bonmin.csv $assoc cloud.ply $scale"
+            my_exec "$correspondance_exe  $correspondance_gtprim $correspondance_gtassing primitives_it$c.bonmin.csv $assoc cloud.ply $scale &"
         fi
 
         # Show output
@@ -212,13 +216,14 @@ do
         
         # Generate relation graphs
         if [ "$doExecPy" = true ]; then
-            my_exec "$execPyRelGraph primitives_it$c.bonmin.csv $assoc cloud.ply --angles $anglegens --iteration $c"
+            my_exec "$execPyRelGraph primitives_it$c.bonmin.csv $assoc cloud.ply --angles $anglegens --iteration $c &"
         fi
 
         # Use 90 degrees only for a single iteration's lvl2
         if [ $c -eq $use90 ]; then
             _bakAngleGens=$anglegens;
-            anglegens=$extendedAngleGens;
+            anglegens=$extendedAngleGens; # this should stay 90
+            candAngleGens=$anglegens; 
         fi
 
         # Representatives (lvl2)
@@ -227,16 +232,19 @@ do
 
         #if [ $(( $c - 1 )) -eq $use90 ]; then
         if [ $(( $c )) -eq $use90 ]; then
-            anglegens=$_bakAngleGens;
+            #anglegens=$_bakAngleGens;
+            candAngleGens=$anglegens; #no more 90 candidates
         fi
 
         # Merge/show parallel
-        if [ $c -lt $nbExtraIter ]; then
-            # Merge adjacent candidates with same dir id. OUT: primitives_merged_it$c.csv, points_primitives_it$c.csv
-            my_exec "$executable --merge$flag3D --scale $scale --adopt $adopt --prims primitives_it$c.bonmin.csv -a $assoc --angle-gens $anglegens --patch-pop-limit $poplimit"
-        else
-            my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p primitives_it$c.bonmin.csv -a $assoc --title \"GlobOpt - [Dir-Colours] $c iteration output\" $visdefparam --paral-colours --no-rel &"
-        fi
+        mergeScale=`my_mult $scale $mergeMult`
+        echo "mergeScale: $mergeScale"
+        # Merge adjacent candidates with same dir id. OUT: primitives_merged_it$c.csv, points_primitives_it$c.csv
+        my_exec "$executable --merge$flag3D --scale $mergeScale --adopt $adopt --prims primitives_it$c.bonmin.csv -a $assoc --angle-gens $anglegens --patch-pop-limit $poplimit"
+
+        #if [ $c -ge $nbExtraIter ]; then
+        #    my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p primitives_it$c.bonmin.csv -a $assoc --title \"GlobOpt - [Dir-Colours] $c iteration output\" $visdefparam --paral-colours --no-rel &"
+        #fi
 
         #my_exec "$executable --energy --formulate$flag3D --scale $scale --cloud cloud.ply --unary $unary --pw $pw --cmp $cmp --constr-mode $iterationConstrMode --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $anglegens --candidates primitives_it$c.bonmin.csv -a $assoc --freq-weight $freqweight  --cost-fn $pwCostFunc $formParams"
     fi
