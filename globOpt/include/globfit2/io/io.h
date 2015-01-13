@@ -269,10 +269,10 @@ namespace GF2
             // write points
             for ( size_t pid = 0; pid != points.size(); ++pid )
             {
-                f_assoc << pid
-                           << "," << points[pid].getTag( _PointPrimitiveT::TAGS::GID )
-                           << "," << -1  // assigned to patch, but no direction
-                           << std::endl;
+                f_assoc << points[pid].getTag( _PointPrimitiveT::TAGS::PID ) //pid changed by Aron on 13/1/2013
+                        << "," << points[pid].getTag( _PointPrimitiveT::TAGS::GID )
+                        << "," << -1  // assigned to patch, but no direction
+                        << std::endl;
             }
             // finish
             f_assoc.close();
