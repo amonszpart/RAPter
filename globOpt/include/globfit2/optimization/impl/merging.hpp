@@ -456,13 +456,13 @@ namespace merging
                                              , processedParts[i].getPoints().end()  );
         } //...gather
 
-#if 1
+#if 0
         outPartition.getPrimitives() = gatheredPrimitives;
 #else
         // (4.2) merge <gatheredPrimitives(),outPartition.getPoints()> to <outPartition.getPrimitives(),outPartition.getPoints()>
-        //merging::iterativeMerge<PointPrimitiveT,PrimitiveT, PointContainerT>
-        //        ( /* out: */ outPartition.getPrimitives(), outPartition.getPoints()
-        //        , /*  in: */ gatheredPrimitives, params );
+        merging::iterativeMerge<PointPrimitiveT,PrimitiveT, PointContainerT>
+                ( /* out: */ outPartition.getPrimitives(), outPartition.getPoints()
+                , /*  in: */ gatheredPrimitives, params );
 #endif
 
         std::cout << "[" << __func__ << "]: " << "changed no avg " << changeCount / float(splitCount) << std::endl;
