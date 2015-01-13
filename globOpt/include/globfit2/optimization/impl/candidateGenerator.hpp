@@ -178,6 +178,7 @@ namespace GF2
                            , LidT                    & nLines
                            , _PrimitiveContainerT    & out_prims
                            , _AliasesT               * aliases
+                           , bool               const  tripletSafe = false
                            )
     {
         const bool verbose = false;
@@ -206,15 +207,6 @@ namespace GF2
         _Scalar angdiff0 = _PrimitivePrimitiveAngleFunctorT::template eval<_Scalar>( prim0, prim1,
                                                                                      /*isRestricted0 ? allowedAngles[dir_gid1] : */ angles,
                                                                                      &closest_angle_id0 );
-        // retarget closest angle id0 to angles instead of allowedAngles[dir_gid1]
-//        if ( isRestricted0 )
-//            for ( int aa = 0; aa != angles.size(); ++aa )
-//                if ( angles[aa] == allowedAngles[dir_gid1][closest_angle_id0] )
-//                {
-//                    closest_angle_id0 = aa;
-//                    break;
-//                }
-
         // prim0 needs to be close to prim1 in angle
         //if ( notPROMOTED(gid0,lid0) ) // don't bias small patches, copy best match to promoted patches
             add0 &= angdiff0 < angle_limit;
@@ -227,13 +219,16 @@ namespace GF2
         if ( !add0 )
             return false;
 
-        if ( gid0 == 57755 && (gid1 == 60691) )
-            std::cout << "itt" << std::endl;
-
         // can candidate be created?
         _PrimitiveT cand0;
         if ( !prim0.generateFrom(cand0, prim1, closest_angle_id0, angles, _Scalar(1.)) )
             return false;
+
+        // TEST triplets
+        if ( tripletSafe )
+        {
+
+        }
 
         // (1) if not restricted ? output, restrict
         // (2)                   : if angle allowed ? output
@@ -665,9 +660,6 @@ namespace GF2
                         // cache group id of patch at first member
                              if ( gid1 == -2               )    gid1 = prim1.getTag( _PrimitiveT::TAGS::GID );
                         else if ( gid1 != outer_it1->first )    std::cerr << "[" << __func__ << "]: " << "Not good, prims under one gid don't have same GID in inner loop..." << std::endl;
-
-                             if ( (gid0 == 130 || gid0 == 123) && (gid1 == 130 || gid1 == 123) )
-                                 std::cout << "stop " << std::endl;
 
                         addCandidate<_PrimitivePrimitiveAngleFunctorT>(
                                     prim0, prim1, lid0, lid1, safe_mode, allowPromoted, angle_limit, angles, angle_gens_in_rad, promoted,

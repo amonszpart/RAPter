@@ -14,18 +14,18 @@ noVis=false            # Only show premerge and final output
 startAt=0
 nbExtraIter=50          # Values: [ 1..20 ] iteration count. Default: 2.
 reprPwMult=5            # Values: [ 1, 5 ,10]. Multiplies pw with this number when doing lvl2 (representatives)
-use90=25                # Values: [ 100 ] Will be re-set by runscript
-extendedAngleGens="90"  # Values: [ "0", "90", ... ]
-premerge=1              # Call merge after segmentation 0/1
-mergeMult="1"
-mergeChunk=5000
+use90=6                 # Values: [ 6, 100 ] Controls, when to add a 90 generation step. If large, will be re-set by runscript to be after "adopt".
+extendedAngleGens="90"  # Values: [ "0", "90", ... ] Turned on by use90.
+premerge=1              # Values: [ 0, 1 ] Call merge after segmentation.
+mergeMult="1"           # Values: [0.5, 0.8, 1 ] Be conservative with merge, multiply the scale with this. ( < 1 does not work well for some reason, parallel planes survive)
+mergeChunk=5000         # Values: [ 0, 5000, ? ] Split scene, until we reach this number, and start merging the splits first
 
 anglegens="0"           # Values: ["0", "60", "90", "60,90", ... ] Desired angle generators in degrees. Default: 90.
 unary=10000             # Values: [1000000, 1000, 1000000]
 spatWeight=0            # Values: [ 10, 0 ] (Penalty that's added, if two primitives with different directions are closer than 2 x scale)
 truncAngle=$anglelimit  # Values: [ 0, $anglelimit, 0.15 ] (Pairwise cost truncation angle in radians)
 smallThreshDiv="2"      # Values: [ 2, 3, ... ] Stepsize of working scale.
-safeMode="";                #"--safe-mode"; #"--safe-mode" # "--safe-mode" for new, or "" for old version
+safeMode="";            # Values: [ "", "--safe-mode"] Disallows copy of direction to already selected (large) primitives.
 
 # Parse runScripts
 runFileName=`basename $0`;
