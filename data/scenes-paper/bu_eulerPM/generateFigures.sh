@@ -1,12 +1,20 @@
 #!/bin/sh
 
+SCRIPT_PATH="../../../globOpt/scripts"
+
 ln -s cloudBinary.ply cloud.ply
+mkdir figure
 
 ############################################################
 ## generate stats from input
 
 #distribution
-python ../normal_distr.py cloudBinary.ply ndistrCloudBinary.svg "Euler - Input"
+python ../normal_distr.py cloud.ply ndistrCloudBinary.svg "Euler - Input"
+
+meshlabserver -i cloud.ply -o figure/cloud.ply -s $SCRIPT_PATH/colorize.mlx -om vc vn
+
+splatting figure/cloud.ply figure/cloud.ply 0 0.001
+
 
 ############################################################
 ## generate stats for patches
@@ -14,6 +22,11 @@ python ../normal_distr.py cloudBinary.ply ndistrCloudBinary.svg "Euler - Input"
 
 #distribution
 python ../normal_distr.py cloudRGBNormal_patches_reProj_noUnass_noPrim.ply ndistrPatches.svg "Euler - Patches"
+
+meshlabserver -i cloudRGBNormal_patches_reProj_noUnass_noPrim.ply -o figure/cloud_cleaned.ply -om vc vn
+
+splatting figure/cloud_cleaned.ply figure/cloud_cleaned.ply 0 0.001
+
 
 ############################################################
 ## generate cleaned point-cloud model, and associated stats
