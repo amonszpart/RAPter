@@ -561,11 +561,11 @@ namespace GF2
                 throw new CandidateGeneratorException("All tags have to be either unset (first iteration) or set to active/small (second iteration), cannot be partial here");
 
             std::cout << "[" << __func__ << "]: " << "promoted " << promoted.size() << " primitives" << std::endl;
-            if ( !promoted.size() && safe_mode )
-            {
-                std::cout << "[" << __func__ << "]: " << "\n\nDISABLING safe mode, since no promoted\n" << std::endl;
-                safe_mode = false;
-            }
+            //if ( !promoted.size() && safe_mode )
+            //{
+            //    std::cout << "[" << __func__ << "]: " << "\n\nDISABLING safe mode, since no promoted\n" << std::endl;
+            //    safe_mode = false;
+            //}
         } //...promote
 
         // _________ (2) statistics _________
@@ -852,8 +852,6 @@ namespace GF2
                           && (populations[primIt.getGid()].size() > params.patch_population_limit * 2) ) // add if, at least double poplimit points in it
                    )
                 {
-                    if ( primIt.getGid() == 57755 )
-                        std::cout << "adding " << primIt.getDid() << " to " << primIt.getGid() << std::endl;
                     containers::add( outPrims, primIt.getGid(), *primIt );
                 }
                 else
@@ -867,7 +865,7 @@ namespace GF2
                 if ( outPrims[ it->first ].size() == 0 )
                 {
                     std::cerr << "[" << __func__ << "]: " << "throwing away everything from gid " << it->first << std::endl;
-                    throw std::runtime_error("gid");
+                    //throw std::runtime_error("gid");
                 }
             }
         }
@@ -1151,6 +1149,8 @@ namespace GF2
             else                        std::cout << "[" << __func__ << "]: " << "wrote to " << output_prims_path << std::endl;
         } //...save primitives
 
+//        if ( attempts > 1 )
+//            return 1;
         return std::max(ret,err);
     } // ...CandidateGenerator::generateCli()
 

@@ -65,11 +65,17 @@ function runRepr() {
 
 	
 	# Formulate
-	my_exec "$executable --formulate$flag3D $formParams --scale $scale --cloud cloud.ply --unary $unary --pw $rprPw --cmp $cmp --constr-mode patch --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $angleGens --candidates $rprCands -a $rprReprAssoc --freq-weight $freqweight --cost-fn $pwCostFunc"
+	my_exec "$executable --formulate$flag3D $formParams --scale $scale --cloud cloud.ply --unary $unary --pw $rprPw --cmp $cmp --constr-mode patch --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $anglegens --candidates $rprCands -a $rprReprAssoc --freq-weight $freqweight --cost-fn $pwCostFunc"
 
+	rprDiagF="diag_it${rprIter}.gv"; 
+	rprDiagFTmp="${rprDiagF}RprTmp";
 	if ! $dryRun ; then
 		echo "cp primitives_it${rprIter}.bonmin.csv primitives_it${rprIter}_rprtmp.csv"
 		cp primitives_it${rprIter}.bonmin.csv primitives_it${rprIter}_rprtmp.csv
+		if [ -e $rprDiagF ]; then # backup diag_itx.gv
+			echo "mv $rprDiagF $rprDiagFTmp";
+			mv $rprDiagF "$rprDiagFTmp"
+		fi
 	fi
 
 	my_exec "$executable --solver$flag3D bonmin --problem problem -v --time -1 --angle-gens $anglegens --bmode $algCode --candidates $rprCands"
@@ -79,6 +85,13 @@ function runRepr() {
 		cp primitives_it${rprIter}.bonmin.csv $rprReprOpt
 		echo "cp primitives_it${rprIter}_rprtmp.csv primitives_it${rprIter}.bonmin.csv"
 		cp primitives_it${rprIter}_rprtmp.csv primitives_it${rprIter}.bonmin.csv
+		echo "mv $rprDiagF diag_it${rprIter}.lvl2.gv"
+		mv $rprDiagF diag_it${rprIter}.lvl2.gv
+		# restore diag_itx.gv
+		if [ -e "$rprDiagFTmp" ]; then
+			echo "mv $rprDiagFTmp $rprDiagF"
+			mv "$rprDiagFTmp" $rprDiagF
+		fi
 	fi
 
 	#my_exec "../globOptVis --show$flag3D -p $rprReprOpt -a $rprReprAssoc --title \"GlobOpt-RepresentativesOptimized\" --scale $scale --pop-limit $poplimit $visdefparam &"

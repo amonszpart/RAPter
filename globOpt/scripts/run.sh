@@ -12,15 +12,16 @@ noVis=false            # Only show premerge and final output
 # startAt=1: don't do segment, do premerge
 # startAt=2: don't do premerge, do iteration 0
 startAt=0
-nbExtraIter=100         # Values: [ 1..20 ] iteration count. Default: 2.
-reprPwMult=2            # Values: [ 1, 5 ,10]. Multiplies pw with this number when doing lvl2 (representatives)
+nbExtraIter=50          # Values: [ 1..20 ] iteration count. Default: 2.
+reprPwMult=5            # Values: [ 1, 5 ,10]. Multiplies pw with this number when doing lvl2 (representatives)
 use90=25                # Values: [ 100 ] Will be re-set by runscript
 extendedAngleGens="90"  # Values: [ "0", "90", ... ]
 premerge=1              # Call merge after segmentation 0/1
-mergeMult="0.5"
+mergeMult="1"
+mergeChunk=5000
 
 anglegens="0"           # Values: ["0", "60", "90", "60,90", ... ] Desired angle generators in degrees. Default: 90.
-unary=1000000           # Values: [1000, 1000000]
+unary=10000             # Values: [1000000, 1000, 1000000]
 spatWeight=0            # Values: [ 10, 0 ] (Penalty that's added, if two primitives with different directions are closer than 2 x scale)
 truncAngle=$anglelimit  # Values: [ 0, $anglelimit, 0.15 ] (Pairwise cost truncation angle in radians)
 smallThreshDiv="2"      # Values: [ 2, 3, ... ] Stepsize of working scale.
@@ -78,7 +79,7 @@ pwCostFunc="spatsqrt"       # Spatial cost function.
 visdefparam="--angle-gens $anglegens --use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-rel --no-scale --bg-colour .9,.9,.9" #"--use-tags --no-clusters" #--ids
 iterationConstrMode="patch" # what to add in the second iteration formulate. Default: 0 (everyPatchNeedsDirection), experimental: 2 (largePatchesNeedDirection).
 
-variableLimit=1300; # 1300; # Safe mode gets turned on, and generate rerun, if candidates exceed this number (1300)
+variableLimit=1100; # 1300; # Safe mode gets turned on, and generate rerun, if candidates exceed this number (1300)
 algCode=0                   # 0==B_BB, OA, QG, 3==Hyb, ECP, IFP
 candAngleGens=$anglegens    # used to mirror anglegens, but keep const "0" for generate
 #######################################
@@ -135,7 +136,7 @@ if [ $startAt -le 1 ]; then
         echo "performing premerge"
         mergeScale=`my_mult $scale $mergeMult`
         echo "mergeScale: $mergeScale"
-        my_exec "$executable --merge$flag3D --scale $mergeScale --adopt $adopt --prims $input -a $assoc --angle-gens $anglegens --patch-pop-limit $poplimit"
+        my_exec "$executable --merge$flag3D --scale $mergeScale --adopt $adopt --prims $input -a $assoc --angle-gens $anglegens --patch-pop-limit $poplimit --partition $mergeChunk"
 
         # save patches
         cp patches.csv_merged_it-1.csv $input
@@ -233,7 +234,7 @@ do
         #if [ $(( $c - 1 )) -eq $use90 ]; then
         if [ $(( $c )) -eq $use90 ]; then
             #anglegens=$_bakAngleGens;
-            candAngleGens=$anglegens; #no more 90 candidates
+            candAngleGens=$_bakAngleGens; #no more 90 candidates
         fi
 
         # Merge/show parallel

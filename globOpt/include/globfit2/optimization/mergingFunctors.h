@@ -189,7 +189,7 @@ public:
         if (a1 > a2) return directionnalEval(extrema0, p0, extrema1, p1, scale);
         if (a1 < a2) return directionnalEval(extrema1, p1, extrema0, p0, scale);
 
-        std::cout << "Pathes wich the same area: " << std::endl;
+        std::cout << "Patches with the same area: " << std::endl;
         std::cout << "(" << p0.getTag(_PlaneT::TAGS::GID )     << ","
                   << p0.getTag(_PlaneT::TAGS::DIR_GID ) << ")"
                   << " vs. ("    << p1.getTag(_PlaneT::TAGS::GID ) << ","

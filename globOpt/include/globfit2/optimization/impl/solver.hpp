@@ -180,10 +180,10 @@ Solver::solve( int    argc
                 p_bonminProblem->setAlgorithm( Bonmin::Algorithm(bmode) );
                 std::cout << "[" << __func__ << "]: " << "setting attemptCount to " << (1 + attemptCount) * 100 << std::endl;
                 p_bonminProblem->setNodeLimit( (1 + attemptCount) * 100 );
-                if ( attemptCount )
-                {
-                    p_bonminProblem->setMaxSolutions( 1 );
-                }
+//                if ( attemptCount )
+//                {
+//                    p_bonminProblem->setMaxSolutions( 1 ); // this is evil
+//                }
                 OptProblemT::SparseMatrix x0;
                 if ( !x0_path.empty() )
                 {
