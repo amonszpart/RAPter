@@ -23,29 +23,25 @@ splatting figure/cloud.ply figure/cloud.ply 0 0.001
 #distribution
 python ../normal_distr.py cloudRGBNormal_patches_reProj_noUnass_noPrim.ply ndistrPatches.svg "Euler - Patches"
 
-#meshlabserver -i cloudRGBNormal_patches_reProj_noUnass_noPrim.ply -o figure/cloud_cleaned.ply -om vc vn
+meshlabserver -i cloudRGBNormal_patches_reProj_noUnass_noPrim.ply -o figure/cloud_cleaned.ply -om vc vn
 
 splatting figure/cloud_cleaned.ply figure/cloud_cleaned.ply 0 0.001
 
 
 ############################################################
 ## generate cleaned point-cloud model, and associated stats
-../globOptVis  --show3D  --pop-limit 3 -p primitives_it69.bonmin.csv -a points_primitives_it68.csv --title GlobOpt - [Dir-Colours] 69 iteration output --angle-gens 0 --draw-mode 28 --save-poly  --paral-colours 
+../globOptVis  --show3D  --pop-limit 3 -p primitives_it10.bonmin.csv -a points_primitives_it9.csv --title GlobOpt - [Dir-Colours] 10 iteration output --angle-gens 0 --draw-mode 28 --save-poly  --paral-colours 
 
 #distribution
-python ../normal_distr.py cloudRGBNormal_it69_reProj_noUnass_noPrim.ply ndistrIt69.svg "Euler - Iteration 69"
+python ../normal_distr.py cloudRGBNormal_it10_reProj_noUnass_noPrim.ply ndistrIt69.svg "Euler - Iteration 69"
+
+meshlabserver -i cloudRGBNormal_it10_reProj_noUnass_noPrim.ply -o figure/cloud_cleaned_pts.ply -om vc vn
+
+splatting figure/cloud_cleaned_pts.ply figure/cloud_cleaned.ply 0 0.002
 
 #graph
-python ../readGraphProperties.py primitives_it69.bonmin.csv points_primitives_it68.csv cloud.ply --angles 0 --iteration 69
-
-meshlabserver -i cloudRGBNormal_it69_reProj_noUnass_noPrim.ply -o figure/cloud_cleaned_pts.ply -om vc vn
-
-splatting figure/cloud_cleaned_pts.ply figure/cloud_cleaned.ply 0 0.001
+python ../readGraphProperties.py primitives_it10.bonmin.csv points_primitives_it09.csv cloud.ply --angles 0 --iteration 10
 
 ############################################################
 ## generate planar approximation
-../globOptVis  --show3D  --pop-limit 3 -p primitives_it69.bonmin.csv -a points_primitives_it68.csv --title GlobOpt - [Dir-Colours] 69 iteration output --angle-gens 0 --draw-mode 1 --save-poly  --paral-colours --no-pts --no-rel --no-clusters --no-pop --no-scale  --no-ids
-
-
-
-
+../globOptVis  --show3D  --pop-limit 3 -p primitives_it10.bonmin.csv -a points_primitives_it9.csv --title GlobOpt - [Dir-Colours] 10 iteration output --angle-gens 0 --draw-mode 28 --save-poly  --paral-colours --no-pts
