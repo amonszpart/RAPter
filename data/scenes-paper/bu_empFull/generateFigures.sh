@@ -29,7 +29,7 @@ python ../normal_distr.py cloudRGBNormal_patches_reProj_noUnass_noPrim.ply ndist
 ../globOptVis  --show3D  --pop-limit 3 -p primitives_it10.bonmin.csv -a points_primitives_it9.csv --title GlobOpt - [Dir-Colours] 10 iteration output --angle-gens 0 --draw-mode 28 --save-poly  --paral-colours 
 
 #distribution
-python ../normal_distr.py cloudRGBNormal_it10_reProj_noUnass_noPrim.ply ndistrIt69.svg "Euler - Iteration 69"
+python ../normal_distr.py cloudRGBNormal_it10_reProj_noUnass_noPrim.ply ndistrIt10.svg "Euler - Iteration 10"
 
 meshlabserver -i cloudRGBNormal_it10_reProj_noUnass_noPrim.ply -o figure/cloud_cleaned_pts.ply -om vc vn
 
@@ -40,4 +40,4 @@ python ../readGraphProperties.py primitives_it10.bonmin.csv points_primitives_it
 
 ############################################################
 ## generate planar approximation
-../globOptVis  --show3D  --pop-limit 3 -p primitives_it10.bonmin.csv -a points_primitives_it9.csv --title GlobOpt - [Dir-Colours] 10 iteration output --angle-gens 0 --draw-mode 28 --save-poly  --paral-colours --no-pts
+../globOptVis  --show3D  --pop-limit 3 -p primitives_it10.bonmin.csv -a points_primitives_it9.csv --title GlobOpt - [Dir-Colours] 10 iteration output --angle-gens 0 --draw-mode 1 --save-poly  --paral-colours --no-pts
