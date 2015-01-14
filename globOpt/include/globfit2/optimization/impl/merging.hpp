@@ -104,8 +104,9 @@ namespace merging
                        const Population& pop1,           // [in]  Second primitive population (point ids)
                        PointCloud&       points,         // [in]  Point cloud
                        Scalar            scale,          // [in]  Working scale (for refit)
-                       DidT            & max_dir_gid,
-                       bool              nogeneration = false
+                       DidT            & max_dir_gid
+                     , PidT            & maxUid4         // [in/out] Keeps track of new unique ids, that  live outside the big while loop
+                     , bool              nogeneration = false
                      )
     {
 
@@ -248,9 +249,10 @@ namespace merging
         }*/
 
         // add generated primitives
-        for(typename std::vector<PrimitiveT>::const_iterator it = primToAdd.begin(); it != primToAdd.end(); it++)
+        for(typename std::vector<PrimitiveT>::iterator it = primToAdd.begin(); it != primToAdd.end(); it++)
         {
             (*it).template setExtentOutdated();
+            (*it).setTag( PrimitiveT::USER_TAGS::USER_ID4, ++maxUid4 );
             containers::add<PrimitiveT>( out_primitives, (*it).getTag(PrimitiveT::TAGS::GID ), (*it) );
     //        std::cout<< "Add (" << (*it).getTag(PrimitiveT::TAGS::GID )
     //                 << ","     << (*it).getTag(PrimitiveT::TAGS::DIR_GID ) << ") : "
@@ -275,6 +277,61 @@ namespace merging
         //containers::add<PrimitiveT>( out_primitives, l0.getTag(PrimitiveT::TAGS::GID ), l0 );
         //containers::add<PrimitiveT>( out_primitives, l1.getTag(PrimitiveT::TAGS::GID ), l1 );
     }
+
+
+    template <typename _ULongT = ULidT>
+    class ComparedSet : public std::set< std::pair<_ULongT, _ULongT> >
+    {
+        public:
+            typedef std::pair<_ULongT, _ULongT> ElementT;
+            typedef std::set < ElementT       > ParentT;
+
+            /*! \brief Overload constructor to initialize max id field.
+             */
+            ComparedSet() : ParentT(), _maxId( _ULongT(0) ), _hits(0) {}
+
+            /*! \brief Overload set insert to keep track of maximum node id in the edges list.
+             */
+            std::pair<typename ParentT::iterator, bool>
+            insert( typename ParentT::value_type& __x )
+            {
+                // this is just for safety, _maxId is inited, changed from the outside
+                if ( __x.first  > _maxId ) _maxId = __x.first;
+                if ( __x.second > _maxId ) _maxId = __x.second;
+
+                return ParentT::insert( __x );
+            }
+
+            /*! \brief Erases any member pair, that has x.first or x.second in it.
+             */
+            void eraseAny( typename ParentT::value_type& x )
+            {
+                for ( auto it = this->begin(); it != this->end(); )
+                    if ( (it->first == x.first) || (it->second == x.first) )
+                        this->erase( it++ );
+                    else if ( (it->first== x.second) || (it->second == x.second) )
+                        this->erase( it++ );
+                    else
+                        ++it;
+            }
+
+            void
+            clear() _GLIBCXX_NOEXCEPT
+            {
+                ParentT::clear();
+                _maxId = 0;
+            }
+
+            /*! \brief Get maximum vertex id, this is changed from outside, not the "seen type"
+             */
+            inline _ULongT& getMaxId() { return _maxId; }
+            inline void incHits() { _hits++; }
+            inline ULidT getHits() { return _hits; }
+
+        protected:
+            _ULongT _maxId;
+            ULidT _hits;
+    }; //...ComparedSet
 
 
     /*! \brief  Function that performs the merge as a single operation, called once from MergCli.
@@ -309,9 +366,15 @@ namespace merging
                                    , params.patch_spatial_weight
                                    );
 
-        _PrimitiveMapT prims_map_copy = prims_map;
+        _PrimitiveMapT       prims_map_copy = prims_map;
+        ComparedSet<PidT>    compared; // contains USER_ID4 tags, that were checked, and not merged
+        for ( typename _PrimitiveMapT::Iterator it(prims_map_copy); it.hasNext(); it.step() )
+        {
+            it->setTag( _PrimitiveT::USER_TAGS::USER_ID4, compared.getMaxId()++ );
+        }
+
         _PrimitiveMapT *in  = &prims_map_copy,
-                      *out = &out_prims;
+                       *out = &out_prims;
 
         //some test here, nothing really worked.
         // The idea was to try to generate the right functor to merge either lines or planes
@@ -323,9 +386,11 @@ namespace merging
 
         if ( params.is3D )
         {
-            while(
-                  Merging::mergeSameDirGids<_PrimitiveT, _PointPrimitiveT, typename _PrimitiveMapT::mapped_type/*::const_iterator*/>
-                  ( *out, points, *in, params.scale, params.spatial_threshold_mult * params.scale, params.parallel_limit, patchPatchDistFunct, DecideMergePlaneFunctor(), preserveSmallPatches ))
+            while (
+                    Merging::mergeSameDirGids<_PrimitiveT, _PointPrimitiveT, typename _PrimitiveMapT::mapped_type/*::const_iterator*/>
+                    ( *out, points, *in, params.scale, params.spatial_threshold_mult * params.scale, params.parallel_limit
+                    , patchPatchDistFunct, DecideMergePlaneFunctor(), preserveSmallPatches, compared )
+                  )
             {
                 _PrimitiveMapT* tmp = out;
                 out = in;
@@ -336,16 +401,24 @@ namespace merging
         {// 2D
             while(
                   Merging::mergeSameDirGids<_PrimitiveT, _PointPrimitiveT, typename _PrimitiveMapT::mapped_type/*::const_iterator*/>
-                  ( *out, points, *in, params.scale, params.spatial_threshold_mult * params.scale, params.parallel_limit, patchPatchDistFunct, DecideMergeLineFunctor(), preserveSmallPatches ))
+                  ( *out, points, *in, params.scale, params.spatial_threshold_mult * params.scale, params.parallel_limit, patchPatchDistFunct, DecideMergeLineFunctor(), preserveSmallPatches, compared ))
             {
                 _PrimitiveMapT* tmp = out;
                 out = in;
                 in  = tmp;
             } //...while
         } //...else2D
-    }//...doMerge cand
 
-#if 1
+        // if last iteration output to prims_map_copy, make sure to copy to out_prims.
+        if ( in != &out_prims )
+        {
+            std::cout << "[" << __func__ << "]: " <<  "PFFF...swapping in/out..." << std::endl;
+            out_prims = *in;
+        }
+
+        std::cout << "[" << __func__ << "]: " << "UID4 HITS: " << compared.getHits() << std::endl;
+
+    } //...doMerge cand
 
     template <class _PrimitiveMapT, class _PointContainerT>
     struct MergePartition : std::pair<_PrimitiveMapT, _PointContainerT>
@@ -369,6 +442,7 @@ namespace merging
                          , _MergeParamsT    const& params
                          , size_t           const  sizeLimit
                          , int              const  splitCount = 8
+                         , int              const  level = 0
                          )
     {
         typedef typename _PointContainerT::value_type            PointPrimitiveT;
@@ -440,15 +514,13 @@ namespace merging
         {
             partition( /* out: */ processedParts[i]
                      , /*  in: */ splits[i].getPrimitives(), splits[i].getPoints()
-                     , params, sizeLimit, 2 );
+                     , params, sizeLimit, 2, level + 1 );
         }
 
         // (4.1) gather to <gatheredPrimitives,outPartition.getPoints>
-        size_t changeCount = 0;
         _PrimitiveMapT gatheredPrimitives;
         for ( size_t i = 0; i < processedParts.size(); ++i )
         {
-            changeCount += std::abs( processedParts[i].getPrimitives().size() - splits[i].getPrimitives().size() );
             gatheredPrimitives.insert( processedParts[i].getPrimitives().begin()
                                                , processedParts[i].getPrimitives().end()   );
             outPartition.getPoints().insert( outPartition.getPoints().end()
@@ -456,20 +528,32 @@ namespace merging
                                              , processedParts[i].getPoints().end()  );
         } //...gather
 
-#if 0
-        outPartition.getPrimitives() = gatheredPrimitives;
-#else
+//#if 0
         // (4.2) merge <gatheredPrimitives(),outPartition.getPoints()> to <outPartition.getPrimitives(),outPartition.getPoints()>
-        merging::iterativeMerge<PointPrimitiveT,PrimitiveT, PointContainerT>
-                ( /* out: */ outPartition.getPrimitives(), outPartition.getPoints()
-                , /*  in: */ gatheredPrimitives, params );
-#endif
+        if ( !level )
+        {
+            char o_path[2048]; sprintf( o_path, "unMergedLvl%02d", level );
+            io::savePrimitives<PrimitiveT, typename _PrimitiveMapT::mapped_type::const_iterator>( gatheredPrimitives
+                                                                                               , std::string(o_path) + ".csv" );
+            std::cout << "wrote " << o_path << std::endl;
 
-        std::cout << "[" << __func__ << "]: " << "changed no avg " << changeCount / float(splitCount) << std::endl;
+            char oPointsPath[2048];
+            sprintf( oPointsPath, "points_%s.csv", o_path );
+            io::writeAssociations<PointPrimitiveT>( outPartition.getPoints(), oPointsPath );
+            std::cout << "wrote " << oPointsPath << std::endl;
+        }
+
+        {
+//#else
+            std::cout << "[" << __func__ << "]: " << "gathering level " << level << std::endl;
+            merging::iterativeMerge<PointPrimitiveT,PrimitiveT, PointContainerT>
+                    ( /* out: */ outPartition.getPrimitives(), outPartition.getPoints()
+                    , /*  in: */ gatheredPrimitives, params );
+            std::cout << "[" << __func__ << "]: " << "gathering level " << level << " finished" << std::endl;
+        }
+
         std::cout << "[" << __func__ << "]: " << "primcount: " << prims.size() << " -> " << outPartition.getPrimitives().size() << std::endl;
     } //...partition
-#endif
-
 } //...merging
 
 template < class    _PrimitiveContainerT
@@ -535,8 +619,10 @@ Merging::mergeCli( int argc, char** argv )
     } // ... parse params
 
     // read primitives
-    typedef std::vector<_PrimitiveT>    PatchT;
-    typedef std::map   < GidT, PatchT >  PrimitiveMapT;
+    //typedef std::vector<_PrimitiveT>    PatchT;
+    //typedef std::map   < GidT, PatchT >  PrimitiveMapT;
+    typedef containers::PrimitiveContainer<_PrimitiveT> PrimitiveMapT;
+    typedef typename PrimitiveMapT::InnerContainerT     PatchT;
     _PrimitiveContainerT prims;
     PrimitiveMapT        prims_map;
     {
@@ -587,6 +673,8 @@ Merging::mergeCli( int argc, char** argv )
                     ( points, prims_map, params.scale, params.do_adopt, params.patch_population_limit );
     }
 
+
+
     PrimitiveMapT out_prims;
     if ( (sizeLimit == 0) || (prims_map.size() <= sizeLimit) ) // Assumes one primitive in each gid...
         merging::iterativeMerge<_PointPrimitiveT,_PrimitiveT, _PointContainerT>
@@ -603,13 +691,13 @@ Merging::mergeCli( int argc, char** argv )
     std::string o_path;
     int         iteration = 0;
     {
-        iteration = util::parseIteration( prims_path );
         std::stringstream ss;
-        size_t it_loc = prims_path.find("_it");
-        std::string fname = prims_path.substr( 0, it_loc );
+        iteration           = util::parseIteration( prims_path );
+        size_t      it_loc  = prims_path.find("_it");
+        std::string fname   = prims_path.substr( 0, it_loc );
         ss << fname << "_merged_it" << iteration << ".csv";
-        o_path = ss.str();
-        io::savePrimitives   <_PrimitiveT, typename PrimitiveMapT::mapped_type::const_iterator>( out_prims, o_path );
+        o_path              = ss.str();
+        io::savePrimitives<_PrimitiveT, typename PrimitiveMapT::mapped_type::const_iterator>( out_prims, o_path );
         std::cout << "wrote " << o_path << std::endl;
     }
 
@@ -781,27 +869,31 @@ template < class    _PrimitiveT
          , class    _PointContainerT
          , typename _Scalar
          , class    _PatchPatchDistanceFunctorT
-         , class    _PrimitiveDecideMergeFunctorT >
-int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
-                             , _PointContainerT                 & points
+         , class    _PrimitiveDecideMergeFunctorT
+         , class    _ComparedUidsT >
+int Merging::mergeSameDirGids( _PrimitiveContainerT               & out_primitives
+                             , _PointContainerT                   & points
                              , _PrimitiveContainerT        /*const&*/ primitives
-                             , _Scalar                     const  scale
-                             , _Scalar                     const  spatial_threshold
-                             , _Scalar                     const  parallel_limit
-                             , _PatchPatchDistanceFunctorT const& /*patchPatchDistFunct*/
+                             , _Scalar                       const  scale
+                             , _Scalar                       const  spatial_threshold
+                             , _Scalar                       const  parallel_limit
+                             , _PatchPatchDistanceFunctorT   const& /*patchPatchDistFunct*/
                              , _PrimitiveDecideMergeFunctorT const& primitiveDecideMergeFunct
-                             , bool preserveSmallPatches  )
+                             , bool                                 preserveSmallPatches
+                             , _ComparedUidsT                     & comparedUids
+                             )
 {
     typedef typename _PrimitiveContainerT::const_iterator      outer_const_iterator;
-    typedef typename _InnerPrimitiveContainerT::const_iterator      inner_const_iterator;
+    typedef typename _InnerPrimitiveContainerT::const_iterator inner_const_iterator;
+    typedef typename _PrimitiveContainerT::iterator            outer_iterator;
+    typedef typename _InnerPrimitiveContainerT::iterator       inner_iterator;
     typedef           std::vector<Eigen::Matrix<_Scalar,3,1> > ExtremaT;
-    typedef           std::map   < LidT, ExtremaT>              LidExtremaT;
-    typedef           std::map   < GidT, LidExtremaT >          GidLidExtremaT;
+    typedef           std::map   < LidT, ExtremaT>             LidExtremaT;
+    typedef           std::map   < GidT, LidExtremaT >         GidLidExtremaT;
     typedef           std::pair  < GidT, // map key
                                    LidT> // linear index in the array associated to the key
                       GidLid;
-
-
+    typedef typename _ComparedUidsT::ElementT UidPairT;
 
     // Store the primitives that have been matched and must be ignored
     // First  (key)   = candidate,
@@ -821,21 +913,28 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
     }
 
     // Extrema
+    UidT uid = 0; DidT maxDirGId = 0;
     GidLidExtremaT extrema; // <gid,lid> -> vector<x0, x1, ...>
     if ( EXIT_SUCCESS == err )
     {
         // for all patches
-        for ( outer_const_iterator outer_it  = primitives.begin();
+        for ( outer_iterator outer_it  = primitives.begin();
                                   (outer_it != primitives.end()); // we now handle error
                                  ++outer_it )
         {
-            GidT gid  = -2; // (-1 is "unset")
-            LidT lid = 0; // linear index of primitive in container (to keep track)
+            GidT gid = -2; // (-1 is "unset")
+            LidT lid = 0;  // linear index of primitive in container (to keep track)
             // for all directions
-            for ( inner_const_iterator inner_it  = containers::valueOf<_PrimitiveT>(outer_it).begin();
+            for ( inner_iterator inner_it  = containers::valueOf<_PrimitiveT>(outer_it).begin();
                                        (inner_it != containers::valueOf<_PrimitiveT>(outer_it).end());// we now handle error
                                       ++inner_it, ++lid )
             {
+                //primitives.at(gid0).at(lid0).setTag(_PrimitiveT::USER_ID1, uid);
+                inner_it->setTag( _PrimitiveT::USER_ID1, ++uid );
+                maxDirGId = std::max( maxDirGId
+                                    , static_cast<DidT>( inner_it->getTag(_PrimitiveT::TAGS::DIR_GID) )
+                                    );
+
                 // ignore small patches
                 if ( inner_it->getTag( _PrimitiveT::TAGS::STATUS ) == _PrimitiveT::STATUS_VALUES::SMALL )
                 {
@@ -848,17 +947,11 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
                 {
                     gid = inner_it->getTag( _PrimitiveT::TAGS::GID );
                     // sanity check
-                    if ( extrema.find(gid) != extrema.end() )
-                    {
-                        std::cerr << "[" << __func__ << "]: " << "GID not unique for patch...:-S" << std::endl;
-                    }
+                    if ( extrema.find(gid) != extrema.end() )   std::cerr << "[" << __func__ << "]: " << "GID not unique for patch...:-S" << std::endl;
                 }
 
                 if ( populations[gid].size() )
                 {
-                    // we want to recalculate to be sure, points might have been reassigned
-                    //inner_it->template setExtentOutdated();
-
                     err = inner_it->template getExtent<_PointPrimitiveT>
                                                                ( extrema[gid][lid]
                                                                , points
@@ -889,15 +982,20 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
     typedef typename GidLidExtremaT::const_iterator GidIt;
     typedef typename LidExtremaT::const_iterator    PrimIt;
 
+#if 0
     // add a local uid attribute to primitives to be able to recognize them later
-    UidT uid = 0;
-    for ( GidIt gid_it = extrema.cbegin(); gid_it != extrema.cend(); ++gid_it ){
+    DidT altMaxDirGid = 0;
+    for ( GidIt gid_it = extrema.cbegin(); gid_it != extrema.cend(); ++gid_it )
+    {
         const GidT gid0 = gid_it->first;
-        for ( PrimIt prim_it = gid_it->second.cbegin(); prim_it != gid_it->second.cend(); ++prim_it, uid++ ){
+        for ( PrimIt prim_it = gid_it->second.cbegin(); prim_it != gid_it->second.cend(); ++prim_it, uid++ )
+        {
             const GidT lid0 = std::distance<typename LidExtremaT::const_iterator>( gid_it ->second.cbegin(), prim_it );
             primitives.at(gid0).at(lid0).setTag(_PrimitiveT::USER_ID1, uid);
+            altMaxDirGid = std::max( altMaxDirGid, static_cast<DidT>(primitives.at(gid0).at(lid0).getTag(_PrimitiveT::TAGS::DIR_GID)) );
         }
     }
+
 
     // estimate the maximum direction id, to be able to give new ids to refit primitives
     DidT max_dir_gid = 0;
@@ -905,8 +1003,11 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
         for ( inner_const_iterator inner_it  = containers::valueOf<_PrimitiveT>(outer_it).begin();
                                    (inner_it != containers::valueOf<_PrimitiveT>(outer_it).end());
                                   ++inner_it )
+        {
             max_dir_gid = std::max( max_dir_gid, static_cast<DidT>((*inner_it).getTag(_PrimitiveT::TAGS::DIR_GID)) );
-    std::cout << "[" << __func__ << "]: " << "max_dir_gid: " << max_dir_gid << std::endl;
+        }
+#endif
+    std::cout << "[" << __func__ << "]: " << "max_dir_gid: " << maxDirGId << std::endl;
 
     // Here are two first loops to iterate over the map entries, and for each of them over the
     // linear array containing primitives (we call them ref. primitive in the following).
@@ -984,6 +1085,20 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
 
                     const _PrimitiveT& prim1 = primitives.at(gid1).at(lid1);
 
+                    PidT uid40 = prim0.getTag( _PrimitiveT::USER_TAGS::USER_ID4 ),
+                         uid41 = prim1.getTag( _PrimitiveT::USER_TAGS::USER_ID4 );
+
+                    UidPairT uid4Pair;
+                    if ( uid40 > uid41 ) uid4Pair = UidPairT(uid41,uid40);
+                    else                 uid4Pair = UidPairT(uid40,uid41);
+
+                    if ( comparedUids.find( uid4Pair ) != comparedUids.end() )
+                    {
+                        comparedUids.incHits();
+                        continue;
+                    }
+
+
                     if (primitiveDecideMergeFunct.eval( prim_it->second,  // extrema 0
                                                         prim0,            // prim 0
                                                         prim_it1->second, // extrema 1
@@ -996,7 +1111,8 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
                         ignoreList.insert(gid0);
                         ignoreList.insert(gid1);
 
-                        if ( ( prim0.getTag(_PrimitiveT::TAGS::STATUS) == _PrimitiveT::STATUS_VALUES::SMALL ) || ( prim1.getTag(_PrimitiveT::TAGS::STATUS) == _PrimitiveT::STATUS_VALUES::SMALL ) )
+                        if (    ( prim0.getTag(_PrimitiveT::TAGS::STATUS) == _PrimitiveT::STATUS_VALUES::SMALL )
+                             || ( prim1.getTag(_PrimitiveT::TAGS::STATUS) == _PrimitiveT::STATUS_VALUES::SMALL ) )
                         {
                             std::cout << "[" << __func__ << "]: " << "crap, small patches are merged..." << std::endl; fflush(stdout);
                             throw new std::runtime_error("asdf");
@@ -1009,14 +1125,29 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
                                         populations[gid1],  // [in]  Second primitive population (point ids)
                                         points,             // [in]  Point cloud
                                         scale,              // [in]  Working scale (for refit)
-                                        max_dir_gid         // [in,out] maximum direction id
+                                        maxDirGId,          // [in,out] maximum direction id
+                                        comparedUids.getMaxId() // [in,out] maximum new unique id
                                        );
 
                         merged = true;
 
                         is0Valid = false;
 
+                        //comparedUids.erase( uid4Pair );
+                        comparedUids.eraseAny( uid4Pair );
+
                         continue;  // jump to the next couple ref/candidate primitive
+                    }
+                    else
+                    {
+
+                        auto uidPairIt = comparedUids.find( uid4Pair );
+                        if ( uidPairIt != comparedUids.end() )
+                        {
+                            std::cout << "this shouldn't happen, why are we rechecking this pair: " << uid40 << "," << uid41 << std::endl;
+                        }
+
+                        comparedUids.insert( uid4Pair );
                     }
                     //else
                     //    std::cout << " NO" << std::endl;
@@ -1025,7 +1156,7 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT             & out_primitives
         }
     }
 
-    typedef typename _PrimitiveContainerT::mapped_type::iterator inner_iterator;
+    //typedef typename _PrimitiveContainerT::mapped_type::iterator inner_iterator;
 
     // we can now remove primitives that are not assigned to any points
     processing::eraseNonAssignedPrimitives<_PrimitiveT, inner_iterator>(out_primitives, points, preserveSmallPatches);

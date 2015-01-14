@@ -195,7 +195,8 @@ namespace containers {
                 return _inner_it.operator->();
             }
 
-            inline _PrimitiveT& operator*() const
+            //inline _PrimitiveT& operator*() const
+            inline typename std::iterator_traits<_InnerStdIteratorType>::reference operator*() const
             {
                 if ( _outer_it == _container.end() || (_inner_it == _outer_it->second.end()) )
                     throw PrimitiveContainerIterator::Exception("[Iterator] operator* called of invalid iterator!");

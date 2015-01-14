@@ -18,26 +18,6 @@ namespace GF2
         //! \brief General problem type, most implementations require double, so it is fixed to double.
         typedef qcqpcpp::OptProblem<double> OptProblemT;
 
-        //! \brief              Adds constraints to \p problem so, that each point has at least one line in \p scale radius that is selected.
-        //! \tparam _AssocT     Associates a primitive identified by <lid,lid1> with a variable id in the problem. Default: std::map< std::pair<int,int>, int >
-        template < class _PointPrimitiveDistanceFunctor
-                 , class _PrimitiveT        /* = typename _PrimitiveContainerT::value_type::value_type */
-                 , class _PointPrimitiveT   /* = typename _PointContainerT::value_type */
-                 , typename _Scalar
-                 , class _OptProblemT
-                 , class _PrimitiveContainerT
-                 , class _PointContainerT
-                 , class _AssocT
-                 , class _WeightsT
-                 >
-        static inline int
-        everyPointNeedsPatchConstraint( _OptProblemT              & problem
-                                      , _PrimitiveContainerT const& prims
-                                      , _PointContainerT     const& points
-                                      , _AssocT              const& lids_varids
-                                      , _WeightsT            const& /*weights*/
-                                      , _Scalar              const  scale );
-
         //! \brief              Adds constraints to \p problem so, that each patch (prims[i] that have the same _PrimitiveT::TAGS::GID) has at least one member j (prims[i][j]) selected.
         //! \tparam _AssocT     Associates a primitive identified by <lid,lid1> with a variable id in the problem. Default: std::map< std::pair<int,int>, int >
         template < class _PointPrimitiveDistanceFunctor
@@ -58,51 +38,6 @@ namespace GF2
                                           , _WeightsT            const& /*weights*/
                                           , _Scalar              const  /*scale*/
                                           , bool                 const  verbose = false );
-
-        //! \brief                      Hybrid mode, large patches need one direction, points in small patches need to be assigned to one.
-        //! \tparam _PrimitiveT         Concept: _PrimitiveContainerT::value_type::value_type
-        //! \tparam _PointPrimitiveT    Concept: _PointContainerT::value_type
-        //! \tparam _AssocT             Associates a primitive identified by <lid,lid1> with a variable id in the problem. Default: std::map< std::pair<int,int>, int >
-        //! \param[in,out] problem      The optimization problem to add to.
-        template < class _PointPrimitiveDistanceFunctor
-                 , class _PrimitiveT
-                 , class _PointPrimitiveT
-                 , typename _Scalar
-                 , class _OptProblemT
-                 , class _PrimitiveContainerT
-                 , class _PointContainerT
-                 , class _AssocT
-                 , class _WeightsT
-                 >
-        static inline int
-        largePatchesNeedDirectionConstraint( _OptProblemT              & problem
-                                           , _PrimitiveContainerT const& prims
-                                           , _PointContainerT     const& points
-                                           , _AssocT              const& lids_varids
-                                           , _WeightsT            const& /*weights*/
-                                           , _Scalar              const  scale
-                                           , int                  const  pop_limit
-                                           , bool                 const  verbose = false );
-
-        //! \brief Adds unary costs to problem based on scale wide band assocation.
-        //! \tparam _AssocT     Associates a primitive identified by <lid,lid1> with a variable id in the problem. Default: std::map< std::pair<int,int>, int >
-        template < class _PointPrimitiveDistanceFunctor
-                 , class _PrimitiveT        /* = typename _PrimitiveContainerT::value_type::value_type */
-                 , class _PointPrimitiveT   /* = typename _PointContainerT::value_type */
-                 , typename _Scalar
-                 , class _OptProblemT
-                 , class _PrimitiveContainerT
-                 , class _PointContainerT
-                 , class _AssocT
-                 , class _WeightsT
-                 >
-        static inline int
-        bandBasedDataCost( _OptProblemT              & problem
-                         , _PrimitiveContainerT const& prims
-                         , _PointContainerT     const& points
-                         , _AssocT              const& lids_varids
-                         , _WeightsT            const& weights
-                         , _Scalar              const  scale );
 
         //! \brief              Adds unary costs to problem based on point to primitive associations.
         //! \tparam _AssocT     Associates a primitive identified by <lid,lid1> with a variable id in the problem. Default: std::map< std::pair<int,int>, int >
@@ -125,27 +60,6 @@ namespace GF2
                                 , _Scalar              const  scale
                                 , _Scalar              const  freq_weight
                                 , bool                 const  verbose );
-
-        //! \brief Nic's version, unfinished!.
-        //! \tparam _AssocT     Associates a primitive identified by <lid,lid1> with a variable id in the problem. Default: std::map< std::pair<int,int>, int >
-        //! \warning Unfinished
-        template < class _PointPrimitiveDistanceFunctor
-                 , class _PrimitiveT        /* = typename _PrimitiveContainerT::value_type::value_type */
-                 , class _PointPrimitiveT   /* = typename _PointContainerT::value_type */
-                 , typename _Scalar
-                 , class _OptProblemT
-                 , class _PrimitiveContainerT
-                 , class _PointContainerT
-                 , class _AssocT
-                 , class _WeightsT
-                 >
-        static inline int
-        instanceBasedDataCost( _OptProblemT              & problem
-                                , _PrimitiveContainerT const& prims
-                                , _PointContainerT     const& points
-                                , _AssocT              const& lids_varids
-                                , _WeightsT            const& weights
-                                , _Scalar              const  /*scale*/ );
     } //... namespace problemSetup
 
     //! \brief Class to formulate problem into an quadratic optimization problem.

@@ -202,7 +202,10 @@ namespace GF2
 
         int closest_angle_id0 = 0;
         // do I have restrictions, when I copy dir1 to pos0 with this angle?
-        bool isRestricted0 = allowedAngles.find(dir_gid1) != allowedAngles.end();
+        bool isRestricted0 = false;
+        {
+            isRestricted0 = allowedAngles.find(dir_gid1) != allowedAngles.end();
+        }
 
         _Scalar angdiff0 = _PrimitivePrimitiveAngleFunctorT::template eval<_Scalar>( prim0, prim1,
                                                                                      /*isRestricted0 ? allowedAngles[dir_gid1] : */ angles,
@@ -212,8 +215,10 @@ namespace GF2
             add0 &= angdiff0 < angle_limit;
 
         // was this direction-angle pair already covered?
-        if ( copied[gid0].find(DidAid(dir_gid1,closest_angle_id0)) != copied[gid0].end() )
-            add0 = false;
+        {
+            if ( copied[gid0].find(DidAid(dir_gid1,closest_angle_id0)) != copied[gid0].end() )
+                add0 = false;
+        }
 
         // are we still adding it?
         if ( !add0 )
@@ -227,8 +232,23 @@ namespace GF2
         // TEST triplets
         if ( tripletSafe )
         {
-
-        }
+            for ( typename _PrimitiveContainerT::ConstIterator it(out_prims); it.hasNext(); it.step() )
+                if ( it.getDid() == dir_gid1 )
+                {
+                    //_Scalar tmpAng = GF2::angleInRad( cand0.template dir(), it->template dir() );
+                    _Scalar tmpAng = _PrimitivePrimitiveAngleFunctorT::template eval<_Scalar>( cand0, *it,
+                                                                                               angles );
+                    if ( tmpAng > _Scalar(1e-2) )
+                    {
+                        std::cout << "triplet cancel: "
+                                  << "<" << gid0 << "," << dir_gid1 << "," << cand0.getTag(_PrimitiveT::TAGS::GEN_ANGLE) << "> "
+                                  << tmpAng * 180. / M_PI << " with "
+                                  << " <" << it.getGid() << "," << it.getDid() << "," << it->getTag(_PrimitiveT::TAGS::GEN_ANGLE) << ">"
+                                  << "\n";
+                        add0 = false;
+                    }
+                }
+        } //...tripletSafe
 
         // (1) if not restricted ? output, restrict
         // (2)                   : if angle allowed ? output
@@ -287,11 +307,9 @@ namespace GF2
             doOutput = true;
         }
         // (3) Restricted, and not to the found angle --> If generator exists, and no alias exists yet, make one
-        else if (    aliases && generators.size()                                                // there exists a clear generator (i.e. 60 or 90, NOT 0, or 180) AND
-                  && (    (  aliases          ->find(dir_gid1     ) == aliases            ->end())   // AND (there's no alias to this did yet
-                       //|| ((*aliases)[dir_gid1].find(generators[0]) == (*aliases)[dir_gid1].end()) ) //      OR the aliases don't have this generator yet)
-                       //|| (angles::findAngle( generators[0], (*aliases)[dir_gid1])) ) //      OR the aliases don't have this generator yet)
-                         || (std::find_if( (*aliases)[dir_gid1].begin()
+        else if (    aliases && generators.size()                                                   // there exists a clear generator (i.e. 60 or 90, NOT 0, or 180) AND
+                  && (    (  aliases          ->find(dir_gid1     ) == aliases            ->end())  // AND (there's no alias to this did yet
+                         || (std::find_if( (*aliases)[dir_gid1].begin()                             //      OR the aliases don't have this generator yet)
                                          , (*aliases)[dir_gid1].end()
                                          , [&generators](typename _AliasesT::mapped_type::value_type const& elem){ return std::abs(elem.first-generators[0]) < halfDeg;} )
                              == (*aliases)[dir_gid1].end() )
@@ -307,24 +325,6 @@ namespace GF2
         {
             if ( generators.size() > 1 ) { throw new CandidateGeneratorException("[addCandidate] generators.size > 1, are you sure about this?"); }
             added0 = output( cand0, out_prims, generated, copied, nLines, promoted, gid0, lid0, closest_angle_id0, generators.size() ? generators[0] : _PrimitiveT::GEN_ANGLE_VALUES::UNSET );
-        }
-
-        // debug
-        if ( added0 )
-        {
-            if ( verbose ) std::cout << "[" << __func__ << "]: "
-                      << "added prim" << "<g" << gid0 << ",d" << dir_gid1 << "> from prim"
-                      << "<g" << gid1 << ",d" << dir_gid1 << "> via angle "
-                      << angles[closest_angle_id0] * 180. / M_PI;
-            if ( allowedAngles.find(dir_gid1) != allowedAngles.end() )
-            {
-                if ( verbose ) std::cout << " allowed angles[" << dir_gid1 << "][1]: " << allowedAngles[dir_gid1][1] * 180./M_PI << ", cand0.angle: " << cand0.getTag(_PrimitiveT::TAGS::GEN_ANGLE);
-                if ( cand0.getTag(_PrimitiveT::TAGS::GEN_ANGLE) == _PrimitiveT::GEN_ANGLE_VALUES::UNSET )
-                        std::cout << "THIS SHOULD NOT HAPPEN 123" << std::endl;
-            }
-            if ( verbose ) std::cout << std::endl;
-
-            fflush( stdout );
         }
 
         return added0;
@@ -1048,7 +1048,8 @@ namespace GF2
         }
 
         // read primitives
-        typedef std::map<GidT, InnerPrimitiveContainerT> PrimitiveMapT;
+        //typedef std::map<GidT, InnerPrimitiveContainerT> PrimitiveMapT; // redefined by Aron 14.23 13/1/2015
+        typedef containers::PrimitiveContainer<_PrimitiveT> PrimitiveMapT;
         _PrimitiveContainerT initial_primitives;
         PrimitiveMapT patches;
         {

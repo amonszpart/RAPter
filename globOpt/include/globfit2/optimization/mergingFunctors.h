@@ -150,8 +150,8 @@ private:
         PointT centerlocal (PointT::Zero());
         std::for_each(extrema0local.begin(), extrema0local.end(), [&centerlocal] (PointT& p){ centerlocal+=p; });
         centerlocal /= _Scalar(extrema0local.size());
-        if (centerlocal.norm() >= 10.e-6)
-        	std::cout << "problem here " << centerlocal.transpose() << std::endl;
+        //if (centerlocal.norm() >= 10.e-6)
+        //	std::cout << "problem here " << centerlocal.transpose() << std::endl;
 
         // here we project p over the two basis axis and check the norm of the projected vector
         // is < to the plane dimensions (hh,hw)
