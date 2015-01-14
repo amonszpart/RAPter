@@ -355,11 +355,8 @@ namespace merging
 
         _PrimitiveMapT       prims_map_copy = prims_map;
         ComparedSet<PidT>    compared; // contains USER_ID4 tags, that were checked, and not merged
-        //PidT uniqueId = 0;
-        std::map< GidT, std::map<DidT,PidT> > uids; // DEBUG
         for ( typename _PrimitiveMapT::Iterator it(prims_map_copy); it.hasNext(); it.step() )
         {
-            uids[ it.getGid() ][ it.getDid() ] = compared.getMaxId();
             it->setTag( _PrimitiveT::USER_TAGS::USER_ID4, compared.getMaxId()++ );
         }
 
@@ -408,34 +405,7 @@ namespace merging
 
         std::cout << "[" << __func__ << "]: " << "UID4 HITS: " << compared.getHits() << std::endl;
 
-        // DEBUG
-        unsigned long mismatch = 0, match = 0;
-        for ( typename _PrimitiveMapT::ConstIterator it(out_prims); it.hasNext(); it.step() )
-        {
-            auto const gidGroupIt = uids.find( it.getGid() );
-            if ( gidGroupIt != uids.end() )
-            {
-                auto const& gidGroup    = gidGroupIt->second;
-                auto const  didGroupIt  = gidGroup.find( it.getDid() );
-                if ( didGroupIt != gidGroup.end() )
-                {
-                    PidT uid = it->getTag( _PrimitiveT::USER_TAGS::USER_ID4 );
-                    if ( uid != didGroupIt->second )
-                    {
-                        std::cout << "mismatch: " << it.getGid() << "," << it.getDid() << ".oldUid: " << didGroupIt->second
-                                  << ", new uid: "
-                                  << uid << std::endl;
-                        ++mismatch;
-                    }
-                    else
-                        ++match;
-                }
-            }
-        } //...for debug uid
-
-        std::cout << "match/mismatch: " << match << "/" << mismatch << " = " << float(match)/float(mismatch)*100. << std::endl;
-
-    }//...doMerge cand
+    } //...doMerge cand
 
     template <class _PrimitiveMapT, class _PointContainerT>
     struct MergePartition : std::pair<_PrimitiveMapT, _PointContainerT>
@@ -550,7 +520,7 @@ namespace merging
         if ( !level )
         {
             char o_path[2048]; sprintf( o_path, "unMergedLvl%02d", level );
-            io::savePrimitives<PrimitiveT, typename _PrimitiveMapT::mapped_type::const_iterator>( outPartition.getPrimitives()
+            io::savePrimitives<PrimitiveT, typename _PrimitiveMapT::mapped_type::const_iterator>( gatheredPrimitives
                                                                                                , std::string(o_path) + ".csv" );
             std::cout << "wrote " << o_path << std::endl;
 
