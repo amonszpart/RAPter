@@ -11,9 +11,9 @@ mkdir figure
 #distribution
 python ../normal_distr.py cloud.ply ndistrCloudBinary.svg "Euler - Input"
 
-meshlabserver -i cloud.ply -o figure/cloud.ply -s $SCRIPT_PATH/colorize.mlx -om vc vn
+meshlabserver -i cloud.ply -o figure/cloud_pts.ply -s $SCRIPT_PATH/colorize.mlx -om vc vn
 
-splatting figure/cloud.ply figure/cloud.ply 0 0.001
+splatting figure/cloud_pts.ply figure/cloud.ply 1 0.001
 
 
 ############################################################
@@ -22,10 +22,6 @@ splatting figure/cloud.ply figure/cloud.ply 0 0.001
 
 #distribution
 python ../normal_distr.py cloudRGBNormal_patches_reProj_noUnass_noPrim.ply ndistrPatches.svg "Euler - Patches"
-
-meshlabserver -i cloudRGBNormal_patches_reProj_noUnass_noPrim.ply -o figure/cloud_cleaned.ply -om vc vn
-
-splatting figure/cloud_cleaned.ply figure/cloud_cleaned.ply 0 0.001
 
 
 ############################################################
@@ -37,7 +33,7 @@ python ../normal_distr.py cloudRGBNormal_it10_reProj_noUnass_noPrim.ply ndistrIt
 
 meshlabserver -i cloudRGBNormal_it10_reProj_noUnass_noPrim.ply -o figure/cloud_cleaned_pts.ply -om vc vn
 
-splatting figure/cloud_cleaned_pts.ply figure/cloud_cleaned.ply 0 0.002
+splatting figure/cloud_cleaned_pts.ply figure/cloud_cleaned.ply 1 0.002
 
 #graph
 python ../readGraphProperties.py primitives_it10.bonmin.csv points_primitives_it09.csv cloud.ply --angles 0 --iteration 10
