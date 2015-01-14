@@ -302,6 +302,19 @@ namespace merging
                 return ParentT::insert( __x );
             }
 
+            /*! \brief Erases any member pair, that has x.first or x.second in it.
+             */
+            void eraseAny( typename ParentT::value_type& x )
+            {
+                for ( auto it = this->begin(); it != this->end(); )
+                    if ( (it->first == x.first) || (it->second == x.first) )
+                        this->erase( it++ );
+                    else if ( (it->first== x.second) || (it->second == x.second) )
+                        this->erase( it++ );
+                    else
+                        ++it;
+            }
+
             void
             clear() _GLIBCXX_NOEXCEPT
             {
@@ -1120,7 +1133,8 @@ int Merging::mergeSameDirGids( _PrimitiveContainerT               & out_primitiv
 
                         is0Valid = false;
 
-                        comparedUids.erase( uid4Pair );
+                        //comparedUids.erase( uid4Pair );
+                        comparedUids.eraseAny( uid4Pair );
 
                         continue;  // jump to the next couple ref/candidate primitive
                     }
