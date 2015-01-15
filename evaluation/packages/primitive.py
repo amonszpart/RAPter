@@ -28,7 +28,7 @@ class Primitive(object):
     def angleInDegree(self, other) :
         return self.angleInRadian(other) / pi * 180.
         
-def readPrimitivesFromFile(path):
+def readPrimitivesFromFile(path, useInactives = False):
     f = open(path, 'r')
     
     primitives = []
@@ -37,7 +37,7 @@ def readPrimitivesFromFile(path):
         if line[0] != '#':
             seqline = line.split(',')
             
-            if (int(seqline[8]) == 1): # Pick only active primitives
+            if (useInactives or int(seqline[8]) == 1): # Pick only active primitives
             
                 pos    = np.float32(np.array(seqline[0:3]))
                 normal = np.float32(np.array(seqline[3:6]))

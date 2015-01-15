@@ -349,11 +349,12 @@ class PlyElement(object):
         a = 0
         line = lines[a]
 
-        while lines[a][0] != 'element':
-            a += 1            
+        while line[0] != 'element':
+            a += 1          
             if a >= len(lines):
-                raise RuntimeError("expected 'element'")
-                
+                raise RuntimeError("expected 'element'")    
+            line = lines[a]   
+                     
         if len(line) > 3:
             raise RuntimeError("too many fields after 'element'")
         if len(line) < 3:

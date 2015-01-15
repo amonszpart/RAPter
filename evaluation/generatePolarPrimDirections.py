@@ -5,14 +5,22 @@ import scipy.signal
 
 parser = argparse.ArgumentParser(description='Generate polar view of the lines directions.')
 parser.add_argument('primitivefile')
+parser.add_argument('--shownormals', action="store_true", help="Shows the normal distribution and not the angles between the primitives (by default).")
+parser.add_argument('--invertnormals', action="store_true", help="Invert normal directions.")
+parser.add_argument('--logscale', action="store_true", help="Use log scale.")
+parser.add_argument('--useInactivePrims', action="store_true", help="compute the orientation of all the primitives.")
 
 args = parser.parse_args()
 
-primitivefile = args.primitivefile
+primitivefile    = args.primitivefile
+shownormals      = args.shownormals
+logscale         = args.logscale
+invertnormals    = args.invertnormals
+useInactivePrims = args.useInactivePrims
+
 print 'Processing ', primitivefile
 
-
-primitives  = primitive.readPrimitivesFromFile(primitivefile)
+primitives  = primitive.readPrimitivesFromFile(primitivefile, useInactivePrims)
 filename    = primitivefile.split('/')[-1]
 
 import  mpl_toolkits.axisartist.angle_helper as angle_helper
@@ -138,39 +146,62 @@ class mFormatterDMS(object):
 fig = plt.figure(1, figsize=(7, 4))
 fig.clf()
 
-#ax = axes([0.025,0.025,0.95,0.95], polar=True)
 
-N = 60.
+N = 360
 
 theta = np.arange(0.0, np.pi, np.pi/N)
-radii = np.zeros(N)
-for p1 in primitives:
-    for p2 in primitives:
-        angle = math.atan2( np.linalg.norm(np.cross( p1.normal, p2.normal )), 
-                            np.dot(p1.normal, p2.normal ))
-        angle = 0.5*(angle / (math.pi) * N)
-        #print p.normal[1], p.normal[0]
-        #angle = math.atan2(p.normal[1], p.normal[0]) / math.pi * N
-        radii [int(angle)] += 1
-        #print angle
-        #if angle < 0.: angle += 360.
 
 
-## smooth array for better visualization
-##radii = scipy.signal.convolve(radii, [1,1,1], mode='same')
+radii=np.empty(N)
+if logscale:
+    radii.fill(sys.float_info.min)
+else :
+    radii.fill(0.0)
 
-#width = 0.01*np.ones(N)
-#bars = bar(theta, radii, width=width, bottom=0.0, color='k', linewidth=3)
+if invertnormals:
+    for p1 in primitives:
+        p1.normal = -p1.normal
+    
+angles = np.empty(len(primitives))
 
-##plot (theta, radii, color='k', linewidth=3)
+if shownormals:
+    ref  = np.array([-1.,0.])
+    ref2 = np.array([ 1.,0.])
+    for idx, p1 in enumerate( primitives ):
+        if p1.normal[1] > 0.:
+            p1.normal = -p1.normal
 
-##for r,bar in zip(radii, bars):
-##    bar.set_facecolor( cm.jet(r/10.))
-##    bar.set_alpha(0.5)
+        angle = ( math.acos( np.dot(p1.normal[0:2], ref) ) )
+        angles[idx] = angle
+        
+        angle = (angle / (math.pi) * N)
+        radii [int(0.5*int(round(angle-0.5)))] += 1
 
-##ax.set_xticklabels([])
-#ax.set_yticklabels([])
-#ax.set_xlim(0, 180)
+else:
+    for p1 in primitives:
+        for p2 in primitives:
+            angle = math.atan2( np.linalg.norm(np.cross( p1.normal, p2.normal )), 
+                                np.dot(p1.normal, p2.normal ))
+            angle = (angle / (math.pi) * N)
+
+            radii [int(angle)] += 1
+
+        
+if logscale:
+    radii = np.log(radii)
+    
+    
+# images are
+radiirev = radii[0:N/2][::-1]
+radii[1:N/2+1] = radiirev
+
+    
+width = (2*np.pi) / N
+bottom = max(radii)/2.
+    
+theta = np.linspace(0.0,360, N, endpoint=False)
+
+
 
 """
 polar projection, but in a rectangular box.
@@ -231,7 +262,7 @@ ax1.axis["bottom"].major_ticklabels.set_visible(False)
 
 fig.add_subplot(ax1)
 
-limitvalue=np.max(radii)+1
+limitvalue=bottom+np.max(radii)+1
 
 # A parasite axes with given transform
 ax2 = ParasiteAxesAuxTrans(ax1, tr, "equal")
@@ -239,16 +270,16 @@ ax2 = ParasiteAxesAuxTrans(ax1, tr, "equal")
 # Anthing you draw in ax2 will match the ticks and grids of ax1.
 ax1.parasites.append(ax2)
 intp = cbook.simple_linear_interpolation
-#ax2.plot(intp(np.array([0, 180]), 50),
-#         intp(np.array([limitvalue, limitvalue]), 50), color='k')
-ax2.bar (360.*theta/np.pi, radii, 0.01*np.ones(N), color='k', linewidth=3)
+
+ax2.bar(theta[0:N/2], radii[0:N/2], width=width, bottom=bottom, linewidth=2)
 
 
 ax1.set_aspect(1.)
 ax1.set_xlim(limitvalue, -limitvalue)
 ax1.set_ylim(0, limitvalue)
 
-ax1.grid(True)
+ax1.grid(color='0.75', linestyle='-', linewidth=0.5, zorder=-1)
+
+
 savefig(primitivefile[:-4]+'.svg', format="svg")
 
-#show()

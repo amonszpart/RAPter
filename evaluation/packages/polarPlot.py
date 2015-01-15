@@ -16,6 +16,7 @@ from mpl_toolkits.axisartist import SubplotHost, \
      ParasiteAxesAuxTrans
      
 def generatePolarPlot(anglesInDegrees, filename, N=180):
+    raise NotImplementedError(self.__class__.__name__ + '.generatePolarPlot')
 
      
     class mFormatterDMS(object):     

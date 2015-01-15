@@ -43,6 +43,7 @@ propZ = -1
 elid  = -1
 
 for idx, element in enumerate(plydata.elements):   
+    #print element
     if element.name == "vertex":
         elid = idx
         for idp, prop in enumerate(element.properties):

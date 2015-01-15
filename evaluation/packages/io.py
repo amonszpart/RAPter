@@ -2,18 +2,33 @@
 Generic input/output functions
 """
 import numpy as np
+from deps.plyfile import PlyData, PlyElement
 
 def readPointCloudFromPly(path):
-    f = open(path, 'r')
+    plydata = PlyData.read(path)
+    
+    propX = -1
+    propY = -1
+    propZ = -1
+    elid  = -1
+
+    for idx, element in enumerate(plydata.elements):
+        if element.name == "vertex":
+            elid = idx
+            for idp, prop in enumerate(element.properties):
+                if prop.name == "x":
+                    propX = idp
+                if prop.name == "y":
+                    propY = idp
+                if prop.name == "z":
+                    propZ = idp
+                    
+    if elid == -1 or propX == -1 or propY == -1 or propZ == -1:
+        raise RuntimeError("IO: Input field not found")
     
     points = []
-    
-    headerSkipped = False
-    for line in f:
-        if headerSkipped:
-            points.append(np.float32(np.array(line.split(' ')[0:3])))
-        else:
-            headerSkipped = line.find('end_header') != -1
+    for vertex in plydata.elements[elid].data:
+        points.append(np.float32(np.array([vertex[propX], vertex[propY], vertex[propZ]])))
     
     return points
     
