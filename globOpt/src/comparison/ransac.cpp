@@ -41,6 +41,8 @@ int ransacCli( int argc, char **argv )
     typedef typename _PclCloudT::PointType                    PclPointT;
 
     bool valid_input = true;
+    bool usePatches = false;
+    int maxPlanes = 0;
 
 //    std::string cloud_path       = "./cloud.ply",
 //                input_prims_path = "./patches.csv",
@@ -50,15 +52,17 @@ int ransacCli( int argc, char **argv )
     std::string             algo_str = "ransac";
 
     _PointContainerT         points;
-    typename _PclCloudT::Ptr pcl_cloud;
+    typename _PclCloudT::Ptr pclCloud;
     _PrimitiveContainerT     initial_primitives;
     PrimitiveMapT            patches;
 
     // parse
     {
-        valid_input = GF2::parseInput<_InnerPrimitiveContainerT,_PclCloudT>( points, pcl_cloud, initial_primitives, patches, params, argc, argv );
+        valid_input = EXIT_SUCCESS == GF2::parseInput<_InnerPrimitiveContainerT,_PclCloudT>( points, pclCloud, initial_primitives, patches, params, argc, argv );
         params.modelType = pcl::console::find_switch( argc, argv, "--3D" ) ? pcl::SacModel::SACMODEL_PLANE
                                                                            : pcl::SacModel::SACMODEL_LINE;
+        usePatches = pcl::console::find_switch( argc, argv, "--use-patches");
+
         // weights
         //pcl::console::parse_argument( argc, argv, "--unary", params.lambdas(0) );
         //pcl::console::parse_argument( argc, argv, "--cmp"  , params.beta );
@@ -70,6 +74,8 @@ int ransacCli( int argc, char **argv )
         else
             std::cerr << "[" << __func__ << "]: " << "unrecognized ransac algorithm" << std::endl;
 
+        pcl::console::parse_argument( argc, argv, "--max-prims", maxPlanes );
+
         if (     !valid_input
               || (GF2::console::find_switch(argc,argv,"-h"    ))
               || (GF2::console::find_switch(argc,argv,"--help")) )
@@ -79,6 +85,8 @@ int ransacCli( int argc, char **argv )
                       << "\t -p,--prims " << /*input_prims_path <<*/ "\n"
                       << "\t -a,--assoc " << /*associations_path <<*/ "\n"
                       << "\t -sc,--scale " << params.scale << "\n"
+                      << "\t[ --use-patches " << (usePatches?"YES":"NO") << "]\t Use inital segmentation\n"
+                      << "\t[--max-prims " << maxPlanes << "]\t Limit #output primitives"
                       << "\t --3D\n"
                       //<< "\t --pw " << params.lambdas(2) << "\n"
                       //<< "\t --cmp " << params.beta << "\n"
@@ -98,22 +106,26 @@ int ransacCli( int argc, char **argv )
     GF2::GidPidVectorMap populations;
     GF2::processing::getPopulations( populations, points );
 
-    for ( typename PrimitiveMapT::const_iterator patch_it = patches.begin(); patch_it != patches.end(); ++patch_it )
+    if ( !usePatches )
     {
-        //for ( _InnerPrimitiveContainerT::const_iterator prim_it = patch_it->begin(); prim_it != patch_it->end(); ++prim_it )
-        const int gid = patch_it->first;
-        if ( populations[gid].size() )
+        for ( size_t pid = 0; pid != points.size(); ++pid )
+            points[pid].setTag( PointPrimitiveT::TAGS::GID, PointPrimitiveT::TAG_UNSET );
+        if ( params.modelType == pcl::SacModel::SACMODEL_PLANE )
         {
-
-            if ( params.modelType == pcl::SacModel::SACMODEL_PLANE )
+            if ( params.algo == RansacParams<Scalar>::RANSAC )
             {
-                if ( params.algo == RansacParams<Scalar>::RANSAC )
-                {
-                    std::vector<int> indices;
-                    std::copy( populations[gid].begin(), populations[gid].end(), indices.begin() );
+//                typename _PclCloudT::Ptr restCloud( new _PclCloudT() );
+//                pcl::copyPointCloud( pclCloud, restCloud );
 
-                    typename pcl::SampleConsensusModelPlane<PclPointT>::Ptr model( new pcl::SampleConsensusModelPlane<PclPointT> (pcl_cloud, indices) );
-                    pcl::RandomSampleConsensus<PclPointT> ransac (model);
+                //out_prims
+                std::vector<int> indices( pclCloud->size() );
+                for ( size_t pid = 0; pid != pclCloud->size(); ++pid )
+                    indices[pid] = pid;
+                while ( (indices.size() > 2) && ((maxPlanes == 0) || (out_prims.size() < maxPlanes)) )
+                {
+//                    found = false;
+                    typename pcl::SampleConsensusModelPlane<PclPointT>::Ptr model( new pcl::SampleConsensusModelPlane<PclPointT> (pclCloud, indices) );
+                    pcl::RandomSampleConsensus<PclPointT> ransac( model );
                     ransac.setDistanceThreshold (params.scale);
                     if ( ransac.computeModel() )
                     {
@@ -125,64 +137,123 @@ int ransacCli( int argc, char **argv )
 
                             Eigen::Matrix<Scalar,3,1> nrm = ransac.model_coefficients_.template head<3>();
                             nrm.normalize();
+                            int gid = out_prims.size();
                             GF2::containers::add( out_prims, gid, PrimitiveT( Eigen::Matrix<Scalar,3,1>::Zero() - nrm * ransac.model_coefficients_(3), nrm) )
                                     .setTag( PrimitiveT::TAGS::GID    , gid )
                                     .setTag( PrimitiveT::TAGS::DIR_GID, gid );
                             std::cout << "created " << out_prims[gid].back().toString() << ", distO: " << out_prims[gid].back().getDistance( Eigen::Matrix<Scalar,3,1>::Zero() )  << std::endl;
+//                            found = true;
+
+                            // add inliers
+                            auto indicesIt = indices.begin();
+                            for ( auto inlierIt = inliers.begin(); inlierIt != inliers.end(); ++inlierIt )
+                            {
+                                // assign point
+                                points.at( *inlierIt ).setTag( PointPrimitiveT::TAGS::GID, gid );
+                                // delete from cloud indices
+                                while ( (*indicesIt < *inlierIt) && (indicesIt != indices.end()) )
+                                    ++indicesIt;
+                                if ( *indicesIt == *inlierIt )
+                                    indices.erase( indicesIt );
+                            }
+                            inliers.clear();
                         }
                     }
                     else
                         inliers.clear();
                 }
-                else
-                    std::cerr << "unimplemented algorithm " << algo_str << std::endl;
             }
-            else if (params.modelType == pcl::SacModel::SACMODEL_LINE )
-            {
-                if ( params.algo == RansacParams<Scalar>::RANSAC )
-                {
-                    std::vector<int> indices;
-                    std::copy( populations[gid].begin(), populations[gid].end(), indices.begin() );
-
-                    std::cout << "[" << __func__ << "]: " << "doing ransac lines" << std::endl;
-                    std::cout<<"populations["<<gid<<"]:";for(size_t vi=0;vi!=populations[gid].size();++vi)std::cout<<populations[gid][vi]<<" ";std::cout << "\n";
-                    typename pcl::SampleConsensusModelLine<PclPointT>::Ptr model( new pcl::SampleConsensusModelLine<PclPointT> (pcl_cloud, indices) );
-
-                    pcl::RandomSampleConsensus<PclPointT> ransac( model );
-                    ransac.setDistanceThreshold( params.scale );
-                    if ( ransac.computeModel() )
-                    {
-                        ransac.getInliers( inliers );
-
-                        // save line
-                        if ( inliers.size() )
-                        {
-                            GF2::containers::add( out_prims, gid, PrimitiveT( ransac.model_coefficients_.template head<3>(), ransac.model_coefficients_.template segment<3>(3)) )
-                                    .setTag( PrimitiveT::TAGS::GID    , gid )
-                                    .setTag( PrimitiveT::TAGS::DIR_GID, gid );
-                            std::cout << "created " << out_prims[gid].back().toString() << std::endl;
-                        }
-                    }
-                    else
-                        inliers.clear();
-                }
-                else
-                    std::cerr << "unimplemented algorithm " << algo_str << std::endl;
-            }
-
-#if 0
-            // copies all inliers of the model computed to another PointCloud
-            std::cout << "copying " << inliers.size() << " points" << std::endl;
-            PclCloudT::Ptr out_cloud( new PclCloudT() );
-            pcl::copyPointCloud<PclPointT>(*pcl_cloud, inliers, *out_cloud);
-
-            pcl::visualization::PCLVisualizer::Ptr vptr( new pcl::visualization::PCLVisualizer() );
-            vptr->setBackgroundColor( .5, .6, .6 );
-            vptr->addPointCloud<PclPointT>( out_cloud );
-            vptr->spin();
-#endif
+            else
+                std::cerr << "unimplemented algorithm " << algo_str << std::endl;
         }
     }
+    else
+    {
+        for ( typename PrimitiveMapT::const_iterator patch_it = patches.begin(); patch_it != patches.end(); ++patch_it )
+        {
+            //for ( _InnerPrimitiveContainerT::const_iterator prim_it = patch_it->begin(); prim_it != patch_it->end(); ++prim_it )
+            const int gid = patch_it->first;
+            if ( populations[gid].size() )
+            {
+                if ( params.modelType == pcl::SacModel::SACMODEL_PLANE )
+                {
+                    if ( params.algo == RansacParams<Scalar>::RANSAC )
+                    {
+                        std::vector<int> indices;
+                        std::copy( populations[gid].begin(), populations[gid].end(), indices.begin() );
+
+                        typename pcl::SampleConsensusModelPlane<PclPointT>::Ptr model( new pcl::SampleConsensusModelPlane<PclPointT> (pclCloud, indices) );
+                        pcl::RandomSampleConsensus<PclPointT> ransac (model);
+                        ransac.setDistanceThreshold (params.scale);
+                        if ( ransac.computeModel() )
+                        {
+                            ransac.getInliers(inliers);
+                            // save line
+                            if ( inliers.size() )
+                            {
+                                std::cout << "ret: " << ransac.model_coefficients_.transpose() << std::endl;
+
+                                Eigen::Matrix<Scalar,3,1> nrm = ransac.model_coefficients_.template head<3>();
+                                nrm.normalize();
+                                GF2::containers::add( out_prims, gid, PrimitiveT( Eigen::Matrix<Scalar,3,1>::Zero() - nrm * ransac.model_coefficients_(3), nrm) )
+                                        .setTag( PrimitiveT::TAGS::GID    , gid )
+                                        .setTag( PrimitiveT::TAGS::DIR_GID, gid );
+                                std::cout << "created " << out_prims[gid].back().toString() << ", distO: " << out_prims[gid].back().getDistance( Eigen::Matrix<Scalar,3,1>::Zero() )  << std::endl;
+                            }
+                        }
+                        else
+                            inliers.clear();
+                    }
+                    else
+                        std::cerr << "unimplemented algorithm " << algo_str << std::endl;
+                }
+                else if (params.modelType == pcl::SacModel::SACMODEL_LINE )
+                {
+                    if ( params.algo == RansacParams<Scalar>::RANSAC )
+                    {
+                        std::vector<int> indices;
+                        std::copy( populations[gid].begin(), populations[gid].end(), indices.begin() );
+
+                        std::cout << "[" << __func__ << "]: " << "doing ransac lines" << std::endl;
+                        std::cout<<"populations["<<gid<<"]:";for(size_t vi=0;vi!=populations[gid].size();++vi)std::cout<<populations[gid][vi]<<" ";std::cout << "\n";
+                        typename pcl::SampleConsensusModelLine<PclPointT>::Ptr model( new pcl::SampleConsensusModelLine<PclPointT> (pclCloud, indices) );
+
+                        pcl::RandomSampleConsensus<PclPointT> ransac( model );
+                        ransac.setDistanceThreshold( params.scale );
+                        if ( ransac.computeModel() )
+                        {
+                            ransac.getInliers( inliers );
+
+                            // save line
+                            if ( inliers.size() )
+                            {
+                                GF2::containers::add( out_prims, gid, PrimitiveT( ransac.model_coefficients_.template head<3>(), ransac.model_coefficients_.template segment<3>(3)) )
+                                        .setTag( PrimitiveT::TAGS::GID    , gid )
+                                        .setTag( PrimitiveT::TAGS::DIR_GID, gid );
+                                std::cout << "created " << out_prims[gid].back().toString() << std::endl;
+                            }
+                        }
+                        else
+                            inliers.clear();
+                    }
+                    else
+                        std::cerr << "unimplemented algorithm " << algo_str << std::endl;
+                }
+
+    #if 0
+                // copies all inliers of the model computed to another PointCloud
+                std::cout << "copying " << inliers.size() << " points" << std::endl;
+                PclCloudT::Ptr out_cloud( new PclCloudT() );
+                pcl::copyPointCloud<PclPointT>(*pcl_cloud, inliers, *out_cloud);
+
+                pcl::visualization::PCLVisualizer::Ptr vptr( new pcl::visualization::PCLVisualizer() );
+                vptr->setBackgroundColor( .5, .6, .6 );
+                vptr->addPointCloud<PclPointT>( out_cloud );
+                vptr->spin();
+    #endif
+            } // ...if popsize
+        } //...for each patch
+        } //...if use patch
 
     GF2::io::savePrimitives<PrimitiveT,typename _InnerPrimitiveContainerT::const_iterator>( out_prims, "./primitives.ransac.csv" );
     GF2::io::writeAssociations<PointPrimitiveT>( points, "./points_primitives.ransac.csv" );
