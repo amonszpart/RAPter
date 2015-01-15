@@ -307,9 +307,9 @@ namespace merging
             void eraseAny( typename ParentT::value_type& x )
             {
                 for ( auto it = this->begin(); it != this->end(); )
-                    if ( (it->first == x.first) || (it->second == x.first) )
-                        this->erase( it++ );
-                    else if ( (it->first== x.second) || (it->second == x.second) )
+                    if (    (it->first == x.first) || (it->second == x.first)
+                         || (it->first== x.second) || (it->second == x.second)
+                       )
                         this->erase( it++ );
                     else
                         ++it;

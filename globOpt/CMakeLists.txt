@@ -218,6 +218,7 @@ SET( GLOBOPT_HPP_LIST
     include/globfit2/util/util.hpp
     include/globfit2/util/pcl_util.hpp
     include/globfit2/util/containers.hpp
+    include/globfit2/util/lruCache.hpp
     include/globfit2/processing/util.hpp
     include/globfit2/processing/angle_util.hpp
     include/globfit2/processing/graph.hpp
