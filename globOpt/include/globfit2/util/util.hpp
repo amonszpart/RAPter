@@ -303,7 +303,7 @@ paletteMediumColoursEigen( int min_count = 0, bool repeat = false )
 }
 
 inline std::vector< ::Eigen::Vector3f >
-paletteMediumColoursEigen2( int min_count = 0, bool repeat = false )
+paletteMediumColoursEigen2( int min_count = 0, bool random_shuffle = false )
 {
     // don't have template parameters, since we return Vector3f....
     std::vector< ::Eigen::Vector3f > colours_eigen;
@@ -344,16 +344,19 @@ paletteMediumColoursEigen2( int min_count = 0, bool repeat = false )
     {
         out.insert( out.end(), colours_eigen.begin(), colours_eigen.end() );
     }
-    while ( repeat && static_cast<int>(out.size()) < min_count );
+    while ( static_cast<int>(out.size()) < min_count );
+
+    if (random_shuffle)
+        std::random_shuffle( out.begin(), out.end() );
 
     return out;
 }
 
 
 inline std::vector< ::Eigen::Vector3f >
-paletteMediumVariationColoursEigen2( float factor, int min_count = 0, bool repeat = false ){
+paletteMediumVariationColoursEigen2( float factor, int min_count = 0, bool random_shuffle = false ){
     std::vector< ::Eigen::Vector3f > colours_eigen =
-            paletteMediumColoursEigen2(min_count, repeat);
+            paletteMediumColoursEigen2(min_count, random_shuffle);
 
     const Eigen::Array3f maxVal (255., 255., 255.);
 
@@ -367,23 +370,19 @@ paletteMediumVariationColoursEigen2( float factor, int min_count = 0, bool repea
 
 
 inline std::vector< ::Eigen::Vector3f >
-paletteLightColoursEigen2( int min_count = 0, bool repeat = false ){
-    std::vector< ::Eigen::Vector3f > colours_eigen =
-            paletteMediumColoursEigen2(min_count, repeat);
+paletteLightColoursEigen2( int min_count = 0, bool random_shuffle = false ){
 
     const float factor = 1.5;
 
-    return paletteMediumVariationColoursEigen2(factor, min_count, repeat);
+    return paletteMediumVariationColoursEigen2(factor, min_count, random_shuffle);
 }
 
 inline std::vector< ::Eigen::Vector3f >
-paletteDarkColoursEigen2( int min_count = 0, bool repeat = false ){
-    std::vector< ::Eigen::Vector3f > colours_eigen =
-            paletteMediumColoursEigen2(min_count, repeat);
+paletteDarkColoursEigen2( int min_count = 0 , bool random_shuffle = false){
 
     const float factor = 0.5;
 
-    return paletteMediumVariationColoursEigen2(factor, min_count, repeat);
+    return paletteMediumVariationColoursEigen2(factor, min_count, random_shuffle);
 }
 
 inline Eigen::Vector3f

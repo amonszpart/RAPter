@@ -331,10 +331,11 @@ namespace GF2
                     //cout << "[" << __func__ << "]: " << " NOT Switching to nicer color palette, need " << id2ColId.size() << " colours" << endl;
                     cout << "[" << __func__ << "]: " << " appending " << needMore << " ugly colours..." << std::endl;
 
-                    std::vector<Colour> tmpPrimColours, tmpPointColours = util::nColoursEigen( /*         count: */ needMore
-                                                                                               , /*         scale: */ 255.f
-                                                                                               , /*       shuffle: */ false
-                                                                                               , /* min_hsv_value: */ 80.f );
+                    std::vector<Colour> tmpPrimColours, tmpPointColours = util::paletteLightColoursEigen2(needMore, true);
+//                            util::nColoursEigen( /*         count: */ needMore
+//                                                                                               , /*         scale: */ 255.f
+//                                                                                               , /*       shuffle: */ false
+//                                                                                               , /* min_hsv_value: */ 80.f );
                     tmpPrimColours = tmpPointColours;
                     for ( size_t cid = 0; cid != tmpPointColours.size(); ++cid )
                     {
