@@ -294,7 +294,7 @@ namespace GF2
         // Check if we can use color palette
         const int paletteRequiredSize = id2ColId.size() + 1; // set this to 0, if you only want 7 colours
         // Defaults to true, since util replicates colours
-        bool usePalette = id2ColId.size() <= 2 * util::paletteLightColoursEigen(paletteRequiredSize).size();
+        bool usePalette = id2ColId.size() <= 2 * util::paletteLightColoursEigen2(paletteRequiredSize).size();
         std::vector<Eigen::Vector3f> pointColours, primColours;
         Eigen::Vector3f              unusedPointColour, unusedPrimColour;
         // Choose, and fill colour palette
@@ -305,20 +305,20 @@ namespace GF2
 
                 if ( draw_mode & DRAW_MODE::HIDE_PRIMITIVES ) // use dark + medium for points, since no primitives
                 {
-                    pointColours = util::paletteDarkColoursEigen( paletteRequiredSize );
-                    std::vector<Colour> tmp = util::paletteMediumColoursEigen( paletteRequiredSize );
+                    pointColours = util::paletteDarkColoursEigen2( paletteRequiredSize );
+                    std::vector<Colour> tmp = util::paletteMediumColoursEigen2( paletteRequiredSize );
                     pointColours.insert( pointColours.end(), tmp.begin(), tmp.end() );
                     // not displayed, so whatever
-                    primColours  = util::paletteDarkColoursEigen(paletteRequiredSize);
+                    primColours  = util::paletteDarkColoursEigen2(paletteRequiredSize);
                     primColours.insert( primColours.end(), tmp.begin(), tmp.end() ); // we need the same number of colours
                 }
                 else // use medium + light for points
                 {
-                    pointColours = util::paletteMediumColoursEigen( paletteRequiredSize );
-                    std::vector<Colour> tmp = util::paletteLightColoursEigen( paletteRequiredSize );
+                    pointColours = util::paletteMediumColoursEigen2( paletteRequiredSize );
+                    std::vector<Colour> tmp = util::paletteLightColoursEigen2( paletteRequiredSize );
                     pointColours.insert( pointColours.end(), tmp.begin(), tmp.end() );
 
-                    primColours  = util::paletteDarkColoursEigen(paletteRequiredSize);
+                    primColours  = util::paletteDarkColoursEigen2(paletteRequiredSize);
                     primColours.insert( primColours.end(), pointColours.begin(), pointColours.begin() + tmp.size() );
                 }
             }
