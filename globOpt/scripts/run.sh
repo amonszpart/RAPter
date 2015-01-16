@@ -12,17 +12,21 @@ noVis=false            # Only show premerge and final output
 # startAt=1: don't do segment, do premerge
 # startAt=2: don't do premerge, do iteration 0
 startAt=0
-nbExtraIter=50          # Values: [ 1..20 ] iteration count. Default: 2.
-reprPwMult=5            # Values: [ 1, 5 ,10]. Multiplies pw with this number when doing lvl2 (representatives)
-use90=6                 # Values: [ 6, 100 ] Controls, when to add a 90 generation step. If large, will be re-set by runscript to be after "adopt".
-extendedAngleGens="90"  # Values: [ "0", "90", ... ] Turned on by use90.
-premerge=1              # Values: [ 0, 1 ] Call merge after segmentation.
 mergeMult="1"           # Values: [0.5, 0.8, 1 ] Be conservative with merge, multiply the scale with this. ( < 1 does not work well for some reason, parallel planes survive)
-mergeChunk=5000         # Values: [ 0, 5000, ? ] Split scene, until we reach this number, and start merging the splits first
+nbExtraIter=50          # Values: [ 1..20 ] iteration count. Default: 2.
+reprPwMult=10           # Values: [ 1, 5 ,10]. Multiplies pw with this number when doing lvl2 (representatives)
+use90=3                 # Values: [ 6, 100 ] Controls, when to add a 90 generation step. If large, will be re-set by runscript to be after "adopt".
+keep90=1 # Holds 90 in candgen as well, once turned on.
+extendedAngleGens="90"  # Values: [ "0", "90", ... ] Turned on by use90.
+premerge=0              # Values: [ 0, 1 ] Call merge after segmentation.
+mergeChunk=0         # Values: [ 0, 5000, ? ] Split scene, until we reach this number, and start merging the splits first
+tripletSafe="--triplet-safe" #Values: ["", "--triplet-safe"]
+reprAngleMult="1.0" # 
 
 anglegens="0"           # Values: ["0", "60", "90", "60,90", ... ] Desired angle generators in degrees. Default: 90.
-unary=10000             # Values: [1000000, 1000, 1000000]
-spatWeight=0            # Values: [ 10, 0 ] (Penalty that's added, if two primitives with different directions are closer than 2 x scale)
+candAngleGens="0"       # used to mirror anglegens, but keep const "0" for generate
+unary=10000            # Values: [1000000, 1000, 1000000]
+spatWeight=0.1            # Values: [ 10, 0 ] (Penalty that's added, if two primitives with different directions are closer than 2 x scale)
 truncAngle=$anglelimit  # Values: [ 0, $anglelimit, 0.15 ] (Pairwise cost truncation angle in radians)
 smallThreshDiv="2"      # Values: [ 2, 3, ... ] Stepsize of working scale.
 safeMode="";            # Values: [ "", "--safe-mode"] Disallows copy of direction to already selected (large) primitives.
@@ -81,7 +85,6 @@ iterationConstrMode="patch" # what to add in the second iteration formulate. Def
 
 variableLimit=1100; # 1300; # Safe mode gets turned on, and generate rerun, if candidates exceed this number (1300)
 algCode=0                   # 0==B_BB, OA, QG, 3==Hyb, ECP, IFP
-candAngleGens=$anglegens    # used to mirror anglegens, but keep const "0" for generate
 #######################################
 #######################################
 
@@ -192,7 +195,7 @@ do
 
     if [ $c -ge $(($startAt - 2)) ]; then
         # Generate candidates from output of first. OUT: candidates_it$c.csv. #small-mode 2: small patches receive all candidates
-        my_exec2 "$executable --generate$flag3D $allowPromoted $keepSingles -sc $scale -al $anglelimit -ald ${cand_anglediv} --small-mode 0 --patch-pop-limit $poplimit -p $input --assoc $assoc --angle-gens $candAngleGens --small-thresh-mult $smallThresh --var-limit $variableLimit $safeMode"
+        my_exec2 "$executable --generate$flag3D $tripletSafe $allowPromoted $keepSingles -sc $scale -al $anglelimit -ald ${cand_anglediv} --small-mode 0 --patch-pop-limit $poplimit -p $input --assoc $assoc --angle-gens $candAngleGens --small-thresh-mult $smallThresh --var-limit $variableLimit $safeMode"
         echo "Remaining smalls to promote: $myresult"
         # count of remaining patches to promote
         promRem=$myresult 
@@ -234,7 +237,11 @@ do
         #if [ $(( $c - 1 )) -eq $use90 ]; then
         if [ $(( $c )) -eq $use90 ]; then
             #anglegens=$_bakAngleGens;
-            candAngleGens=$_bakAngleGens; #no more 90 candidates
+            if ! keep90 ; then
+                candAngleGens=$_bakAngleGens; #no more 90 candidates
+            else
+                echo "KEEEPING 90, candAngleGens:" $candAngleGens;
+            fi
         fi
 
         # Merge/show parallel

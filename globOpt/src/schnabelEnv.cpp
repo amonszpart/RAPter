@@ -19,10 +19,10 @@
 
 namespace GF2
 {
-    template <class PclCloudT, typename PrimitiveT, class PidGidT, class PointContainerT >
+    template <class PclCloudT, typename PrimitiveT, /*class PidGidT,*/ class PointContainerT >
     int SchnabelEnv::run( std::vector<PrimitiveT>          &planes
-                          , PidGidT &pidGid
-                          , PointContainerT &points
+                          , PointContainerT &outPoints //PidGidT &pidGid
+                          , PointContainerT const& points
                           , typename PclCloudT::Ptr           &cloud
                           , float scale
                           , int                                     min_support_arg
@@ -63,7 +63,8 @@ namespace GF2
         vptr->setPointCloudRenderingProperties( pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 4.f );
 
         // Points
-        schnabel::Point pnts[ cloud->size() ];
+        //schnabel::Point pnts[ cloud->size() ];
+        schnabel::Point* pnts = new schnabel::Point[ cloud->size() ];
         for ( size_t i = 0; i != cloud->size(); ++i )
         {
             pnts[i] = schnabel::Point( Vec3f(cloud->at(i).x, cloud->at(i).y, cloud->at(i).z) );
@@ -119,12 +120,50 @@ namespace GF2
 
         // work
         MiscLib::Vector< std::pair< MiscLib::RefCountPtr< schnabel::PrimitiveShape >, size_t > > shapes; // output
+        MiscLib::Vector< int > outShapeIndex; // points->planes assignments output
+        std::vector< MiscLib::Vector< size_t > > outIndices;
         {
             std::cout << "starting..." << std::endl;
-            int ret = rsd.Detect( pc, 0, pc.size(), &shapes );
+            int ret = rsd.Detect( pc, 0, pc.size(), &shapes, &outShapeIndex, &outIndices );
             std::cout << "detect returned " << ret << std::endl;
             std::cout << "shapes.size: " << shapes.size() << std::endl;
         }
+
+        outPoints.clear(); outPoints.reserve( outShapeIndex.size() );
+        size_t eidx = pc.size();
+        for ( LidT shapeId = 0; shapeId != outIndices.size(); ++shapeId )
+        {
+            size_t bidx = eidx - shapes[shapeId].second;
+            for ( PidT pidId = bidx; pidId < eidx; ++pidId )
+            {
+                PointPrimitiveT pnt( Eigen::Map<const Eigen::Vector3f>( pc.at(pidId).pos.getValue(), 3 )
+                                   , Eigen::Map<const Eigen::Vector3f>( pc.at(pidId).normal        , 3 ) );
+                pnt.setTag( PointPrimitiveT::TAGS::PID, outPoints.size() );
+                pnt.setTag( PointPrimitiveT::TAGS::GID, shapeId );
+                //schnabel::Point( Vec3f(cloud->at(i).x, cloud->at(i).y, cloud->at(i).z) );
+                outPoints.push_back( pnt );
+            }
+            eidx = bidx;
+        }
+#if 0
+            std::cout << "shape->size: " << shapes[shapeId]->second << ", outIndices[" << shapeId<< "]: " << outIndices[shapeId].size() << std::endl;
+            for ( PidT pidId = 0; pidId != outIndices[shapeId].size(); ++pidId, ++curr )
+            {
+                PidT pid = outIndices[shapeId][pidId];
+                ///std::cout << "outsh[" << pid << "]: " << outShapeIndex[ pid ] << std::endl;
+                //pidGid[ pid ] = /* planeId, converted to GID later: */ outShapeIndex[ pid ];
+                //            std::cout << "pc.at" << pid << ": " << pc.at( pid ).pos.getValue()[0]
+                //                                        << ", " << pc.at(pid).normal << std::endl;
+                PointPrimitiveT pnt( Eigen::Map<const Eigen::Vector3f>( pc.at(curr).pos.getValue(), 3 )
+                                   , Eigen::Map<const Eigen::Vector3f>( pc.at(curr).normal        , 3 ) );
+                //PointPrimitiveT pnt = points.at( pid );
+                pnt.setTag( PointPrimitiveT::TAGS::PID, outPoints.size() );
+                pnt.setTag( PointPrimitiveT::TAGS::GID, outIndices.size() - shapeId - 1 );
+                //schnabel::Point( Vec3f(cloud->at(i).x, cloud->at(i).y, cloud->at(i).z) );
+                outPoints.push_back( pnt );
+            }
+        }
+#endif
 
         // process output
         for ( size_t i = 0; i != shapes.size(); ++i )
@@ -135,6 +174,7 @@ namespace GF2
                 case schnabel::PrimitiveShape::PLANE_PRIMITIVE_SHAPE:
                 {
                     MiscLib::RefCountPtr<schnabel::PlanePrimitiveShape> planePS = static_cast<schnabel::PlanePrimitiveShape*>( shapes[i].first->Clone() );
+                    std::cout << "shapes[" << i << "].second: " << shapes[i].second << std::endl;
                     Vec3f p,n;
                     planePS->Normal( p, &n );
                     float dist = -1.f * planePS->Internal().SignedDistToOrigin();
@@ -211,6 +251,7 @@ namespace GF2
         std::cout << "finishing assignment" << std::endl;
 #endif
 
+        if ( pnts ) delete [] pnts;
         return EXIT_SUCCESS;
     }
 

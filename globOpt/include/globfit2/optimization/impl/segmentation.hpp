@@ -23,7 +23,6 @@
 #include "globfit2/io/io.h"             // readPoints
 #include "globfit2/optimization/patchDistanceFunctors.h" // RepresentativeSqrPatchPatchDistanceFunctorT
 
-
 namespace GF2 {
 
 //! \param[in,out] points
@@ -259,10 +258,21 @@ Segmentation::patchify( _PrimitiveContainerT                   & patches
 
         if ( _PrimitiveT::EmbedSpaceDim == 2) // added by Aron on 17 Sep 2014
         {
+            // added by Aron on 16:42 15/01/2015
+            _PrimitiveT toAdd;
+            int err = processing::fitLinearPrimitive<_PrimitiveT::Dim>( /*  [in,out] primitive: */ toAdd
+                                                            , /*              points: */ points
+                                                            , /*               scale: */ scale
+                                                            , /*             indices: */ &(populations[gid])
+                                                            , /*    refit iter count: */ 2                   // fit and refit twice
+                                                            , /*    start from input: */ &(groups[gid].getRepresentative())  // use to calculate initial weights
+                                                            , /* refit position only: */ false
+                                                            , /*               debug: */ false  );
+
             // LINE
-        containers::add( patches, gid, groups[gid].getRepresentative() )
-                .setTag( _PrimitiveT::TAGS::GID    , gid )
-                .setTag( _PrimitiveT::TAGS::DIR_GID, gid );
+            containers::add( patches, gid, toAdd/*groups[gid].getRepresentative()*/ )
+                    .setTag( _PrimitiveT::TAGS::GID    , gid )
+                    .setTag( _PrimitiveT::TAGS::DIR_GID, gid );
         }
         else if ( _PrimitiveT::EmbedSpaceDim == 3)
         {

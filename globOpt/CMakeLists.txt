@@ -46,6 +46,7 @@ SET( WITH_PEARL ON CACHE BINARY "Compile pearl executable.")
 #SET( WITH_PEARL YES CACHE BINARY "Compile pearl executable." FORCE)
 SET( WITH_RSAC ON CACHE BINARY "Compile ransac executable." FORCE)
 SET( WITH_GAUSSSPHERE ON CACHE BINARY "Compile gaussSphere." )
+SET( WITH_DRAWGRAPHS ON CACHE BINARY "Compile drawGraphs." )
 SET( WITH_PLYCONVERTER ON CACHE BINARY "Compile ply-converter executable.")
 SET( WITH_CORRESP ON CACHE BINARY "Correspondance miniprogram compilation.")
 
@@ -437,3 +438,19 @@ IF(WITH_GAUSSSPHERE)
         boost_filesystem
     )
 ENDIF(WITH_GAUSSSPHERE)
+
+
+## _____________________________________DrawGraphs____________________________________________________
+
+IF(WITH_DRAWGRAPHS)
+    SET( DRAWGRAPHS_TARGET "drawGraphs" )
+    SET( DRAWGRAPHS_SRC
+        src/drawGraphs.cpp
+    )
+
+    add_executable( ${DRAWGRAPHS_TARGET} ${DRAWGRAPHS_SRC} ${DRAWGRAPHS_H})
+    TARGET_LINK_LIBRARIES( ${DRAWGRAPHS_TARGET}
+        ${PCL_LIBRARIES}
+        boost_filesystem
+    )
+ENDIF(WITH_DRAWGRAPHS)

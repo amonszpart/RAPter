@@ -407,7 +407,9 @@ namespace GF2
                                 , bool                              const  safe_mode_arg
                                 , int                               const  var_limit
                                 , bool                              const  keepSingles
-                                , bool                              const  allowPromoted )
+                                , bool                              const  allowPromoted
+                                , bool                              const  tripletSafe
+                                )
     {
         const bool verbose = true;
 
@@ -663,10 +665,10 @@ namespace GF2
 
                         addCandidate<_PrimitivePrimitiveAngleFunctorT>(
                                     prim0, prim1, lid0, lid1, safe_mode, allowPromoted, angle_limit, angles, angle_gens_in_rad, promoted,
-                                    allowedAngles, copied, generated, nlines, outPrims, &aliases );
+                                    allowedAngles, copied, generated, nlines, outPrims, &aliases, tripletSafe );
                         addCandidate<_PrimitivePrimitiveAngleFunctorT>(
                                     prim1, prim0, lid1, lid0, safe_mode, allowPromoted, angle_limit, angles, angle_gens_in_rad, promoted,
-                                    allowedAngles, copied, generated, nlines, outPrims, &aliases );
+                                    allowedAngles, copied, generated, nlines, outPrims, &aliases, tripletSafe );
                     } //...for l3
                 } //...for l2
             } //...for l1
@@ -720,13 +722,10 @@ namespace GF2
                         // cache outer primitive
                         _PrimitiveT const& prim1 = *inner_it;
 
-                        if ( /*(angleIt->second._prim->getTag(_PrimitiveT::TAGS::DIR_GID) == 253) && */(prim1.getTag(_PrimitiveT::TAGS::GID) == 57755) )
-                            std::cout << "here, adding alias to 57755" << std::endl;
-
                         // copy prim0 (the alias) to all compatible receivers given allowedAngles.
                         addCandidate<_PrimitivePrimitiveAngleFunctorT,AliasesT<_PrimitiveT,_Scalar> >(
                             prim1, prim0, lid1, lid0, safe_mode, allowPromoted, angle_limit, angles, angle_gens_in_rad, promoted,
-                            allowedAngles, copied, generated, nlines, outPrims, nullptr );
+                            allowedAngles, copied, generated, nlines, outPrims, nullptr, tripletSafe );
 
                     } //...inner for
                 } //...outer for
@@ -896,6 +895,7 @@ namespace GF2
         std::string                 associations_path       = "points_primitives.csv";
         bool                        keepSingles             = false; // throw away single dId-s
         bool                        allowPromoted           = false;
+        bool                        tripletSafe             = false;
 
         // parse input
         if ( err == EXIT_SUCCESS )
@@ -946,6 +946,7 @@ namespace GF2
             pcl::console::parse_argument( argc, argv, "--patch-dist-limit", generatorParams.patch_dist_limit_mult ); // gets multiplied by scale
             pcl::console::parse_x_arguments( argc, argv, "--angle-gens", angleGens );
             pcl::console::parse_argument( argc, argv, "--patch-pop-limit", generatorParams.patch_population_limit );
+
             generatorParams.safe_mode = pcl::console::find_switch( argc, argv, "--safe-mode" );
             if ( generatorParams.safe_mode )
                 std::cout << "[" << __func__ << "]: " << "__________________________\n__________________________RUNNING SAFE______________________\n_____________________________" << std::endl;
@@ -973,6 +974,7 @@ namespace GF2
             {
                 keepSingles = pcl::console::find_switch( argc, argv, "--keep-singles" );
                 allowPromoted= pcl::console::find_switch( argc, argv, "--allow-promoted" );
+                tripletSafe = pcl::console::find_switch( argc, argv, "--triplet-safe");
             }
 
             // print usage
@@ -1003,6 +1005,7 @@ namespace GF2
                     std::cout << "\t [--var-limit " << generatorParams.var_limit << "\t Decides how many variables we want as output. 0 means unlimited.]\n";
                     std::cout << "\t [--keep-singles " << (keepSingles?"YES":"NO") << "\t Decides, if we should throw away single directions]\n";
                     std::cout << "\t [--allow-promoted " << (allowPromoted?"YES":"NO") << "\t Decides, if we should allow promoted patches to distribute their directions]\n";
+                    std::cout << "\t [--triplet-safe " << (tripletSafe?"YES":"NO") << "]\t Ensure, that perfect angle is respected for every member of DiD\n";
                     std::cout << std::endl;
 
                     return EXIT_FAILURE;
@@ -1087,6 +1090,7 @@ namespace GF2
                           , generatorParams.var_limit
                           , keepSingles
                           , allowPromoted
+                          , tripletSafe
                           );
 
                 //if ( err != EXIT_SUCCESS ) std::cerr << "[" << __func__ << "]: " << "generate exited with error! Code: " << err << std::endl;
