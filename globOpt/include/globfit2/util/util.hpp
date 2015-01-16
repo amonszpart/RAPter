@@ -302,6 +302,90 @@ paletteMediumColoursEigen( int min_count = 0, bool repeat = false )
     return out;
 }
 
+inline std::vector< ::Eigen::Vector3f >
+paletteMediumColoursEigen2( int min_count = 0, bool repeat = false )
+{
+    // don't have template parameters, since we return Vector3f....
+    std::vector< ::Eigen::Vector3f > colours_eigen;
+
+    colours_eigen.push_back(255.f*Eigen::Vector3f(0.478431, 0.764706, 0.415686));//, Fruit salad ~
+    colours_eigen.push_back(255.f*Eigen::Vector3f(0.352941, 0.607843, 0.831373));//, Curious blue ~
+    colours_eigen.push_back(255.f*Eigen::Vector3f(0.980392, 0.654902, 0.356863));//, Rajah ~
+    colours_eigen.push_back(255.f*Eigen::Vector3f(0.619608, 0.403922, 0.670588));//, Clairvoyant ~
+    colours_eigen.push_back(255.f*Eigen::Vector3f(0.807843, 0.439216, 0.345098));//, Japonica ~
+    colours_eigen.push_back(255.f*Eigen::Vector3f(0.945098, 0.352941, 0.376471));//, Valencia ~
+    colours_eigen.push_back(255.f*Eigen::Vector3f(.843137, 0.498039, 0.705882));//, Shocking ~
+    colours_eigen.push_back(255.f*Eigen::Vector3f(0.45098, 0.45098, 0.45098));//, Dim gray ~
+    colours_eigen.push_back(255.f*Eigen::Vector3f(0.945098, 0.352941, 0.377073));//, scheme Square #0[Valencia]
+    colours_eigen.push_back(255.f*Eigen::Vector3f(0.486808, 0.352941, 0.945098));//, scheme Square #1[Dark blue]
+    colours_eigen.push_back(255.f*Eigen::Vector3f(0.36085, 0.945098, 0.352941));//, scheme Square #2[Lime green]
+    colours_eigen.push_back(255.f*Eigen::Vector3f(0.478701, 0.764706, 0.415686));//, scheme Square #0[Fruit salad]
+    colours_eigen.push_back(255.f*Eigen::Vector3f(0.764706, 0.65592, 0.415686));//, scheme Square #1[Putty]
+    colours_eigen.push_back(255.f*Eigen::Vector3f(0.764706, 0.415686, 0.493995));//, scheme Square #2[Charm]
+    colours_eigen.push_back(255.f*Eigen::Vector3f(0.352941, 0.608355, 0.831373));//, scheme Square #0[Curious blue]
+    colours_eigen.push_back(255.f*Eigen::Vector3f(0.713493, 0.831373, 0.352941));//, scheme Square #1[Limerick]
+    colours_eigen.push_back(255.f*Eigen::Vector3f(0.831373, 0.592841, 0.352941));//, scheme Square #2[Porsche]
+    colours_eigen.push_back(255.f*Eigen::Vector3f(0.980392, 0.654042, 0.356863));//, scheme Square #0[Rajah]
+    colours_eigen.push_back(255.f*Eigen::Vector3f(0.980392, 0.356863, 0.972055));//, scheme Square #1[Dark magenta]
+    colours_eigen.push_back(255.f*Eigen::Vector3f(0.356863, 0.741702, 0.980392));//, scheme Square #2[Curious blue]
+    colours_eigen.push_back(255.f*Eigen::Vector3f(0.619343, 0.403922, 0.670588));//, scheme Square #0[Clairvoyant]
+    colours_eigen.push_back(255.f*Eigen::Vector3f(0.403922, 0.64891, 0.670588));//, scheme Square #1[Cadet blue]
+    colours_eigen.push_back(255.f*Eigen::Vector3f(0.654801, 0.670588, 0.403922));//, scheme Square #2[Green smoke]
+    colours_eigen.push_back(255.f*Eigen::Vector3f(0.807843, 0.438632, 0.345098));//, scheme Square #0[Japonica]
+    colours_eigen.push_back(255.f*Eigen::Vector3f(0.578529, 0.345098, 0.807843));//, scheme Square #1[Indigo]
+    colours_eigen.push_back(255.f*Eigen::Vector3f(0.345098, 0.807843, 0.596853));//, scheme Square #2[Eucalyptus]
+    colours_eigen.push_back(255.f*Eigen::Vector3f(0.843137, 0.498039, 0.706418));//, scheme Square #0[Shocking]
+    colours_eigen.push_back(255.f*Eigen::Vector3f(0.498039, 0.554971, 0.843137));//, scheme Square #1[Chetwode blue]
+    colours_eigen.push_back(255.f*Eigen::Vector3f(0.672381, 0.843137, 0.498039));//, scheme Square #2[Feijoa]
+
+
+    std::vector< ::Eigen::Vector3f > out;
+    do
+    {
+        out.insert( out.end(), colours_eigen.begin(), colours_eigen.end() );
+    }
+    while ( repeat && static_cast<int>(out.size()) < min_count );
+
+    return out;
+}
+
+
+inline std::vector< ::Eigen::Vector3f >
+paletteMediumVariationColoursEigen2( float factor, int min_count = 0, bool repeat = false ){
+    std::vector< ::Eigen::Vector3f > colours_eigen =
+            paletteMediumColoursEigen2(min_count, repeat);
+
+    const Eigen::Array3f maxVal (255., 255., 255.);
+
+    for(int i = 0; i != colours_eigen.size(); ++i){
+        Eigen::Vector3f& c = colours_eigen[i];
+        c = maxVal.min(factor * c.array());
+    }
+
+    return colours_eigen;
+}
+
+
+inline std::vector< ::Eigen::Vector3f >
+paletteLightColoursEigen2( int min_count = 0, bool repeat = false ){
+    std::vector< ::Eigen::Vector3f > colours_eigen =
+            paletteMediumColoursEigen2(min_count, repeat);
+
+    const float factor = 1.5;
+
+    return paletteMediumVariationColoursEigen2(factor, min_count, repeat);
+}
+
+inline std::vector< ::Eigen::Vector3f >
+paletteDarkColoursEigen2( int min_count = 0, bool repeat = false ){
+    std::vector< ::Eigen::Vector3f > colours_eigen =
+            paletteMediumColoursEigen2(min_count, repeat);
+
+    const float factor = 0.5;
+
+    return paletteMediumVariationColoursEigen2(factor, min_count, repeat);
+}
+
 inline Eigen::Vector3f
 paletteMediumNeutralColour(){
     return Eigen::Vector3f(115.f, 115.f, 115.f);
