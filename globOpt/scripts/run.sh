@@ -16,7 +16,7 @@ mergeMult="1"           # Values: [0.5, 0.8, 1 ] Be conservative with merge, mul
 nbExtraIter=50          # Values: [ 1..20 ] iteration count. Default: 2.
 reprPwMult=10           # Values: [ 1, 5 ,10]. Multiplies pw with this number when doing lvl2 (representatives)
 use90=3                 # Values: [ 6, 100 ] Controls, when to add a 90 generation step. If large, will be re-set by runscript to be after "adopt".
-keep90=1 # Holds 90 in candgen as well, once turned on.
+keep90=true # Holds 90 in candgen as well, once turned on.
 extendedAngleGens="90"  # Values: [ "0", "90", ... ] Turned on by use90.
 premerge=0              # Values: [ 0, 1 ] Call merge after segmentation.
 mergeChunk=0         # Values: [ 0, 5000, ? ] Split scene, until we reach this number, and start merging the splits first
@@ -237,7 +237,7 @@ do
         #if [ $(( $c - 1 )) -eq $use90 ]; then
         if [ $(( $c )) -eq $use90 ]; then
             #anglegens=$_bakAngleGens;
-            if ! keep90 ; then
+            if ! $keep90 ; then
                 candAngleGens=$_bakAngleGens; #no more 90 candidates
             else
                 echo "KEEEPING 90, candAngleGens:" $candAngleGens;

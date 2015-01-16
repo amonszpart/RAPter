@@ -61,6 +61,23 @@ namespace io
                , locs[1](0), locs[1](1) );
     }
 
+    inline void drawCircle( FILE *fp, Eigen::Vector2f const& a, float radius
+                            , Eigen::Vector3f colour = Eigen::Vector3f::Zero()
+                            , Eigen::Vector3f center = Eigen::Vector3f::Zero() )
+    {
+        fprintf( fp, "newpath\n" );
+        fprintf( fp, "%f %f %f setrgbcolor\n", colour(0)
+                                             , colour(1)
+                                             , colour(2) );
+        std::vector<Eigen::Vector2f> locs(1);
+        locs[0] << a(0)*200.+center(0), a(1)*200.+center(1);
+
+        //fprintf( fp, ".5 setlinewidth\n" );
+        fprintf( fp, "%.3f %.3f %.3f 0 360 arc closepath\nstroke \n"
+               , locs[0](0), locs[0](1), radius
+               );
+    }
+
     inline void drawFrame( FILE *fp, Eigen::Vector3f center = Eigen::Vector3f::Zero() )
     {
         drawLine( fp
@@ -108,10 +125,19 @@ namespace io
             FILE* fpCloud = fopen( cloudPath.c_str(), "w" );
             Eigen::Matrix<Scalar,2,1> pSize; pSize << 0.001, 0.001;
             for ( PidT pid = 0; pid != points.size(); ++pid )
-                drawLine( fpCloud, points[pid].template pos().template head<2>().eval() - pSize
-                                 , points[pid].template pos().template head<2>().eval() + pSize
-                                 , Eigen::Vector3f::Zero()
-                                 , center );
+            {
+                //x, y, r, 0, r arc closepath
+                drawCircle( fpCloud, points[pid].template pos().template head<2>().eval()
+                            , .5
+                            ,  Eigen::Vector3f::Zero()
+                            , center
+                            );
+
+//                drawLine( fpCloud, points[pid].template pos().template head<2>().eval() - pSize
+//                                 , points[pid].template pos().template head<2>().eval() + pSize
+//                                 , Eigen::Vector3f::Zero()
+//                                 , center );
+            }
             std::stringstream command;
             command << "(evince " << cloudPath << " &)";
             if ( show )

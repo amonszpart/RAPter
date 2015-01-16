@@ -444,10 +444,18 @@ inline int schnabelCli( int argc, char** argv )
     vptr->spin();
 #endif
 
-    std::cout << " writing " << out_prims.size() << " primitives to ./primitives.schnabel.csv" << std::endl;
-    GF2::io::savePrimitives<PrimitiveT,std::vector<GF2::PlanePrimitive>::const_iterator >( out_prims, "./primitives.schnabel.csv" );
-    GF2::io::writeAssociations<PointPrimitiveT>( outPoints, "./points_primitives.schnabel.csv" );
-    GF2::io::writePoints<PointPrimitiveT>( outPoints, "./cloud.schnabel.ply" );
+    char path[ 256 ];
+    sprintf( path, "./schnabel_minsup%d.primitives.csv", min_support_arg );
+    std::cout << " writing " << out_prims.size() << " primitives to " << path << std::endl;
+    GF2::io::savePrimitives<PrimitiveT,std::vector<GF2::PlanePrimitive>::const_iterator >( out_prims, std::string(path) );
+
+    sprintf( path, "./schnabel_minsup%d.points_primitives.csv", min_support_arg );
+    std::cout << " writing " << outPoints.size() << " assignments to " << path << std::endl;
+    GF2::io::writeAssociations<PointPrimitiveT>( outPoints, path );
+
+    sprintf( path, "./schnabel_minsup%d.cloud.ply", min_support_arg );
+    std::cout << " writing " << outPoints.size() << " points to " << path << std::endl;
+    GF2::io::writePoints<PointPrimitiveT>( outPoints, path );
 
     return EXIT_SUCCESS;
 }
