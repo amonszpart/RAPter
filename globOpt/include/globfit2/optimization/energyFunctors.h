@@ -370,7 +370,7 @@ namespace GF2
             //_Scalar dist = _primPrimCompFunctor.template eval( ex1, p1, ex2, p2 ); // changed by Aron on 21 12 2014
             _Scalar dist = _FiniteFiniteDistanceFunctor::eval( ex1, p1, ex2, p2 );
             // (scale - distance) truncated at scale-scale = 0, normalized by scale to 0..1
-            _Scalar spat_w = std::max( ProblemSetupParams<_Scalar>::spatial_weight_distance * _scale - dist
+            _Scalar spat_w = std::max( _spatialWeightDistMult * _scale - dist
                                      , _Scalar(0.) )
                                      / _scale;
 
@@ -427,6 +427,8 @@ namespace GF2
             inline int getUseAngleGen() { return _useAngleGen; }
             inline void setSpatialWeightCoeff( _Scalar spatialWeightCoeff ) { _spatialWeightCoeff = spatialWeightCoeff; }
             inline _Scalar getSpatialWeightCoeff() { return _spatialWeightCoeff; }
+            inline void setSpatialWeightDistMult( _Scalar spatialWeightDistMult ) { _spatialWeightDistMult = spatialWeightDistMult; }
+            inline _Scalar getSpatialWeightDistMult() { return _spatialWeightDistMult; }
             inline _Scalar angleFunction( _Scalar angleDiff ) { return sqrt(angleDiff); }
 
             bool                           _verbose;
@@ -438,6 +440,7 @@ namespace GF2
             _Scalar                        _truncAngle;
             int                            _useAngleGen;
             _Scalar                        _spatialWeightCoeff;
+            _Scalar                        _spatialWeightDistMult;
     }; //...SpatialSqrtPrimitivePrimitiveEnergyFunctor
 #endif
 

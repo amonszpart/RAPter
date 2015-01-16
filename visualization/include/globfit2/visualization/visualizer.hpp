@@ -241,7 +241,7 @@ namespace GF2
         std::map<int, int> id2ColId;  // maps gid to a colour id
         PidT maxUid      = 0;
         if ( paralColours ) //untested
-            getParallelColours<PrimitiveT>( primitives, maxUid, primColourTag );
+            getParallelColours<PrimitiveT>( primitives, maxUid, primColourTag, angle_limit );
 
         // get the highest gid from points OR primitives, store into max_gid
         {

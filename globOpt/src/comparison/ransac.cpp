@@ -330,7 +330,7 @@ inline int schnabelCli( int argc, char** argv )
     std::cout << "hello Schnabel\n";
 
     RansacParams<Scalar>     params;
-    _PointContainerT         points;
+    _PointContainerT         points, outPoints;
     typename _PclCloudT::Ptr pcl_cloud;
     _PrimitiveContainerT     initial_primitives;
     PrimitiveMapT            patches;
@@ -392,7 +392,8 @@ inline int schnabelCli( int argc, char** argv )
      PidGidT                          pidGid;
 
      err = GF2::SchnabelEnv::run<pcl::PointCloud<PclPointT> >( planes
-                               , pidGid
+                               //, pidGid
+                               , outPoints
                                , points
                                , pcl_cloud
                                , params.scale
@@ -407,6 +408,11 @@ inline int schnabelCli( int argc, char** argv )
         std::cout << "added " << out_prims[gid].back().toString() << std::endl;
     }
 
+//    for ( PidGidT::const_iterator it = pidGid.begin(); it != pidGid.end(); ++it )
+//    {
+//        points.at( it->first ).setTag( PointPrimitiveT::TAGS::GID, it->second );
+//    }
+#if 0
     reassign( points, planes, params.scale );
 
     // debug assignments
@@ -436,10 +442,12 @@ inline int schnabelCli( int argc, char** argv )
     }
     vptr->addCoordinateSystem(0.5);
     vptr->spin();
+#endif
 
     std::cout << " writing " << out_prims.size() << " primitives to ./primitives.schnabel.csv" << std::endl;
     GF2::io::savePrimitives<PrimitiveT,std::vector<GF2::PlanePrimitive>::const_iterator >( out_prims, "./primitives.schnabel.csv" );
-    GF2::io::writeAssociations<PointPrimitiveT>( points, "./points_primitives.schnabel.csv" );
+    GF2::io::writeAssociations<PointPrimitiveT>( outPoints, "./points_primitives.schnabel.csv" );
+    GF2::io::writePoints<PointPrimitiveT>( outPoints, "./cloud.schnabel.ply" );
 
     return EXIT_SUCCESS;
 }

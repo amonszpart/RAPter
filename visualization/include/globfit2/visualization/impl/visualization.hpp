@@ -74,7 +74,7 @@ GF2::vis::showCli( int argc, char** argv )
     bool    show_pop            = !pcl::console::find_switch( argc, argv, "--no-pop" );
     bool    print_angles        = pcl::console::find_switch( argc, argv, "--print-angles" );
 
-    float   perfect_angle_limit = 10.e-5;
+    float   perfect_angle_limit = 10.e-2;
     pcl::console::parse_argument( argc, argv, "--perfect-angle", perfect_angle_limit );
 
     bool    paralColours        = pcl::console::find_switch( argc, argv, "--paral-colours" );
