@@ -240,11 +240,11 @@ namespace GF2
                                                                                                angles );
                     if ( tmpAng > _Scalar(1e-2) )
                     {
-                        std::cout << "triplet cancel: "
-                                  << "<" << gid0 << "," << dir_gid1 << "," << cand0.getTag(_PrimitiveT::TAGS::GEN_ANGLE) << "> "
-                                  << tmpAng * 180. / M_PI << " with "
-                                  << " <" << it.getGid() << "," << it.getDid() << "," << it->getTag(_PrimitiveT::TAGS::GEN_ANGLE) << ">"
-                                  << "\n";
+//                        std::cout << "triplet cancel: "
+//                                  << "<" << gid0 << "," << dir_gid1 << "," << cand0.getTag(_PrimitiveT::TAGS::GEN_ANGLE) << "> "
+//                                  << tmpAng * 180. / M_PI << " with "
+//                                  << " <" << it.getGid() << "," << it.getDid() << "," << it->getTag(_PrimitiveT::TAGS::GEN_ANGLE) << ">"
+//                                  << "\n";
                         add0 = false;
                     }
                 }
