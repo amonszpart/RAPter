@@ -563,18 +563,29 @@ Segmentation::segmentCli( int    argc
     } //...read angles
 
     // Read points
+    bool isOriented = false;
     _PointContainerT points;
     if ( EXIT_SUCCESS == err )
     {
         err = io::readPoints<_PointPrimitiveT>( points, cloud_path );
         if ( err != EXIT_SUCCESS )  std::cerr << "[" << __func__ << "]: " << "readPoints returned error " << err << std::endl;
+        unsigned long normalCnt = 0;
+        for ( int i = 0; i != points.size(); ++i )
+            normalCnt += ( points[i].template dir().template norm() > _Scalar(0.1) );
+
+        if ( normalCnt / _Scalar(points.size()) > _Scalar(.5) )
+        {
+            std::cout << "more than 50% of the normals seem set, so assuming oriented cloud\n";
+            isOriented = true;
+        }
+
     } //...read points
 
     //_____________________WORK_______________________
     //_______________________________________________
 
     // orientPoints
-    if ( EXIT_SUCCESS == err )
+    if ( (EXIT_SUCCESS == err) && !isOriented )
     {
         err = Segmentation::orientPoints<_PointPrimitiveT,_PrimitiveT>( points, generatorParams.scale, generatorParams.nn_K, verbose );
         if ( err != EXIT_SUCCESS ) std::cerr << "[" << __func__ << "]: " << "orientPoints exited with error! Code: " << err << std::endl;
@@ -642,7 +653,7 @@ Segmentation::segmentCli( int    argc
     } //...save primitives
 
     // save oriented cloud
-    if ( err == EXIT_SUCCESS )
+    if ( (err == EXIT_SUCCESS) && !isOriented )
     {
         // save backup of original input cloud, if needed
         std::string orig_cloud_path = cloud_path + ".orig";
