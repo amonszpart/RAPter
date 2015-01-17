@@ -64,8 +64,13 @@ namespace GF2
 
         Scalar pw( 0. );
         GF2::console::parse_argument( argc, argv, "--pw", pw );
+        Scalar radius = .1;
+        GF2::console::parse_argument( argc, argv, "--radius", radius ); // .1, .3
+        Scalar subSample = 1.;
+        GF2::console::parse_argument( argc, argv, "--subsample", subSample ); // 0..1
 
         bool drawOld = GF2::console::find_switch( argc, argv, "--old" );
+        bool colourCloud = GF2::console::find_switch( argc, argv, "--colourCloud" );
 
         io::drawGraph( primsMap, points, outPath, drawOld, true, dids.size() ? &dids : NULL, pw, showClusters, edgeSources.size() ? &edgeSources : NULL );
 
@@ -77,7 +82,10 @@ namespace GF2
             io::drawPs( primsMap, points, outPath + ".ps", scale
                       , /* show: */ true
                       , /* writeNAmes: */ writeNames
-                       , &dids
+                      , colourCloud
+                      , &dids
+                      , subSample
+                      , radius
                       );
         }
     }

@@ -115,6 +115,9 @@ ProblemSetup::formulateCli( int    argc
         {
             pcl::console::parse_argument( argc, argv, "--patch-pop-limit", params.patch_population_limit );
         }
+        Scalar collapseAngleDeg = params.collapseAngleSqrt * params.collapseAngleSqrt * Scalar( 180. ) / M_PI;
+        pcl::console::parse_argument( argc, argv, "--collapse-angle-deg", collapseAngleDeg );
+        params.collapseAngleSqrt = sqrt( collapseAngleDeg * M_PI / Scalar(180.) );
 
         // energy
         {
@@ -161,6 +164,7 @@ ProblemSetup::formulateCli( int    argc
                       << " [--spat-dist-mult" << params.spatial_weight_dist_mult << "]\t How many times scale is proximity threshold \n"
                       << " [--use-angle-gen " << params.useAngleGen << "]\n"
                       << " [--trunc-angle " << params.truncAngle << "]\n"
+                      << " [--collapse-angle-deg " << ((params.collapseAngleSqrt*params.collapseAngleSqrt) * 180. / M_PI)  << "]\n"
                       << std::endl;
             if ( !verbose )
                 return EXIT_FAILURE;
@@ -256,6 +260,7 @@ ProblemSetup::formulateCli( int    argc
                                                         , !calc_energy && verbose
                                                         , params.freq_weight
                                                         , clustersMode
+                                                        , params.collapseAngleSqrt
                                                         );
 #else
     int err = formulate<_PointPrimitiveDistanceFunctor>( problem
@@ -388,6 +393,7 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
                        , int                                                           const  verbose
                        , _Scalar                                                       const  freq_weight /* = 0. */
                        , int                                                           const  clusterMode
+                       , _Scalar                                                       const  collapseThreshold /* = 0.07 */ // sqrt( 0.1 * PI / 180 ) == 0.06605545496
         )
 {
     using problemSetup::OptProblemT;
@@ -417,14 +423,64 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
         throw new std::runtime_error("angle_gens need to be in rad, are you sure");
     }
 
+    GidPidVectorMap populations;
+    processing::getPopulations( populations, points );
+
     // find smallest pwcost
+    typedef std::pair<DidT,DidT> DIdPair;
+    DIdPair minPair;
+    _Scalar minScore = std::numeric_limits<_Scalar>::max();
+    std::map< DidT, ULidT > dIdPopuls;
     {
+        std::set< DIdPair > visited;
         for ( size_t lid = 0; lid != prims.size(); ++lid )
             for ( size_t lid1 = 0; lid1 != prims[lid].size(); ++lid1 )
             {
+                if ( prims[lid][lid1].getTag(_PrimitiveT::TAGS::STATUS) == _PrimitiveT::STATUS_VALUES::SMALL ) continue;
 
-            }
+                const DidT did = prims[lid][lid1].getTag(_PrimitiveT::TAGS::DIR_GID);
+                const GidT gid = prims[lid][lid1].getTag(_PrimitiveT::TAGS::GID);
+
+                if (     (prims[lid][lid1].getTag(_PrimitiveT::TAGS::STATUS) == _PrimitiveT::STATUS_VALUES::ACTIVE)
+                      || (prims[lid][lid1].getTag(_PrimitiveT::TAGS::STATUS) == _PrimitiveT::STATUS_VALUES::FIXED)
+                   )
+                dIdPopuls[did] += ( (populations.find( gid ) != populations.end()) ? populations[gid].size() : 0 );
+
+                for ( size_t lid2 = 0; lid2 != prims.size(); ++lid2 )
+                    for ( size_t lid3 = 0; lid3 != prims[lid2].size(); ++lid3 )
+                    {
+                        if ( prims[lid2][lid3].getTag(_PrimitiveT::TAGS::STATUS) == _PrimitiveT::STATUS_VALUES::SMALL ) continue;
+
+                        const DidT did2 = prims[lid2][lid3].getTag(_PrimitiveT::TAGS::DIR_GID);
+                        if ( did == did2 ) continue;
+
+                        DIdPair pair = DIdPair(did,did2);
+                        if ( visited.find( pair ) == visited.end() )
+                        {
+                            _Scalar score = calcPwCost<_Scalar>( prims[lid][lid1], prims[lid2][lid3], angles );
+                            if ( score < minScore )
+                            {
+                                minScore = score;
+                                minPair = pair;
+                            }
+                            visited.insert( pair );
+                        } //...if not visited
+                    } //...inner
+            } //...outer
+    } //...smallest pwcost
+    std::cout << "[" << __func__ << "]: " << "mincost: " << minScore << " by " << minPair.first << "-" << minPair.second
+              << ", populs: " << dIdPopuls[ minPair.first ] << " vs " << dIdPopuls[ minPair.second ]
+              << std::endl;
+    DIdPair replaceBy( _PrimitiveT::LONG_VALUES::UNSET, _PrimitiveT::LONG_VALUES::UNSET ); // replace first by second
+    if ( minScore < 0.07 ) // sqrt( 0.1 * PI / 180 ) == 0.06605545496
+    {
+        replaceBy = minPair;
+        if ( dIdPopuls[minPair.first] > dIdPopuls[minPair.second] )
+            std::swap( replaceBy.first, replaceBy.second );
+        std::cout << "[" << __func__ << "]: " << "replace " << replaceBy.first << " by " << replaceBy.second << std::endl;
     }
+    else
+        std::cout << "[" << __func__ << "]: " << "not replacing, since minscore: " << minScore << "(" << minPair.first << ","  << minPair.second << ")" << std::endl;
 
     // ____________________________________________________
     // Variables - Add variables to problem
@@ -456,9 +512,17 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
                                                       , OptProblemT::LINEARITY::LINEAR, name ); // changed to nonlinear by Aron on 29.12.2014
                 lids_varids[ IntPair(lid,lid1) ] = var_id;
 
-                // save for initial starting point
-                if ( prims[lid][lid1].getTag(_PrimitiveT::TAGS::STATUS) == _PrimitiveT::STATUS_VALUES::ACTIVE )
+                // save for initial starting point: 1. [active && ( no replace OR has not dId to be replaced )] OR [ replace set && has the dId to replace by ]
+                if (    (    (prims[lid][lid1].getTag(_PrimitiveT::TAGS::STATUS) == _PrimitiveT::STATUS_VALUES::ACTIVE)
+                          &&
+                             ( (replaceBy.first == _PrimitiveT::LONG_VALUES::UNSET) || (replaceBy.first != dId)       )
+                        )
+                     ||
+                        ( (replaceBy.first != _PrimitiveT::LONG_VALUES::UNSET) && (replaceBy.second == dId)           )
+                   )
+                {
                     chosen_varids.insert( var_id );
+                }
 
                 // save dId node
                 dIdsPrimVarIds[ dId ].push_back( var_id );
@@ -577,9 +641,6 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
 
         //GraphT::testGraph();
         std::set< EdgeT > edgesList;
-
-        GidPidVectorMap populations;
-        processing::getPopulations( populations, points );
 
         const _Scalar halfSpatialWeightCoeff = primPrimDistFunctor->getSpatialWeightCoeff() / _Scalar(2.); // we add both ways, so adds up
         if ( primPrimDistFunctor->getSpatialWeightCoeff() != _Scalar(0.) || clusterMode )

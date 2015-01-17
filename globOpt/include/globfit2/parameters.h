@@ -240,6 +240,7 @@ namespace GF2 {
 
         //! \brief neighbourhood is this times scale, usually 1.0 or 2.0
         _Scalar spatial_weight_dist_mult = 2.;      // (used to be 3. for 3D)
+        _Scalar collapseAngleSqrt = 0.07; // sqrt( 0.1 deg ) == 0.041 (rad^-1)
     };
 
 //    template <typename _Scalar>

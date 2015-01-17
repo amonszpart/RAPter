@@ -171,6 +171,7 @@ namespace GF2
                      , int                                                                const  verbose                = 0
                      , _Scalar                                                            const  freq_weight            = 0.
                      , int                                                                const  clusterMode            = 1
+                     , _Scalar                                                            const  collapseThreshold      = 0.07 // sqrt( 0.1 * PI / 180 ) == 0.06605545496
                      );
 
     }; //...class ProblemSetup

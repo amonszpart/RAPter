@@ -273,7 +273,7 @@ static inline int representBackCli( int argc, char** argv )
 
         if ( it.getDid() != dId )
         {
-            if ( verbose ) std::cout << "found subst: " << it.getDid() << " instead of " << dId << " at gid << " << it.getGid() << std::endl;
+            if ( verbose ) std::cout << "found subst: " << it.getDid() << " instead of " << dId << " at gid " << it.getGid() << std::endl;
             if (    (subs.find( dId )                              != subs.end() )
                  && (subs[dId]->getTag(_PrimitiveT::TAGS::DIR_GID) != it.getDid()) )
                 std::cerr << "duplicate subs for patch " << it.getGid() << ": " << subs[dId]->getTag(_PrimitiveT::TAGS::DIR_GID) << ", " << it.getDid() << "!" << std::endl;

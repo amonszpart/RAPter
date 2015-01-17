@@ -116,7 +116,10 @@ namespace io
                       , bool show
                       , bool writeNames = false
                       , bool colourCloud = false
-                      , std::vector<DidT> *dids = NULL )
+                      , std::vector<DidT> *dids = NULL
+                      , float subSample = 1.f
+                      , float radius = .1f
+                      )
     {
         typedef typename _PrimitiveMapT::mapped_type::value_type PrimitiveT;
         typedef typename PrimitiveT::Scalar Scalar;
@@ -137,6 +140,7 @@ namespace io
             Eigen::Vector3f colour = Eigen::Vector3f::Zero();
             for ( PidT pid = 0; pid != points.size(); ++pid )
             {
+                if ( rand() / float(RAND_MAX) > subSample ) continue;
                 if ( colourCloud )
                 {
                     auto itt = prims.find( points[pid].getTag(PointPrimitiveT::TAGS::GID) );
@@ -147,7 +151,7 @@ namespace io
                 }
                 //x, y, r, 0, r arc closepath
                 drawCircle( fpCloud, points[pid].template pos().template head<2>().eval()
-                            , .3
+                            , radius
                             , colour / 255.f
                             , center
                             );
@@ -453,7 +457,7 @@ namespace io
         command << " && " << cm2.str() << "&)";
         if ( show )
         {
-            system( command.str().c_str() );
+            //system( command.str().c_str() );
             //system( cm2.str().c_str() );
         }
         std::cout << command.str() << std::endl;
