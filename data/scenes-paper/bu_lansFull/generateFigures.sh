@@ -42,3 +42,16 @@ python ../readGraphProperties.py primitives_it32.bonmin.csv points_primitives_it
 ############################################################
 ## generate planar approximation
 ../globOptVis  --show3D  --pop-limit 3 -p primitives_it32.bonmin.csv -a points_primitives_it31.csv --title GlobOpt - [Dir-Colours] 10 iteration output --angle-gens 0 --draw-mode 1 --save-poly  --paral-colours --no-pts
+
+
+
+############################################################
+## schnabel
+../globOptVis --show3D --scale 0.02 --pop-limit 3 --title "Schnabel 1000" --angle-gens 90 --use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-scale --bg-colour .9,.9,.9 --no-rel -p schnabel_minsup1000.primitives.csv -a schnabel_minsup1000.points_primitives.csv --cloud schnabel_minsup1000.cloud.ply  --perfect-angle 0.0001
+
+#distribution
+python ../normal_distr.py schnabel_minsup1000.cloud.ply schnabel_minsup1000.svg "Lans - Schnabel (minsup=1000)"
+
+
+
+
