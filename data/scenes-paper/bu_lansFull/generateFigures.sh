@@ -18,8 +18,11 @@ splatting figure/cloud_pts.ply figure/cloud.ply 1 0.0025
 ## generate stats for patches
 ../globOptVis  --show3D  --pop-limit 3 -p patches.csv -a points_primitives.csv --title GlobOpt - [Dir-Colours] patches --angle-gens 0 --draw-mode 28 --save-poly  --paral-colours 
 
+## clean output name to avoid side effect with schnabel output
+mv cloudRGBNormal_patches_reProj_noUnass_noPrim.ply patches.ply
+
 #distribution
-python ../normal_distr.py cloudRGBNormal_patches_reProj_noUnass_noPrim.ply ndistrPatches.svg "Lans - Patches"
+python ../normal_distr.py patches.ply ndistrPatches.svg "Lans - Patches"
 
 
 
@@ -41,17 +44,28 @@ python ../readGraphProperties.py primitives_it32.bonmin.csv points_primitives_it
 
 ############################################################
 ## generate planar approximation
-../globOptVis  --show3D  --pop-limit 3 -p primitives_it32.bonmin.csv -a points_primitives_it31.csv --title GlobOpt - [Dir-Colours] 10 iteration output --angle-gens 0 --draw-mode 1 --save-poly  --paral-colours --no-pts
+../globOptVis  --show3D  --pop-limit 3 -p primitives_it32.bonmin.csv -a points_primitives_it31.csv --title GlobOpt - [Dir-Colours] 10 iteration output --angle-gens 0 --draw-mode 1 --save-poly  --paral-colours --no-pts 
 
 
 
 ############################################################
 ## schnabel
-../globOptVis --show3D --scale 0.02 --pop-limit 3 --title "Schnabel 1000" --angle-gens 90 --use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-scale --bg-colour .9,.9,.9 --no-rel -p schnabel_minsup1000.primitives.csv -a schnabel_minsup1000.points_primitives.csv --cloud schnabel_minsup1000.cloud.ply  --perfect-angle 0.0001
+
+../globOptVis --show3D --scale 0.02 --pop-limit 3 --title "Schnabel 1000" --angle-gens 90 --use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-scale --bg-colour .9,.9,.9 --no-rel -p schnabel_minsup1000.primitives.csv -a schnabel_minsup1000.points_primitives.csv --cloud schnabel_minsup1000.cloud.ply  --perfect-angle 0.0001  --draw-mode 28 --save-poly 
+
+## clean output name to avoid side effect with patches output
+mv cloudRGBNormal_reProj_noUnass_noPrim.ply schnabel_minsup1000_pts.ply
+
+meshlabserver -i schnabel_minsup1000_pts.ply -o figure/schnabel_minsup1000_pts.ply -om vc vn
+
+splatting figure/schnabel_minsup1000_pts.ply figure/schnabel_minsup1000.ply 1 0.0035
 
 #distribution
-python ../normal_distr.py schnabel_minsup1000.cloud.ply schnabel_minsup1000.svg "Lans - Schnabel (minsup=1000)"
+python ../normal_distr.py schnabel_minsup1000_pts.ply ndistr_schnabel_minsup1000.svg "Lans - Schnabel (minsup=1000)"
 
+../globOptVis --show3D --scale 0.02 --pop-limit 3 --title "Schnabel 1000" --angle-gens 90 --use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-scale --bg-colour .9,.9,.9 --no-rel -p schnabel_minsup1000.primitives.csv -a schnabel_minsup1000.points_primitives.csv --cloud schnabel_minsup1000.cloud.ply  --perfect-angle 0.0001  --draw-mode 1 --save-poly  --no-pts 
+
+mv plane_mesh.ply figures/schnabel_minsup1000_planes.ply
 
 
 
