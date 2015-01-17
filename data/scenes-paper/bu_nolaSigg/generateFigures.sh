@@ -40,3 +40,26 @@ python ../readGraphProperties.py primitives_it26.bonmin.csv points_primitives_it
 ############################################################
 ## generate planar approximation
 ../globOptVis  --show3D  --pop-limit 3 -p primitives_it26.bonmin.csv -a points_primitives_it25.csv --title GlobOpt - [Dir-Colours] 25 iteration output --angle-gens 0 --draw-mode 1 --save-poly  --paral-colours --no-pts
+
+
+
+
+
+############################################################
+## schnabel
+
+../globOptVis --show3D --scale 0.02 --pop-limit 3 --title "Schnabel 500" --angle-gens 90 --use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-scale --bg-colour .9,.9,.9 --no-rel -p schnabel_minsup500.primitives.csv -a schnabel_minsup500.points_primitives.csv --cloud schnabel_minsup500.cloud.ply  --perfect-angle 0.0001  --draw-mode 28 --save-poly 
+
+## clean output name to avoid side effect with patches output
+mv cloudRGBNormal_reProj_noUnass_noPrim.ply schnabel_minsup500_pts.ply
+
+meshlabserver -i schnabel_minsup500_pts.ply -o figure/schnabel_minsup500_pts.ply -om vc vn
+
+splatting figure/schnabel_minsup500_pts.ply figure/schnabel_minsup500.ply 1 0.002
+
+#distribution
+python ../normal_distr.py schnabel_minsup500_pts.ply ndistr_schnabel_minsup500.svg "Lans - Schnabel (minsup=20000)"
+
+../globOptVis --show3D --scale 0.02 --pop-limit 3 --title "Schnabel 20000" --angle-gens 90 --use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-scale --bg-colour .9,.9,.9 --no-rel -p schnabel_minsup500.primitives.csv -a schnabel_minsup500.points_primitives.csv --cloud schnabel_minsup500.cloud.ply  --perfect-angle 0.0001  --draw-mode 1 --save-poly  --no-pts 
+
+mv plane_mesh.ply figure/schnabel_minsup500_planes.ply
