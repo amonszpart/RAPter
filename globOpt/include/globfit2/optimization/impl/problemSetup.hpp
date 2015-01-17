@@ -27,6 +27,13 @@ namespace GF2 {
 
 //____________________________________________class ProblemSetup __________________________________________________
 
+template <typename _Scalar, class _PrimitiveT, class _AnglesT>
+inline _Scalar calcPwCost( _PrimitiveT const& p0, _PrimitiveT const& p1, _AnglesT const& angles )
+{
+    //weights(1) * sqrt( MyPrimitivePrimitiveAngleFunctor::eval( *p0, *p1, angles ) ); //changed 16:11 15/01/2015
+    return std::sqrt( MyPrimitivePrimitiveAngleFunctor::eval( p0, p1, angles ) );
+}
+
 template < class _PrimitiveContainerT
          , class _PointContainerT
          , class _PrimitiveT
@@ -323,7 +330,7 @@ inline void calculateNeighbourhoods( NeighMapT &proximity, _PointContainerT cons
     std::vector<int>    k_indices;
     std::vector<float>  k_sqr_distances;
     int warningCount = 0;
-    //#pragma omp for private(k_indices,k_sqr_distances)
+    #pragma omp for private(k_indices,k_sqr_distances)
     for ( size_t i = 0; i < points.size(); ++i )
     {
         const GidT gidI = points[i].getTag(PointPrimitiveT::TAGS::GID);
@@ -333,8 +340,12 @@ inline void calculateNeighbourhoods( NeighMapT &proximity, _PointContainerT cons
         pclutil::PclSearchPointT pnt;
         pnt.getVector3fMap() = points[i].template pos();
         tree->radiusSearch( pnt, radius, k_indices, k_sqr_distances, /*maxnn:*/ 0 );
+
+#       pragma omp critical (NEIGHWARN)
         if ( k_indices.size() > 1000 )
+        {
             ++warningCount;
+        }
 
         for ( size_t j = 1; j < k_indices.size(); ++j )
         {
@@ -344,8 +355,11 @@ inline void calculateNeighbourhoods( NeighMapT &proximity, _PointContainerT cons
                  || ( gidJ == gidI )
                ) continue;
 
-            proximity[ gidI ].insert( gidJ );
-            proximity[ gidJ ].insert( gidI );
+#           pragma omp critical (PROXIMITY)
+            {
+                proximity[ gidI ].insert( gidJ );
+                proximity[ gidJ ].insert( gidI );
+            }
         } //...foreach neighbour
 
     } //...foreach point
@@ -401,6 +415,15 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
         std::cerr << "[" << __func__ << "]: " << "angle_gens need to be in rad, are you sure?" << std::endl;
         std::cerr<<"angle_gens_in_rad:";for(size_t vi=0;vi!=angle_gens_in_rad.size();++vi)std::cerr<<angle_gens_in_rad[vi]<<" ";std::cerr << "\n";
         throw new std::runtime_error("angle_gens need to be in rad, are you sure");
+    }
+
+    // find smallest pwcost
+    {
+        for ( size_t lid = 0; lid != prims.size(); ++lid )
+            for ( size_t lid1 = 0; lid1 != prims[lid].size(); ++lid1 )
+            {
+
+            }
     }
 
     // ____________________________________________________
@@ -590,6 +613,20 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
                             const GidT gIdOther = prim1.getTag( _PrimitiveT::TAGS::GID );
                             const DidT dIdOther = prim1.getTag( _PrimitiveT::TAGS::DIR_GID );
 
+                            ProximityMapT::const_iterator gidNeighsIt = proximities.find( gid );
+                            if (    ( did != dIdOther )
+                                    && ( gid != gIdOther ) // we don't want to pollute problem with unnecessary edges
+                                    && (    (    (gidNeighsIt != proximities.end()                               )
+                                                 && (gidNeighsIt->second.find(gIdOther) != gidNeighsIt->second.end()) )
+                                            //                                      || ()
+                                            )
+                                    )
+                            {
+                                //std::cout << "adding spatw " << halfSpatialWeightCoeff << " to " << gid << "-" << gIdOther << std::endl;
+                                const LidT varId0 = lids_varids.at( lidLid1 );
+                                const LidT varId1 = lids_varids.at( IntPair(lidOth,lid1Oth) );
+                                problem.addQObjective( varId0, varId1, halfSpatialWeightCoeff ); // /2, since it's going to be added both ways Aron 6/1/2015
+                            }
                         } // ... olid1
                     } // ... olid
                 } // ... lid1
@@ -727,8 +764,10 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
                 _PrimitiveT const* p1 = dIdsPrims[it1->first];
                 //
                 //_Scalar score = weights(1) * sqrt( GF2::angleInRad(p0->template dir(), p1->template dir()) );
-                _Scalar score = weights(1) * sqrt( MyPrimitivePrimitiveAngleFunctor::eval( *p0, *p1, angles ) ); //changed 16:11 15/01/2015
-                problem.addQObjective( it0->second, it1->second, score );
+                //_Scalar score = weights(1) * sqrt( MyPrimitivePrimitiveAngleFunctor::eval( *p0, *p1, angles ) ); //changed 16:11 15/01/2015
+                problem.addQObjective( it0->second, it1->second
+                                     , weights(1) * calcPwCost<_Scalar>( *p0, *p1, angles ) // score
+                                     );
             }
 
     } //...dId pw cost

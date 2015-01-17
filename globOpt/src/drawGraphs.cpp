@@ -51,6 +51,7 @@ namespace GF2
         }
 
         bool showClusters = GF2::console::find_switch( argc, argv, "--clusters" );
+        bool writeNames   = GF2::console::find_switch( argc, argv, "--names" );
 
         std::vector<DidT> dids;
         GF2::console::parse_x_arguments( argc, argv, "--dids", dids );
@@ -75,6 +76,7 @@ namespace GF2
         {
             io::drawPs( primsMap, points, outPath + ".ps", scale
                       , /* show: */ true
+                      , /* writeNAmes: */ writeNames
                        , &dids
                       );
         }
