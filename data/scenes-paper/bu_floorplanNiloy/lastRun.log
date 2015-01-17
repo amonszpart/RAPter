@@ -1,6 +1,50 @@
-../glob_opt --generate -sc 0.006 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 5 -p primitives_merged_it14.csv --assoc points_primitives_it14.csv --angle-gens 90 --small-thresh-mult 0 --var-limit 1000 
+../glob_opt --generate --triplet-safe -sc 0.006 -al 0.1 -ald 1 --small-mode 0 --patch-pop-limit 5 -p primitives_merged_it12.csv --assoc points_primitives_it12.csv --angle-gens 90 --small-thresh-mult 0 --var-limit 1100 
 
-../glob_opt --formulate --scale 0.006 --cloud cloud.ply --unary 10000 --pw 0.1 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 5 --angle-gens 90 --candidates candidates_it15.csv -a points_primitives_it14.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0.1 --trunc-angle 
+../glob_opt --formulate --scale 0.006 --cloud cloud.ply --unary 10000 --pw 0.02 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 5 --angle-gens 90 --candidates candidates_it13.csv -a points_primitives_it12.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 2 --trunc-angle 
+
+../glob_opt --solver bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 90 --candidates candidates_it13.csv
+
+../globOptVis --show --scale 0.006 --pop-limit 5 -p primitives_it13.bonmin.csv -a points_primitives_it12.csv --title "GlobOpt - 13 iteration output" --angle-gens 90 --use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-rel --no-scale --bg-colour .9,.9,.9 &
+
+python ../readGraphProperties.py primitives_it13.bonmin.csv points_primitives_it12.csv cloud.ply --angles 90 --iteration 13 &
+
+../glob_opt --represent -p primitives_it13.bonmin.csv -a points_primitives_it12.csv -sc 0.006 --cloud cloud.ply --angle-gens 90
+
+../glob_opt --generate --triplet-safe -sc 0.006 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 5 --angle-gens 90 --small-thresh-mult 0 -p representatives_it13.csv --assoc points_representatives_it13.csv --keep-singles
+
+../glob_opt --formulate --no-clusters --spat-weight 2 --trunc-angle --scale 0.006 --cloud cloud.ply --unary 10000 --pw 0.020000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 5 --angle-gens 90 --candidates candidates_representatives_it13.csv -a points_representatives_it13.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver bonmin --problem problem -v --time -1 --angle-gens 90 --bmode 0 --candidates candidates_representatives_it13.csv
+
+../glob_opt --representBack --repr representatives_it13.bonmin.csv -p primitives_it13.bonmin.csv -a points_primitives_it12.csv -sc 0.006 --cloud cloud.ply --angle-gens 90
+
+../glob_opt --merge --scale 0.006000 --adopt 1 --prims primitives_it13.bonmin.csv -a points_primitives_it12.csv --angle-gens 90 --patch-pop-limit 5
+
+../glob_opt --generate --triplet-safe -sc 0.006 -al 0.1 -ald 1 --small-mode 0 --patch-pop-limit 5 -p primitives_merged_it13.csv --assoc points_primitives_it13.csv --angle-gens 90 --small-thresh-mult 0 --var-limit 1100 
+
+../glob_opt --formulate --scale 0.006 --cloud cloud.ply --unary 10000 --pw 0.02 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 5 --angle-gens 90 --candidates candidates_it14.csv -a points_primitives_it13.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 2 --trunc-angle 
+
+../glob_opt --solver bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 90 --candidates candidates_it14.csv
+
+../globOptVis --show --scale 0.006 --pop-limit 5 -p primitives_it14.bonmin.csv -a points_primitives_it13.csv --title "GlobOpt - 14 iteration output" --angle-gens 90 --use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-rel --no-scale --bg-colour .9,.9,.9 &
+
+python ../readGraphProperties.py primitives_it14.bonmin.csv points_primitives_it13.csv cloud.ply --angles 90 --iteration 14 &
+
+../glob_opt --represent -p primitives_it14.bonmin.csv -a points_primitives_it13.csv -sc 0.006 --cloud cloud.ply --angle-gens 90
+
+../glob_opt --generate --triplet-safe -sc 0.006 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 5 --angle-gens 90 --small-thresh-mult 0 -p representatives_it14.csv --assoc points_representatives_it14.csv --keep-singles
+
+../glob_opt --formulate --no-clusters --spat-weight 2 --trunc-angle --scale 0.006 --cloud cloud.ply --unary 10000 --pw 0.020000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 5 --angle-gens 90 --candidates candidates_representatives_it14.csv -a points_representatives_it14.csv --freq-weight 0 --cost-fn spatsqrt
+
+../glob_opt --solver bonmin --problem problem -v --time -1 --angle-gens 90 --bmode 0 --candidates candidates_representatives_it14.csv
+
+../glob_opt --representBack --repr representatives_it14.bonmin.csv -p primitives_it14.bonmin.csv -a points_primitives_it13.csv -sc 0.006 --cloud cloud.ply --angle-gens 90
+
+../glob_opt --merge --scale 0.006000 --adopt 1 --prims primitives_it14.bonmin.csv -a points_primitives_it13.csv --angle-gens 90 --patch-pop-limit 5
+
+../glob_opt --generate --triplet-safe -sc 0.006 -al 0.1 -ald 1 --small-mode 0 --patch-pop-limit 5 -p primitives_merged_it14.csv --assoc points_primitives_it14.csv --angle-gens 90 --small-thresh-mult 0 --var-limit 1100 
+
+../glob_opt --formulate --scale 0.006 --cloud cloud.ply --unary 10000 --pw 0.02 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 5 --angle-gens 90 --candidates candidates_it15.csv -a points_primitives_it14.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 2 --trunc-angle 
 
 ../glob_opt --solver bonmin --problem problem -v --time -1 --bmode 0 --angle-gens 90 --candidates candidates_it15.csv
 
@@ -10,9 +54,9 @@ python ../readGraphProperties.py primitives_it15.bonmin.csv points_primitives_it
 
 ../glob_opt --represent -p primitives_it15.bonmin.csv -a points_primitives_it14.csv -sc 0.006 --cloud cloud.ply --angle-gens 90
 
-../glob_opt --generate -sc 0.006 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 5 --angle-gens 90 --small-thresh-mult 0 -p representatives_it15.csv --assoc points_representatives_it15.csv --keep-singles
+../glob_opt --generate --triplet-safe -sc 0.006 -al 0.100 -ald 1 --small-mode 0 --patch-pop-limit 5 --angle-gens 90 --small-thresh-mult 0 -p representatives_it15.csv --assoc points_representatives_it15.csv --keep-singles
 
-../glob_opt --formulate --no-clusters --spat-weight 0.1 --trunc-angle --scale 0.006 --cloud cloud.ply --unary 10000 --pw 1.000000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 5 --angle-gens 90 --candidates candidates_representatives_it15.csv -a points_representatives_it15.csv --freq-weight 0 --cost-fn spatsqrt
+../glob_opt --formulate --no-clusters --spat-weight 2 --trunc-angle --scale 0.006 --cloud cloud.ply --unary 10000 --pw 0.020000 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 5 --angle-gens 90 --candidates candidates_representatives_it15.csv -a points_representatives_it15.csv --freq-weight 0 --cost-fn spatsqrt
 
 ../glob_opt --solver bonmin --problem problem -v --time -1 --angle-gens 90 --bmode 0 --candidates candidates_representatives_it15.csv
 
@@ -20,7 +64,5 @@ python ../readGraphProperties.py primitives_it15.bonmin.csv points_primitives_it
 
 ../glob_opt --merge --scale 0.006000 --adopt 1 --prims primitives_it15.bonmin.csv -a points_primitives_it14.csv --angle-gens 90 --patch-pop-limit 5
 
-../glob_opt --generate -sc 0.006 -al 0.2 -ald 1 --small-mode 0 --patch-pop-limit 5 -p primitives_merged_it15.csv --assoc points_primitives_it15.csv --angle-gens 90 --small-thresh-mult 0 --var-limit 1000 
-
-../glob_opt --formulate --scale 0.006 --cloud cloud.ply --unary 10000 --pw 0.1 --cmp 0 --constr-mode patch --dir-bias 0 --patch-pop-limit 5 --angle-gens 90 --candidates candidates_it16.csv -a points_primitives_it15.csv --freq-weight 0 --cost-fn spatsqrt --no-clusters --spat-weight 0.1 --trunc-angle 
+../glob_opt --generate --triplet-safe -sc 0.006 -al 0.1 -ald 1 --small-mode 0 --patch-pop-limit 5 -p primitives_merged_it15.csv --assoc points_primitives_it15.csv --angle-gens 90 --small-thresh-mult 0 --var-limit 1100 
 
