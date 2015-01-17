@@ -50,15 +50,23 @@ namespace GF2
             }
         }
 
+        bool showClusters = GF2::console::find_switch( argc, argv, "--clusters" );
+
         std::vector<DidT> dids;
         GF2::console::parse_x_arguments( argc, argv, "--dids", dids );
+        std::vector< GidT > tmpEdgeSources;
+        GF2::console::parse_x_arguments( argc, argv, "--edge-sources", tmpEdgeSources );
+        std::vector< std::pair<GidT,DidT> > edgeSources;
+        for ( int i = 0; i < tmpEdgeSources.size(); i += 2 )
+            edgeSources.push_back( std::pair<GidT,DidT>(tmpEdgeSources[i], tmpEdgeSources[i+1] ) );
+
 
         Scalar pw( 0. );
         GF2::console::parse_argument( argc, argv, "--pw", pw );
 
         bool drawOld = GF2::console::find_switch( argc, argv, "--old" );
 
-        io::drawGraph( primsMap, points, outPath, drawOld, true, dids.size() ? &dids : NULL, pw );
+        io::drawGraph( primsMap, points, outPath, drawOld, true, dids.size() ? &dids : NULL, pw, showClusters, edgeSources.size() ? &edgeSources : NULL );
 
         Scalar scale = 0.02f;
         if ( GF2::console::parse_argument( argc, argv, "-s", scale ) < 0 )

@@ -322,6 +322,7 @@ inline void calculateNeighbourhoods( NeighMapT &proximity, _PointContainerT cons
 
     std::vector<int>    k_indices;
     std::vector<float>  k_sqr_distances;
+    int warningCount = 0;
     //#pragma omp for private(k_indices,k_sqr_distances)
     for ( size_t i = 0; i < points.size(); ++i )
     {
@@ -332,7 +333,8 @@ inline void calculateNeighbourhoods( NeighMapT &proximity, _PointContainerT cons
         pclutil::PclSearchPointT pnt;
         pnt.getVector3fMap() = points[i].template pos();
         tree->radiusSearch( pnt, radius, k_indices, k_sqr_distances, /*maxnn:*/ 0 );
-        if ( k_indices.size() > 1000 ) std::cerr << "[" << __func__ << "]: " << "more, than 1000 neighbrours( " << k_indices.size() << ")" << std::endl;
+        if ( k_indices.size() > 1000 )
+            ++warningCount;
 
         for ( size_t j = 1; j < k_indices.size(); ++j )
         {
@@ -347,6 +349,7 @@ inline void calculateNeighbourhoods( NeighMapT &proximity, _PointContainerT cons
         } //...foreach neighbour
 
     } //...foreach point
+    std::cerr << "[" << __func__ << "]: " << "more, than 1000 neighbrours " << warningCount << "/" << points.size() << " times" << std::endl;
 } //...calculateNeighbourhoods
 
 template < class _PointPrimitiveDistanceFunctor
@@ -541,7 +544,6 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
         typedef std::vector< Eigen::Matrix<_Scalar,3,1> > ExtremaT;
         typedef std::pair<LidT,LidT>                      LidLid;
         typedef std::map< LidLid, ExtremaT >              ExtremaMapT;
-        ExtremaMapT extremas;
         typedef OptProblemT::Scalar                       ProblemScalar;
         typedef typename GraphT::ComponentSizesT          ComponentSizesT;
         typedef typename GraphT::ComponentListT           ComponentListT;
@@ -549,13 +551,6 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
         typedef std::map<GidT, std::set<GidT> >           ProximityMapT;
         ProximityMapT proximities;
         calculateNeighbourhoods( proximities, points, primPrimDistFunctor->getSpatialWeightDistMult() * scale );
-//        for ( auto it = proximities.begin(); it != proximities.end(); ++it )
-//        {
-//            std::cout << "[" << __func__ << "]: " << "Gid" << it->first << ": ";
-//            for ( auto it2 = it->second.begin(); it2 != it->second.end(); ++it2 )
-//                std::cout << *it2 << ", ";
-//            std::cout << std::endl;
-//        }
 
         //GraphT::testGraph();
         std::set< EdgeT > edgesList;
@@ -579,19 +574,6 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
 
                     // extremas key
                     LidLid lidLid1( lid, lid1 );
-    #if 0
-                    // find/calculate extrema
-                    typename ExtremaMapT::const_iterator it = extremas.find(lidLid1);
-                    if ( it == extremas.end() )
-                    {
-                        prims[lid][lid1].template getExtent<_PointPrimitiveT>( extremas[lidLid1]
-                                                           , points
-                                                           , scale
-                                                           , &(populations[gid]) );
-                        it = extremas.find( lidLid1 );
-                    }
-    #endif
-
 
                     for ( size_t lidOth = 0; lidOth != prims.size(); ++lidOth )
                     {
@@ -608,60 +590,6 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
                             const GidT gIdOther = prim1.getTag( _PrimitiveT::TAGS::GID );
                             const DidT dIdOther = prim1.getTag( _PrimitiveT::TAGS::DIR_GID );
 
-    #if 1
-                            ProximityMapT::const_iterator gidNeighsIt = proximities.find( gid );
-                            if (    ( did != dIdOther )
-                                 && ( gid != gIdOther ) // we don't want to pollute problem with unnecessary edges
-                                 && (    (    (gidNeighsIt != proximities.end()                               )
-                                           && (gidNeighsIt->second.find(gIdOther) != gidNeighsIt->second.end()) )
-//                                      || ()
-                                    )
-                               )
-                            {
-                                //std::cout << "adding spatw " << halfSpatialWeightCoeff << " to " << gid << "-" << gIdOther << std::endl;
-                                const LidT varId0 = lids_varids.at( lidLid1 );
-                                const LidT varId1 = lids_varids.at( IntPair(lidOth,lid1Oth) );
-                                problem.addQObjective( varId0, varId1, halfSpatialWeightCoeff ); // /2, since it's going to be added both ways Aron 6/1/2015
-                            }
-    #else
-                            // extremas key
-                            LidLid lidLid1Oth( lidOth, lid1Oth );
-                            // find/calculate extrema
-                            typename ExtremaMapT::const_iterator oit = extremas.find( lidLid1Oth );
-                            if ( oit == extremas.end() )
-                            {
-                                prims[lidOth][lid1Oth].template getExtent<_PointPrimitiveT>( extremas[lidLid1Oth]
-                                                                   , points
-                                                                   , scale
-                                                                   , &(populations[gIdOther]) );
-                                oit = extremas.find( lidLid1Oth );
-                            }
-
-                            _Scalar invDist = primPrimDistFunctor->evalSpatial( prims[lid   ][lid1   ], (*it ).second
-                                                                              , prims[lidOth][lid1Oth], (*oit).second );
-                            const LidT varId0 = lids_varids.at( IntPair(lid,lid1) );
-                            const LidT varId1 = lids_varids.at( IntPair(lidOth,lid1Oth) );
-
-                            if (    ( invDist > _Scalar(0.) )
-                                 && ( prim.getTag(_PrimitiveT::TAGS::   DIR_GID) != prim1.getTag(_PrimitiveT::TAGS::DIR_GID) )
-                                 //&& ( MyPrimitivePrimitiveAngleFunctor::eval( prim, prim1, angles, NULL ) < primPrimDistFunctor->getTruncAngle() ) // added 6/1/2015 18:14 BEWARE
-                                 && ( prim.getTag(_PrimitiveT::TAGS::       GID) != prim1.getTag(_PrimitiveT::TAGS::    GID) ) // we don't want to pollute problem with unnecessary edges
-                               )
-                            {
-                                std::cout << "adding spatw " << primPrimDistFunctor->getSpatialWeightCoeff()/_Scalar(2.) << std::endl;
-                                problem.addQObjective( varId0, varId1, primPrimDistFunctor->getSpatialWeightCoeff()/_Scalar(2.) ); // /2, since it's going to be added both ways Aron 6/1/2015
-                            }
-
-
-                            // coupling
-                            if ( clusterMode )
-                            {
-                                if ( invDist > _Scalar(0.) && (did == dIdOther) )
-                                {
-                                    edgesList.insert( EdgeT( varId0, varId1, invDist) );
-                                }
-                            }
-#endif
                         } // ... olid1
                     } // ... olid
                 } // ... lid1
