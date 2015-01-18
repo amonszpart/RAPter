@@ -9,6 +9,7 @@ parser.add_argument('--shownormals', action="store_true", help="Shows the normal
 parser.add_argument('--invertnormals', action="store_true", help="Invert normal directions.")
 parser.add_argument('--logscale', action="store_true", help="Use log scale.")
 parser.add_argument('--useInactivePrims', action="store_true", help="compute the orientation of all the primitives.")
+parser.add_argument('--setlimit', default=-1, help="set the limit used to scale the interface (auto if unset)")
 
 args = parser.parse_args()
 
@@ -17,6 +18,7 @@ shownormals      = args.shownormals
 logscale         = args.logscale
 invertnormals    = args.invertnormals
 useInactivePrims = args.useInactivePrims
+setlimit         = int(args.setlimit)
 
 print 'Processing ', primitivefile
 
@@ -262,7 +264,13 @@ ax1.axis["bottom"].major_ticklabels.set_visible(False)
 
 fig.add_subplot(ax1)
 
-limitvalue=bottom+np.max(radii)+1
+prelimit = np.max(radii)
+
+if setlimit > 0: prelimit = setlimit
+
+print "limit value: ", prelimit
+
+limitvalue=bottom+prelimit+1
 
 # A parasite axes with given transform
 ax2 = ParasiteAxesAuxTrans(ax1, tr, "equal")
