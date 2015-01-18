@@ -264,9 +264,9 @@ ax1.axis["bottom"].major_ticklabels.set_visible(False)
 fig.add_subplot(ax1)
 
 prelimit = np.max(radii)
-bottom = prelimit/2.
 
 if setlimit > 0: prelimit = setlimit
+bottom = prelimit/2.
 
 print "limit value: ", prelimit
 
