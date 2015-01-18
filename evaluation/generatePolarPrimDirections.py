@@ -271,7 +271,7 @@ ax2 = ParasiteAxesAuxTrans(ax1, tr, "equal")
 ax1.parasites.append(ax2)
 intp = cbook.simple_linear_interpolation
 
-ax2.bar(theta[0:N/2], radii[0:N/2], width=width, bottom=bottom, linewidth=2)
+ax2.bar(theta[0:N/2+1], radii[0:N/2+1], width=width, bottom=bottom, linewidth=2)
 
 
 ax1.set_aspect(1.)
