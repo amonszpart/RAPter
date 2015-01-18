@@ -199,7 +199,6 @@ radii[1:N/2+1] = radiirev
 
     
 width = (2*np.pi) / N
-bottom = max(radii)/2.
     
 theta = np.linspace(0.0,360, N, endpoint=False)
 
@@ -265,6 +264,7 @@ ax1.axis["bottom"].major_ticklabels.set_visible(False)
 fig.add_subplot(ax1)
 
 prelimit = np.max(radii)
+bottom = prelimit/2.
 
 if setlimit > 0: prelimit = setlimit
 
