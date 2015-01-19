@@ -21,7 +21,10 @@ namespace GF2
                  , typename PclCloudT::Ptr  & cloud
                  , float scale = 0.01
                  , int                                 min_support_arg = 300
-                 , int show = 1 );
+                 , int show = 1
+                 , bool extrude2D = false
+                 , int pointMultiplier = 50
+                 );
     };
 
 } // ns am

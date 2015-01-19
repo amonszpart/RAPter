@@ -13,6 +13,7 @@
     #include "pcl/sample_consensus/sac_model_line.h"
     #include "pcl/sample_consensus/sac_model_plane.h"
     #include "pcl/sample_consensus/ransac.h"
+    #include "pcl/sample_consensus/sac_model.h"
 #endif // GF2_USE_PCL
 
 template <typename _Scalar>
@@ -110,7 +111,8 @@ int ransacCli( int argc, char **argv )
     {
         for ( size_t pid = 0; pid != points.size(); ++pid )
             points[pid].setTag( PointPrimitiveT::TAGS::GID, PointPrimitiveT::TAG_UNSET );
-        if ( params.modelType == pcl::SacModel::SACMODEL_PLANE )
+        if ( params.modelType == pcl::SacModel::SACMODEL_PLANE
+             || params.modelType == pcl::SacModel::SACMODEL_LINE )
         {
             if ( params.algo == RansacParams<Scalar>::RANSAC )
             {
@@ -124,7 +126,13 @@ int ransacCli( int argc, char **argv )
                 while ( (indices.size() > 2) && ((maxPlanes == 0) || (out_prims.size() < maxPlanes)) )
                 {
 //                    found = false;
-                    typename pcl::SampleConsensusModelPlane<PclPointT>::Ptr model( new pcl::SampleConsensusModelPlane<PclPointT> (pclCloud, indices) );
+                    //typename pcl::SampleConsensusModelLine<PclPointT>::Ptr model( new pcl::SampleConsensusModelLine<PclPointT> (pclCloud, indices) );
+                    //typename pcl::SampleConsensusModelPlane<PclPointT>::Ptr model( new pcl::SampleConsensusModelPlane<PclPointT> (pclCloud, indices) );
+                    typename pcl::SampleConsensusModel<PclPointT>::Ptr model;
+                    if ( params.modelType == pcl::SacModel::SACMODEL_PLANE )
+                        model.reset( new pcl::SampleConsensusModelPlane<PclPointT> (pclCloud, indices) );
+                    else // LINE
+                        model.reset( new pcl::SampleConsensusModelLine<PclPointT> (pclCloud, indices) );
                     pcl::RandomSampleConsensus<PclPointT> ransac( model );
                     ransac.setDistanceThreshold (params.scale);
                     if ( ransac.computeModel() )
@@ -135,10 +143,21 @@ int ransacCli( int argc, char **argv )
                         {
                             std::cout << "ret: " << ransac.model_coefficients_.transpose() << std::endl;
 
-                            Eigen::Matrix<Scalar,3,1> nrm = ransac.model_coefficients_.template head<3>();
-                            nrm.normalize();
+                            PrimitiveT* primToAdd = NULL;
+                            if ( params.modelType == pcl::SacModel::SACMODEL_PLANE )
+                            {
+                                Eigen::Matrix<Scalar,3,1> nrm = ransac.model_coefficients_.template head<3>();
+                                nrm.normalize();
+                                primToAdd = new PrimitiveT( Eigen::Matrix<Scalar,3,1>::Zero() - nrm * ransac.model_coefficients_(3), nrm );
+                            }
+                            else
+                            { //LINE
+                                primToAdd = new PrimitiveT( ransac.model_coefficients_ );
+                            }
+
                             int gid = out_prims.size();
-                            GF2::containers::add( out_prims, gid, PrimitiveT( Eigen::Matrix<Scalar,3,1>::Zero() - nrm * ransac.model_coefficients_(3), nrm) )
+
+                            GF2::containers::add( out_prims, gid, *primToAdd )
                                     .setTag( PrimitiveT::TAGS::GID    , gid )
                                     .setTag( PrimitiveT::TAGS::DIR_GID, gid );
                             std::cout << "created " << out_prims[gid].back().toString() << ", distO: " << out_prims[gid].back().getDistance( Eigen::Matrix<Scalar,3,1>::Zero() )  << std::endl;
@@ -157,7 +176,9 @@ int ransacCli( int argc, char **argv )
                                     indices.erase( indicesIt );
                             }
                             inliers.clear();
-                        }
+
+                            if ( primToAdd ) delete primToAdd;
+                        } //...if inliners
                     }
                     else
                         inliers.clear();
@@ -327,7 +348,13 @@ inline int schnabelCli( int argc, char** argv )
     typedef typename _InnerPrimitiveContainerT::value_type   PrimitiveT;
     typedef typename _PclCloudT::PointType                    PclPointT;
 
-    std::cout << "hello Schnabel\n";
+    bool extrude2D = false;
+    if ( GF2::console::find_switch(argc,argv,"--schnabel2D") )
+        extrude2D = true;
+    if ( extrude2D )
+        std::cout << "hello Schnabel2D\n";
+    else
+        std::cout << "hello Schnabel3D\n";
 
     RansacParams<Scalar>     params;
     _PointContainerT         points, outPoints;
@@ -335,6 +362,8 @@ inline int schnabelCli( int argc, char** argv )
     _PrimitiveContainerT     initial_primitives;
     PrimitiveMapT            patches;
     int                      min_support_arg = 300;
+    int pointMultiplier = 50;
+    GF2::console::parse_argument( argc, argv, "--point-mult", pointMultiplier);
 
     // parse
     {
@@ -356,6 +385,7 @@ inline int schnabelCli( int argc, char** argv )
                       << "\t -a,--assoc " << /*associations_path <<*/ "\n"
                       << "\t -sc,--scale " << params.scale << "\n"
                       << "\t --minsup " << min_support_arg << "\n"
+                      << "\t --point-mult " << pointMultiplier << "]\t extrude2D add this many points for each input point\n"
                       << "\t Example: ../ransac --schnabel3D --scale 0.03 --cloud cloud.ply -p patches.csv -a points_primitives.csv"
                       << "\n";
 
@@ -398,7 +428,10 @@ inline int schnabelCli( int argc, char** argv )
                                , pcl_cloud
                                , params.scale
                                , min_support_arg
-                               , false );
+                               , false
+                               , extrude2D
+                               , pointMultiplier
+                               );
     PrimitiveMapT out_prims;
     for ( size_t gid = 0; gid != planes.size(); ++gid )
     {
@@ -406,7 +439,14 @@ inline int schnabelCli( int argc, char** argv )
                 .setTag( PrimitiveT::TAGS::GID    , gid )
                 .setTag( PrimitiveT::TAGS::DIR_GID, gid );
         std::cout << "added " << out_prims[gid].back().toString() << std::endl;
+
+        if ( extrude2D )
+        {
+
+        }
     }
+
+
 
 //    for ( PidGidT::const_iterator it = pidGid.begin(); it != pidGid.end(); ++it )
 //    {
@@ -466,7 +506,7 @@ int main(int argc, char *argv[])
     typedef          pcl::PointCloud<PclPointT>               PclCloudT;
 
     std::cout << "hello ransac\n";
-    if ( GF2::console::find_switch(argc,argv,"--schnabel3D") )
+    if ( GF2::console::find_switch(argc,argv,"--schnabel3D") || GF2::console::find_switch(argc,argv,"--schnabel2D") )
     {
         return schnabelCli< GF2::PointContainerT
                           , GF2::_3d::InnerPrimitiveContainerT

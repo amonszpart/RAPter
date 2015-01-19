@@ -7,6 +7,7 @@
 #include "globfit2/io/io.h"         // readPrimitives, readPoints
 #include "globfit2/util/containers.hpp" // add
 #include "globfit2/simple_types.h"
+#include "globfit2/util/containers.hpp"
 
 
 template int
@@ -18,6 +19,7 @@ am::Pearl::run(
         , am::Pearl::Params                    params
         , std::vector<std::vector<int> > *label_history
         , std::vector<std::vector<GF2::LinePrimitive> > *line_history
+        , int const nPropose
         );
 
 template int
@@ -29,6 +31,7 @@ am::Pearl::run(
         , am::Pearl::Params                    params
         , std::vector<std::vector<int> > *label_history
         , std::vector<std::vector<GF2::PlanePrimitive> > *line_history
+        , int const nPropose
         );
 
 template < typename _PointContainerT
@@ -42,9 +45,10 @@ int pearlCli( int argc, char **argv )
     typedef          pcl::PointCloud<pcl::PointNormal>        PclCloudT;
 
     bool valid_input = true;
+    int nPropose = 0;
 
     std::string cloud_path       = "./cloud.ply",
-                input_prims_path = "./patches.csv";
+                input_prims_path = ""; // ./patches.csv";
 
     am::Pearl::Params params;
 
@@ -62,8 +66,11 @@ int pearlCli( int argc, char **argv )
              && (GF2::console::parse_argument( argc, argv, "--prims", input_prims_path) < 0)
              && (!boost::filesystem::exists(input_prims_path)) )
         {
-            std::cerr << "[" << __func__ << "]: " << "-p or --prims is compulsory" << std::endl;
-            valid_input = false;
+            if (    (GF2::console::parse_argument( argc, argv, "-N"     , nPropose) < 0) )
+            {
+                std::cerr << "[" << __func__ << "]: " << "-p or --prims  OR -N (nPropose) is compulsory" << std::endl;
+                valid_input = false;
+            }
         }
 
         // scale
@@ -87,6 +94,7 @@ int pearlCli( int argc, char **argv )
                       << "\t --cloud " << cloud_path << "\n"
                       << "\t -p,--prims " << input_prims_path << "\n"
                       << "\t -sc,--scale " << params.scale << "\n"
+                      << "\t -N " << nPropose << "\n"
                       << "\t --pw " << params.lambdas(2) << "\n"
                       << "\t --cmp " << params.beta << "\n"
                       << "\n\t Example: ../pearl --scale 0.03 --cloud cloud.ply -p patches.csv --pw 1000 -cmp 1000\n"
@@ -109,7 +117,7 @@ int pearlCli( int argc, char **argv )
 
     _PrimitiveContainerT initial_primitives;
     PrimitiveMapT        patches;
-    if ( EXIT_SUCCESS == err )
+    if ( EXIT_SUCCESS == err && !input_prims_path.empty() )
     {
         std::cout << "[" << __func__ << "]: " << "reading primitives from " << input_prims_path << "...";
         GF2::io::readPrimitives<PrimitiveT, _InnerPrimitiveContainerT>( initial_primitives, input_prims_path, &patches );
@@ -120,6 +128,13 @@ int pearlCli( int argc, char **argv )
     {
         std::vector<int>          labels;
         _InnerPrimitiveContainerT primitives;
+        // add input initialization, if exists
+        if ( patches.size() )
+        {
+            for ( typename GF2::containers::PrimitiveContainer<PrimitiveT>::Iterator it( patches ); it.hasNext(); it.step() )
+                primitives.push_back( *it );
+        }
+
         err = am::Pearl::run( /* [out]        labels: */ labels
                             , /* [out]    primitives: */ primitives
                             , /* [in]      pcl_cloud: */ pcl_cloud
@@ -128,11 +143,18 @@ int pearlCli( int argc, char **argv )
                             , /* [out] label_history: */ NULL
                             , /* [out]  prim_history: */ (std::vector<std::vector<PrimitiveT> >*) NULL
                             //, /* [in]        patches: */ &initial_primitives
+                            , /* [in] nPropose: */ nPropose
                             );
 
         PrimitiveMapT out_prims;
         std::cout<<"labels:";for(size_t vi=0;vi!=labels.size();++vi)std::cout<<labels[vi]<<" ";std::cout << "\n";
-        for ( int pid = 0; pid != primitives.size(); ++pid )
+        int tmpgid = 0;
+        for ( auto it = primitives.begin(); it != primitives.end(); ++it, ++tmpgid )
+            std::cout << it->toString() << std::endl;
+
+        if ( points.size() != labels.size() )
+            std::cerr << "[" << __func__ << "]: " << "labels != points " << points.size() << " " << labels.size() << std::endl;
+        for ( int pid = 0; pid != labels.size(); ++pid )
         {
             const int gid = labels[pid];
             // assign point
@@ -145,7 +167,6 @@ int pearlCli( int argc, char **argv )
                 GF2::containers::add( out_prims, gid, primitives[gid] )
                         .setTag( PrimitiveT::TAGS::GID    , gid )
                         .setTag( PrimitiveT::TAGS::DIR_GID, gid );
-
             }
         }
 

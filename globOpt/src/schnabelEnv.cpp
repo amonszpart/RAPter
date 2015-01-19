@@ -23,23 +23,43 @@ namespace GF2
     int SchnabelEnv::run( std::vector<PrimitiveT>          &planes
                           , PointContainerT &outPoints //PidGidT &pidGid
                           , PointContainerT const& points
-                          , typename PclCloudT::Ptr           &cloud
+                          , typename PclCloudT::Ptr           &inCloud
                           , float scale
                           , int                                     min_support_arg
-                          , int show )
+                          , int show
+                          , bool extrude2D
+                          , int pointMultiplier
+                          )
     {
         typedef typename PointContainerT::value_type PointPrimitiveT;
         typedef typename PclCloudT::PointType PT;
-
-        for ( size_t i = 0; i != std::min(10UL,points.size()); ++i )
-        {
-            std::cout << "\tpoints[" << i << "]: " << points[i].toString() << "\n\tcloud[" << i << "]: " << cloud->at(i).getVector3fMap().transpose() << std::endl;
-        }
 
         pcl::visualization::PCLVisualizer::Ptr vptr( new pcl::visualization::PCLVisualizer() );
         {
             vptr->setBackgroundColor( .4, .8, .4 );
         }
+
+        // 2D extrude
+        typename PclCloudT::Ptr cloud;
+        {
+            if ( extrude2D )
+            {
+                cloud.reset( new PclCloudT() );
+                for (PidT pid = 0; pid < inCloud->size(); ++pid )
+                {
+                    for ( int i = 0; i != pointMultiplier; ++i )
+                    {
+                        cloud->push_back( inCloud->at( pid ) );
+                        cloud->back().z += rand() / float(RAND_MAX);
+                    }
+                }
+            }
+            else
+                cloud = inCloud;
+        }
+        std::cout << "[" << __func__ << "]: " << "finished cloud copy" << std::endl;
+
+        vptr->addPointCloud<PT>( cloud, "xtruded" );
 
         // read
         pcl::PointCloud<pcl::Normal>::Ptr normals( new pcl::PointCloud<pcl::Normal> );
@@ -192,7 +212,7 @@ namespace GF2
                     //planes.emplace_back( PlanePrimitive(Eigen::Vector3f::Zero() + normal * dist, normal) );
                     planes.emplace_back( PrimitiveT(centroid.getVector3fMap(), normal) );
                     //planes.back()()(2) *= 2.;
-                    std::cout << "dist to orig: " << planes.back().getDistance( Eigen::Vector3f::Zero() ) << std::endl;
+                    //std::cout << "dist to orig: " << planes.back().getDistance( Eigen::Vector3f::Zero() ) << std::endl;
 
                     if ( show && i < 6)
                     {

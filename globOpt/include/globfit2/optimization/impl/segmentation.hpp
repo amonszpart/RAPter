@@ -160,7 +160,7 @@ Segmentation:: fitLocal( _PrimitiveContainerT        & primitives
             {
                 // Create a PlanePrimitive from < n, d > format
                 // by using n, and the center point of the neighbourhood.
-                primitives.emplace_back(  PrimitiveT( /*     x0: */ (*cloud)[pid].getVector3fMap()
+                primitives.emplace_back(  PrimitiveT( /*     x0: */ Eigen::Matrix<Scalar,3,1>::Zero() + plane.template head<3>() * plane(3) // (*cloud)[pid].getVector3fMap()
                                                     , /* normal: */ plane.template head<3>() )  );
 #if 0
                 std::cout << "fit " << primitives.back().toString() << " to\n";

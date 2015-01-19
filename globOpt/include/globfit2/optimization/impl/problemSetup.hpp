@@ -430,29 +430,44 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
     typedef std::pair<DidT,DidT> DIdPair;
     DIdPair minPair;
     _Scalar minScore = std::numeric_limits<_Scalar>::max();
-    std::map< DidT, ULidT > dIdPopuls;
+    std::map< DidT, ULidT > dIdPopuls; // <did, pointcount>
     {
         std::set< DIdPair > visited;
         for ( size_t lid = 0; lid != prims.size(); ++lid )
             for ( size_t lid1 = 0; lid1 != prims[lid].size(); ++lid1 )
             {
-                if ( prims[lid][lid1].getTag(_PrimitiveT::TAGS::STATUS) == _PrimitiveT::STATUS_VALUES::SMALL ) continue;
+                // skip small
+                //if ( prims[lid][lid1].getTag(_PrimitiveT::TAGS::STATUS) == _PrimitiveT::STATUS_VALUES::SMALL ) continue;
+                if ( !(   (prims[lid][lid1].getTag(_PrimitiveT::TAGS::STATUS) == _PrimitiveT::STATUS_VALUES::ACTIVE)
+                       || (prims[lid][lid1].getTag(_PrimitiveT::TAGS::STATUS) == _PrimitiveT::STATUS_VALUES::FIXED)
+                      )
+                   )
+                    continue;
 
                 const DidT did = prims[lid][lid1].getTag(_PrimitiveT::TAGS::DIR_GID);
                 const GidT gid = prims[lid][lid1].getTag(_PrimitiveT::TAGS::GID);
 
-                if (     (prims[lid][lid1].getTag(_PrimitiveT::TAGS::STATUS) == _PrimitiveT::STATUS_VALUES::ACTIVE)
-                      || (prims[lid][lid1].getTag(_PrimitiveT::TAGS::STATUS) == _PrimitiveT::STATUS_VALUES::FIXED)
-                   )
-                dIdPopuls[did] += ( (populations.find( gid ) != populations.end()) ? populations[gid].size() : 0 );
+                // skip empty
+                if ( (populations.find(gid) != populations.end()) && !populations[gid].size() ) continue;
+
+                dIdPopuls[did] += ( (populations.find( gid ) != populations.end()) ? populations[gid].size()
+                                                                                   : 0 );
 
                 for ( size_t lid2 = 0; lid2 != prims.size(); ++lid2 )
                     for ( size_t lid3 = 0; lid3 != prims[lid2].size(); ++lid3 )
                     {
-                        if ( prims[lid2][lid3].getTag(_PrimitiveT::TAGS::STATUS) == _PrimitiveT::STATUS_VALUES::SMALL ) continue;
+                        //if ( prims[lid2][lid3].getTag(_PrimitiveT::TAGS::STATUS) == _PrimitiveT::STATUS_VALUES::SMALL ) continue;
+
+                        if ( !(   (prims[lid2][lid3].getTag(_PrimitiveT::TAGS::STATUS) == _PrimitiveT::STATUS_VALUES::ACTIVE)
+                               || (prims[lid2][lid3].getTag(_PrimitiveT::TAGS::STATUS) == _PrimitiveT::STATUS_VALUES::FIXED)
+                              )
+                           )
+                            continue;
 
                         const DidT did2 = prims[lid2][lid3].getTag(_PrimitiveT::TAGS::DIR_GID);
+                        const GidT gid2 = prims[lid2][lid3].getTag(_PrimitiveT::TAGS::GID);
                         if ( did == did2 ) continue;
+                        if ( (populations.find(gid2) != populations.end()) && !populations[gid2].size() ) continue;
 
                         DIdPair pair = DIdPair(did,did2);
                         if ( visited.find( pair ) == visited.end() )
@@ -472,12 +487,15 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
               << ", populs: " << dIdPopuls[ minPair.first ] << " vs " << dIdPopuls[ minPair.second ]
               << std::endl;
     DIdPair replaceBy( _PrimitiveT::LONG_VALUES::UNSET, _PrimitiveT::LONG_VALUES::UNSET ); // replace first by second
-    if ( minScore < 0.07 ) // sqrt( 0.1 * PI / 180 ) == 0.06605545496
+    if ( minScore < collapseThreshold ) // sqrt( 0.1 * PI / 180 ) == 0.06605545496
     {
         replaceBy = minPair;
         if ( dIdPopuls[minPair.first] > dIdPopuls[minPair.second] )
             std::swap( replaceBy.first, replaceBy.second );
-        std::cout << "[" << __func__ << "]: " << "replace " << replaceBy.first << " by " << replaceBy.second << std::endl;
+        if (  dIdPopuls[replaceBy.first] == 0 )
+            replaceBy.first = replaceBy.second = _PrimitiveT::LONG_VALUES::UNSET;
+        else
+            std::cout << "[" << __func__ << "]: " << "replace " << replaceBy.first << " by " << replaceBy.second << std::endl;
     }
     else
         std::cout << "[" << __func__ << "]: " << "not replacing, since minscore: " << minScore << "(" << minPair.first << ","  << minPair.second << ")" << std::endl;
@@ -970,6 +988,7 @@ namespace problemSetup {
         // INSTANCES
         // added 17/09/2014 by Aron
         // modified 22/09/2014 by Aron
+#if 0
         std::map< GidT, LidT > dir_instances;
         LidT active_count = 0;
         for ( size_t lid = 0; lid != prims.size(); ++lid )
@@ -981,6 +1000,7 @@ namespace problemSetup {
                 ++dir_instances[ prims[lid][lid1].getTag(_PrimitiveT::TAGS::DIR_GID) ];
                 ++active_count;
             }
+#endif
 
 #       pragma omp parallel for
         for ( size_t lid = 0; lid < prims.size(); ++lid )
@@ -1028,8 +1048,9 @@ namespace problemSetup {
                         }
                         else
                         {
-                            throw new std::runtime_error("asdf");
-                            dist = _PointPrimitiveDistanceFunctor::template eval<_Scalar>( points[pid], prims[lid][lid1] );
+                            //dist = _PointPrimitiveDistanceFunctor::template eval<_Scalar>( points[pid], prims[lid][lid1] );
+
+                            dist = 2.; // we don't want an empty primitive
                         }
                         unary_i += dist * dist; //changed on 18/09/14
                         ++cnt;              // normalizer
