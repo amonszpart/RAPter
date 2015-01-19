@@ -181,7 +181,7 @@ Segmentation:: fitLocal( _PrimitiveContainerT        & primitives
             point_ids->emplace_back( pid );
         }
 
-        if ( verbose && !(++step_count % 1000) )
+        if ( verbose && !(++step_count % 100000) )
         {
             std::cout << "fit to " << primitives.size() << " / " << neighs.size() << "(" << (Scalar)(primitives.size()) / neighs.size() << "%)" << std::endl;
             fflush(stdout);
