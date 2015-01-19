@@ -49,3 +49,28 @@ splatting figure/cloud_cleaned_pts.ply figure/cloud_cleaned.ply 0 0.001
 
 
 
+
+
+
+
+############################################################
+## schnabel
+
+../globOptVis --show3D --scale 0.02 --pop-limit 3 --title "Schnabel 50" --angle-gens 90 --use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-scale --bg-colour .9,.9,.9 --no-rel -p schnabel_minsup50.primitives.csv -a schnabel_minsup50.points_primitives.csv --cloud schnabel_minsup50.cloud.binary.ply  --perfect-angle 0.0001  --draw-mode 28 --save-poly 
+
+## clean output name to avoid side effect with patches output
+mv cloudRGBNormal_reProj_noUnass_noPrim.ply schnabel_minsup50_pts.ply
+
+meshlabserver -i schnabel_minsup50_pts.ply -o figure/schnabel_minsup50_pts.ply -om vc vn
+
+splatting figure/schnabel_minsup50_pts.ply figure/schnabel_minsup50.ply 0 0.001
+
+#distribution
+python ../normal_distr.py schnabel_minsup50_pts.ply ndistr_schnabel_minsup50.svg "eulerPM - Schnabel (minsup=50)"
+
+python ../normal_distr.py schnabel_minsup50_pts.ply ndistr_schnabel_minsup50_log.svg "eulerPM - Schnabel (minsup=50)" --applylog
+
+../globOptVis --show3D --scale 0.02 --pop-limit 3 --title "Schnabel 50" --angle-gens 90 --use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-scale --bg-colour .9,.9,.9 --no-rel -p schnabel_minsup50.primitives.csv -a schnabel_minsup50.points_primitives.csv --cloud schnabel_minsup50.cloud.binary.ply  --perfect-angle 0.0001  --draw-mode 1 --save-poly  --no-pts 
+
+mv plane_mesh.ply figure/schnabel_minsup50_planes.ply
+
