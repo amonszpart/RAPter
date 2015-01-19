@@ -403,6 +403,8 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
     typedef typename OptProblemT::SparseMatrix        SparseMatrix;
     typedef typename OptProblemT::SparseEntry         SparseEntry;
 
+    bool needPairwise = ((primPrimDistFunctor->getSpatialWeightCoeff() != _Scalar(0.)) || clusterMode);
+    if ( needPairwise ) std::cout << "needPairwise, because spatW: " << primPrimDistFunctor->getSpatialWeightCoeff() << ", and clusterMode: " << clusterMode << std::endl;
 
     // work - formulate problem
     int err = EXIT_SUCCESS;
@@ -660,19 +662,23 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
         typedef typename GraphT::ComponentSizesT          ComponentSizesT;
         typedef typename GraphT::ComponentListT           ComponentListT;
 
-        std::cout << "[" << __func__ << "]: " << "proximity start..." << std::endl; fflush(stdout);
         typedef std::map<GidT, std::set<GidT> >           ProximityMapT;
         ProximityMapT proximities;
-        calculateNeighbourhoods( proximities, points, primPrimDistFunctor->getSpatialWeightDistMult() * scale );
-        std::cout << "[" << __func__ << "]: " << "proximity end..." << std::endl; fflush(stdout);
+        if ( needPairwise )
+        {
+            std::cout << "[" << __func__ << "]: " << "proximity start..." << std::endl; fflush(stdout);
+            calculateNeighbourhoods( proximities, points, primPrimDistFunctor->getSpatialWeightDistMult() * scale );
+            std::cout << "[" << __func__ << "]: " << "proximity end..." << std::endl; fflush(stdout);
+        }
 
         //GraphT::testGraph();
         std::set< EdgeT > edgesList;
 
-        std::cout << "[" << __func__ << "]: " << "spatial start..." << std::endl; fflush(stdout);
         const _Scalar halfSpatialWeightCoeff = primPrimDistFunctor->getSpatialWeightCoeff() / _Scalar(2.); // we add both ways, so adds up
-        if ( primPrimDistFunctor->getSpatialWeightCoeff() != _Scalar(0.) || clusterMode )
+        if ( needPairwise )
         {
+            std::cout << "[" << __func__ << "]: " << "spatial start..." << std::endl; fflush(stdout);
+
 #           pragma omp parallel for num_threads(GF2_MAX_OMP_THREADS)
             for ( size_t lid = 0; lid < prims.size(); ++lid )
             {
@@ -807,9 +813,9 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
                 graph.draw( "graph.gv" );
                 //system( "dot -Tpng -o graph.png graph.gv && (eog graph.png &)" );
             } //...if clusterMode
+            std::cout << "[" << __func__ << "]: " << "spatial end..." << std::endl; fflush(stdout);
         } //...if spatialweight or clustermode
     } //...pairwise cost
-    std::cout << "[" << __func__ << "]: " << "spatial end..." << std::endl; fflush(stdout);
 
 
     std::cout << "[" << __func__ << "]: " << "lvl2 constr start..." << std::endl; fflush(stdout);
