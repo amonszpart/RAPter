@@ -220,7 +220,13 @@ namespace GF2
                 }
 
                 // check size
-                if ( !inliers.size() ) return EXIT_FAILURE;
+                if ( !inliers.size() )
+                {
+                    std::cerr << "no inliers for primitive gid"
+                              << this->getTag( TAGS::GID ) << ", did "
+                              << this->getTag( TAGS::DIR_GID ) << std::endl;
+                              return EXIT_FAILURE;
+                }
 
                 // project cloud
                 std::vector<Position> on_line_cloud;

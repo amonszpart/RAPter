@@ -298,6 +298,12 @@ TARGET_LINK_LIBRARIES( ${GLOBOPT_TARGET_NAME}
 IF(WITH_PEARL)
     SET( PEARL_TARGET pearl)
 
+    find_package(OpenMP)
+    if (OPENMP_FOUND)
+        set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+        set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    endif()
+
     ## Deps
     SET( PATH_PEARL_ROOT ${PATH_GLOBOPT_DEPS_ROOT}/pearl CACHE PATH "Pearl root" FORCE )
     SET( WITH_GCO ON CACHE BINARY "Use alpha-expansion library")
