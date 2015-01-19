@@ -8,7 +8,7 @@ ln -s cloudBinary.ply cloud.plymkdir figure
 ## generate stats from input
 
 #distribution
-python ../normal_distr.py cloud.ply ndistrCloudBinary.svg "Nola - Input"
+python ../normal_distr.py cloud.ply ndistrCloudBinary.svg "Nola - Input" --noscatter
 
 meshlabserver -i cloud.ply -o figure/cloud_pts.ply -s $SCRIPT_PATH/colorize.mlx -om vc vn
 
