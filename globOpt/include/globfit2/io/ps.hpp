@@ -259,8 +259,8 @@ namespace io
                  && std::find( allowedDids->begin(), allowedDids->end(), it.getDid()) == (*allowedDids).end() ) continue;
 
             std::string primName( getPrimName(it.getGid(), it.getDid()) );
-            f << "\t" << primName << " [ pos=\"" << it->template pos()(0) * 10. << ","
-                                                 << it->template pos()(1) * 10. << "!\"";
+            f << "\t" << primName << " [ pos=\"" << it->template pos()(0) * 50. << ","
+                                                 << it->template pos()(1) * 50. << "!\"";
             char cStr[128];
             sprintf( cStr, "#%02x%02x%02x"
                    , static_cast<int>( colourMap[it.getDid()](0) )
@@ -343,8 +343,8 @@ namespace io
             std::string primName( getPrimName(it.getGid(), it.getDid()) );
 
             f << "\t" << primName << " [ pos=\""
-              << it->template pos()(0) * 10. << ","
-              << it->template pos()(1) * 10.;
+              << it->template pos()(0) * 50. << ","
+              << it->template pos()(1) * 50.;
             if ( !needPatches )
                 f << "!";
             f << "\"";
@@ -438,7 +438,7 @@ namespace io
 
         f << "graph {\n";
         f << "splines = \"spline\"\n";
-        f << "node [fontsize=\"10\", sep=\"+0.1,0.1\", shape=\"ellipse\"]\n";
+        f << "node [fontsize=\"4\", sep=\"+0.1,0.1\", shape=\"ellipse\"]\n";
         f << "edge [fontsize=\"20\", sep=\"+0.1,0.1\"]\n";
         f << "subgraph cluster {\n";
 

@@ -4,6 +4,8 @@
 #include <map> // pair
 #include <vector>
 
+#define GF2_MAX_OMP_THREADS (1)
+
 namespace GF2
 {
 

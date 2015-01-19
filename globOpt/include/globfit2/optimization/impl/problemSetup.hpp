@@ -335,7 +335,7 @@ inline void calculateNeighbourhoods( NeighMapT &proximity, _PointContainerT cons
     std::vector<int>    k_indices;
     std::vector<float>  k_sqr_distances;
     int warningCount = 0;
-    #pragma omp for private(k_indices,k_sqr_distances)
+    #pragma omp parallel for private(k_indices,k_sqr_distances) num_threads(GF2_MAX_OMP_THREADS)
     for ( size_t i = 0; i < points.size(); ++i )
     {
         const GidT gidI = points[i].getTag(PointPrimitiveT::TAGS::GID);
@@ -403,6 +403,8 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
     typedef typename OptProblemT::SparseMatrix        SparseMatrix;
     typedef typename OptProblemT::SparseEntry         SparseEntry;
 
+    bool needPairwise = ((primPrimDistFunctor->getSpatialWeightCoeff() != _Scalar(0.)) || clusterMode);
+    if ( needPairwise ) std::cout << "needPairwise, because spatW: " << primPrimDistFunctor->getSpatialWeightCoeff() << ", and clusterMode: " << clusterMode << std::endl;
 
     // work - formulate problem
     int err = EXIT_SUCCESS;
@@ -427,6 +429,7 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
     processing::getPopulations( populations, points );
 
     // find smallest pwcost
+    std::cout << "[" << __func__ << "]: " << "collapse loop start..." << std::endl; fflush(stdout);
     typedef std::pair<DidT,DidT> DIdPair;
     DIdPair minPair;
     _Scalar minScore = std::numeric_limits<_Scalar>::max();
@@ -499,11 +502,14 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
     }
     else
         std::cout << "[" << __func__ << "]: " << "not replacing, since minscore: " << minScore << "(" << minPair.first << ","  << minPair.second << ")" << std::endl;
+    std::cout << "[" << __func__ << "]: " << "collapse loop finish..." << std::endl; fflush(stdout);
+
 
     // ____________________________________________________
     // Variables - Add variables to problem
     //std::map< DidT, LidT > dIdsVarIds; // holds the cluster variable Ids for each direction Id
 
+    std::cout << "[" << __func__ << "]: " << "var loop start..." << std::endl; fflush(stdout);
     /* { < didT, [ varId, varId, ...] >, ... }
      * Holds the variable Ids of primitives that will have to
      * be connected to an extra node representing this dId
@@ -577,7 +583,9 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
                 }
         } //...for dIds
     } // ... variables
+    std::cout << "[" << __func__ << "]: " << "var loop end..." << std::endl; fflush(stdout);
 
+    std::cout << "[" << __func__ << "]: " << "constr loop start..." << std::endl; fflush(stdout);
     // ____________________________________________________
     // Lin constraints
     if ( EXIT_SUCCESS == err )
@@ -606,7 +614,8 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
             return err;
         }
     } //...Lin constraints
-
+    std::cout << "[" << __func__ << "]: " << "constr loop end..." << std::endl; fflush(stdout);
+    std::cout << "[" << __func__ << "]: " << "data loop start..." << std::endl; fflush(stdout);
     // ____________________________________________________
     // Unary cost -> lin objective
     if ( EXIT_SUCCESS == err )
@@ -641,6 +650,7 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
         std::cerr << "[" << __func__ << "]: " << "data cost setup returned error " << err << std::endl;
         return err;
     }
+    std::cout << "[" << __func__ << "]: " << "data loop end..." << std::endl; fflush(stdout);
 
     // ____________________________________________________
     // Pairwise cost -> quad objective
@@ -655,15 +665,23 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
 
         typedef std::map<GidT, std::set<GidT> >           ProximityMapT;
         ProximityMapT proximities;
-        calculateNeighbourhoods( proximities, points, primPrimDistFunctor->getSpatialWeightDistMult() * scale );
+        if ( needPairwise )
+        {
+            std::cout << "[" << __func__ << "]: " << "proximity start..." << std::endl; fflush(stdout);
+            calculateNeighbourhoods( proximities, points, primPrimDistFunctor->getSpatialWeightDistMult() * scale );
+            std::cout << "[" << __func__ << "]: " << "proximity end..." << std::endl; fflush(stdout);
+        }
 
         //GraphT::testGraph();
         std::set< EdgeT > edgesList;
 
         const _Scalar halfSpatialWeightCoeff = primPrimDistFunctor->getSpatialWeightCoeff() / _Scalar(2.); // we add both ways, so adds up
-        if ( primPrimDistFunctor->getSpatialWeightCoeff() != _Scalar(0.) || clusterMode )
+        if ( needPairwise )
         {
-            for ( size_t lid = 0; lid != prims.size(); ++lid )
+            std::cout << "[" << __func__ << "]: " << "spatial start..." << std::endl; fflush(stdout);
+
+#           pragma omp parallel for num_threads(GF2_MAX_OMP_THREADS)
+            for ( size_t lid = 0; lid < prims.size(); ++lid )
             {
                 for ( size_t lid1 = 0; lid1 != prims[lid].size(); ++lid1 )
                 {
@@ -704,7 +722,10 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
                                 //std::cout << "adding spatw " << halfSpatialWeightCoeff << " to " << gid << "-" << gIdOther << std::endl;
                                 const LidT varId0 = lids_varids.at( lidLid1 );
                                 const LidT varId1 = lids_varids.at( IntPair(lidOth,lid1Oth) );
-                                problem.addQObjective( varId0, varId1, halfSpatialWeightCoeff ); // /2, since it's going to be added both ways Aron 6/1/2015
+#                               pragma omp critical (PS_PROBLEM)
+                                {
+                                    problem.addQObjective( varId0, varId1, halfSpatialWeightCoeff ); // /2, since it's going to be added both ways Aron 6/1/2015
+                                }
                             }
                         } // ... olid1
                     } // ... olid
@@ -793,9 +814,12 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
                 graph.draw( "graph.gv" );
                 //system( "dot -Tpng -o graph.png graph.gv && (eog graph.png &)" );
             } //...if clusterMode
+            std::cout << "[" << __func__ << "]: " << "spatial end..." << std::endl; fflush(stdout);
         } //...if spatialweight or clustermode
     } //...pairwise cost
 
+
+    std::cout << "[" << __func__ << "]: " << "lvl2 constr start..." << std::endl; fflush(stdout);
     // ____________________________________________________
     // New dId constraint
     {
@@ -827,10 +851,13 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
         }
 
     } //...dId constraint
+    std::cout << "[" << __func__ << "]: " << "lvl2 constr end..." << std::endl; fflush(stdout);
 
+    std::cout << "[" << __func__ << "]: " << "lvl2 pw start..." << std::endl; fflush(stdout);
     // ____________________________________________________
     // dId pw cost
     {
+        //#pragma omp parallel for num_threads(GF2_MAX_OMP_THREADS)
         for ( auto it0 = dIdsVarIds.begin(); it0 != dIdsVarIds.end(); ++it0 )
             for ( auto it1 = dIdsVarIds.begin(); it1 != dIdsVarIds.end(); ++it1 )
             {
@@ -844,13 +871,18 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
                 //
                 //_Scalar score = weights(1) * sqrt( GF2::angleInRad(p0->template dir(), p1->template dir()) );
                 //_Scalar score = weights(1) * sqrt( MyPrimitivePrimitiveAngleFunctor::eval( *p0, *p1, angles ) ); //changed 16:11 15/01/2015
-                problem.addQObjective( it0->second, it1->second
-                                     , weights(1) * calcPwCost<_Scalar>( *p0, *p1, angles ) // score
-                                     );
+                _Scalar score = weights(1) * calcPwCost<_Scalar>( *p0, *p1, angles );
+//#               pragma omp critical (PS_PROBLEM)
+                {
+                    problem.addQObjective( it0->second, it1->second
+                                           , score // score
+                                           );
+                }
             }
-
     } //...dId pw cost
+    std::cout << "[" << __func__ << "]: " << "lvl2 pw end..." << std::endl; fflush(stdout);
 
+    std::cout << "[" << __func__ << "]: " << "init solution..." << std::endl; fflush(stdout);
     // ____________________________________________________
     // Initial solution
     {
@@ -864,6 +896,7 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
             problem.setStartingPoint( x0 );
         }
     } //...Initial solution
+    std::cout << "[" << __func__ << "]: " << "init solution done" << std::endl; fflush(stdout);
 
     // log
     if ( (EXIT_SUCCESS == err) && verbose )
@@ -1002,7 +1035,7 @@ namespace problemSetup {
             }
 #endif
 
-#       pragma omp parallel for
+#       pragma omp parallel for num_threads(GF2_MAX_OMP_THREADS)
         for ( size_t lid = 0; lid < prims.size(); ++lid )
         {
             // check, if any directions for patch
@@ -1102,7 +1135,7 @@ namespace problemSetup {
                 coeff += weights(2); // changed by Aron on 21/9/2014
 
                 // add to problem
-#               pragma omp critical
+#               pragma omp critical (PS_PROBLEM)
                 {
                     problem.addLinObjective( /* var_id: */ lids_varids.at( IntPair(lid,lid1) )
                                            , /*  value: */ coeff );

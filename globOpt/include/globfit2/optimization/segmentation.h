@@ -10,7 +10,7 @@
 namespace GF2 {
 
 namespace segmentation {
-    typedef std::pair<int,int>      PidLid;
+    typedef std::pair<PidT,LidT>      PidLid;
 
     template <typename _Scalar, typename _PrimitiveT>
     struct Patch : public std::vector<PidLid>
