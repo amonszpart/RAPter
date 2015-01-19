@@ -66,3 +66,24 @@ python ../normal_distr.py schnabel_minsup20000_pts.ply ndistr_schnabel_minsup200
 
 mv plane_mesh.ply figure/schnabel_minsup20000_planes.ply
 
+
+
+
+############################################################
+## pearl
+
+../globOptVis --show3D --scale 0.02 --pop-limit 3 --title "Pearl" --angle-gens 90 --use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-scale --bg-colour .9,.9,.9 --no-rel -p primitives.pearl.csv -a points_primitives.pearl.csv --perfect-angle 0.0001  --draw-mode 28 --save-poly  --cloud cloud_100000.ply 
+
+## clean output name to avoid side effect with patches output
+mv cloudRGBNormal_reProj_noUnass_noPrim.ply pearl_pts.ply
+
+meshlabserver -i pearl_pts.ply -o figure/pearl_pts.ply -om vc vn
+
+splatting figure/pearl_pts.ply figure/pearl.ply 1 0.0035
+
+#distribution
+python ../normal_distr.py pearl_pts.ply ndistr_pearl.svg "lHouse - Pearl"
+
+../globOptVis --show3D --scale 0.02 --pop-limit 3 --title "Pearl" --angle-gens 90 --use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-scale --bg-colour .9,.9,.9 --no-rel -p primitives.pearl.csv -a points_primitives.pearl.csv --perfect-angle 0.0001  --draw-mode 1 --save-poly  --no-pts   --cloud cloud_100000.ply 
+
+mv plane_mesh.ply figure/pearl_planes.ply
