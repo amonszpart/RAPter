@@ -450,19 +450,13 @@ namespace GF2
 
 
         // count patch populations
+        std::cout << "[" << __func__ << "]: " << "populations start" << std::endl; fflush(stdout);
         GidPidVectorMap populations; // populations[patch_id] = all points with GID==patch_id
         processing::getPopulations( populations, points );
-
-        // debug
-//        typedef pcl::PointXYZRGB PCLPointT;
-//        typedef pcl::PointCloud<PCLPointT> PCLCloudT;
-//        typedef typename PCLCloudT::Ptr PCLCloudPtrT;
-//        PCLCloudPtrT cloud( new PCLCloudT() );
-//        _PointPrimitiveT::template toCloud<PCLCloudPtrT, _PointContainerT, PCLPointAllocator<_PointPrimitiveT::Dim> >
-//                ( cloud, points );
+        std::cout << "[" << __func__ << "]: " << "populations end" << std::endl; fflush(stdout);
 
         // _________ (1) promotion _________
-
+        std::cout << "[" << __func__ << "]: " << "promotion start" << std::endl; fflush(stdout);
         // upgrade primitives to large, and copy large primitives to output
         // added on 21/09/2014 by Aron
         std::set<GidLid> promoted; // Contains primitives, that were small, but now are large (active)
@@ -496,7 +490,8 @@ namespace GF2
                          || (prim_status == _PrimitiveT::STATUS_VALUES::UNSET) )    // first ranking has to be done, since this is first iteration patchify output
                     {
                         // Promote: check, if patch is large by now
-                        if ( prim.getSpatialSignificance( spatialSignif, points, scale, &(populations[gid]))(0) >= smallThresh )
+                        if (    ((populations.find(gid) != populations.end()) && (populations[gid].size() > params.patch_population_limit) )
+                             && (prim.getSpatialSignificance( spatialSignif, points, scale, &(populations[gid]))(0) >= smallThresh  )   )
                         {
                             // store primitives, that have just been promoted to large from small
                             if ( (prim_status == _PrimitiveT::STATUS_VALUES::SMALL) )
@@ -564,9 +559,10 @@ namespace GF2
             //    safe_mode = false;
             //}
         } //...promote
+        std::cout << "[" << __func__ << "]: " << "populations end" << std::endl; fflush(stdout);
 
         // _________ (2) statistics _________
-
+        std::cout << "[" << __func__ << "]: " << "angle stats start" << std::endl; fflush(stdout);
         // ANGLES
         std::map<DidT,AnglesT> allowedAngles;      // final storage to store allowed angles
         //AnglesT                angle_gens_in_rad;
@@ -618,6 +614,7 @@ namespace GF2
                 selectAngles( /* out: */ allowedAngles, /* in: */ dirAngles, angles, angle_gens_in_rad );
             }
         }
+        std::cout << "[" << __func__ << "]: " << "angle stats stop" << std::endl; fflush(stdout);
 
         /* Status of primitives at this stage are:
          * ACTIVE      for large primitives to use
@@ -626,6 +623,7 @@ namespace GF2
          */
 
         // _________ (3) generation _________
+        std::cout << "[" << __func__ << "]: " << "generate start" << std::endl; fflush(stdout);
 
         DidT maxDid = 0; // collects currently existing maximum cluster id (!small, active, all!)
 
@@ -673,8 +671,10 @@ namespace GF2
                 } //...for l2
             } //...for l1
         } //...for l0
+        std::cout << "[" << __func__ << "]: " << "generate end" << std::endl; fflush(stdout);
 
         // ___________ (4) ALIASES _______________
+        std::cout << "[" << __func__ << "]: " << "alias start" << std::endl; fflush(stdout);
 
         // [did][angle] = AliasT( gid, lid, prim )
         for ( auto aliasIt = aliases.begin(); aliasIt != aliases.end(); ++aliasIt )
@@ -731,8 +731,10 @@ namespace GF2
                 } //...outer for
             } //...for all angles
         } //...for all aliases
+        std::cout << "[" << __func__ << "]: " << "alias end" << std::endl; fflush(stdout);
 
         // ___________ (5) LIMIT VARIABLES _______________
+        std::cout << "[" << __func__ << "]: " << "limit vars start" << std::endl; fflush(stdout);
         int ret = EXIT_SUCCESS;
         if ( (var_limit > 0) && (nlines > var_limit) )
         {
@@ -806,8 +808,10 @@ namespace GF2
                 ret = ranks.size() - chosen.size();
             } // if too many actives already
         } // filter
+        std::cout << "[" << __func__ << "]: " << "limit vars end" << std::endl; fflush(stdout);
 
         // ___________ (6) Make sure allowed angles stick _______________
+        std::cout << "[" << __func__ << "]: " << "allowed start" << std::endl; fflush(stdout);
         std::map<DidT,LidT> directionPopulation; // counts, how many candidates have a direction
         for ( typename PrimitiveMapT::Iterator primIt(outPrims); primIt.hasNext() && (ret != -1); primIt.step() )
         {
@@ -860,6 +864,7 @@ namespace GF2
                 }
             }
         }
+        std::cout << "[" << __func__ << "]: " << "allowed end" << std::endl; fflush(stdout);
 
         // log
         std::cout << "[" << __func__ << "]: " << "finished generating, we now have " << nlines << " candidates" << std::endl;

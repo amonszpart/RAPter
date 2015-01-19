@@ -585,7 +585,7 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
     } // ... variables
     std::cout << "[" << __func__ << "]: " << "var loop end..." << std::endl; fflush(stdout);
 
-    std::cout << "[" << __func__ << "]: " << "data loop start..." << std::endl; fflush(stdout);
+    std::cout << "[" << __func__ << "]: " << "constr loop start..." << std::endl; fflush(stdout);
     // ____________________________________________________
     // Lin constraints
     if ( EXIT_SUCCESS == err )
@@ -614,8 +614,8 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
             return err;
         }
     } //...Lin constraints
-    std::cout << "[" << __func__ << "]: " << "data loop end..." << std::endl; fflush(stdout);
-
+    std::cout << "[" << __func__ << "]: " << "constr loop end..." << std::endl; fflush(stdout);
+    std::cout << "[" << __func__ << "]: " << "data loop start..." << std::endl; fflush(stdout);
     // ____________________________________________________
     // Unary cost -> lin objective
     if ( EXIT_SUCCESS == err )
@@ -650,6 +650,7 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
         std::cerr << "[" << __func__ << "]: " << "data cost setup returned error " << err << std::endl;
         return err;
     }
+    std::cout << "[" << __func__ << "]: " << "data loop end..." << std::endl; fflush(stdout);
 
     // ____________________________________________________
     // Pairwise cost -> quad objective
