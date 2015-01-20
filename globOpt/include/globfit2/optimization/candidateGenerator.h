@@ -64,6 +64,7 @@ namespace GF2
                     , bool                             const  keepSingles = false
                     , bool                             const  allowPromoted = false
                     , bool                              const  tripletSafe = false
+                    , bool const noAngleGuess = false
 
                     );
 

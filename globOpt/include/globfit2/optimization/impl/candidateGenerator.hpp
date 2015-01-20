@@ -409,6 +409,7 @@ namespace GF2
                                 , bool                              const  keepSingles
                                 , bool                              const  allowPromoted
                                 , bool                              const  tripletSafe
+                                , bool const noAngleGuess
                                 )
     {
         const bool verbose = true;
@@ -604,25 +605,27 @@ namespace GF2
             } //...add allowedAngles from primitive
 
             // ____ (2) Deduce rest from existing relations in the currently active landscape ____
-
-            // 2.1 Understand from angles, which generators we got from cli (i.e. 90, or 60,90)
-            //deduceGenerators<_Scalar>( angle_gens_in_rad, angles );
-            // log
-            std::cout<<"[" << __func__ << "]: " << "angle_gens_in_rad:";for(size_t vi=0;vi!=angle_gens_in_rad.size();++vi)std::cout<<angle_gens_in_rad[vi]*180./M_PI<<" ";std::cout << "\n";
-
-            // 2.2 estimate direction cluster angles
-            DirAngleMapT dirAngles; // intermediate storage to collect dir angle distributions, <did, <angle_id, count> >
+            if ( !noAngleGuess )
             {
-                // create functor
-                DirAnglesFunctorOuter<_PrimitiveT,_PrimitiveContainerT,AnglesT> outerFunctor(
-                            inPrims, angles, /* output reference */ dirAngles );
+                // 2.1 Understand from angles, which generators we got from cli (i.e. 90, or 60,90)
+                //deduceGenerators<_Scalar>( angle_gens_in_rad, angles );
+                // log
+                std::cout<<"[" << __func__ << "]: " << "angle_gens_in_rad:";for(size_t vi=0;vi!=angle_gens_in_rad.size();++vi)std::cout<<angle_gens_in_rad[vi]*180./M_PI<<" ";std::cout << "\n";
 
-                // run functor -> outputs { <did, [ <angle_gen,count>,... ]>, ... } to dirAngles
-                processing::filterPrimitives<_PrimitiveT, InnerContainerT/*typename _PrimitiveContainerT::mapped_type*/>(
-                            inPrims, outerFunctor );
+                // 2.2 estimate direction cluster angles
+                {
+                    DirAngleMapT dirAngles; // intermediate storage to collect dir angle distributions, <did, <angle_id, count> >
+                    // create functor
+                    DirAnglesFunctorOuter<_PrimitiveT,_PrimitiveContainerT,AnglesT> outerFunctor(
+                                inPrims, angles, /* output reference */ dirAngles );
 
-                // dirAngles -> allowedAngles { <did, [ 0, angle_i, ..., M_PI ] >, ... }
-                selectAngles( /* out: */ allowedAngles, /* in: */ dirAngles, angles, angle_gens_in_rad );
+                    // run functor -> outputs { <did, [ <angle_gen,count>,... ]>, ... } to dirAngles
+                    processing::filterPrimitives<_PrimitiveT, InnerContainerT/*typename _PrimitiveContainerT::mapped_type*/>(
+                                inPrims, outerFunctor );
+
+                    // dirAngles -> allowedAngles { <did, [ 0, angle_i, ..., M_PI ] >, ... }
+                    selectAngles( /* out: */ allowedAngles, /* in: */ dirAngles, angles, angle_gens_in_rad );
+                }
             }
         }
         std::cout << "[" << __func__ << "]: " << "angle stats stop" << std::endl; fflush(stdout);
