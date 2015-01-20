@@ -410,127 +410,152 @@ Segmentation::regionGrow( _PointContainerT                       & points
     const _Scalar       max_dist            = patchPatchDistanceFunctor.getSpatialThreshold();// * _Scalar(3.5); // longest axis of ellipse)
 
     unsigned step_count = 0; // for logging
-    int tid; //omp thread_id
+    //int tid; //omp thread_id
     TIC
     // look for neighbours, merge most similar
     std::cout << "[" << __func__ << "]: " << "starting reggrow loop" << std::endl; fflush(stdout);
-#   pragma omp parallel num_threads(GF2_MAX_OMP_THREADS) private(tid)
+#   pragma omp parallel num_threads(GF2_MAX_OMP_THREADS) shared(seeds)
     while ( seeds.size() )
     {
+        const int tid = omp_get_thread_num();
         std::vector< int >  neighs( nn_K );
         std::vector<float>  sqr_dists( nn_K );
-        std::deque<PidT>  privateSeeds;
 
         PidT                found_points_count  = 0;
         pcl::PointXYZ       searchPoint;
 
-        tid = omp_get_thread_num();
-
-//        #pragma omp critical (RG_COUT)
-        //std::cout << "thread_id: " << tid << std::endl; fflush(stdout);
-
-        if ( verbose && !(++step_count % 10000) ) std::cout << seeds.size() << " ";
-
-        // remove point from unassigned
-        PidT pid;
+        std::deque<PidT> privateSeeds;
         {
+            PidT _pid = -1;
             bool quit = false;
-            #pragma omp critical (RG_SEEDS)
+#           pragma omp critical (RG_SEEDS)
             {
                 if ( !seeds.size() )
                     quit = true;
                 else
                 {
-                    pid = seeds.front();
+                    _pid = seeds.front();
                     seeds.pop_front();
                 }
             }
             if ( quit ) continue;
+            privateSeeds.push_front( _pid );
         }
+//        const patchesId = tid;
 
+        while ( privateSeeds.size() )
         {
-            bool quit = false;
-#           pragma omp critical (RG_VISITED)
+            if ( tid != omp_get_thread_num() )
             {
-                if ( visited[pid] ) quit = true;
-                else                visited[pid] = true;
+                std::cout << "[" << __func__ << "]: " << "tid " << tid << " != " << omp_get_thread_num() << std::endl;
             }
-            if ( quit ) continue;
-        }
+            //tid = omp_get_thread_num();
 
-        // add to new cluster
-        {
-            bool addPatch = false;
-            #pragma omp critical (RG_ASSIGNED)
+            //        #pragma omp critical (RG_COUT)
+            //std::cout << "thread_id: " << tid << std::endl; fflush(stdout);
+
+            if ( verbose && !(++step_count % 50000) )
             {
-                if ( !assigned[pid] )
-                {
-                    assigned[ pid ] = true;
-                    addPatch        = true;
-                }
-            } //...assigned
+                std::cout << seeds.size() << " "; fflush(stdout);
+            }
 
-            if ( addPatch )
-            {
-                #pragma omp critical (RG_PATCHES)
-                {
-                    PatchT tmp_patch; tmp_patch.push_back( segmentation::PidLid(pid,-1) );
-                    patchesVector[tid].push_back( tmp_patch );
-                    patchesVector[tid].back().update( points );
-                }
-            } //...if addPatch
-        } //...new cluster
+            // remove point from unassigned
+            PidT pid = -1;
+            pid = privateSeeds.front();
+            privateSeeds.pop_front();
 
-        // look for unassigned neighbours
-        #pragma omp critical (RG_KDTREE)
-        {
-            searchPoint.getVector3fMap() = points[ pid ].template pos();
-            found_points_count = tree->radiusSearch( searchPoint, max_dist, neighs, sqr_dists, 0);
-        }
-
-        for ( size_t pid_id = 1; pid_id < neighs.size(); ++pid_id )
-        {
-            const PidT pid2 = neighs[ pid_id ];
-
-            // if !assigned[pid2]
             {
                 bool quit = false;
-                #pragma omp critical (RG_ASSIGNED)
+#           pragma omp critical (RG_VISITED)
                 {
-                    if ( assigned[pid2] )   quit = true;
+                    if ( visited[pid] ) quit = true;
+                    else                visited[pid] = true;
                 }
                 if ( quit ) continue;
             }
 
-            _Scalar ang_diff = GF2::angleInRad( patchesVector[tid].back().template dir(), points[pid2].template dir() );
-            // map 90..180 to 0..90:
-            if ( ang_diff > M_PI_2 )    ang_diff = M_PI - ang_diff;
-
-            // location from point, but direction is the representative's
-            if ( ang_diff > patchPatchDistanceFunctor.getAngularThreshold() ) // original condition
-                continue;
-
-            #pragma omp critical (RG_ASSIGNED)
+            // add to new cluster
             {
-                assigned[pid2] = true;
-            } //...RG_ASSIGNED
+                bool addPatch = false;
+#pragma omp critical (RG_ASSIGNED)
+                {
+                    if ( !assigned[pid] )
+                    {
+                        assigned[ pid ] = true;
+                        addPatch        = true;
+                    }
+                } //...assigned
 
-            #pragma omp critical (RG_PATCHES)
+                if ( addPatch )
+                {
+#pragma omp critical (RG_PATCHES)
+                    {
+                        PatchT tmp_patch; tmp_patch.push_back( segmentation::PidLid(pid,-1) );
+                        patchesVector[tid].push_back( tmp_patch );
+                        patchesVector[tid].back().update( points );
+                    }
+                } //...if addPatch
+            } //...new cluster
+
+            // look for unassigned neighbours
+#pragma omp critical (RG_KDTREE)
             {
-                patchesVector[tid].back().push_back( segmentation::PidLid(pid2,-1) );
-                patchesVector[tid].back().updateWithPoint( points[pid2] );
-                #pragma omp critical (RG_SEEDS)
+                searchPoint.getVector3fMap() = points[ pid ].template pos();
+                found_points_count = tree->radiusSearch( searchPoint, max_dist, neighs, sqr_dists, 0);
+            }
+
+            for ( size_t pid_id = 1; pid_id < neighs.size(); ++pid_id )
+            {
+                const PidT pid2 = neighs[ pid_id ];
+
+                // if !assigned[pid2]
+                {
+                    bool quit = false;
+#pragma omp critical (RG_ASSIGNED)
+                    {
+                        if ( assigned[pid2] )   quit = true;
+                    }
+                    if ( quit ) continue;
+                }
+
+                _Scalar ang_diff = GF2::angleInRad( patchesVector[tid].back().template dir(), points[pid2].template dir() );
+                // map 90..180 to 0..90:
+                if ( ang_diff > M_PI_2 )    ang_diff = M_PI - ang_diff;
+
+                // location from point, but direction is the representative's
+                if ( ang_diff > patchPatchDistanceFunctor.getAngularThreshold() ) // original condition
+                    continue;
+
+#pragma omp critical (RG_ASSIGNED)
+                {
+                    assigned[pid2] = true;
+                } //...RG_ASSIGNED
+
+#pragma omp critical (RG_PATCHES)
+                {
+                    patchesVector[tid].back().push_back( segmentation::PidLid(pid2,-1) );
+                    patchesVector[tid].back().updateWithPoint( points[pid2] );
+                } //...RG_PATCHES
+
+                //#pragma omp critical (RG_PRIV_SEEDS)
                 {
                     // enqueue for visit
-                    seeds.push_front( pid2 );
+                    //seeds.push_front( pid2 );
+                    privateSeeds.push_front( pid2 );
                 }
-            } //...RG_PATCHES
-        }
+            }
+        } //...while privateSeeds
     } //...while seeds
+
     for ( int i = 1; i != patchesVector.size(); ++i )
     {
         patchesVector[0].reserve( patchesVector.size() + patchesVector[i].size() );
-        patchesVector[0].insert( patchesVector[0].end(), patchesVector[i].begin(), patchesVector[i].end() );
+        for ( int j = 0; j < patchesVector[i].size(); ++j )
+            if ( patchesVector[i][j].getSize() )
+                patchesVector[0].push_back( patchesVector[i][j] );
+            else
+                std::cout << "[" << __func__ << "]: " << "empty group created...." << std::endl;
+        //patchesVector[0].insert( patchesVector[0].end(), patchesVector[i].begin(), patchesVector[i].end() );
     }
 
     std::cout << std::endl;
@@ -791,7 +816,7 @@ Segmentation::_tagPointsFromGroups( _PointContainerT                 & points
 
         _Scalar     min_dist = std::numeric_limits<_Scalar>::max(), dist;
         GidT         min_gid  = 0;
-        for ( GidT gid = 1; gid != groups.size(); ++gid )
+        for ( GidT gid = 1; gid < groups.size(); ++gid )
         {
             if ( (dist = pointPatchDistanceFunctor.template evalSpatial<_PointPrimitiveT>(pid, groups[gid], points)) < min_dist )
             {

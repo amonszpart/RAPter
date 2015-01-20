@@ -78,6 +78,7 @@ namespace segmentation {
 
             inline typename Eigen::Matrix<Scalar,3,1> pos() const { return _representative.pos(); }
             inline typename Eigen::Matrix<Scalar,3,1> dir() const { return _representative.dir(); }
+            inline size_t getSize() const { return static_cast<size_t>(_n); }
 
         protected:
             _PrimitiveT _representative;
