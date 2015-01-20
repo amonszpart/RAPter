@@ -567,28 +567,39 @@ namespace GF2
         std::map<DidT,AnglesT> allowedAngles;      // final storage to store allowed angles
         //AnglesT                angle_gens_in_rad;
         {
+            std::map< _Scalar, AnglesT> angleSet;
             // ____ (1) store generators from earlier iterations in allowedAngles, so that they are not rediscovered ____
             for ( typename PrimitiveMapT::ConstIterator primIt(inPrims); primIt.hasNext(); primIt.step() )
             {
+                if ( primIt->getTag( _PrimitiveT::TAGS::STATUS == _PrimitiveT::STATUS_VALUES::SMALL) ) continue;
                 // _PrimitiveT prim = *primIt;
-                DidT    const dId      = primIt->getTag( _PrimitiveT::TAGS::DIR_GID   );
                 _Scalar const angleGen = primIt->getTag( _PrimitiveT::TAGS::GEN_ANGLE );
 
                 // skip, if not meaningful
-                if ( angleGen == _PrimitiveT::STATUS_VALUES::UNSET )
+                if ( std::abs( angleGen - _PrimitiveT::GEN_ANGLE_VALUES::UNSET) < _Scalar(1.e-6) )
                     continue;
+
+                DidT    const dId      = primIt->getTag( _PrimitiveT::TAGS::DIR_GID   );
 
                 // only add, if has not been added before (gen_angle->did is stored at every primitive with that did redundantly for now)
                 if ( allowedAngles.find(dId) == allowedAngles.end() )
                 {
+                    auto const angleSetIt = angleSet.find( angleGen );
+                    if ( angleSetIt != angleSet.end() )
+                    {
+                        allowedAngles[dId] = angleSetIt->second;
+                        continue;
+                    }
+
                     // create a vector with this single element
                     AnglesT generators( {angleGen} );
                     // store angles from single generator for did
-                    angles::appendAnglesFromGenerators( /*      out: */ allowedAngles[ dId ]
+                    angles::appendAnglesFromGenerators( /*      out: */ allowedAngles[dId]
                                                       , /*       in: */ generators
                                                       , /* no_paral: */ false               // allow parallel
                                                       , /*  verbose: */ false
                                                       , /*    inRad: */ true );             // stored in rad!
+                    angleSet[ angleGen ] = allowedAngles[dId];
                 } //...if dId did not exist
             } //...add allowedAngles from primitive
 
