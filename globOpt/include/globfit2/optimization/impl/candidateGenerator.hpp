@@ -571,7 +571,7 @@ namespace GF2
             // ____ (1) store generators from earlier iterations in allowedAngles, so that they are not rediscovered ____
             for ( typename PrimitiveMapT::ConstIterator primIt(inPrims); primIt.hasNext(); primIt.step() )
             {
-                if ( primIt->getTag( _PrimitiveT::TAGS::STATUS == _PrimitiveT::STATUS_VALUES::SMALL) ) continue;
+                if ( primIt->getTag( _PrimitiveT::TAGS::STATUS ) == _PrimitiveT::STATUS_VALUES::SMALL ) continue;
                 // _PrimitiveT prim = *primIt;
                 _Scalar const angleGen = primIt->getTag( _PrimitiveT::TAGS::GEN_ANGLE );
 

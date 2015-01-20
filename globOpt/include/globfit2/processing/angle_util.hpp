@@ -36,7 +36,7 @@ namespace GF2
             {
                 Scalar angle_gen_rad = angle_gens[i] * (inRad ? Scalar(1.) : radMult );
 
-                if ( angle_gen_rad == Scalar(0.) )
+                if ( std::abs(angle_gen_rad) < Scalar(1.e-3) )
                 {
                     //std::cerr << "[" << __func__ << "]: " << "skipping 0 as generator" << std::endl;
                     continue;
