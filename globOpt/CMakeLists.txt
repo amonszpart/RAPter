@@ -46,7 +46,6 @@ SET( WITH_PEARL ON CACHE BINARY "Compile pearl executable.")
 #SET( WITH_PEARL YES CACHE BINARY "Compile pearl executable." FORCE)
 SET( WITH_RSAC ON CACHE BINARY "Compile ransac executable." FORCE)
 SET( WITH_GAUSSSPHERE ON CACHE BINARY "Compile gaussSphere." )
-SET( WITH_DRAWGRAPHS ON CACHE BINARY "Compile drawGraphs." )
 SET( WITH_PLYCONVERTER ON CACHE BINARY "Compile ply-converter executable.")
 SET( WITH_CORRESP ON CACHE BINARY "Correspondance miniprogram compilation.")
 
@@ -298,12 +297,6 @@ TARGET_LINK_LIBRARIES( ${GLOBOPT_TARGET_NAME}
 IF(WITH_PEARL)
     SET( PEARL_TARGET pearl)
 
-    find_package(OpenMP)
-    if (OPENMP_FOUND)
-        set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-        set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-    endif()
-
     ## Deps
     SET( PATH_PEARL_ROOT ${PATH_GLOBOPT_DEPS_ROOT}/pearl CACHE PATH "Pearl root" FORCE )
     SET( WITH_GCO ON CACHE BINARY "Use alpha-expansion library")
@@ -444,19 +437,3 @@ IF(WITH_GAUSSSPHERE)
         boost_filesystem
     )
 ENDIF(WITH_GAUSSSPHERE)
-
-
-## _____________________________________DrawGraphs____________________________________________________
-
-IF(WITH_DRAWGRAPHS)
-    SET( DRAWGRAPHS_TARGET "drawGraphs" )
-    SET( DRAWGRAPHS_SRC
-        src/drawGraphs.cpp
-    )
-
-    add_executable( ${DRAWGRAPHS_TARGET} ${DRAWGRAPHS_SRC} ${DRAWGRAPHS_H})
-    TARGET_LINK_LIBRARIES( ${DRAWGRAPHS_TARGET}
-        ${PCL_LIBRARIES}
-        boost_filesystem
-    )
-ENDIF(WITH_DRAWGRAPHS)

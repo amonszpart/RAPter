@@ -265,16 +265,15 @@ static inline int representBackCli( int argc, char** argv )
     {
         if ( patches[ it.getGid() ].size() > 1 )
         {
-            std::cerr << "[" << __func__ << "]: " << "can't handle more than one primitive per patch( gid: " << it.getGid() << "!" << std::endl;
-            //return 1;
+            std::cerr << "[" << __func__ << "]: " << "can't handle more than one primitive per patch!" << std::endl;
+            return 1;
         }
-        //for ( int )
         const int dId = patches[ it.getGid() ].at(0).getTag(_PrimitiveT::TAGS::DIR_GID);
         std::cout << "did at " << it.getGid() << " is " << dId << std::endl;
 
         if ( it.getDid() != dId )
         {
-            if ( verbose ) std::cout << "found subst: " << it.getDid() << " instead of " << dId << " at gid " << it.getGid() << std::endl;
+            if ( verbose ) std::cout << "found subst: " << it.getDid() << " instead of " << dId << " at gid << " << it.getGid() << std::endl;
             if (    (subs.find( dId )                              != subs.end() )
                  && (subs[dId]->getTag(_PrimitiveT::TAGS::DIR_GID) != it.getDid()) )
                 std::cerr << "duplicate subs for patch " << it.getGid() << ": " << subs[dId]->getTag(_PrimitiveT::TAGS::DIR_GID) << ", " << it.getDid() << "!" << std::endl;

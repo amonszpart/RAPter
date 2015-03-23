@@ -60,13 +60,9 @@ namespace GF2
                           << " -- "
                           << "\"" << name << "\"\n";
                         f << "\t\"" << name << "\" [ label=\"" << _qo.coeff(lid,0) << "\"";
-                        f << "];\n";
                         if ( _nodePos.find(lid) != _nodePos.end() )
-                        {
-                            f << "\t\"" << it->second << "\"[ pos=\"" << _nodePos[lid](0) * 10. << ","
-                                                                      << _nodePos[lid](1) * 10. << "!\"";
-                            f << "];\n";
-                        }
+                            f << ", pos=\"" << _nodePos[lid](0) * 100. << "," << _nodePos[lid](1) * 100. << "!\"";
+                        f << "];\n";
                     }
                     for ( typename NodeMapT::const_iterator it2 = _nodeNames.begin(); it2 != _nodeNames.end(); ++it2 )
                     {
@@ -107,8 +103,8 @@ namespace GF2
 
         protected:
             SparseMatrix    _qo, _Qo;
-            NodeMapT        _nodeNames;
-            EdgeListT       _edges;
+            NodeMapT         _nodeNames;
+            EdgeListT        _edges;
             NodePositionsT  _nodePos;
 
 //            inline void _addEdge( std::ofstream &f )

@@ -79,7 +79,6 @@ namespace GF2
                 static const char SMALL   = 2; //!< Used to show, that this primitive is *not* active, but needs to be kept for later use, so copied to output everywhere.
                 static const char UNSET   = ParentT::TAG_UNSET;
                 static const char INVALID = -2; //!< Used to show, that the status value has not been read yet.
-                static const char FIXED   = 3;
             };
 
             //! \brief Defines the tags (ids) that this primitive can manage using setTag and getTag functions.

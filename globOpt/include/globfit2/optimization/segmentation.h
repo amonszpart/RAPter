@@ -10,7 +10,7 @@
 namespace GF2 {
 
 namespace segmentation {
-    typedef std::pair<PidT,LidT>      PidLid;
+    typedef std::pair<int,int>      PidLid;
 
     template <typename _Scalar, typename _PrimitiveT>
     struct Patch : public std::vector<PidLid>
@@ -63,26 +63,24 @@ namespace segmentation {
             template <class _PointT>
             inline void updateWithPoint( _PointT const& pnt )
             {
-                //_Scalar scalar_n( _n );
+                _Scalar scalar_n( _n );
                 // take average of all points
-                //Eigen::Matrix<_Scalar,3,1> pos( _representative.pos() * _n + pnt.pos() );
-                //Eigen::Matrix<_Scalar,3,1> dir( _representative.dir() * _n + pnt.dir() );
-//                pos += pnt.pos();
-//                dir += pnt.dir();
-                //scalar_n += Scalar(1);
-                _representative = _PrimitiveT(  _representative.pos() * _n + pnt.pos() / (_n+_Scalar(1.))
-                                             , (_representative.dir() * _n + pnt.dir() / (_n+_Scalar(1.))).normalized() );
-                _n+=_Scalar(1.);
-                //_n = scalar_n;
+                Eigen::Matrix<_Scalar,3,1> pos( _representative.pos() * scalar_n );
+                Eigen::Matrix<_Scalar,3,1> dir( _representative.dir() * scalar_n );
+                pos += pnt.pos();
+                dir += pnt.dir();
+                scalar_n += Scalar(1);
+
+                _representative = _PrimitiveT( pos / scalar_n, (dir / scalar_n).normalized() );
+                _n = scalar_n;
             }
 
             inline typename Eigen::Matrix<Scalar,3,1> pos() const { return _representative.pos(); }
             inline typename Eigen::Matrix<Scalar,3,1> dir() const { return _representative.dir(); }
-            inline size_t getSize() const { return static_cast<size_t>(_n); }
 
         protected:
             _PrimitiveT _representative;
-            _Scalar    _n;              //!< \brief How many points are averaged in _representative
+            int         _n;              //!< \brief How many points are averaged in _representative
     }; // ... struct Patch
 }
 
@@ -145,7 +143,6 @@ class Segmentation
                 , _PatchPatchDistanceFunctorT       const& patchPatchDistanceFunctor
                 , int                               const  nn_K
                 , int                               const  verbose
-                , int                               const  patchPopLimit
                 );
 
         /*! \brief                               Greedy region growing

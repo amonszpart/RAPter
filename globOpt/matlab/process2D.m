@@ -2,7 +2,7 @@
 if 1
     close all;
     figure();
-    p = '/home/bontius/workspace/globOpt/data/scenes/floorplan_niloy/floorplan_mod.png'
+    p = '/home/bontius/workspace/globOpt/data/scenes/floorplan_niloy/floorplan_mod2.png'
     H = 2; W = 2; k = 1;
 
     I = imread(p);
@@ -28,7 +28,7 @@ rat = N / (H * W);
 P = zeros(0,2);
 for y = 1 : H
     for x = 1 : W
-        if ( I(y,x) < 150)
+        if ( I(y,x) < 20)
             P(end+1,:) = [ x/W, 1.-y/H ];
         end
     end

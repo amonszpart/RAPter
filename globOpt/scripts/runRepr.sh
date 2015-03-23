@@ -27,7 +27,7 @@ function runRepr() {
 
 	rprNextId=`expr $c + 1`; #candidates will output here automatically...so we need to know
 	rprPw=`my_mult $pw $reprPwMult`
-	rprAngLimit=`my_mult $anglelimit $reprAngleMult | awk '{printf "%.3f", $0}'`
+	rprAngLimit=`my_mult $anglelimit 0.5 | awk '{printf "%.3f", $0}'`
 	echo "rprAnglimit: $rprAngLimit"
 
 	# representatives
@@ -50,7 +50,7 @@ function runRepr() {
 		mv candidates_it${rprNextId}.csv candidates_it${rprNextId}_tmp.csv # move tmp out of the way
 	fi
 
-	my_exec "$executable --generate$flag3D $tripletSafe -sc $scale -al $rprAngLimit -ald ${cand_anglediv} --small-mode 0 --patch-pop-limit $poplimit --angle-gens $candAngleGens --small-thresh-mult $smallThresh -p $rprRepr --assoc $rprReprAssoc --keep-singles"
+	my_exec "$executable --generate$flag3D -sc $scale -al $rprAngLimit -ald ${cand_anglediv} --small-mode 0 --patch-pop-limit $poplimit --angle-gens $candAngleGens --small-thresh-mult $smallThresh -p $rprRepr --assoc $rprReprAssoc --keep-singles"
 
 	if ! $dryRun ; then
 		echo "mv candidates_it${rprNextId}.csv $rprCands"

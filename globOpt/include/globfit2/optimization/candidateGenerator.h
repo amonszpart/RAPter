@@ -63,9 +63,6 @@ namespace GF2
                     , int                              const  var_limit = 0
                     , bool                             const  keepSingles = false
                     , bool                             const  allowPromoted = false
-                    , bool                              const  tripletSafe = false
-                    , bool const noAngleGuess = false
-
                     );
 
     }; //...class CandidateGenerator

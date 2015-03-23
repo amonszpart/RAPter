@@ -115,11 +115,11 @@ int subsample( int argc, char** argv )
     bool doOrigin = false;
     if ( pcl::console::parse_x_arguments( argc, argv, "--origin", originCoords ) >= 0 )
     {
-        origin << originCoords[0], originCoords[1], originCoords[2], 0;
+        origin << originCoords[0], originCoords[1], originCoords[2];
         doOrigin = true;
     }
     else
-        origin << 0,0,0,0;
+        origin << 0,0,0;
 
     if ( !valid_input || (pcl::console::find_switch(argc,argv,"-h")) || (pcl::console::find_switch(argc,argv,"--help")) )
     {

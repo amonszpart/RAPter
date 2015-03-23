@@ -240,11 +240,11 @@ namespace GF2
                                                                                                angles );
                     if ( tmpAng > _Scalar(1e-2) )
                     {
-//                        std::cout << "triplet cancel: "
-//                                  << "<" << gid0 << "," << dir_gid1 << "," << cand0.getTag(_PrimitiveT::TAGS::GEN_ANGLE) << "> "
-//                                  << tmpAng * 180. / M_PI << " with "
-//                                  << " <" << it.getGid() << "," << it.getDid() << "," << it->getTag(_PrimitiveT::TAGS::GEN_ANGLE) << ">"
-//                                  << "\n";
+                        std::cout << "triplet cancel: "
+                                  << "<" << gid0 << "," << dir_gid1 << "," << cand0.getTag(_PrimitiveT::TAGS::GEN_ANGLE) << "> "
+                                  << tmpAng * 180. / M_PI << " with "
+                                  << " <" << it.getGid() << "," << it.getDid() << "," << it->getTag(_PrimitiveT::TAGS::GEN_ANGLE) << ">"
+                                  << "\n";
                         add0 = false;
                     }
                 }
@@ -407,10 +407,7 @@ namespace GF2
                                 , bool                              const  safe_mode_arg
                                 , int                               const  var_limit
                                 , bool                              const  keepSingles
-                                , bool                              const  allowPromoted
-                                , bool                              const  tripletSafe
-                                , bool const noAngleGuess
-                                )
+                                , bool                              const  allowPromoted )
     {
         const bool verbose = true;
 
@@ -451,13 +448,19 @@ namespace GF2
 
 
         // count patch populations
-        std::cout << "[" << __func__ << "]: " << "populations start" << std::endl; fflush(stdout);
         GidPidVectorMap populations; // populations[patch_id] = all points with GID==patch_id
         processing::getPopulations( populations, points );
-        std::cout << "[" << __func__ << "]: " << "populations end" << std::endl; fflush(stdout);
+
+        // debug
+//        typedef pcl::PointXYZRGB PCLPointT;
+//        typedef pcl::PointCloud<PCLPointT> PCLCloudT;
+//        typedef typename PCLCloudT::Ptr PCLCloudPtrT;
+//        PCLCloudPtrT cloud( new PCLCloudT() );
+//        _PointPrimitiveT::template toCloud<PCLCloudPtrT, _PointContainerT, PCLPointAllocator<_PointPrimitiveT::Dim> >
+//                ( cloud, points );
 
         // _________ (1) promotion _________
-        std::cout << "[" << __func__ << "]: " << "promotion start" << std::endl; fflush(stdout);
+
         // upgrade primitives to large, and copy large primitives to output
         // added on 21/09/2014 by Aron
         std::set<GidLid> promoted; // Contains primitives, that were small, but now are large (active)
@@ -491,8 +494,7 @@ namespace GF2
                          || (prim_status == _PrimitiveT::STATUS_VALUES::UNSET) )    // first ranking has to be done, since this is first iteration patchify output
                     {
                         // Promote: check, if patch is large by now
-                        if (    ((populations.find(gid) != populations.end()) && (populations[gid].size() > params.patch_population_limit) )
-                             && (prim.getSpatialSignificance( spatialSignif, points, scale, &(populations[gid]))(0) >= smallThresh  )   )
+                        if ( prim.getSpatialSignificance( spatialSignif, points, scale, &(populations[gid]))(0) >= smallThresh )
                         {
                             // store primitives, that have just been promoted to large from small
                             if ( (prim_status == _PrimitiveT::STATUS_VALUES::SMALL) )
@@ -560,75 +562,60 @@ namespace GF2
             //    safe_mode = false;
             //}
         } //...promote
-        std::cout << "[" << __func__ << "]: " << "populations end" << std::endl; fflush(stdout);
 
         // _________ (2) statistics _________
-        std::cout << "[" << __func__ << "]: " << "angle stats start" << std::endl; fflush(stdout);
+
         // ANGLES
         std::map<DidT,AnglesT> allowedAngles;      // final storage to store allowed angles
         //AnglesT                angle_gens_in_rad;
         {
-            std::map< _Scalar, AnglesT> angleSet;
             // ____ (1) store generators from earlier iterations in allowedAngles, so that they are not rediscovered ____
             for ( typename PrimitiveMapT::ConstIterator primIt(inPrims); primIt.hasNext(); primIt.step() )
             {
-                if ( primIt->getTag( _PrimitiveT::TAGS::STATUS ) == _PrimitiveT::STATUS_VALUES::SMALL ) continue;
                 // _PrimitiveT prim = *primIt;
+                DidT    const dId      = primIt->getTag( _PrimitiveT::TAGS::DIR_GID   );
                 _Scalar const angleGen = primIt->getTag( _PrimitiveT::TAGS::GEN_ANGLE );
 
                 // skip, if not meaningful
-                if ( std::abs( angleGen - _PrimitiveT::GEN_ANGLE_VALUES::UNSET) < _Scalar(1.e-6) )
+                if ( angleGen == _PrimitiveT::STATUS_VALUES::UNSET )
                     continue;
-
-                DidT    const dId      = primIt->getTag( _PrimitiveT::TAGS::DIR_GID   );
 
                 // only add, if has not been added before (gen_angle->did is stored at every primitive with that did redundantly for now)
                 if ( allowedAngles.find(dId) == allowedAngles.end() )
                 {
-                    auto const angleSetIt = angleSet.find( angleGen );
-                    if ( angleSetIt != angleSet.end() )
-                    {
-                        allowedAngles[dId] = angleSetIt->second;
-                        continue;
-                    }
-
                     // create a vector with this single element
                     AnglesT generators( {angleGen} );
                     // store angles from single generator for did
-                    angles::appendAnglesFromGenerators( /*      out: */ allowedAngles[dId]
+                    angles::appendAnglesFromGenerators( /*      out: */ allowedAngles[ dId ]
                                                       , /*       in: */ generators
                                                       , /* no_paral: */ false               // allow parallel
                                                       , /*  verbose: */ false
                                                       , /*    inRad: */ true );             // stored in rad!
-                    angleSet[ angleGen ] = allowedAngles[dId];
                 } //...if dId did not exist
             } //...add allowedAngles from primitive
 
             // ____ (2) Deduce rest from existing relations in the currently active landscape ____
-            if ( !noAngleGuess )
+
+            // 2.1 Understand from angles, which generators we got from cli (i.e. 90, or 60,90)
+            //deduceGenerators<_Scalar>( angle_gens_in_rad, angles );
+            // log
+            std::cout<<"[" << __func__ << "]: " << "angle_gens_in_rad:";for(size_t vi=0;vi!=angle_gens_in_rad.size();++vi)std::cout<<angle_gens_in_rad[vi]*180./M_PI<<" ";std::cout << "\n";
+
+            // 2.2 estimate direction cluster angles
+            DirAngleMapT dirAngles; // intermediate storage to collect dir angle distributions, <did, <angle_id, count> >
             {
-                // 2.1 Understand from angles, which generators we got from cli (i.e. 90, or 60,90)
-                //deduceGenerators<_Scalar>( angle_gens_in_rad, angles );
-                // log
-                std::cout<<"[" << __func__ << "]: " << "angle_gens_in_rad:";for(size_t vi=0;vi!=angle_gens_in_rad.size();++vi)std::cout<<angle_gens_in_rad[vi]*180./M_PI<<" ";std::cout << "\n";
+                // create functor
+                DirAnglesFunctorOuter<_PrimitiveT,_PrimitiveContainerT,AnglesT> outerFunctor(
+                            inPrims, angles, /* output reference */ dirAngles );
 
-                // 2.2 estimate direction cluster angles
-                {
-                    DirAngleMapT dirAngles; // intermediate storage to collect dir angle distributions, <did, <angle_id, count> >
-                    // create functor
-                    DirAnglesFunctorOuter<_PrimitiveT,_PrimitiveContainerT,AnglesT> outerFunctor(
-                                inPrims, angles, /* output reference */ dirAngles );
+                // run functor -> outputs { <did, [ <angle_gen,count>,... ]>, ... } to dirAngles
+                processing::filterPrimitives<_PrimitiveT, InnerContainerT/*typename _PrimitiveContainerT::mapped_type*/>(
+                            inPrims, outerFunctor );
 
-                    // run functor -> outputs { <did, [ <angle_gen,count>,... ]>, ... } to dirAngles
-                    processing::filterPrimitives<_PrimitiveT, InnerContainerT/*typename _PrimitiveContainerT::mapped_type*/>(
-                                inPrims, outerFunctor );
-
-                    // dirAngles -> allowedAngles { <did, [ 0, angle_i, ..., M_PI ] >, ... }
-                    selectAngles( /* out: */ allowedAngles, /* in: */ dirAngles, angles, angle_gens_in_rad );
-                }
+                // dirAngles -> allowedAngles { <did, [ 0, angle_i, ..., M_PI ] >, ... }
+                selectAngles( /* out: */ allowedAngles, /* in: */ dirAngles, angles, angle_gens_in_rad );
             }
         }
-        std::cout << "[" << __func__ << "]: " << "angle stats stop" << std::endl; fflush(stdout);
 
         /* Status of primitives at this stage are:
          * ACTIVE      for large primitives to use
@@ -637,7 +624,6 @@ namespace GF2
          */
 
         // _________ (3) generation _________
-        std::cout << "[" << __func__ << "]: " << "generate start" << std::endl; fflush(stdout);
 
         DidT maxDid = 0; // collects currently existing maximum cluster id (!small, active, all!)
 
@@ -677,18 +663,16 @@ namespace GF2
 
                         addCandidate<_PrimitivePrimitiveAngleFunctorT>(
                                     prim0, prim1, lid0, lid1, safe_mode, allowPromoted, angle_limit, angles, angle_gens_in_rad, promoted,
-                                    allowedAngles, copied, generated, nlines, outPrims, &aliases, tripletSafe );
+                                    allowedAngles, copied, generated, nlines, outPrims, &aliases );
                         addCandidate<_PrimitivePrimitiveAngleFunctorT>(
                                     prim1, prim0, lid1, lid0, safe_mode, allowPromoted, angle_limit, angles, angle_gens_in_rad, promoted,
-                                    allowedAngles, copied, generated, nlines, outPrims, &aliases, tripletSafe );
+                                    allowedAngles, copied, generated, nlines, outPrims, &aliases );
                     } //...for l3
                 } //...for l2
             } //...for l1
         } //...for l0
-        std::cout << "[" << __func__ << "]: " << "generate end" << std::endl; fflush(stdout);
 
         // ___________ (4) ALIASES _______________
-        std::cout << "[" << __func__ << "]: " << "alias start" << std::endl; fflush(stdout);
 
         // [did][angle] = AliasT( gid, lid, prim )
         for ( auto aliasIt = aliases.begin(); aliasIt != aliases.end(); ++aliasIt )
@@ -736,19 +720,20 @@ namespace GF2
                         // cache outer primitive
                         _PrimitiveT const& prim1 = *inner_it;
 
+                        if ( /*(angleIt->second._prim->getTag(_PrimitiveT::TAGS::DIR_GID) == 253) && */(prim1.getTag(_PrimitiveT::TAGS::GID) == 57755) )
+                            std::cout << "here, adding alias to 57755" << std::endl;
+
                         // copy prim0 (the alias) to all compatible receivers given allowedAngles.
                         addCandidate<_PrimitivePrimitiveAngleFunctorT,AliasesT<_PrimitiveT,_Scalar> >(
                             prim1, prim0, lid1, lid0, safe_mode, allowPromoted, angle_limit, angles, angle_gens_in_rad, promoted,
-                            allowedAngles, copied, generated, nlines, outPrims, nullptr, tripletSafe );
+                            allowedAngles, copied, generated, nlines, outPrims, nullptr );
 
                     } //...inner for
                 } //...outer for
             } //...for all angles
         } //...for all aliases
-        std::cout << "[" << __func__ << "]: " << "alias end" << std::endl; fflush(stdout);
 
         // ___________ (5) LIMIT VARIABLES _______________
-        std::cout << "[" << __func__ << "]: " << "limit vars start" << std::endl; fflush(stdout);
         int ret = EXIT_SUCCESS;
         if ( (var_limit > 0) && (nlines > var_limit) )
         {
@@ -822,10 +807,8 @@ namespace GF2
                 ret = ranks.size() - chosen.size();
             } // if too many actives already
         } // filter
-        std::cout << "[" << __func__ << "]: " << "limit vars end" << std::endl; fflush(stdout);
 
         // ___________ (6) Make sure allowed angles stick _______________
-        std::cout << "[" << __func__ << "]: " << "allowed start" << std::endl; fflush(stdout);
         std::map<DidT,LidT> directionPopulation; // counts, how many candidates have a direction
         for ( typename PrimitiveMapT::Iterator primIt(outPrims); primIt.hasNext() && (ret != -1); primIt.step() )
         {
@@ -878,7 +861,6 @@ namespace GF2
                 }
             }
         }
-        std::cout << "[" << __func__ << "]: " << "allowed end" << std::endl; fflush(stdout);
 
         // log
         std::cout << "[" << __func__ << "]: " << "finished generating, we now have " << nlines << " candidates" << std::endl;
@@ -914,7 +896,6 @@ namespace GF2
         std::string                 associations_path       = "points_primitives.csv";
         bool                        keepSingles             = false; // throw away single dId-s
         bool                        allowPromoted           = false;
-        bool                        tripletSafe             = false;
 
         // parse input
         if ( err == EXIT_SUCCESS )
@@ -965,7 +946,6 @@ namespace GF2
             pcl::console::parse_argument( argc, argv, "--patch-dist-limit", generatorParams.patch_dist_limit_mult ); // gets multiplied by scale
             pcl::console::parse_x_arguments( argc, argv, "--angle-gens", angleGens );
             pcl::console::parse_argument( argc, argv, "--patch-pop-limit", generatorParams.patch_population_limit );
-
             generatorParams.safe_mode = pcl::console::find_switch( argc, argv, "--safe-mode" );
             if ( generatorParams.safe_mode )
                 std::cout << "[" << __func__ << "]: " << "__________________________\n__________________________RUNNING SAFE______________________\n_____________________________" << std::endl;
@@ -993,7 +973,6 @@ namespace GF2
             {
                 keepSingles = pcl::console::find_switch( argc, argv, "--keep-singles" );
                 allowPromoted= pcl::console::find_switch( argc, argv, "--allow-promoted" );
-                tripletSafe = pcl::console::find_switch( argc, argv, "--triplet-safe");
             }
 
             // print usage
@@ -1024,7 +1003,6 @@ namespace GF2
                     std::cout << "\t [--var-limit " << generatorParams.var_limit << "\t Decides how many variables we want as output. 0 means unlimited.]\n";
                     std::cout << "\t [--keep-singles " << (keepSingles?"YES":"NO") << "\t Decides, if we should throw away single directions]\n";
                     std::cout << "\t [--allow-promoted " << (allowPromoted?"YES":"NO") << "\t Decides, if we should allow promoted patches to distribute their directions]\n";
-                    std::cout << "\t [--triplet-safe " << (tripletSafe?"YES":"NO") << "]\t Ensure, that perfect angle is respected for every member of DiD\n";
                     std::cout << std::endl;
 
                     return EXIT_FAILURE;
@@ -1109,7 +1087,6 @@ namespace GF2
                           , generatorParams.var_limit
                           , keepSingles
                           , allowPromoted
-                          , tripletSafe
                           );
 
                 //if ( err != EXIT_SUCCESS ) std::cerr << "[" << __func__ << "]: " << "generate exited with error! Code: " << err << std::endl;
