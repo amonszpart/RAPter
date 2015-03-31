@@ -35,9 +35,9 @@ namespace globopt
         }
 
 
-        GidPidVectorMap populations;
-        processing::getPopulations( populations, points );
-        for ( int )
+//        GidPidVectorMap populations;
+//        processing::getPopulations( populations, points );
+//        for ( int )
     } //...subsamplePrimitives()
 
 }
