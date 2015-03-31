@@ -1066,7 +1066,7 @@ namespace GF2
         for ( size_t i = 0; i != points.size(); ++i )
         {
             // store association in point
-            points[i].setTag( _PointPrimitiveT::TAGS::GID, points_primitives[i].first );
+            points[i].template setTag( _PointPrimitiveT::TAGS::GID, points_primitives[i].first );
         }
 
         // read primitives

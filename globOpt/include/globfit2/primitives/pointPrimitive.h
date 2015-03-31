@@ -131,6 +131,13 @@ namespace GF2
 
     }; //...class PointPrimitive
 
+    class PointPrimitiveVector : public std::vector<PointPrimitive>
+    {
+        public:
+            typedef std::vector<PointPrimitive> ParentT;
+            typedef PointPrimitive PrimitiveT;
+    };
+
 } //...ns GF2
 
 #endif // __GF2_POINTPRIMITIVE_H__

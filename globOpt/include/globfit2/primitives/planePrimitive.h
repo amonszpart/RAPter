@@ -21,10 +21,15 @@ namespace GF2
     //! \brief   Class to wrap a plane with. Implements #pos() and #dir() functions, and a constructor taking a position and a direction.
     //!
     //!          Stores 3D normal at the first three coeffs, and distance from origin at the fourth coordinate.
+    //template <typename _Scalar>
     class PlanePrimitive : public ::GF2::Primitive<3,6>
     {
             typedef ::GF2::Primitive<3,6> ParentT;
+            //using ParentT::_coeffs;
+            //using ParentT::Scalar;
+            //using ParentT::Dim;
         public:
+            //enum { Dim = ParentT::Dim };
             typedef ParentT::Scalar Scalar;
             typedef std::vector<Eigen::Matrix<Scalar,3,1> > ExtentsT;
 
@@ -63,22 +68,26 @@ namespace GF2
                                     , _AngleContainerT  const& angles
                                     , Scalar            const  angle_multiplier = Scalar(1.)
                                     ) const;
+            static
+            inline int generateFrom( PlanePrimitive                 & out
+                                   , Eigen::Matrix<Scalar,3,1> const& normal
+                                   , Scalar                    const  distanceFromOrigin );
 
             // ____________________VIRTUALS____________________
             /*! \brief  Compulsory virtual overload of position getter. The position of the plane is calculated on the fly from the formula N . x0 + d = 0.
              *  \return The position of the plane as a 3D Eigen::Vector.
              */
-            virtual Eigen::Matrix<Scalar,3,1> pos() const { return _coeffs.head<3>(); }
+            virtual Eigen::Matrix<Scalar,3,1> pos() const { return _coeffs.template head<3>(); }
 
             /*! \brief  Compulsory virtual overload of orientation getter. The orientation of the plane is the normal stored at the first three coordinates of #_coeffs.
              *  \return The normal of the plane as a 3D Eigen::Vector.
              */
-            virtual Eigen::Matrix<Scalar,3,1> dir() const { return _coeffs.segment<3>(3); }
+            virtual Eigen::Matrix<Scalar,3,1> dir() const { return _coeffs.template segment<3>(3); }
 
             /*! \brief  Returns the normal, that is stored at the first three coordinates of the internal storage.
              *  \return The plane normal as a 3D Eigen::Vector Map.
              */
-            inline Eigen::Matrix<Scalar,Dim,1>::ConstFixedSegmentReturnType<3>::Type normal() const { return _coeffs.segment<3>(3); }
+            inline typename Eigen::Matrix<Scalar,Dim,1>::ConstFixedSegmentReturnType<3>::Type normal() const { return _coeffs.segment<3>(3); }
 
             // _______________________IO_______________________
             /*! \brief Used in \ref io::readPrimitives to determine how many floats to parse from one entry.
@@ -125,6 +134,8 @@ namespace GF2
                 return MyPointFinitePlaneDistanceFunctor::eval( extrema, *this, pnt );
             }
 
+            inline int to4Coeffs( std::vector<Scalar> &coeffs ) const;
+
             inline Eigen::Matrix<Scalar,3,1>
             projectPoint( Eigen::Matrix<Scalar,3,1> const& point ) const { return point - (this->getDistance(point) * this->dir() ); }
 
@@ -153,7 +164,7 @@ namespace GF2
             template <class _IndicesContainerT, typename MatrixDerived, typename _Scalar, class _PointContainerT > inline
             MatrixDerived& getSpatialSignificance( MatrixDerived             & in
                                                  , _PointContainerT     const& points
-                                                 , _Scalar              const /*scale*/
+                                                 , _Scalar             const /*scale*/
                                                  , _IndicesContainerT        * indices        = NULL
                                                  , bool                 const  return_squared = false ) const;
 
@@ -303,6 +314,15 @@ namespace GF2
 
         return true;
     } //...generateFrom
+
+    int PlanePrimitive::generateFrom( PlanePrimitive                 & out
+                                    , Eigen::Matrix<Scalar,3,1> const& normal
+                                    , Scalar                    const  distanceFromOrigin )
+    {
+        out.coeffs().segment<3>(3) = normal.normalized();
+        out.coeffs().segment<3>(0) = Eigen::Matrix<Scalar,3,1>::Zero() - normal * distanceFromOrigin;
+        return EXIT_SUCCESS;
+    } //...generatreFrom()
 
     /*! \brief                          Calculates the length of the plane based on the points in \p cloud, masked by \p indices and the distance from point to plane \p threshold.
      *
@@ -805,6 +825,14 @@ namespace GF2
         return EXIT_SUCCESS;
     }
 
+    inline int PlanePrimitive::to4Coeffs( std::vector<Scalar> &coeffs ) const
+    {
+        coeffs.resize( 4, Scalar(0.) );
+        std::copy( _coeffs.data()+3, _coeffs.data()+6, coeffs.begin() );
+        // calculate distance from origin
+        coeffs[3] = Scalar(-1.) * this->normal().dot( this->pos() );
+        return EXIT_SUCCESS;
+    }
 
 #   ifdef GF2_USE_PCL
     inline pcl::ModelCoefficients::Ptr

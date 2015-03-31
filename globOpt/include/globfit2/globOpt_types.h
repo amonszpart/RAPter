@@ -14,13 +14,17 @@ namespace GF2
     typedef GF2::PointPrimitive PointPrimitiveT;
     //typedef typename PointPrimitiveT::Scalar Scalar;
     typedef __Scalar Scalar;
-    typedef std::vector< PointPrimitiveT > PointContainerT;
+    //typedef PrimitiveVectorT< PointPrimitiveT > PointContainerT;
+    typedef PointPrimitiveVector PointContainerT;
 
     namespace _2d
     {
         typedef GF2::LinePrimitive                    PrimitiveT;
         typedef std::vector<PrimitiveT>               InnerPrimitiveContainerT;
-        typedef std::vector<InnerPrimitiveContainerT> PrimitiveContainerT;
+        //typedef std::vector<InnerPrimitiveContainerT> PrimitiveContainerT;
+        typedef PrimitiveVectorT<PrimitiveT>          PrimitiveContainerT;
+        typedef PrimitiveVectorT<PrimitiveT>          PrimitiveVectorT;
+        typedef PrimitiveMapT   <PrimitiveT>          PrimitiveMapT;
         typedef MyFinitePrimitiveToFinitePrimitiveCompatFunctor<PrimitiveT/*, MyPointFiniteLineDistanceFunctor*/> MyFiniteLineToFiniteLineCompatFunctor;
     }
 
@@ -28,7 +32,10 @@ namespace GF2
     {
         typedef GF2::PlanePrimitive                   PrimitiveT;
         typedef std::vector<PrimitiveT>               InnerPrimitiveContainerT;
-        typedef std::vector<InnerPrimitiveContainerT> PrimitiveContainerT;
+        //typedef std::vector<InnerPrimitiveContainerT> PrimitiveContainerT;
+        typedef PrimitiveVectorT<PrimitiveT>          PrimitiveContainerT;
+        typedef PrimitiveVectorT<PrimitiveT>          PrimitiveVectorT;
+        typedef PrimitiveMapT   <PrimitiveT>          PrimitiveMapT;
         typedef MyFinitePrimitiveToFinitePrimitiveCompatFunctor<PrimitiveT/*, MyPointFinitePlaneDistanceFunctor*/> MyFinitePlaneToFinitePlaneCompatFunctor;
     }
 }

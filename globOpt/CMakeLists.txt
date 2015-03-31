@@ -49,6 +49,7 @@ SET( WITH_GAUSSSPHERE ON CACHE BINARY "Compile gaussSphere." )
 SET( WITH_DRAWGRAPHS ON CACHE BINARY "Compile drawGraphs." )
 SET( WITH_PLYCONVERTER ON CACHE BINARY "Compile ply-converter executable.")
 SET( WITH_CORRESP ON CACHE BINARY "Correspondance miniprogram compilation.")
+SET( WITH_GLOBFIT ON CACHE BINARY "GlobFit (Li'11) comparison.")
 
 SET( WITH_SAMPLE_INPUT OFF CACHE BINARY "Compile --sample-input option")
 IF(WITH_SAMPLE_INPUT)
@@ -245,6 +246,7 @@ SET( GLOBOPT_H_LIST
     include/globfit2/optimization/problemSetup.h
     include/globfit2/optimization/merging.h
     include/globfit2/optimization/mergingFunctors.h
+    include/globfit2/optimization/segmentation.h
     #include/optimization/qp/gurobiOpt.h
     #include/optimization/qp/MyGRBCallback.h
     include/globfit2/optimization/solver.h
@@ -267,6 +269,8 @@ SET( GLOBOPT_SRC_LIST
     src/represent.cpp
     #src/optimization/candidateGenerator.cpp # cached compilation
     #src/optimization/qp/visualizer.cpp     # cached compilation
+    src/templateInstantiation/planePrimitive.cpp
+    src/templateInstantiation/segmentation.cpp
 )
 IF(WITH_SAMPLE_INPUT)
     SET( GLOBOPT_H_LIST ${GLOBOPT_H_LIST}
@@ -448,15 +452,21 @@ ENDIF(WITH_GAUSSSPHERE)
 
 ## _____________________________________DrawGraphs____________________________________________________
 
-IF(WITH_DRAWGRAPHS)
-    SET( DRAWGRAPHS_TARGET "drawGraphs" )
-    SET( DRAWGRAPHS_SRC
-        src/drawGraphs.cpp
+IF(WITH_GLOBFIT)
+    SET( GLOBFIT_TARGET "toGlobFit" )
+    SET( GLOBFIT_H
+        include/globfit2/comparison/impl/globFit.hpp
+        include/globfit2/comparison/globFit.h
+    )
+    SET( GLOBFIT_SRC
+        src/comparison/globFit.cpp
+        src/comparison/globFitTemplateInst.cpp
+        src/templateInstantiation/planePrimitive.cpp
     )
 
-    add_executable( ${DRAWGRAPHS_TARGET} ${DRAWGRAPHS_SRC} ${DRAWGRAPHS_H})
-    TARGET_LINK_LIBRARIES( ${DRAWGRAPHS_TARGET}
+    add_executable( ${GLOBFIT_TARGET} ${GLOBFIT_SRC} ${GLOBFIT_H})
+    TARGET_LINK_LIBRARIES( ${GLOBFIT_TARGET}
         ${PCL_LIBRARIES}
         boost_filesystem
     )
-ENDIF(WITH_DRAWGRAPHS)
+ENDIF(WITH_GLOBFIT)
