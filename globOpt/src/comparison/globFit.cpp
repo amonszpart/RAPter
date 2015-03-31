@@ -3,6 +3,7 @@
 #include <iostream>
 #include "globfit2/util/parse.h"
 #include "globfit2/globOpt_types.h"
+#include "globopt/processing/subsamplePrimitives.h"
 
 namespace globopt
 {
@@ -10,7 +11,7 @@ namespace globopt
     {
         inline int printUsage( int argc, char** argv )
         {
-            std::cout << "usage: --planes or --lines " << std::endl;
+            std::cout << "usage: --planes or --lines or --subsamle-primitives" << std::endl;
             return EXIT_SUCCESS;
         }
     }
@@ -41,6 +42,14 @@ int main(int argc, char *argv[])
     {
         std::cout << "--lines (2D) unimplemented" << std::endl;
         return EXIT_FAILURE;
+    }
+    else if ( GF2::console::find_switch(argc,argv,"--subsample-primitives") )
+    {
+        return globopt::subsamplePrimitives<GF2::_3d::PrimitiveVectorT
+                                           , GF2::_3d::PrimitiveMapT
+                                           , GF2::PointContainerT
+                                           , GF2::PclCloudT>
+                                           ( argc, argv );
     }
     else
         return globopt::globfit::printUsage( argc, argv );

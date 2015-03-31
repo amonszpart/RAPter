@@ -450,18 +450,22 @@ IF(WITH_GAUSSSPHERE)
 ENDIF(WITH_GAUSSSPHERE)
 
 
-## _____________________________________DrawGraphs____________________________________________________
+## _____________________________________toGlobFit____________________________________________________
 
 IF(WITH_GLOBFIT)
     SET( GLOBFIT_TARGET "toGlobFit" )
     SET( GLOBFIT_H
         include/globfit2/comparison/impl/globFit.hpp
+        include/globopt/processing/impl/subsamplePrimitives.hpp
         include/globfit2/comparison/globFit.h
+        include/globopt/processing/subsamplePrimitives.h
     )
+
     SET( GLOBFIT_SRC
         src/comparison/globFit.cpp
         src/comparison/globFitTemplateInst.cpp
         src/templateInstantiation/planePrimitive.cpp
+        src/templateInstantiation/subsamplePrimitives.cpp
     )
 
     add_executable( ${GLOBFIT_TARGET} ${GLOBFIT_SRC} ${GLOBFIT_H})
