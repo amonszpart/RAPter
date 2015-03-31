@@ -1,0 +1,4 @@
+../runSegmentation.py -s 0.05 --al 0.3 --pl 10
+../show.py -s 0.050000 -p segments.csv -a points_segments.csv
+../runGlobfit.py -s 0.025 -p segments.csv -a points_segments.csv
+../show.py -p primitives.globfit.csv -a points_primitives.globfit.csv -s 0.05
