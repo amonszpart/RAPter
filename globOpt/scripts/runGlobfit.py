@@ -5,7 +5,7 @@ from optparse import OptionParser
 
 
 def call(cmd, dry=False, noExit=False):
-    print("[Calling]", cmd)
+    print("[Calling] %s" % (cmd) )
     if not dry:
         ret = os.system(cmd)
         if ret != 0:
@@ -36,16 +36,23 @@ parser.add_option("-g", "--gf-output-path", type="string", dest="globfitOutputPa
                   help="Path to globfit output to convert back to csv. [segments_oa.globfit, segments_pa.globfit]")
 parser.add_option("-n", "--dry", action="store_true", default=False, help="Just print commands, don't run")
 
+parser.add_option("--save-pa", "", type="string", dest="savePa", help="Don't do anything else, just copy the segments_pa.globfit file to segments_pa.csv" );
+
 
 (options, args) = parser.parse_args()
 
-
-if not options.scale:   # if filename is not given
-    parser.error('-s, --scale is required')
 if not options.primitivesPath:   # if filename is not given
     parser.error('-p, --primitives is required')
 if not options.assocPath:   # if filename is not given
     parser.error('-a, --assoc is required')
+
+if options.savePa:
+    cmd = "%s --from %s --planes --prims %s --cloud %s -a %s --scale %f -o %s" % (options.toGlobFitExecutable, "segments_pa.globfit", options.primitivesPath, options.cloudPath, options.assocPath, 0.0, options.savePa)
+    call(cmd, dry=options.dry)
+    exit;
+
+if not options.scale:   # if filename is not given
+    parser.error('-s, --scale is required')
 
 # Modify path
 cmd = "export PATH=\"%s\":$PATH" % (options.matlabExecutableFolder)
