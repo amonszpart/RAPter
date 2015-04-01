@@ -101,7 +101,7 @@ class Segmentation
                  , class _PointContainerT
                  , typename _Scalar
                  >
-        static inline int
+        static int
         segmentCli( int argc, char** argv );
 
         //! \param[in/out] points
@@ -112,7 +112,7 @@ class Segmentation
                  , typename  _Scalar
                  , class     _PointContainerT
                  >
-        static inline int
+        static int
         orientPoints( _PointContainerT       &points
                     , _Scalar          const  scale
                     , int              const  nn_K
@@ -137,7 +137,7 @@ class Segmentation
                  , class       _PrimitiveContainerT
                  , class       _PointContainerT
                  , class       _PatchPatchDistanceFunctorT
-                 > static inline int
+                 > static int
         patchify( _PrimitiveContainerT                   & patches
                 , _PointContainerT                       & points
                 , _Scalar                           const  scale
@@ -172,7 +172,7 @@ class Segmentation
                  , typename    _Scalar              = typename _PrimitiveT::Scalar
                  , class       _PointT              = typename _PointContainerT::value_type
                  >
-        static inline int
+        static int
         regionGrow( _PointContainerT                 & points
                   , _PatchesT                        & groups_arg
                   , _Scalar                     const  /*scale*/
@@ -189,7 +189,7 @@ class Segmentation
          */
         template <  class _PrimitiveContainerT
                   , class _PointContainerPtrT>
-        static inline int
+        static int
         fitLocal( _PrimitiveContainerT      & lines
                 , _PointContainerPtrT  const  cloud
                 , std::vector<int>     const* indices
@@ -205,7 +205,7 @@ class Segmentation
                  , class    _PointPatchDistanceFunctorT
                  , class    _PatchT
                  , class    _PointContainerT
-                 >  static inline int
+                 >  static int
         _tagPointsFromGroups( _PointContainerT                 & points
                             , _PatchT                     const& groups
                             , _PointPatchDistanceFunctorT const& pointPatchDistanceFunctor
@@ -214,9 +214,9 @@ class Segmentation
 
 } //...ns GF2
 
-#ifndef GF2_INC_SEGMENTATION_HPP
-#   define GF2_INC_SEGMENTATION_HPP
-#   include "globfit2/optimization/impl/segmentation.hpp"
-#endif
+//#ifndef GF2_INC_SEGMENTATION_HPP
+//#   define GF2_INC_SEGMENTATION_HPP
+//#   include "globfit2/optimization/impl/segmentation.hpp"
+//#endif
 
 #endif // GF2_SEGMENTATION_H

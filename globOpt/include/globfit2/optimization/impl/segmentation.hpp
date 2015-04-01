@@ -3,6 +3,7 @@
 
 #include "globfit2/optimization/segmentation.h"
 #include "globfit2/my_types.h"                  // PCLPointAllocator
+#include "globfit2/globOpt_types.h"
 #include <vector>
 
 #include "boost/filesystem.hpp"
@@ -31,6 +32,14 @@
                      std::cout << title << ": " << elapsed_seconds.count()/it << " s" << std::endl; }
 
 namespace GF2 {
+
+// added by Aron on 30/3/2015
+namespace _2d {
+    typedef RepresentativeSqrPatchPatchDistanceFunctorT< GF2::Scalar,SpatialPatchPatchSingleDistanceFunctorT<GF2::Scalar> > PatchPatchDistanceFunctorT;
+}
+namespace _3d {
+    typedef RepresentativeSqrPatchPatchDistanceFunctorT< GF2::Scalar,SpatialPatchPatchSingleDistanceFunctorT<GF2::Scalar> > PatchPatchDistanceFunctorT;
+}
 
 //! \param[in,out] points
 template < class    _PointPrimitiveT
@@ -129,6 +138,7 @@ Segmentation:: fitLocal( _PrimitiveContainerT        & primitives
         if ( neighs[pid].size() < 2 )
         {
             ++skipped;
+            std::cout << "[" << __func__ << "]: " << "skipped " << neighs[pid].size() << " neighs" << std::endl;
             continue;
         }
 
@@ -179,6 +189,10 @@ Segmentation:: fitLocal( _PrimitiveContainerT        & primitives
                 }
 #endif
             }
+            else
+            {
+                std::cout << "[" << __func__ << "]: " << "no primitive for " << neighs[pid].size() << "neighbours " << std::endl;
+            }
         }
 
 
@@ -219,7 +233,7 @@ template < class       _PrimitiveT
          , class       _PrimitiveContainerT
          , class       _PointContainerT
          , class       _PatchPatchDistanceFunctorT
-         > int
+         > inline int
 Segmentation::patchify( _PrimitiveContainerT                   & patches
                       , _PointContainerT                       & points
                       , _Scalar                           const  scale
@@ -257,15 +271,17 @@ Segmentation::patchify( _PrimitiveContainerT                   & patches
     processing::getPopulations( populations, points );
 
     // Copy the representative direction of each patch in groups to an output patch with GID as it's linear index in groups.
-#   pragma omp parallel for
+//#   pragma omp parallel for num_threads(GF2_MAX_OMP_THREADS)
     for ( GidT gid = 0; gid < groups.size(); ++gid )
     {
         if ( patchPopLimit && (populations[gid].size() < patchPopLimit) )
             continue;
+        if ( gid == 8019 )
+            std::cout << "here 8019" << std::endl;
         // don't add single clusters primitives, they will have to join others immediately
         //if ( populations[gid].size() <= 1 ) continue;
 
-        if ( populations[gid].size() < 3 ) continue;
+        //if ( populations[gid].size() < 3 ) continue;
 
         if ( _PrimitiveT::EmbedSpaceDim == 2) // added by Aron on 17 Sep 2014
         {
@@ -281,7 +297,7 @@ Segmentation::patchify( _PrimitiveContainerT                   & patches
                                                             , /*               debug: */ false  );
 
             // LINE
-#pragma omp critical (ADD_PATCHES)
+#           pragma omp critical( ADD_PATCHES )
             {
                 containers::add( patches, gid, toAdd/*groups[gid].getRepresentative()*/ )
                         .setTag( _PrimitiveT::TAGS::GID    , gid )
@@ -291,7 +307,8 @@ Segmentation::patchify( _PrimitiveContainerT                   & patches
         else if ( _PrimitiveT::EmbedSpaceDim == 3)
         {
 
-            if (populations[gid].size() < 5 ) continue; // planes below 4 have no datacost
+            if ( patchPopLimit && (populations[gid].size() < patchPopLimit) )
+                continue; // planes below 4 have no datacost
 
             if ( !(gid % 100) )
                 std::cout << "[" << __func__ << "]: " <<  float(gid) / groups.size() * 100.f << std::endl;
@@ -321,6 +338,17 @@ Segmentation::patchify( _PrimitiveContainerT                   & patches
                             .setTag( _PrimitiveT::TAGS::STATUS , _PrimitiveT::STATUS_VALUES::UNSET ); // set to unset, so that candidategenerator can set it to proper value
                 }
             }
+            else
+            {
+                std::cout << "[" << __func__ << "]: " << "below pop_limit, guessing primitive"
+                          << groups[gid].getRepresentative().toString()
+                          << std::endl;
+
+                containers::add( patches, gid, groups[gid].getRepresentative() )
+                        .setTag( _PrimitiveT::TAGS::GID    , gid )
+                        .setTag( _PrimitiveT::TAGS::DIR_GID, gid )
+                        .setTag( _PrimitiveT::TAGS::STATUS , _PrimitiveT::STATUS_VALUES::UNSET ); // set to unset, so that candidategenerator can set it to proper value
+            } //...err != exit_success
         }
         else
             std::cerr << "[" << __func__ << "]: " << "Unrecognized EmbedSpaceDim - refit to patch did not work" << std::endl;
@@ -609,9 +637,12 @@ Segmentation::regionGrow( _PointContainerT                       & points
         for ( int pid_id = 0; pid_id != neighs.size(); ++pid_id )
             if ( points[neighs[pid_id]].getTag( _PointPrimitiveT::TAGS::GID ) != _PointPrimitiveT::LONG_VALUES::UNSET )
             {
+                std::cout << "useful " << std::endl; fflush(stdout);
                 points[pid].setTag( gid_tag_name, points[neighs[pid_id]].getTag(_PointPrimitiveT::TAGS::GID) );
                 break;
             }
+        if ( !neighs.size() )
+            std::cout << "not useful" << std::endl;
     }
 #endif
 
@@ -630,7 +661,7 @@ template < class _PrimitiveT
          , class _PointContainerT
          , typename _Scalar
          >
-int
+inline int
 Segmentation::segmentCli( int    argc
                         , char** argv )
 {
@@ -833,7 +864,7 @@ template < class    _PointPrimitiveT
          , class    _PointPatchDistanceFunctorT
          , class    _PatchT
          , class    _PointContainerT
-         >  int
+         >  inline int
 Segmentation::_tagPointsFromGroups( _PointContainerT                 & points
                                   , _PatchT                     const& groups
                                   , _PointPatchDistanceFunctorT const& pointPatchDistanceFunctor

@@ -14,5 +14,7 @@ int solve3D( int argc, char** argv )
     }
     else
         std::cerr << "[" << __func__ << "]: " << "wrong switch" << std::endl;
+
+    return EXIT_FAILURE;
 }
 
