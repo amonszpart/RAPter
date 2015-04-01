@@ -276,8 +276,6 @@ Segmentation::patchify( _PrimitiveContainerT                   & patches
     {
         if ( patchPopLimit && (populations[gid].size() < patchPopLimit) )
             continue;
-        if ( gid == 8019 )
-            std::cout << "here 8019" << std::endl;
         // don't add single clusters primitives, they will have to join others immediately
         //if ( populations[gid].size() <= 1 ) continue;
 
