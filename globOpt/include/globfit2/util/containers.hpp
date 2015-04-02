@@ -224,6 +224,7 @@ namespace containers {
         public:
             GENERATE_CLASS_EXCEPTION("PrimitiveContainer")
 
+            typedef _PrimitiveT                              PrimitiveT;
             typedef std::vector<_PrimitiveT>                 InnerContainerT;
             typedef std::map< GidT, InnerContainerT >        ParentT;
             typedef typename ParentT::iterator               ParentIteratorT;

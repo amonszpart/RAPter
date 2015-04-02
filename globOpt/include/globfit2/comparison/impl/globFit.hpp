@@ -123,7 +123,7 @@ namespace globopt
     int fromGlobFit( int argc, char **argv )
     {
         typedef typename _PclCloudT::Ptr                            PclCloudPtrT;
-        typedef typename _PrimitiveMapT::InnerPrimitiveContainerT   InnerPrimitiveContainerT;
+        typedef typename _PrimitiveMapT::InnerContainerT            InnerPrimitiveContainerT;
         typedef typename _PrimitiveMapT::PrimitiveT                 PrimitiveT;
         typedef typename PrimitiveT::Scalar                         Scalar;
         typedef typename GF2::containers::PrimitiveContainer<PrimitiveT> IterablePrimitiveContainer;
@@ -146,11 +146,15 @@ namespace globopt
             return EXIT_FAILURE;
         }
 
+        std::string outName( "primitives" );
+        GF2::console::parse_argument( argc, argv, "-o", outName);
+        std::cout << "saving to " << outName << ".globfit.csv, change with -o if needed" << std::endl;
+
         _PointContainerT        points;
-        PclCloudPtrT            pclCloud;
-        _PrimitiveVectorT       primitivesVector, segmentsVector;
+        //PclCloudPtrT            pclCloud;
+        _PrimitiveVectorT       /*primitivesVector,*/ segmentsVector;
         _PrimitiveMapT          primitives, segments;
-        bool                    valid_input = true;
+        //bool                    valid_input = true;
         int                     err = EXIT_SUCCESS;
 
         std::cout << "[" << __func__ << "]: " << "reading primitives from " << inputSegmentsPath << "...";
@@ -199,9 +203,9 @@ namespace globopt
             sin >> x >> y >> z >> nx >> ny >> nz >> confidence;
 
             points.at( numPoints ).setTag( PointPrimitiveT::TAGS::PID, numPoints );
-            std::cout << "setting pid " << numPoints
-                      << ": " << points.at( numPoints ).getTag( PointPrimitiveT::TAGS::PID )
-                      << "\tfrom line " << line << std::endl;
+//            std::cout << "setting pid " << numPoints
+//                      << ": " << points.at( numPoints ).getTag( PointPrimitiveT::TAGS::PID )
+//                      << "\tfrom line " << line << std::endl;
             points.at( numPoints ).template coeffs().template head<3>   ( ) = Eigen::Matrix<Scalar,3,1>(x,y,z);
             points.at( numPoints ).template coeffs().template segment<3>(3) = Eigen::Matrix<Scalar,3,1>(nx,ny,nz).normalized();
             //p->point        = Point(x, y, z);
@@ -282,9 +286,11 @@ namespace globopt
             }
         } //...while primitives
 
-        GF2::io::savePrimitives<PrimitiveT,typename InnerPrimitiveContainerT::const_iterator>( primitives, "primitives.globfit.csv" );
-        GF2::io::writeAssociations<PointPrimitiveT>( points, "points_primitives.globfit.csv" );
-        std::cout << "results written to primitives.globfit.csv and points_primitives.globfit.csv\n";
+        std::stringstream ssPrims; ssPrims << outName << ".globfit.csv";
+        GF2::io::savePrimitives<PrimitiveT,typename InnerPrimitiveContainerT::const_iterator>( primitives, ssPrims.str() );
+        std::stringstream ssAssoc; ssAssoc << "points_" << outName << ".globfit.csv";
+        GF2::io::writeAssociations<PointPrimitiveT>( points, ssAssoc.str() );
+        std::cout << "results written to " << ssPrims.str() << " and " << ssAssoc.str() << "\n";
 
         return EXIT_SUCCESS;
     } //...toGlobFit()
@@ -299,7 +305,7 @@ namespace globopt
     int toGlobFit( int argc, char **argv )
     {
         typedef typename _PclCloudT::Ptr                            PclCloudPtrT;
-        typedef typename _PrimitiveMapT::InnerPrimitiveContainerT   InnerPrimitiveContainerT;
+        typedef typename _PrimitiveMapT::InnerContainerT            InnerContainerT;
         typedef typename _PrimitiveMapT::PrimitiveT                 PrimitiveT;
         typedef typename PrimitiveT::Scalar                         Scalar;
         typedef typename GF2::containers::PrimitiveContainer<PrimitiveT> IterablePrimitiveContainer;
@@ -320,7 +326,7 @@ namespace globopt
         {
             valid_input =
                     (EXIT_SUCCESS ==
-                     GF2::parseInput<InnerPrimitiveContainerT,_PclCloudT>( points, pclCloud, primitivesVector, primitives, params, argc, argv ) );
+                     GF2::parseInput<InnerContainerT,_PclCloudT>( points, pclCloud, primitivesVector, primitives, params, argc, argv ) );
             if ( !valid_input )
             {
                 std::cerr << "[" << __func__ << "]: " << "could not parse input..." << std::endl;

@@ -272,16 +272,17 @@ namespace GF2
             using ParentT::ParentT;
     };
 
-    template <class _Primitive>
-    class PrimitiveMapT : public std::map< PidT, std::vector<_Primitive> >
-    {
-        public:
-            typedef _Primitive                                   PrimitiveT;
-            typedef std::vector<PrimitiveT>                      InnerPrimitiveContainerT;
-            typedef std::map   < PidT, InnerPrimitiveContainerT> ParentT;
+//    template <class _Primitive>
+//    class PrimitiveMapT : public std::map< PidT, std::vector<_Primitive> >
+//    {
+//        public:
+//            typedef _Primitive                                   PrimitiveT;
+//            typedef std::vector<PrimitiveT>                      InnerPrimitiveContainerT;
+//            typedef std::map   < PidT, InnerPrimitiveContainerT> ParentT;
 
-            using ParentT::ParentT;
-    };
+//            using ParentT::ParentT;
+//    };
+
 
     template <int _EmbedSpaceDim, int _Dim, typename _Scalar>
     const _Scalar Primitive<_EmbedSpaceDim, _Dim, _Scalar>::TAGS::GEN_ANGLE = _Scalar( 3. );

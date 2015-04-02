@@ -19,6 +19,15 @@
 namespace GF2
 {
 
+inline std::string parsePrimitivesPath( int argc, char** argv )
+{
+    std::string input_prims_path;
+    if ( GF2::console::parse_argument( argc, argv, "-p"     , input_prims_path) < 0 )
+        GF2::console::parse_argument( argc, argv, "--prims", input_prims_path);
+
+    return input_prims_path;
+} //...parsePrimitivesPath()
+
 template < class _InnerPrimitiveContainerT
          , class _PclCloudT
          , class _PointContainerT
@@ -48,9 +57,11 @@ inline int parseInput( _PointContainerT         &points
     }
 
     // primitives
-    if (    (GF2::console::parse_argument( argc, argv, "-p"     , input_prims_path) < 0)
-         && (GF2::console::parse_argument( argc, argv, "--prims", input_prims_path) < 0)
-         && (!boost::filesystem::exists(input_prims_path)) )
+    input_prims_path = parsePrimitivesPath(argc, argv);
+    if (    /*(GF2::console::parse_argument( argc, argv, "-p"     , input_prims_path) < 0)
+         && (GF2::console::parse_argument( argc, argv, "--prims", input_prims_path) < 0)*/
+         !input_prims_path.size()
+         || (!boost::filesystem::exists(input_prims_path)) )
     {
         std::cerr << "[" << __func__ << "]: " << "-p or --prims is compulsory" << std::endl;
         valid_input = false;
