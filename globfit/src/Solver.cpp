@@ -368,6 +368,8 @@ bool GlobFit::solve(std::vector<RelationEdge>& vecRelationEdge, RelationEdge::Re
     running = false;
     printOutBuffer.join();
     
+    std::cout << "Optimisation done" << std::endl;
+    
 
     matlabOutputBuffer[szOutputBuffer - 1] = '\0';
     printf("%s\n", matlabOutputBuffer);

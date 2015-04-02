@@ -47,6 +47,7 @@ for i = 1 : numPrimitives
     end
 end
 
+fprintf('Expression expansion\n'); 
 % expression expansion
 coefficients = zeros(numPrimitives, 10);
 for i = 1 : numPrimitives
@@ -90,16 +91,24 @@ for i = 1 : numPrimitives
     end
 end
 
+
+fprintf('InitialFittingError\n'); 
 initialFittingError = FittingError(inputParameters, numPrimitives, primitiveType, coefficients, collapseMap);
 
+fprintf('optimization\n'); 
 % optimization
-options = optimset('Display', 'notify-detailed', 'Algorithm', 'interior-point', 'MaxFunEvals', Inf, 'MaxIter', maxIterNum, 'DerivativeCheck', 'off');
+fprintf('  TIC\n');
+options = optimset('Display', 'iter-detailed', 'Algorithm', 'interior-point', 'MaxFunEvals', Inf, 'MaxIter', maxIterNum, 'DerivativeCheck', 'off');
 fobj = @(inputParameters)FittingError(inputParameters, numPrimitives, primitiveType, coefficients, collapseMap);
 fcon = @(inputParameters)ConstrainNormal(inputParameters, numPrimitives, constraints, numConstraints, collapseMap);
+fprintf('  TIC-END\n');
 tic;
+fprintf('  TOC\n');
 [outputParameters, exitFittingError, exitFlag] = fmincon(fobj, inputParameters, [], [], [], [], [], [], fcon, options);
+fprintf('  TOC-END\n');
 toc;
 
+fprintf('copy parameters to collapsed primitives\n'); 
 % copy parameters to collapsed primitives
 for i = 1 : numPrimitives
     outputParameters(i, 1 : 3) = outputParameters(collapseMap(i), 1 : 3);
@@ -111,6 +120,7 @@ end
 
 function [energy] = FittingError(inputParameters, numPrimitives, primitiveType, coefficients, collapseMap)
 
+%fprintf('\tFittingError\n'); 
 LoadNameMap
 
 % energy
@@ -149,6 +159,7 @@ for i = 1 : numPrimitives
             + coefficients(i, 10);
     end
 end
+%fprintf('\tFittingError End\n'); 
 
 end
 
@@ -156,6 +167,7 @@ end
 
 function [c, ceq, gradc, gradceq] = ConstrainNormal(inputParameters, numPrimitives, constraints, numConstraints, collapseMap)
 
+%fprintf('\tConstrainNormal\n'); 
 LoadNameMap
 
 % Nonlinear inequality constraints
@@ -184,4 +196,5 @@ gradc = [];
 
 gradceq = zeros(size(inputParameters, 2) * numPrimitives, numPrimitives + numConstraints);
 
+%fprintf('\tConstrainNormalEnd\n'); 
 end
