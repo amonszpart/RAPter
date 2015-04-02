@@ -1,0 +1,13 @@
+path = strcat('data/', path);
+load(strcat(path, '/inputParameters.dat'));
+maxIterNum = 500;
+load(strcat(path, '/numVertices.dat'));
+load(strcat(path, '/primitiveType.dat'));
+load(strcat(path, '/coordX.dat'));
+load(strcat(path, '/coordY.dat'));
+load(strcat(path, '/coordZ.dat'));
+load(strcat(path, '/normalX.dat'));
+load(strcat(path, '/normalY.dat'));
+load(strcat(path, '/normalZ.dat'));
+load(strcat(path, '/confVertices.dat'));
+load(strcat(path, '/constraints.dat'));

@@ -1,0 +1,2 @@
+LoadData('CoAxial');
+[outputParameters, initialFittingError, exitFittingError, exitFlag]=OptimizePoint(inputParameters, maxIterNum, numVertices, primitiveType, coordX, coordY, coordZ, normalX, normalY, normalZ, confVertices, constraints);

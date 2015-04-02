@@ -1,0 +1,2 @@
+LoadData('EqualAngle');
+[outputParameters, initialFittingError, exitFittingError, exitFlag]=OptimizeNormal(inputParameters, maxIterNum, numVertices, primitiveType, coordX, coordY, coordZ, normalX, normalY, normalZ, confVertices, constraints);
