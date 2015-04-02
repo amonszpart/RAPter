@@ -98,7 +98,7 @@ initialFittingError = FittingError(inputParameters, numPrimitives, primitiveType
 fprintf('optimization\n'); 
 % optimization
 fprintf('  TIC\n');
-options = optimset('Display', 'iter-detailed', 'Algorithm', 'interior-point', 'MaxFunEvals', Inf, 'MaxIter', maxIterNum, 'DerivativeCheck', 'off', 'UseParallel', true);
+options = optimset('Display', 'iter-detailed', 'Algorithm', 'interior-point', 'MaxFunEvals', Inf, 'MaxIter', maxIterNum, 'DerivativeCheck', 'off', 'UseParallel', true, 'TolX', 1e-8, 'PlotFcns', @optimplotfval);
 fobj = @(inputParameters)FittingError(inputParameters, numPrimitives, primitiveType, coefficients, collapseMap);
 fcon = @(inputParameters)ConstrainNormal(inputParameters, numPrimitives, constraints, numConstraints, collapseMap);
 fprintf('  TIC-END\n');
