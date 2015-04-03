@@ -68,11 +68,15 @@ graph = relgraph.RelationGraph(lines, assign, angles, tolerance)
 
 print "Number of points:      ", len(cloud)
 print "Number of primitives : ",graph.G.number_of_nodes()
-print "Number of connections: ",graph.G.number_of_edges()
-print "Max nb of connections: ",graph.G.number_of_nodes()*graph.G.number_of_nodes()
+print "Number of metanodes:   ", graph.getNumberOfMetanodes()
+print "Number of N to N rels: ", graph.getNumberOfNodeToNodeRelations()
+#print "Number of connections: ",graph.G.number_of_edges()
+#print "Max nb of connections: ",graph.G.number_of_nodes()*graph.G.number_of_nodes()
 
 max_conn = graph.G.number_of_nodes()* ((graph.G.number_of_nodes()-1)/2)
 print "Coverage: ",float(graph.G.number_of_edges())/float(max_conn)
+
+exit()
 
 setupGraphUI(graph, lines, "Iteration "+itId)
 

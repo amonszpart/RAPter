@@ -12,10 +12,20 @@ class RelationGraph(object):
         self.G=nx.Graph()
         self.indexedPrimArray = {}
         
+        # store stats about the relations:
+        #   len(relationStats) is the number of did (so metanodes)
+        #   relationStats[did] is the number of primitives connected to did
+        self.relationStats={}
+        
         # First create the nodes
         for p in primArray:
             self.G.add_node(p.uid, w=0, uid=p.uid, did = p.did)
             self.indexedPrimArray[p.uid] = p
+            
+            if self.relationStats.get(p.did) != None:
+                self.relationStats[p.did] += 1
+            else:
+                self.relationStats[p.did]  = 1
             
         useAngles = len(angles) != 0
         
@@ -55,3 +65,14 @@ class RelationGraph(object):
     def draw(self):
         nx.draw_spectral(self.G)
         #nx.draw_networkx_labels(self.G,pos=nx.spectral_layout(self.G))
+        
+    def getNumberOfMetanodes(self):
+        return len(self.relationStats)
+    
+    def getNumberOfNodeToNodeRelations(self):
+        num = 0
+        # each subgraph is a connected graph
+        for did, r in self.relationStats.iteritems():
+            num += r*r
+            
+        return num
