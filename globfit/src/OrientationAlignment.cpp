@@ -9,12 +9,16 @@
 
 bool GlobFit::paraOrthAlignment(double paraOrthThreshold)
 {
+
+  PRINT_MESSAGE("Generate relations.")
   Graph paraOrthGraph;
   for (size_t i = 0, iEnd = _vecPrimitive.size(); i < iEnd; ++ i) {
     RelationVertex relationVertex(i, _vecPrimitive[i]->getIdx());
     relationVertex.setParent(i);
     add_vertex(relationVertex, paraOrthGraph);
   }
+
+  PRINT_MESSAGE("Compute normals..") // takes time
 
   for (size_t i = 0, iEnd = _vecPrimitive.size(); i < iEnd; ++ i) {
     Primitive* p1 = _vecPrimitive[i];
@@ -44,13 +48,20 @@ bool GlobFit::paraOrthAlignment(double paraOrthThreshold)
     }
   }
 
+  PRINT_MESSAGE("Generate biconnect graph...")
+
   Graph biconnectGraph;
   for (size_t i = 0, iEnd = _vecPrimitive.size(); i < iEnd; ++ i) {
     add_vertex(biconnectGraph);
   }
+
+  PRINT_MESSAGE("biconnectDecompose...") // takes a bit of time
   biconnectDecompose(_vecNormalEdge, biconnectGraph);
 
+  PRINT_MESSAGE("reduceParaOrthEdges...") // takes time
   reduceParaOrthEdges(_vecPrimitive, paraOrthThreshold, _vecNormalEdge, paraOrthGraph);
+
+  PRINT_MESSAGE("Solve...")
 
   return solve(_vecNormalEdge, RelationEdge::RET_ORTHOGONAL, "ParaOrth");
 }

@@ -69,6 +69,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    std::cout << "["<< __FUNCTION__ << "]: " << "Orientation Alignment" << std::endl;
     // Orientation Alignment
     if (!globFit.orientationAlignment(paraOrthThreshold, equalAngleThreshold)) {
         std::cout << "[" << __func__ << "]: " << "orienationAlignment failed..." << std::endl;
@@ -82,6 +83,7 @@ int main(int argc, char *argv[])
         globFit.save(oaFilename);
     }
 
+    std::cout << "["<< __FUNCTION__ << "]: " << "Placement Alignment" << std::endl;
     // Placement Alignment
     if (!globFit.placementAlignment(coaxialThreshold, coplanarThreshold)) {
         std::cout << "[" << __func__ << "]: " << "placementAlignment failed..." << std::endl;
@@ -95,6 +97,7 @@ int main(int argc, char *argv[])
         globFit.save(paFilename);
     }
 
+    std::cout << "["<< __FUNCTION__ << "]: " << "Equality Alignment" << std::endl;
     // Equality Alignment
     if (!globFit.equalityAlignment(equalLengthThreshold, equalRadiusThreshold)) {
         std::cout << "[" << __func__ << "]: " << "equalityAlignment failed..." << std::endl;

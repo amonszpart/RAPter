@@ -114,6 +114,8 @@ bool GlobFit::createMatlabArraies()
         if (maxNumVertices < pNumVertices[i])
             maxNumVertices = pNumVertices[i];
     }
+        
+    std::cout << "[" << __LINE__ << "]: " << "status" << std::endl;
 
     coordX = mxCreateDoubleMatrix(numPrimitives, maxNumVertices, mxREAL);
     double* pCoordX = mxGetPr(coordX);
@@ -135,6 +137,8 @@ bool GlobFit::createMatlabArraies()
 
     confVertices = mxCreateDoubleMatrix(numPrimitives, maxNumVertices, mxREAL);
     double* pConfVertices = mxGetPr(confVertices);
+    
+    std::cout << "[" << __LINE__ << "]: " << "status" << std::endl;
 
     memset(pCoordX, 0, maxNumVertices*sizeof(double));
     memset(pCoordY, 0, maxNumVertices*sizeof(double));
@@ -143,6 +147,8 @@ bool GlobFit::createMatlabArraies()
     memset(pNormalY, 0, maxNumVertices*sizeof(double));
     memset(pNormalZ, 0, maxNumVertices*sizeof(double));
     memset(pConfVertices, 0, maxNumVertices*sizeof(double));
+    std::cout << "[" << __LINE__ << "]: " << "status" << std::endl;
+        
     for (size_t i = 0; i < numPrimitives; ++i) {
         const Primitive* pPrimitive = _vecPrimitive[i];
         const std::vector<size_t>& vecVertexIdx = pPrimitive->getPointIdx();
@@ -158,6 +164,7 @@ bool GlobFit::createMatlabArraies()
             pConfVertices[idx] = pRichPoint->confidence;
         }
     }
+    std::cout << "[" << __LINE__ << "]: " << "status" << std::endl;
 
     engPutVariable(matlabEngine, "numVertices", numVertices);
     engPutVariable(matlabEngine, "primitiveType", primitiveType);
@@ -169,6 +176,8 @@ bool GlobFit::createMatlabArraies()
     engPutVariable(matlabEngine, "normalZ", normalZ);
     engPutVariable(matlabEngine, "confVertices", confVertices);
     engPutVariable(matlabEngine, "maxIterNum", maxIterNum);
+    
+    std::cout << "[" << __LINE__ << "]: " << "status" << std::endl;
 
     return true;
 }
@@ -355,7 +364,7 @@ bool GlobFit::solve(std::vector<RelationEdge>& vecRelationEdge, RelationEdge::Re
         
         std::ofstream logfile;
         while(running){
-            logfile.open ("run_globOpt.log", std::ofstream::trunc);
+            logfile.open ("run_globOpt2.log", std::ofstream::trunc);
             logfile << matlabOutputBuffer << std::endl; 
             logfile.close ();
             std::this_thread::sleep_for (std::chrono::seconds(1));            

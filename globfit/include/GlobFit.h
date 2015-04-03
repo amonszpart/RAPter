@@ -8,6 +8,13 @@
 #include "Types.h"
 #include "CoreExports.h"
 
+
+//#define PRINT_MESSAGE(MSG)                     \
+//    std::cout << "["<< __FUNCTION__ << "]: "   \
+//              << MSG                           \
+//              << std::endl;
+#define PRINT_MESSAGE(MSG)
+
 struct  RichPoint;
 class   Primitive;
 

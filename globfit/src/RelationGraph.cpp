@@ -64,6 +64,7 @@ static void removeIsolatedEdges(Graph& g)
 
 static void detectArticulationPoints(std::vector<RelationEdge>& vecRelationEdge, Graph& g)
 {
+    PRINT_MESSAGE("Start...")
     for (size_t i = 0, iEnd = vecRelationEdge.size(); i < iEnd; ++ i) {
         RelationEdge& relationEdge = vecRelationEdge[i];
 
@@ -123,6 +124,7 @@ static void detectArticulationPoints(std::vector<RelationEdge>& vecRelationEdge,
         vecArticulationPoint.clear();
         articulation_points(g, std::back_inserter(vecArticulationPoint));
     }
+    PRINT_MESSAGE("End...")
 
     return;
 }
@@ -146,6 +148,7 @@ static void filterEdgesToArticulationPoints(std::vector<RelationEdge>& vecRelati
 
 void biconnectDecompose(std::vector<RelationEdge>& vecRelationEdge, Graph& g)
 {
+    PRINT_MESSAGE("Start...")
     detectArticulationPoints(vecRelationEdge, g);
     filterEdgesToArticulationPoints(vecRelationEdge, g);
 
@@ -158,8 +161,8 @@ static void filterTransitConstraint(std::vector<RelationEdge>& vecRelationEdge, 
     for (size_t i = 0, iEnd = vecRelationEdge.size(); i < iEnd; ++ i) {
         RelationEdge& relationEdge = vecRelationEdge[i];
 
-        GraphVertex u = relationEdge.getSource().getIdx();
-        GraphVertex v = relationEdge.getTarget().getIdx();
+        const GraphVertex &u = relationEdge.getSource().getIdx();
+        const GraphVertex &v = relationEdge.getTarget().getIdx();
 
         if (relationEdge.getType() == rt) {
             if (g[u].getParent() == g[v].getParent()) {
@@ -190,24 +193,27 @@ static void collectTransitConstraint(std::vector<RelationEdge>& vecRelationEdge,
 
 static void filterOrientationConstraint(std::vector<RelationEdge>& vecRelationEdge, Graph& g)
 {
+    PRINT_MESSAGE(__LINE__)
     filterTransitConstraint(vecRelationEdge, RelationEdge::RET_PARALLEL, g);
+    PRINT_MESSAGE(__LINE__)
 
     std::vector<RelationEdge> vecRemainingEdge;
+    vecRemainingEdge.reserve(vecRelationEdge.size());
     for (size_t i = 0, iEnd = vecRelationEdge.size(); i < iEnd; ++ i) {
-        RelationEdge& relationEdge = vecRelationEdge[i];
+        const RelationEdge& relationEdge = vecRelationEdge[i];
 
-        GraphVertex u = relationEdge.getSource().getIdx();
-        GraphVertex v = relationEdge.getTarget().getIdx();
+        const GraphVertex &u = relationEdge.getSource().getIdx();
+        const GraphVertex &v = relationEdge.getTarget().getIdx();
 
-        if (relationEdge.getType() == RelationEdge::RET_ORTHOGONAL) {
-            if (edge(g[u].getParent(), g[v].getParent(), g).second) {
-                continue;
-            }
-        }
+        if (! ( relationEdge.getType() == RelationEdge::RET_ORTHOGONAL)
+         || ! ( edge(g[u].getParent(), g[v].getParent(), g).second ) )
         vecRemainingEdge.push_back(relationEdge);
     }
+    PRINT_MESSAGE(__LINE__)
     vecRelationEdge = vecRemainingEdge;
+    PRINT_MESSAGE(__LINE__)
     std::sort(vecRelationEdge.begin(), vecRelationEdge.end());
+    PRINT_MESSAGE(__LINE__)
 
     return;
 }
@@ -409,13 +415,16 @@ static void addParaEdge(GraphVertex u, GraphVertex v,
 
 void reduceParaOrthEdges(const std::vector<Primitive*>& vecPrimitive, double angleThreshold, std::vector<RelationEdge>& vecRelationEdge, Graph& g)
 {
+    PRINT_MESSAGE("Start...")
     filterOrientationConstraint(vecRelationEdge, g);
 
+    PRINT_MESSAGE("Check relation edges...")
     if (vecRelationEdge.size() == 0) {
         collectOrientationConstraint(vecRelationEdge, g);
         return;
     }
 
+    PRINT_MESSAGE("Start reduction...")
     while (!vecRelationEdge.empty()) {
         RelationEdge& relationEdge = vecRelationEdge.back();
         vecRelationEdge.pop_back();
@@ -428,9 +437,12 @@ void reduceParaOrthEdges(const std::vector<Primitive*>& vecPrimitive, double ang
             addOrthEdge(u, v, vecPrimitive, vecPredecessor, angleThreshold, g);
         }
 
+        PRINT_MESSAGE("FilterOrientation constraints... \n")
+        //std::cout << vecRelationEdge.size() << " remaining" << std::endl;
         filterOrientationConstraint(vecRelationEdge, g);
     }
 
+    PRINT_MESSAGE("Collect orientations...")
     collectOrientationConstraint(vecRelationEdge, g);
 
     return;

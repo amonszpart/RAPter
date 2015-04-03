@@ -222,7 +222,7 @@ namespace globopt
 
             std::stringstream sin( line );
             sin >> numPrimitives;
-            std::cout << "[" << __func__ << "]: " << "numPrimitive: " << numPrimitives << std::endl;
+            //std::cout << "[" << __func__ << "]: " << "numPrimitive: " << numPrimitives << std::endl;
             break;
         }
 
@@ -256,34 +256,34 @@ namespace globopt
                 Eigen::Matrix<Scalar,3,1> normal;
                 Scalar distance;
                 sin >> normal(0) >> normal(1) >> normal(2) >> distance;
-                std::cout << "normal: " << normal.transpose() << ", d:" << distance
-                          << ", from line: " << line
-                          << std::endl;
+                //std::cout << "normal: " << normal.transpose() << ", d:" << distance
+                //          << ", from line: " << line
+                //          << std::endl;
                 planeId = numPrimitives-1;
                 primitives[ planeId ].push_back( PrimitiveT() );
                 PrimitiveT& plane = primitives[planeId].back();
                 PrimitiveT::generateFrom( plane, normal, distance );
-                std::cout << "plane: " << plane.toString() << std::endl;
+                //std::cout << "plane: " << plane.toString() << std::endl;
                 GF2::GidT gid = segmentsIt->second[0].getTag(PrimitiveT::TAGS::GID);
                 GF2::DidT did = segmentsIt->second[0].getTag(PrimitiveT::TAGS::DIR_GID );
                 plane.setTag( PrimitiveT::TAGS::GID, gid );
                 plane.setTag( PrimitiveT::TAGS::DIR_GID, did );
                 plane.setTag( PrimitiveT::TAGS::STATUS, segmentsIt->second[0].getTag(PrimitiveT::TAGS::STATUS)  );
-                std::cout << "equiv input gid was " << segmentsIt->second[0].getTag(PrimitiveT::TAGS::GID) << std::endl;
+                //std::cout << "equiv input gid was " << segmentsIt->second[0].getTag(PrimitiveT::TAGS::GID) << std::endl;
             }
-            else if (primitiveType == "cylinder")
-            {
-                //pPrimitive = new Cylinder(_vecPointSet);
-                std::cerr << "[" << __func__ << "]: " << "can't read cylinder" << std::endl;
-            } else if (primitiveType == "cone")
-            {
-                std::cerr << "[" << __func__ << "]: " << "can't read cone" << std::endl;
-                //pPrimitive = new Cone(_vecPointSet);
-            } else if (primitiveType == "sphere")
-            {
-                std::cerr << "[" << __func__ << "]: " << "can't read sphere" << std::endl;
-                //pPrimitive = new Sphere(_vecPointSet);
-            }
+//            else if (primitiveType == "cylinder")
+//            {
+//                //pPrimitive = new Cylinder(_vecPointSet);
+//                //std::cerr << "[" << __func__ << "]: " << "can't read cylinder" << std::endl;
+//            } else if (primitiveType == "cone")
+//            {
+//                //std::cerr << "[" << __func__ << "]: " << "can't read cone" << std::endl;
+//                //pPrimitive = new Cone(_vecPointSet);
+//            } else if (primitiveType == "sphere")
+//            {
+//                //std::cerr << "[" << __func__ << "]: " << "can't read sphere" << std::endl;
+//                //pPrimitive = new Sphere(_vecPointSet);
+//            }
         } //...while primitives
 
         std::stringstream ssPrims; ssPrims << outName << ".globfit.csv";
