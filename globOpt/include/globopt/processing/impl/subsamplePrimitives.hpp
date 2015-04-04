@@ -49,6 +49,10 @@ namespace globopt
         GF2::console::parse_argument( argc,argv,"--pop-limit", popLimit );
         std::cout << "keeping at least " << popLimit << " points for each plane, change with \"--pop-limit k\"" << std::endl;
 
+        int primLimit( 35 ); // keep the first primLimit planes
+        GF2::console::parse_argument( argc,argv,"--prim-limit", primLimit );
+        std::cout << "keeping first " << primLimit << " planes, change with \"--prim-limit k\"" << std::endl;
+
 
         // fetch populations
         GF2::GidPidVectorMap populations;
@@ -56,7 +60,7 @@ namespace globopt
 
         //typedef typename GF2::GidPidVectorMap::value_type       Gid_PidVector_Pair;
         typedef typename GF2::GidPidVectorMap::const_iterator   PopConstIterator;
-        typedef std::pair<PidT, GidT>                           MultiMapPair;
+        typedef          std::pair<PidT, GidT>                  MultiMapPair;
 
         /// sort by population
         std::multimap< PidT, GidT > gidsBySize;         // key: #points in GId, value: { GId => [ pid0, pid1, ...] }
@@ -195,6 +199,7 @@ namespace globopt
         GF2::io::writeAssociations<PointPrimitiveT>( points, ssAssoc.str() );
 
         std::cout << "results written to " << ssPrims.str() << " and " << ssAssoc.str() << "\n";
+        std::cout << "-p " << ssPrims.str() << " -a " << ssAssoc.str() << "\n";
 
         return EXIT_SUCCESS;
     } //...subsamplePrimitives()
