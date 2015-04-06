@@ -7,7 +7,7 @@
 #include <iostream> // cout, endl
 #include <fstream>
 
-#include "globfit2/primitives/taggable.h"
+#include "globopt/primitives/taggable.h"
 
 namespace GF2
 {
@@ -57,12 +57,12 @@ namespace GF2
       *  \tparam _Scalar        Internal data type. Concept: float.
       */
     template <int _EmbedSpaceDim, int _Dim, typename _Scalar = float>
-    class Primitive : public ::GF2::Taggable<_Scalar>
+    class Primitive : public ::globopt::Taggable<_Scalar>
     {
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-            typedef ::GF2::Taggable<_Scalar> TaggableT;
+            typedef ::globopt::Taggable<_Scalar> TaggableT;
             typedef TaggableT                ParentT;
             enum { EmbedSpaceDim = _EmbedSpaceDim };
 #if 0

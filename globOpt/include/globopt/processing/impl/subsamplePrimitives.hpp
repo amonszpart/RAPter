@@ -49,10 +49,9 @@ namespace globopt
         GF2::console::parse_argument( argc,argv,"--pop-limit", popLimit );
         std::cout << "keeping at least " << popLimit << " points for each plane, change with \"--pop-limit k\"" << std::endl;
 
-        int primLimit( 35 ); // keep the first primLimit planes
+        int primLimit( 0 ); // keep the first primLimit planes
         GF2::console::parse_argument( argc,argv,"--prim-limit", primLimit );
         std::cout << "keeping first " << primLimit << " planes, change with \"--prim-limit k\"" << std::endl;
-
 
         // fetch populations
         GF2::GidPidVectorMap populations;
@@ -83,18 +82,23 @@ namespace globopt
 
         /// estimate per-plane-reduction
         std::map<GidT,PidT> cutHowMuch;                             // how much each Gid has to be cut
-        const PidT  targetCut( std::floor(Scalar(1.-ratio) * points.size()) ); // how many points we were instructed to cut
-        PidT        sumCut   ( 0 );                                 // how many points we were plan       to cut (sanity check ~= targetCut)
+        std::set<GidT>      keepPrims;                              // which primitives are large enough to keep. Only used, if primLimit > 0
+        const PidT          targetCut( std::floor(Scalar(1.-ratio) * sumCanBeCut) ); // how many points we were instructed to cut
+        PidT                sumCut   ( 0 );                         // how many points we were plan       to cut (sanity check ~= targetCut)
 
-        PidT actualLimit = popLimit;
-        std::cout << "actualLim: " << actualLimit << std::endl;
+        std::cout << "actualLim: " << popLimit << std::endl;
         for ( auto it = gidsBySize.rbegin(); it != gidsBySize.rend(); ++it )
         {
             const PidT population = it->first;
             const GidT gid = it->second;
             //std::cout << "[#points:" << pop << "]: <gid," << gid << ">, #points:" << populations.at( it->second ).size() << std::endl;
 
-            if ( population < actualLimit )
+            if ( primLimit && (keepPrims.size() >= primLimit) )
+                continue;
+            else
+                keepPrims.insert( gid );
+
+            if ( population < popLimit )
                 continue;
 
             // this planes contribution to the cut
@@ -132,37 +136,60 @@ namespace globopt
         for ( typename _PrimitiveMapT::Iterator it(primitives); it.hasNext(); it.step() )
         {
             const GidT gid = it.getGid();
-            auto const cutIt = cutHowMuch.find( it.getGid() );
-            if ( cutIt == cutHowMuch.end() )
-            {
-                containers::add( out, gid, *it );
-                continue;
-            }
 
-            const PidT cut = cutIt->second;
             auto popIt = populations.find( gid );
             if ( popIt == populations.end() )
             {
                 std::cerr << "[" << __func__ << "]: " << " this shouldn't happen, population not found for gid " << gid << std::endl;
                 continue;
             }
-            auto population = popIt->second; // copy!
+            auto population = popIt->second; // copy, because we reshuffle it later
 
-            Scalar cutRatio( Scalar(cut) / Scalar( population.size()) );
-            std::cout << "gid: " << gid << ", cut: " << cut << " = " << cutRatio << std::endl;
+            // (1) clear all point assignments, we delete the primitive
+            if ( primLimit && (keepPrims.find(gid) == keepPrims.end()) )
+            {
+                for ( auto pidIt = population.rbegin(); pidIt != population.rend() ; ++pidIt )
+                {
+                    if ( points.at( /* pid: */ *pidIt ).getTag( PointPrimitiveT::TAGS::GID ) != gid )
+                        std::cerr << "[" << __func__ << "]: " << "Point " << *pidIt << " is not actually assigned to plane (gid " << gid << "), should not happen" << std::endl;
+                    points.at( /* pid: */ *pidIt ).setTag( PointPrimitiveT::TAGS::GID, PointPrimitiveT::LONG_VALUES::UNSET );
+                }
+                continue;
+            }
+
+            // store primitive
+            containers::add( out, gid, *it );
+
+            // (2) just copy primitive to output, no assigned points to remove
+            auto const cutIt = cutHowMuch.find( gid );
+            if ( cutIt == cutHowMuch.end() )
+            {
+                continue;
+            }
+
+            // (3) keep, but remove some of the assigned points
+            const PidT cut = cutIt->second;
+
+            // estimate percentage of points that need to be cut from all of the points assigned to this primitive
+            Scalar  cutRatio( Scalar(cut) / Scalar( population.size()) );
+            // number of points to cut
+            PidT    toCut   ( std::ceil(cutRatio * Scalar(population.size())) );
+
+            // log/debug
             if ( cutRatio < ratio * 0.01  || cutRatio > 1.01 ) std::cerr << "cutratio: " << cutRatio << std::endl;
 
-            // obtain a time-based seed:
+            // reorder assigned points to randomize
             shuffle ( population.begin(), population.end(), std::default_random_engine(seed) );
-            PidT toCut = std::ceil( cutRatio * Scalar(population.size()) );
-            PidT cnt = 0;
+            // keep track of cut points
+            PidT cnt   = 0;
+            // iterate through shuffled, assigned points
             for ( auto pidIt = population.rbegin(); pidIt != population.rend() && cnt != toCut; ++pidIt, ++cnt )
             {
                 if ( points.at( /* pid: */ *pidIt ).getTag( PointPrimitiveT::TAGS::GID ) != gid )
                     std::cerr << "[" << __func__ << "]: " << "Point " << *pidIt << " is not actually assigned to plane (gid " << gid << "), should not happen" << std::endl;
                 points.at( /* pid: */ *pidIt ).setTag( PointPrimitiveT::TAGS::GID, PointPrimitiveT::LONG_VALUES::UNSET );
             }
-        }
+        } //...iterate primitives
 
         // check
         GF2::GidPidVectorMap populations2;
@@ -192,14 +219,14 @@ namespace globopt
 
         std::string input_prims_path = parsePrimitivesPath(argc, argv);
         std::string outName = boost::filesystem::path( input_prims_path).stem().string();
-        std::stringstream ssPrims; ssPrims << outName << ".sub_" << ratio << ".csv";
-        GF2::io::savePrimitives<PrimitiveT,typename InnerContainerT::const_iterator>( primitives, ssPrims.str() );
+        std::stringstream ssPrims; ssPrims << outName << ".sub_" << ratio << "_" << primLimit << ".csv";
+        GF2::io::savePrimitives<PrimitiveT,typename InnerContainerT::const_iterator>( out, ssPrims.str() );
 
-        std::stringstream ssAssoc; ssAssoc << "points_" << outName << ".sub.csv";
+        std::stringstream ssAssoc; ssAssoc << "points_" << outName << ".sub_" << ratio << "_" << primLimit << ".csv";
         GF2::io::writeAssociations<PointPrimitiveT>( points, ssAssoc.str() );
 
         std::cout << "results written to " << ssPrims.str() << " and " << ssAssoc.str() << "\n";
-        std::cout << "-p " << ssPrims.str() << " -a " << ssAssoc.str() << "\n";
+        std::cout << "../runGlobfit.py -s " << params.scale << " -p " << ssPrims.str() << " -a " << ssAssoc.str() << "\n";
 
         return EXIT_SUCCESS;
     } //...subsamplePrimitives()

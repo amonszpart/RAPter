@@ -191,6 +191,12 @@ ENDIF()
 
 
 #INCLUDE_DIRECTORIES( ${FH_DIR}/include )
+SET( TEMPLATE_INST_SRC_LIST
+    src/templateInstantiation/planePrimitive.cpp
+    src/templateInstantiation/segmentation.cpp
+    src/templateInstantiation/taggable.cpp
+    src/templateInstantiation/primitive.cpp
+)
 
 #________________GLOBOPT________________#
 #_______________________________________#
@@ -215,6 +221,7 @@ SET( GLOBOPT_HPP_LIST
     include/globfit2/optimization/impl/problemSetup.hpp
     include/globfit2/optimization/impl/merging.hpp
     include/globfit2/optimization/impl/candidateGenerator.hpp
+    include/globopt/primitives/impl/taggable.hpp
     include/globfit2/io/impl/io.hpp
     include/globfit2/util/diskUtil.hpp
     include/globfit2/util/util.hpp
@@ -236,6 +243,7 @@ SET( GLOBOPT_H_LIST
     include/globfit2/simple_types.h
     include/globfit2/globOpt_types.h
     include/globfit2/primitives/linePrimitive.h
+    include/globopt/primitives/taggable.h
     include/globfit2/primitives/primitive.h
     #include/globfit2/primitives/linePrimitive2.h
     include/globfit2/primitives/pointPrimitive.h
@@ -269,8 +277,7 @@ SET( GLOBOPT_SRC_LIST
     src/represent.cpp
     #src/optimization/candidateGenerator.cpp # cached compilation
     #src/optimization/qp/visualizer.cpp     # cached compilation
-    src/templateInstantiation/planePrimitive.cpp
-    src/templateInstantiation/segmentation.cpp
+    ${TEMPLATE_INST_SRC_LIST}
 )
 IF(WITH_SAMPLE_INPUT)
     SET( GLOBOPT_H_LIST ${GLOBOPT_H_LIST}
@@ -367,11 +374,12 @@ IF(WITH_PLYCONVERTER)
     )
 ENDIF(WITH_PLYCONVERTER)
 
-## _____________________________________CORRESPONENCE____________________________________________________
+## _____________________________________CORRESPONDENCE____________________________________________________
 IF(WITH_CORRESP)
     SET( CORRESP_TARGET "corresp" )
     SET( CORRESP_SRC
         src/correspondence.cpp
+        ${TEMPLATE_INST_SRC_LIST}
     )
 
     add_executable( ${CORRESP_TARGET} ${CORRESP_SRC} ${CORRESP_H})
@@ -464,8 +472,8 @@ IF(WITH_GLOBFIT)
     SET( GLOBFIT_SRC
         src/comparison/globFit.cpp
         src/comparison/globFitTemplateInst.cpp
-        src/templateInstantiation/planePrimitive.cpp
-        src/templateInstantiation/subsamplePrimitives.cpp
+        ${TEMPLATE_INST_SRC_LIST}
+
     )
 
     add_executable( ${GLOBFIT_TARGET} ${GLOBFIT_SRC} ${GLOBFIT_H})

@@ -360,7 +360,8 @@ paletteMediumVariationColoursEigen2( float factor, int min_count = 0, bool rando
 
     const Eigen::Array3f maxVal (255., 255., 255.);
 
-    for(int i = 0; i != colours_eigen.size(); ++i){
+    for ( size_t i = 0; i != colours_eigen.size(); ++i )
+    {
         Eigen::Vector3f& c = colours_eigen[i];
         c = maxVal.min(factor * c.array());
     }
