@@ -293,7 +293,7 @@ void GlobFit::dumpData(const std::vector<RelationEdge>& vecRelationEdge, const s
     return;
 }
 
-bool GlobFit::solve(std::vector<RelationEdge>& vecRelationEdge, RelationEdge::RelationEdgeType currentStage, const std::string& stageName)
+bool GlobFit::solve(std::vector<RelationEdge>& vecRelationEdge, RelationEdge::RelationEdgeType currentStage, const std::string& stageName, bool stoppingError)
 {
 
 
@@ -400,15 +400,38 @@ bool GlobFit::solve(std::vector<RelationEdge>& vecRelationEdge, RelationEdge::Re
     // so, be careful with this
     bValidOptimization &= (*pExitFittingError < 10*(*pInitialFittingError));
     if (!bValidOptimization) {
-        mxDestroyArray(constraints);
-        mxDestroyArray(inputParameters);
-        mxDestroyArray(outputParameters);
-        mxDestroyArray(initialFittingError);
-        mxDestroyArray(exitFittingError);
-        mxDestroyArray(exitFlag);
 
-        std::cout << "No feasible solution found." << std::endl;
-        return false;
+        std::cout << "No feasible solution found ("
+                  << (*pExitFlag)
+                  << ")."
+                  << std::endl;
+
+        if (stoppingError) {
+
+            mxDestroyArray(constraints);
+            mxDestroyArray(inputParameters);
+            mxDestroyArray(outputParameters);
+            mxDestroyArray(initialFittingError);
+            mxDestroyArray(exitFittingError);
+            mxDestroyArray(exitFlag);
+
+            return false;
+
+        }
+
+        //        for (size_t i = 0; i < numPrimitives; ++i) {
+
+        //            for (size_t j = 0; j < Primitive::getNumParameter(); ++ j) {
+        //                std::cout << pInputParameters[j*numPrimitives+i]
+        //                          << " "
+        //                          << pOutputParameters[j*numPrimitives+i]
+        //                          << std::endl;
+        //            }
+        //        }
+
+        std::cout
+                << "It's party night tonight, who cares about previous errors ??"
+                << std::endl;
     }
 
     // update primitives

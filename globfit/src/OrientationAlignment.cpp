@@ -63,7 +63,7 @@ bool GlobFit::paraOrthAlignment(double paraOrthThreshold)
 
   PRINT_MESSAGE("Solve...")
 
-  return solve(_vecNormalEdge, RelationEdge::RET_ORTHOGONAL, "ParaOrth");
+  return solve(_vecNormalEdge, RelationEdge::RET_ORTHOGONAL, "ParaOrth", false);
 }
 
 bool GlobFit::equalAngleAlignment(double equalAngleThreshold)
@@ -138,7 +138,7 @@ bool GlobFit::equalAngleAlignment(double equalAngleThreshold)
   }
 
   _vecNormalEdge.insert(_vecNormalEdge.end(), vecAngleEdge.begin(), vecAngleEdge.end());
-  while(!solve(_vecNormalEdge, RelationEdge::RET_EQUAL_ANGLE, "EqualAngle")) {
+  while(!solve(_vecNormalEdge, RelationEdge::RET_EQUAL_ANGLE, "EqualAngle", false)) {
     _vecNormalEdge.pop_back();
   }
 

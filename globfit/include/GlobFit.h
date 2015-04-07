@@ -57,7 +57,7 @@ public:
   static void computeEdgeScore(RelationEdge& relationEdge, const std::vector<Primitive*>& vecPrimitive);
 
 protected:
-  bool solve(std::vector<RelationEdge>& vecEdge, RelationEdge::RelationEdgeType currentStage, const std::string& stageName);
+  bool solve(std::vector<RelationEdge>& vecEdge, RelationEdge::RelationEdgeType currentStage, const std::string& stageName, bool stoppingError = true);
   void dumpData(const std::vector<RelationEdge>& vecEdge, const std::string& stageName);
 
   bool paraOrthAlignment(double orientationThreshold);
