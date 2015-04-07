@@ -26,6 +26,7 @@ parser.add_option("--paral-colours", "", type="float", dest="paralLimit", defaul
                   help="Show colours based on parallel normals. The threshold is this number in radians." )
 parser.add_option("--dir-colours", "", action="store_true", dest="dirColours", default=False,
                   help="Colour based on cluster id and not parallelity" )
+parser.add_option("--save-poly", "", action="store_true", dest="savePoly", default=False, help="adds \"--save-poly --draw-mode 24\" to save the rgb cloud");
 
 (options, args) = parser.parse_args()
 
@@ -41,13 +42,16 @@ if not options.title:
 defaultArgs = "--use-tags --no-clusters --no-pop --statuses -1,1 --no-rel --dir-colours"
 if not options.showScale:
     defaultArgs += " --no-scale";
+savePolyArgs = "";
+if options.savePoly:
+    savePolyArgs = "--save-poly --draw-mode 24";
     
 showOption = "--show" if options._2d else "--show3D"
 print("default:", defaultArgs)
 colourOption = "--dir-colours" if options.dirColours else "--paral-colours %f" % (options.paralLimit);
 
-cmd = "../globOptVis %s --scale %f --pop-limit %d --title %s --angle-gens %s %s --bg-colour %s -p %s -a %s %s" % (
-    showOption, options.scale, options.popLimit, options.title, options.angleGens, colourOption, options.bgColour, options.primitivesPath, options.assignmentsPath, defaultArgs)
+cmd = "../globOptVis %s --scale %f --pop-limit %d --title %s --angle-gens %s %s --bg-colour %s -p %s -a %s %s %s" % (
+    showOption, options.scale, options.popLimit, options.title, options.angleGens, colourOption, options.bgColour, options.primitivesPath, options.assignmentsPath, defaultArgs, savePolyArgs)
 
 print("[Calling] ", cmd)
 print(os.system(cmd))

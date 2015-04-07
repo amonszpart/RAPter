@@ -58,3 +58,17 @@ call(cmd)
 #../show.py -p segments_pa.globfit.csv -a points_segments_pa.globfit.csv -s 0.05
 
 print("\n");
+
+
+
+# ../runGlobfit.py -s 0.004 -p patches.sub_0.1_250.csv -a points_patches.sub_0.1_250.csv
+# ../show.py -s 0.004 -p patches.sub_0.1_250.csv -a points_patches.sub_0.1_250.csv
+# ../toGlobFit --from segments_ea.globfit --planes --prims patches.sub_0.1_250.csv --cloud cloud.ply -a points_patches.sub_0.1_250.csv --scale 0.004000 -o primitives_ea
+# ../show.py -s 0.004 -p primitives_ea.globfit.csv -a points_primitives_ea.globfit.csv --save-poly
+# Equivalent: ../globOptVis --show3D --scale 0.004000 --pop-limit 3 --title primitives_ea.globfit.csv --angle-gens 90 --paral-colours 0.000100 --bg-colour .9,.9,.9 -p primitives_ea.globfit.csv -a points_primitives_ea.globfit.csv --use-tags --no-clusters --no-pop --statuses -1,1 --no-rel --dir-colours --no-scale --save-poly --draw-mode 24
+# python normal_distr.py /home/bontius/workspace/globOpt/data/scenes-paper/bu_nolaSigg/cloudRGBNormal_noUnass_noPrim.ply out.svg "toto"
+
+
+# ../toGlobFit --subsample-primitives 0.500000 --pop-limit 20 --prim-limit 300 --prims patches.csv --cloud cloud.ply -a points_primitives.csv --scale 0.0025
+# ../runGlobfit.py -s 0.0025 -p patches.sub_0.5_300.csv -a points_patches.sub_0.5_300.csv
+# 
