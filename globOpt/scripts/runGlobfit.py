@@ -24,9 +24,9 @@ parser.add_option("", "--angle-thresh", type="float", dest="angleThresh", defaul
 parser.add_option("--matlab", "", type="string", dest="matlabExecutableFolder",
                   default="/home/bontius/matlab_symlinks/", help="Constains the executable \"matlab\"")
 parser.add_option("--toGlobFit", "", type="string", dest="toGlobFitExecutable",
-                  default="/home/bontius/workspace/globOpt/globOpt/build/Release/bin/toGlobFit", help="Path to executable \"toGlobFit\"")
+                  default="/export/home/kandinsky/nmellado/workspace_globOpt//globOpt/globOpt/build/Release/bin/toGlobFit", help="Path to executable \"toGlobFit\"")
 parser.add_option("--globfit", "", type="string", dest="globfitExecutable",
-                  default="/home/bontius/workspace/globOpt/globfit/build/bin/globfit_release", help="Path to executable \"globfit\"")
+                  default="/export/home/kandinsky/nmellado/workspace_globOpt//globOpt/globfit/build/bin/globfit_release", help="Path to executable \"globfit\"")
 
 parser.add_option("-p", "--primitives", type="string", dest="primitivesPath", default="segments.csv",
                   help="Primitives.csv to convert to globfit input [segments.csv]")
@@ -68,22 +68,13 @@ cmd = "%s --planes --prims %s --cloud %s -a %s --scale %f" % (
     options.toGlobFitExecutable, options.primitivesPath, options.cloudPath, options.assocPath, options.scale)
 call(cmd, dry=options.dry)
 
-cmd = "%s -i segments.globfit -v -o %f -g %f -a %f -p %f -l %f -r %f" % (
-    options.globfitExecutable, options.angleThresh, options.angleThresh, options.scale, options.scale, options.scale, options.scale)
+cmd = "%s -i segments.globfit -v -o 1.0 -g 1.0 -a 0.1 -p %f -l %f -r %f" % (
+    options.globfitExecutable, options.scale, options.scale, options.scale)
 call(cmd, dry=options.dry)
 
-cmd = "%s --from %s --planes --prims %s --cloud %s -a %s --scale %f -o primitives_oa" % (
-    options.toGlobFitExecutable, "segments_oa.globfit", options.primitivesPath, options.cloudPath, options.assocPath, options.scale)
-call(cmd, dry=options.dry)
-
-cmd = "%s --from %s --planes --prims %s --cloud %s -a %s --scale %f -o primitives_pa" % (
-    options.toGlobFitExecutable, "segments_pa.globfit", options.primitivesPath, options.cloudPath, options.assocPath, options.scale)
-call(cmd, dry=options.dry)
-
-cmd = "%s --from %s --planes --prims %s --cloud %s -a %s --scale %f -o primitives_ea" % (
-    options.toGlobFitExecutable, "segments_ea.globfit", options.primitivesPath, options.cloudPath, options.assocPath, options.scale)
-call(cmd, dry=options.dry)
-
+#cmd = "%s --from %s --planes --prims %s --cloud %s -a %s --scale %f" % (
+#    options.toGlobFitExecutable, options.globfitOutputPath, options.primitivesPath, options.cloudPath, options.assocPath, options.scale)
+#call(cmd, dry=options.dry)
 
 # ../../globOptVis --show3D --scale $scale --pop-limit $poplimit -p primitives_it9.bonmin.csv -a points_primitives_it8.csv --title "GlobOpt" $visdefparam --paral-colours --no-rel &
 
