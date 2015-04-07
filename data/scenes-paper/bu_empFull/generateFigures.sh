@@ -36,7 +36,7 @@ meshlabserver -i cloudRGBNormal_it10_reProj_noUnass_noPrim.ply -o figure/cloud_c
 splatting figure/cloud_cleaned_pts.ply figure/cloud_cleaned.ply 1 0.002
 
 #graph
-python ../readGraphProperties.py primitives_it10.bonmin.csv points_primitives_it09.csv cloud.ply --angles 0 --iteration 10
+python ../readGraphProperties.py primitives_it10.bonmin.csv points_primitives_it9.csv cloud.ply --angles 0 --iteration 10
 
 ############################################################
 ## generate planar approximation
