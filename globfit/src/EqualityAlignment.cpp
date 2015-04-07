@@ -111,7 +111,7 @@ bool GlobFit::equalRadiusAlignment(double equalRadiusThreshold)
 
   reduceTransitEdges(_vecPrimitive, _vecRadiusEdge, RelationEdge::RET_EQUAL_RADIUS, equalRadiusGraph);
 
-  return solve(_vecRadiusEdge, RelationEdge::RET_EQUAL_RADIUS, "EqualRadius");
+  return solve(_vecRadiusEdge, RelationEdge::RET_EQUAL_RADIUS, "EqualRadius", stoppingAtError);
 }
 
 bool GlobFit::equalityAlignment(double equalLengthThreshld, double equalRadiusThreshold)

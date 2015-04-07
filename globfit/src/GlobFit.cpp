@@ -9,6 +9,8 @@
 
 #include "GlobFit.h"
 
+bool GlobFit::stoppingAtError = false;
+
 GlobFit::GlobFit(void)
 {
 }

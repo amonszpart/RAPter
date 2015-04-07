@@ -293,7 +293,7 @@ void GlobFit::dumpData(const std::vector<RelationEdge>& vecRelationEdge, const s
     return;
 }
 
-bool GlobFit::solve(std::vector<RelationEdge>& vecRelationEdge, RelationEdge::RelationEdgeType currentStage, const std::string& stageName, bool stoppingError)
+bool GlobFit::solve(std::vector<RelationEdge>& vecRelationEdge, RelationEdge::RelationEdgeType currentStage, const std::string& stageName, bool stopAtErr)
 {
 
 
@@ -406,7 +406,7 @@ bool GlobFit::solve(std::vector<RelationEdge>& vecRelationEdge, RelationEdge::Re
                   << ")."
                   << std::endl;
 
-        if (stoppingError) {
+        if (stopAtErr) {
 
             mxDestroyArray(constraints);
             mxDestroyArray(inputParameters);

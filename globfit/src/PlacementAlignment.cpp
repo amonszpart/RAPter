@@ -94,7 +94,7 @@ bool GlobFit::coaxialAlignment(double coaxialThreshold)
     }
   }
 
-  return solve(_vecPointEdge, RelationEdge::RET_COAXIAL, "CoAxial");
+  return solve(_vecPointEdge, RelationEdge::RET_COAXIAL, "CoAxial", stoppingAtError);
 }
 
 bool GlobFit::coplanarAlignment(double coplanarThreshold)
@@ -137,7 +137,7 @@ bool GlobFit::coplanarAlignment(double coplanarThreshold)
 
   reduceTransitEdges(_vecPrimitive, _vecDistanceEdge, RelationEdge::RET_COPLANAR, coplanarGraph);
 
-  return solve(_vecDistanceEdge, RelationEdge::RET_COPLANAR, "CoPlanar");
+  return solve(_vecDistanceEdge, RelationEdge::RET_COPLANAR, "CoPlanar", stoppingAtError);
 }
 
 bool GlobFit::placementAlignment(double coaxialThreshold, double coplanarThreshold)

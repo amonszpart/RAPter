@@ -28,6 +28,8 @@ public:
   GlobFit(void);
   ~GlobFit(void);
 
+  static bool stoppingAtError;
+
   bool load(const std::string& filename);
   bool save(const std::string& filename) const;
 
@@ -57,7 +59,7 @@ public:
   static void computeEdgeScore(RelationEdge& relationEdge, const std::vector<Primitive*>& vecPrimitive);
 
 protected:
-  bool solve(std::vector<RelationEdge>& vecEdge, RelationEdge::RelationEdgeType currentStage, const std::string& stageName, bool stoppingError = true);
+  bool solve(std::vector<RelationEdge>& vecEdge, RelationEdge::RelationEdgeType currentStage, const std::string& stageName, bool stopAtErr = false);
   void dumpData(const std::vector<RelationEdge>& vecEdge, const std::string& stageName);
 
   bool paraOrthAlignment(double orientationThreshold);
