@@ -48,7 +48,11 @@ print( "Setting --primitives to %s" % (args.primitives) );
 cmd = "%s --subsample-primitives %f --pop-limit %d --prim-limit %d --prims %s --cloud cloud.ply -a %s --scale %f" % (toGlobFit, args.subsample, args.popLimit, args.primLimit, args.primitives, args.assoc, args.scale)
 call(cmd, dry=not runIsNotDrySoGoAhead)
 
-cmd = "../runGlobfit.py --angle-thresh %f -s %f -p %s -a %s" % (args.angleThresh, args.scale, args.primitives, args.assoc)
+sub_str="sub_" + str(args.subsample) + "_" + str(args.primLimit) + ".csv"
+subPrimitive = args.primitives[:-3] + sub_str
+subAssoc     = args.assoc[:-3] + sub_str
+
+cmd = "../runGlobfit.py --angle-thresh %f -s %f -p %s -a %s" % (args.angleThresh, args.scale, subPrimitive, subAssoc)
 call(cmd, dry=not runIsNotDrySoGoAhead)
 
 #../runGlobfit.py --save-pa segments_pa
