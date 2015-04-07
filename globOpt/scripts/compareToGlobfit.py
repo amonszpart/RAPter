@@ -29,6 +29,8 @@ parser.add_option("-p", "--primitives", type="string", dest="primitivesPath", de
                   help="Primitives.csv to convert to globfit input [segments.csv]")
 parser.add_option("-a", "--assoc", type="string", dest="assocPath", default="points_segments.csv",
                   help="Path to point to plane assignments [points_segments.csv]")
+parser.add_option("", "--angle-thresh", type="float", dest="angleThresh", default="10.0",
+                  help="Angle threshold given to globfit with -o and -g [0.1..10.0]")
 
 (options, args) = parser.parse_args()
 print("\n");
@@ -44,13 +46,13 @@ print( "Setting --primitives to %s" % (options.primitivesPath) );
 
 (options, args) = parser.parse_args()
 
-cmd = "../runSegmentation.py -s %f --pl 4" % (options.scale)
-call(cmd)
+#cmd = "../runSegmentation.py -s %f --pl 4" % (options.scale)
+#call(cmd)
 
 cmd = "%s --subsample-primitives %f --pop-limit %d --prim-limit %d --prims %s --cloud cloud.ply -a %s --scale %f" % (toGlobFit, options.subsampleRatio, options.popLimit, options.primLimit, options.primitivesPath, options.assocPath, options.scale)
 call(cmd)
 
-cmd = "../runGlobfit.py -s %f -p %s -a %s" % (options.scale, options.primitivesPath, options.assocPath)
+cmd = "../runGlobfit.py --angle-thresh %f -s %f -p %s -a %s" % (options.angleThresh, options.scale, options.primitivesPath, options.assocPath)
 call(cmd)
 
 #../runGlobfit.py --save-pa segments_pa
@@ -60,6 +62,8 @@ call(cmd)
 print("\n");
 
 
+
+# ../compareToGlobfit.py -s 0.004 --primLimit 250
 
 # ../toGlobFit --subsample-primitives 0.500000 --pop-limit 20 --prim-limit 300 --prims patches.csv --cloud cloud.ply -a points_primitives.csv --scale 0.0025
 # ../runGlobfit.py -s 0.004 -p patches.sub_0.1_250.csv -a points_patches.sub_0.1_250.csv

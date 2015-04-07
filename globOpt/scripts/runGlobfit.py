@@ -19,6 +19,8 @@ def call(cmd, dry=False, noExit=False):
 parser = OptionParser()
 parser.add_option("-s", "--scale", type="float", dest="scale",
                   help="scale (rho) parameter as smallest feature size to preserve [0.001..0.05]")
+parser.add_option("", "--angle-thresh", type="float", dest="angleThresh", default="10.0",
+                  help="Angle threshold given to globfit with -o and -g [0.1..10.0]")
 parser.add_option("--matlab", "", type="string", dest="matlabExecutableFolder",
                   default="/home/bontius/matlab_symlinks/", help="Constains the executable \"matlab\"")
 parser.add_option("--toGlobFit", "", type="string", dest="toGlobFitExecutable",
@@ -66,8 +68,8 @@ cmd = "%s --planes --prims %s --cloud %s -a %s --scale %f" % (
     options.toGlobFitExecutable, options.primitivesPath, options.cloudPath, options.assocPath, options.scale)
 call(cmd, dry=options.dry)
 
-cmd = "%s -i segments.globfit -v -o 0.1 -g 0.1 -a 0.1 -p %f -l %f -r %f" % (
-    options.globfitExecutable, options.scale, options.scale, options.scale)
+cmd = "%s -i segments.globfit -v -o %f -g %f -a %f -p %f -l %f -r %f" % (
+    options.globfitExecutable, options.angleThresh, options.angleThresh, options.scale, options.scale, options.scale, options.scale)
 call(cmd, dry=options.dry)
 
 cmd = "%s --from %s --planes --prims %s --cloud %s -a %s --scale %f -o primitives_oa" % (
