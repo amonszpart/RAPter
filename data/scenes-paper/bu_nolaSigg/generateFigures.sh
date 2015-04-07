@@ -68,7 +68,7 @@ mv plane_mesh.ply figure/schnabel_minsup500_planes.ply
 
 
 ############################################################
-## pearl
+## pearl 2
 
 ../globOptVis --show3D --scale 0.02 --pop-limit 3 --title "Pearl" --angle-gens 90 --use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-scale --bg-colour .9,.9,.9 --no-rel -p primitives.pearl.2.csv -a points_primitives.pearl.2.csv --perfect-angle 0.0001  --draw-mode 28 --save-poly
 
@@ -85,3 +85,27 @@ python ../normal_distr.py pearl_pts.ply ndistr_pearl.svg "Nola - Pearl"
 ../globOptVis --show3D --scale 0.02 --pop-limit 3 --title "Pearl" --angle-gens 90 --use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-scale --bg-colour .9,.9,.9 --no-rel -p primitives.pearl.2.csv -a points_primitives.pearl.2.csv --perfect-angle 0.0001  --draw-mode 1 --save-poly  --no-pts 
 
 mv plane_mesh.ply figure/pearl_planes.ply
+
+
+
+
+
+############################################################
+## pearl 9
+
+
+../globOptVis --show3D --scale 0.02 --pop-limit 3 --title "Pearl" --angle-gens 90 --use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-scale --bg-colour .9,.9,.9 --no-rel -p primitives.pearl.9.csv -a points_primitives.pearl.9.csv --perfect-angle 0.0001  --draw-mode 28 --save-poly --cloud cloud.pearl.600000.ply
+
+## clean output name to avoid side effect with patches output
+mv cloudRGBNormal_reProj_noUnass_noPrim.ply pearl9_pts.ply
+
+meshlabserver -i pearl9_pts.ply -o figure/pearl9_pts.ply -om vc vn
+
+splatting figure/pearl9_pts.ply figure/pearl9.ply 1 0.002
+
+#distribution
+python ../normal_distr.py pearl9_pts.ply ndistr_pearl9.svg "Nola - Pearl"
+
+../globOptVis --show3D --scale 0.02 --pop-limit 3 --title "Pearl" --angle-gens 90 --use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-scale --bg-colour .9,.9,.9 --no-rel -p primitives.pearl.9.csv -a points_primitives.pearl.9.csv --perfect-angle 0.0001  --draw-mode 1 --save-poly  --no-pts  --cloud cloud.pearl.600000.ply
+
+mv plane_mesh.ply figure/pearl9_planes.ply
