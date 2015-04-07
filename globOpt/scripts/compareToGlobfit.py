@@ -1,7 +1,9 @@
 #!/usr/bin/python
-from optparse import OptionParser
+import argparse
+import os
 
 toGlobFit = "/home/bontius/workspace/globOpt/globOpt/build/Release/bin/toGlobFit";
+#toGlobFit = "/export/home/kandinsky/nmellado/workspace_globOpt//globOpt/globOpt/build/Release/bin/toGlobFit"
 
 def call(cmd, dry=True, noExit=False):
 
@@ -16,44 +18,38 @@ def call(cmd, dry=True, noExit=False):
                 print("call returned ", ret)
 
 
-parser = OptionParser()
-parser.add_option("-s", "--scale", type="float", dest="scale",
-                  help="Scale (rho) parameter as smallest feature size to preserve [0.001..0.05]")
-parser.add_option("-r", "--subsample", type="float", dest="subsampleRatio", default=0.5,
-                  help="Decides how much to keep from the original assignments [0.01..1.0]")
-parser.add_option("--pl", "--popLimit", type="int", dest="popLimit", default=20,
-                  help="Decides at minimum, how many points to keep for each plane. [ 20..100 ]");
-parser.add_option("--prl", "--primLimit", type="int", dest="primLimit", default=0,
-                  help="Decides how many primitives to keep. 0 means keep all. [ 0..n ]");
-parser.add_option("-p", "--primitives", type="string", dest="primitivesPath", default="segments.csv",
-                  help="Primitives.csv to convert to globfit input [segments.csv]")
-parser.add_option("-a", "--assoc", type="string", dest="assocPath", default="points_segments.csv",
-                  help="Path to point to plane assignments [points_segments.csv]")
-parser.add_option("", "--angle-thresh", type="float", dest="angleThresh", default="10.0",
-                  help="Angle threshold given to globfit with -o and -g [0.1..10.0]")
+parser = argparse.ArgumentParser()
+parser.add_argument("-s", "--scale", type=float, help="Scale (rho) parameter as smallest feature size to preserve [0.001..0.05]")
+parser.add_argument("-r", "--subsample", type=float, default=0.5, help="Decides how much to keep from the original assignments [0.01..1.0]")
+parser.add_argument("--popLimit", type=int, default=20, help="Decides at minimum, how many points to keep for each plane. [ 20..100 ]");
+parser.add_argument("--primLimit", type=int, default=0, help="Decides how many primitives to keep. 0 means keep all. [ 0..n ]");
+parser.add_argument("-p", "--primitives", default="segments.csv", help="Primitives.csv to convert to globfit input [segments.csv]")
+parser.add_argument("-a", "--assoc", default="points_segments.csv", help="Path to point to plane assignments [points_segments.csv]")
+parser.add_argument("--angleThresh", type=float, default="10.0", help="Angle threshold given to globfit with -o and -g [0.1..10.0]")
+parser.add_argument('--run', action="store_true", help="Call the scripts (disabled by default)")
 
-(options, args) = parser.parse_args()
+args = parser.parse_args()
 print("\n");
 
-if not options.scale:
+runIsNotDrySoGoAhead=args.run
+
+if not args.scale:
     print("Need scale -s, --scale")
     exit
 
-print( "Setting --subsample to %f (keep 50 percent of the assignments)" % (options.subsampleRatio) )
-print( "Setting --popLimit to %d, will keep at least %d points assigned to each plane" % (options.popLimit, options.popLimit) );
-print( "Setting --assoc to %s" % (options.assocPath) );
-print( "Setting --primitives to %s" % (options.primitivesPath) );
+print( "Setting --subsample to %f (keep 50 percent of the assignments)" % (args.subsample) )
+print( "Setting --popLimit to %d, will keep at least %d points assigned to each plane" % (args.popLimit, args.popLimit) );
+print( "Setting --assoc to %s" % (args.assoc) );
+print( "Setting --primitives to %s" % (args.primitives) );
 
-(options, args) = parser.parse_args()
-
-#cmd = "../runSegmentation.py -s %f --pl 4" % (options.scale)
+#cmd = "../runSegmentation.py -s %f --pl 4" % (args.scale)
 #call(cmd)
 
-cmd = "%s --subsample-primitives %f --pop-limit %d --prim-limit %d --prims %s --cloud cloud.ply -a %s --scale %f" % (toGlobFit, options.subsampleRatio, options.popLimit, options.primLimit, options.primitivesPath, options.assocPath, options.scale)
-call(cmd)
+cmd = "%s --subsample-primitives %f --pop-limit %d --prim-limit %d --prims %s --cloud cloud.ply -a %s --scale %f" % (toGlobFit, args.subsample, args.popLimit, args.primLimit, args.primitives, args.assoc, args.scale)
+call(cmd, dry=not runIsNotDrySoGoAhead)
 
-cmd = "../runGlobfit.py --angle-thresh %f -s %f -p %s -a %s" % (options.angleThresh, options.scale, options.primitivesPath, options.assocPath)
-call(cmd)
+cmd = "../runGlobfit.py --angle-thresh %f -s %f -p %s -a %s" % (args.angleThresh, args.scale, args.primitives, args.assoc)
+call(cmd, dry=not runIsNotDrySoGoAhead)
 
 #../runGlobfit.py --save-pa segments_pa
 
