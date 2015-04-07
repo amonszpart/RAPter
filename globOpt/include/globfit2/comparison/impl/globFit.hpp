@@ -146,6 +146,15 @@ namespace globopt
             return EXIT_FAILURE;
         }
 
+        Scalar scale;
+        if (    (GF2::console::parse_argument( argc, argv, "-s"     , scale) < 0)
+             && (GF2::console::parse_argument( argc, argv, "--scale", scale) < 0)
+                )
+        {
+                std::cerr << "need scale, -s or --scale" << std::endl;
+                return EXIT_FAILURE;
+        }
+
         std::string outName( "primitives" );
         GF2::console::parse_argument( argc, argv, "-o", outName);
         std::cout << "saving to " << outName << ".globfit.csv, change with -o if needed" << std::endl;
@@ -291,6 +300,7 @@ namespace globopt
         std::stringstream ssAssoc; ssAssoc << "points_" << outName << ".globfit.csv";
         GF2::io::writeAssociations<PointPrimitiveT>( points, ssAssoc.str() );
         std::cout << "results written to " << ssPrims.str() << " and " << ssAssoc.str() << "\n";
+        std::cout << "../show.py -s " << scale << " -p " << ssPrims.str() << " -a " << ssAssoc.str() << " --save-poly" << std::endl;
 
         return EXIT_SUCCESS;
     } //...toGlobFit()

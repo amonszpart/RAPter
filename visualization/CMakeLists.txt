@@ -57,6 +57,7 @@ SET( GLOBOPTVIS_HPP_LIST
 
 SET( GLOBOPTVIS_SRC_LIST
     src/visualization.cpp
+    ../globOpt/src/templateInstantiation/taggable.cpp
 )
 
 SET( LIB_NAME ${PROJECT_NAME})

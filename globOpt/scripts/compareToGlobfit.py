@@ -29,6 +29,8 @@ parser.add_option("-p", "--primitives", type="string", dest="primitivesPath", de
                   help="Primitives.csv to convert to globfit input [segments.csv]")
 parser.add_option("-a", "--assoc", type="string", dest="assocPath", default="points_segments.csv",
                   help="Path to point to plane assignments [points_segments.csv]")
+parser.add_option("", "--angle-thresh", type="float", dest="angleThresh", default="10.0",
+                  help="Angle threshold given to globfit with -o and -g [0.1..10.0]")
 
 (options, args) = parser.parse_args()
 print("\n");
@@ -44,13 +46,13 @@ print( "Setting --primitives to %s" % (options.primitivesPath) );
 
 (options, args) = parser.parse_args()
 
-cmd = "../runSegmentation.py -s %f --pl 4" % (options.scale)
-call(cmd)
+#cmd = "../runSegmentation.py -s %f --pl 4" % (options.scale)
+#call(cmd)
 
 cmd = "%s --subsample-primitives %f --pop-limit %d --prim-limit %d --prims %s --cloud cloud.ply -a %s --scale %f" % (toGlobFit, options.subsampleRatio, options.popLimit, options.primLimit, options.primitivesPath, options.assocPath, options.scale)
 call(cmd)
 
-cmd = "../runGlobfit.py -s %f -p %s -a %s" % (options.scale, options.primitivesPath, options.assocPath)
+cmd = "../runGlobfit.py --angle-thresh %f -s %f -p %s -a %s" % (options.angleThresh, options.scale, options.primitivesPath, options.assocPath)
 call(cmd)
 
 #../runGlobfit.py --save-pa segments_pa
@@ -58,3 +60,20 @@ call(cmd)
 #../show.py -p segments_pa.globfit.csv -a points_segments_pa.globfit.csv -s 0.05
 
 print("\n");
+
+
+
+# ../compareToGlobfit.py -s 0.004 --primLimit 250
+
+# ../toGlobFit --subsample-primitives 0.500000 --pop-limit 20 --prim-limit 300 --prims patches.csv --cloud cloud.ply -a points_primitives.csv --scale 0.0025
+# ../runGlobfit.py -s 0.004 -p patches.sub_0.1_250.csv -a points_patches.sub_0.1_250.csv
+# ../show.py -s 0.004 -p patches.sub_0.1_250.csv -a points_patches.sub_0.1_250.csv
+# ../toGlobFit --from segments_ea.globfit --planes --prims patches.sub_0.1_250.csv --cloud cloud.ply -a points_patches.sub_0.1_250.csv --scale 0.004000 -o primitives_ea
+# ../show.py -s 0.004 -p primitives_ea.globfit.csv -a points_primitives_ea.globfit.csv --save-poly
+# Equivalent: ../globOptVis --show3D --scale 0.004000 --pop-limit 3 --title primitives_ea.globfit.csv --angle-gens 90 --paral-colours 0.000100 --bg-colour .9,.9,.9 -p primitives_ea.globfit.csv -a points_primitives_ea.globfit.csv --use-tags --no-clusters --no-pop --statuses -1,1 --no-rel --dir-colours --no-scale --save-poly --draw-mode 21
+# python normal_distr.py /home/bontius/workspace/globOpt/data/scenes-paper/bu_nolaSigg/cloudRGBNormal_noUnass_noPrim.ply out.svg "toto"
+
+
+# ../toGlobFit --subsample-primitives 0.500000 --pop-limit 20 --prim-limit 300 --prims patches.csv --cloud cloud.ply -a points_primitives.csv --scale 0.0025
+# ../runGlobfit.py -s 0.0025 -p patches.sub_0.5_300.csv -a points_patches.sub_0.5_300.csv
+# 
