@@ -51,7 +51,7 @@ end
 initialFittingError = FittingError(inputParameters, numPrimitives, primitiveType, coefficients, collapseMap);
 
 % optimization
-options = optimset('Display', 'notify-detailed', 'LargeScale', 'off', 'MaxFunEvals', Inf, 'MaxIter', maxIterNum, 'DerivativeCheck', 'off');
+options = optimset('Display', 'iter-detailed', 'Algorithm', 'interior-point', 'MaxFunEvals', Inf, 'MaxIter', maxIterNum, 'DerivativeCheck', 'off', 'UseParallel', true, 'TolFun', 3e-2 , 'PlotFcns', @optimplotfval);
 fobj = @(inputParameters)FittingError(inputParameters, numPrimitives, primitiveType, coefficients, collapseMap);
 tic;
 [outputParameters, exitFittingError, exitflag] = fminunc(fobj, inputParameters, options);
