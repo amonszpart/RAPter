@@ -24,7 +24,7 @@ parser.add_option("--matlab", "", type="string", dest="matlabExecutableFolder",
 parser.add_option("--toGlobFit", "", type="string", dest="toGlobFitExecutable",
                   default="/home/bontius/workspace/globOpt/globOpt/build/Release/bin/toGlobFit", help="Path to executable \"toGlobFit\"")
 parser.add_option("--globfit", "", type="string", dest="globfitExecutable",
-                  default="/home/bontius/workspace/3rdparty/globfit/build/bin/globfit_release", help="Path to executable \"globfit\"")
+                  default="/home/bontius/workspace/globOpt/globfit/build/bin/globfit_release", help="Path to executable \"globfit\"")
 
 parser.add_option("-p", "--primitives", type="string", dest="primitivesPath", default="segments.csv",
                   help="Primitives.csv to convert to globfit input [segments.csv]")
@@ -66,7 +66,7 @@ cmd = "%s --planes --prims %s --cloud %s -a %s --scale %f" % (
     options.toGlobFitExecutable, options.primitivesPath, options.cloudPath, options.assocPath, options.scale)
 call(cmd, dry=options.dry)
 
-cmd = "%s -i segments.globfit -v -o 3.0 -g 3.0 -a 0.1 -p %f -l %f -r %f" % (
+cmd = "%s -i segments.globfit -v -o 1.0 -g 1.0 -a 0.1 -p %f -l %f -r %f" % (
     options.globfitExecutable, options.scale, options.scale, options.scale)
 call(cmd, dry=options.dry)
 
