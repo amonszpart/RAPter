@@ -48,18 +48,36 @@ print( "Setting --primitives to %s" % (args.primitives) );
 cmd = "%s --subsample-primitives %f --pop-limit %d --prim-limit %d --prims %s --cloud cloud.ply -a %s --scale %f" % (toGlobFit, args.subsample, args.popLimit, args.primLimit, args.primitives, args.assoc, args.scale)
 call(cmd, dry=not runIsNotDrySoGoAhead)
 
-sub_str="sub_" + str(args.subsample) + "_" + str(args.primLimit) + ".csv"
-subPrimitive = args.primitives[:-3] + sub_str
-subAssoc     = args.assoc[:-3] + sub_str
+root_prim_str  = args.primitives[:-4]
+root_assoc_str = args.assoc[:-4]
+sub_str        = ".sub_" + str(args.subsample) + "_" + str(args.primLimit) + ".csv"
+subPrimitive   = root_prim_str  + sub_str
+subAssoc       = root_assoc_str + sub_str
 
 cmd = "../runGlobfit.py --angle-thresh %f -s %f -p %s -a %s" % (args.angleThresh, args.scale, subPrimitive, subAssoc)
 call(cmd, dry=not runIsNotDrySoGoAhead)
+
+cmd = "../show.py -s %f -p %s -a %s" % (args.scale, subPrimitive, subAssoc)
+call(cmd, dry=not runIsNotDrySoGoAhead)
+
+outnames = [ "oa", "pa", "ae" ]
+for n in outnames:
+    name = root_prim_str + "_" + n + ".globfit" 
+    if os.path.isfile(name): 
+        out = root_prim_str  + ".primitives.globfit_"+n+".csv"
+        print "Working with " + n + " output..."
+        cmd = "%s --from %s --planes --prims %s --cloud cloud.ply -a %s --scale %f -o %s" % (toGlobFit, name, args.primitives, args.assoc, args.scale, out)
+        call(cmd, dry=not runIsNotDrySoGoAhead)
+
+
 
 #../runGlobfit.py --save-pa segments_pa
 
 #../show.py -p segments_pa.globfit.csv -a points_segments_pa.globfit.csv -s 0.05
 
 print("\n");
+
+
 
 
 
