@@ -21,14 +21,14 @@ namespace globopt
     {
         using namespace GF2;
 
-        typedef typename _PrimitiveMapT::mapped_type InnerContainerT;
-        typedef typename _PclCloudT::Ptr             PclPtrT;
-        typedef typename InnerContainerT::value_type PrimitiveT;
-        typedef typename PrimitiveT::Scalar Scalar;
-        typedef typename _PointContainerT::PrimitiveT PointPrimitiveT;
+        typedef typename _PrimitiveMapT::mapped_type    InnerContainerT;
+        typedef typename _PclCloudT::Ptr                PclPtrT;
+        typedef typename InnerContainerT::value_type    PrimitiveT;
+        typedef typename PrimitiveT::Scalar             Scalar;
+        typedef typename _PointContainerT::PrimitiveT   PointPrimitiveT;
 
-        srand( time(NULL) );
         unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+        srand( time(NULL) );
 
         _PointContainerT    points;
         PclPtrT             pclCloud;
@@ -42,16 +42,19 @@ namespace globopt
         if ( GF2::console::parse_argument(argc,argv,"--subsample-primitives",ratio) < 0 || (ratio < FLT_EPSILON) )
         {
             std::cerr << "[" << __func__ << "]: " << "you need to provide subsample ratio after --subsample-primitives\n";
-            std::cout << "example: " << "--subsample-primitives 0.1 --pop-limit 100 --prims segments.csv --cloud cloud.ply -a points_segments.csv --scale 0.005" << std::endl;
+            std::cout << "example: " << "--subsample-primitives 0.1 --prim-limit 200 --prim-random-ratio 0.5 --pop-limit 100 --prims segments.csv --cloud cloud.ply -a points_segments.csv --scale 0.005" << std::endl;
             return EXIT_FAILURE;
         }
         int popLimit( 20 ); // don't cut planes less than this
         GF2::console::parse_argument( argc,argv,"--pop-limit", popLimit );
-        std::cout << "keeping at least " << popLimit << " points for each plane, change with \"--pop-limit k\"" << std::endl;
+        std::cout << "[" << __func__ << "]: " << "keeping at least " << popLimit << " points for each plane, change with \"--pop-limit k\"" << std::endl;
 
         int primLimit( 0 ); // keep the first primLimit planes
         GF2::console::parse_argument( argc,argv,"--prim-limit", primLimit );
-        std::cout << "keeping first " << primLimit << " planes, change with \"--prim-limit k\"" << std::endl;
+        Scalar primRandRatio( 0. ); // randomize the selection of primitives
+        GF2::console::parse_argument( argc,argv,"--prim-random-ratio", primRandRatio );
+        std::cout << "[" << __func__ << "]: " << "keeping " << primLimit << " planes, change with \"--prim-limit k\"" << std::endl;
+        std::cout << "[" << __func__ << "]: " << primRandRatio * 100.0 << "% will be random (--prim-random-ratio f), the rest picked in descending population (point count) order\n";
 
         // fetch populations
         GF2::GidPidVectorMap populations;
@@ -86,25 +89,64 @@ namespace globopt
         const PidT          targetCut( std::floor(Scalar(1.-ratio) * sumCanBeCut) ); // how many points we were instructed to cut
         PidT                sumCut   ( 0 );                         // how many points we were plan       to cut (sanity check ~= targetCut)
 
-        std::cout << "actualLim: " << popLimit << std::endl;
-        for ( auto it = gidsBySize.rbegin(); it != gidsBySize.rend(); ++it )
+        // pick (1. - primRandRatio) primitives from the top, and the rest randomly
+        std::set<MultiMapPair> chosenGids;
+        {
+            LidT largePrimDemand = std::floor( primLimit * (1. - primRandRatio) );
+            std::cout << "largePrimDemand " << largePrimDemand << ", primlimiT: " << primLimit << std::endl;
+
+            // iterate over all once
+            auto it = gidsBySize.rbegin();
+            // pick first k right away
+            for ( ; it != gidsBySize.rend() && (chosenGids.size() < largePrimDemand); ++it )
+                chosenGids.insert( *it );
+
+            // enlist the rest to pick randomly from
+            std::vector<MultiMapPair> gidMix; // contains the "small" primitives, to randomly sample from
+            for ( ; it != gidsBySize.rend(); ++it )
+                gidMix.push_back( *it );
+
+            // shuffle the "small" primitives
+            shuffle( gidMix.begin(), gidMix.end(), std::default_random_engine(seed) );
+
+            // pick the first (primLimit-k) to fill chosen Gids
+            for ( auto gidMixIt = gidMix.begin(); gidMixIt != gidMix.end() && (chosenGids.size() < primLimit); ++gidMixIt )
+                chosenGids.insert( *gidMixIt );
+
+        }
+
+        // actually pick them, and subsample their population
+        LidT primId( 0 );
+        //for ( auto it = gidsBySize.rbegin(); it != gidsBySize.rend(); ++it, ++primId )
+        for ( auto it = chosenGids.begin(); it != chosenGids.end(); ++it, ++primId )
         {
             const PidT population = it->first;
-            const GidT gid = it->second;
+            const GidT gid        = it->second;
             //std::cout << "[#points:" << pop << "]: <gid," << gid << ">, #points:" << populations.at( it->second ).size() << std::endl;
 
+            // remove primitive, if
+            //  a. there's a primitive limit AND
+            //  b. already exceeded that limit OR
+            //  c. this is large primitive we randomly don't keep and leave space for a random one later: rand < primRandRatio
             if ( primLimit && (keepPrims.size() >= primLimit) )
+            {
+                std::cerr << "[" << __func__ << "]: " << " too many primitives chosen..." << std::endl;
                 continue;
+            }
             else
+            {
                 keepPrims.insert( gid );
+                //std::cout << "keeping " << gid << "/" << gidsBySize.size() << std::endl;
+            }
 
+            // don't cut points from too small planes
             if ( population < popLimit )
                 continue;
 
             // this planes contribution to the cut
             Scalar  localRatio( Scalar(population) / Scalar(sumCanBeCut) );
             PidT    localN    ( std::floor(localRatio * targetCut) );
-            if (population - localN < popLimit)
+            if ( population - localN < popLimit )
                 localN = population - popLimit;
 
             if ( localN && (population - localN < popLimit) )
@@ -125,11 +167,11 @@ namespace globopt
             sumCut += localN;
 
             // log
-            std::cout << "localRat = " << population << "/" << sumCanBeCut << ": " << localRatio << "\t=> * " << targetCut << " = " << localN << std::endl;
+            //std::cout << "localRat = " << population << "/" << sumCanBeCut << ": " << localRatio << "\t=> * " << targetCut << " = " << localN << std::endl;
         } //...for planes to cut
 
         // log
-        std::cout << "cut " << sumCut << "/" << points.size() << " == " << Scalar(sumCut)/Scalar(points.size()) << std::endl;
+        std::cout << "[" << __func__ << "]: " << "cut " << sumCut << "/" << points.size() << " assignments == " << Scalar(sumCut)/Scalar(sumCanBeCut) * 100. << "%" << std::endl;
 
         /// do cut
         _PrimitiveMapT out;
@@ -194,29 +236,30 @@ namespace globopt
         // check
         GF2::GidPidVectorMap populations2;
         processing::getPopulations( populations2, points );
-        PidT sum(0);
+        PidT                 sum(0);
         for ( auto it = populations2.begin(); it != populations2.end(); ++it )
         {
             if ( it->first == PrimitiveT::LONG_VALUES::UNSET )
                 continue;
 
-            if ( it->first < 10 )
-                std::cout << "it:" << it->first << ", " << it->second.size() << ", sum: " << sum;
             sum+= it->second.size();
-            if ( it->first < 10 )
-                std::cout << " -> " << sum << std::endl;
         }
-        std::cout << "reduction: " << points.size() << " --> " << sum << " == " << Scalar(sum) / points.size() << std::endl;
+        std::cout << "[" << __func__ << "]: "
+                  << "Reduction: from " << points.size() << " points, and " << sumCanBeCut << " assignments --> "
+                  << sum << " remaining assignments  == "
+                  << Scalar(sum) / points.size() * 100. << "% points are active in the output, "
+                  << Scalar(sum) / sumCanBeCut   * 100. << "% assignments remained" << std::endl;
 
         for ( auto it = gidsBySize.begin(); it != gidsBySize.end(); ++it )
         {
             const PidT population = it->first;
-            const GidT gid = it->second;
-            if ( population < popLimit ) continue;
-            std::cout << "oldPop[" << gid << "]: " << populations[gid].size() << ", new: " << populations2[gid].size() << std::endl;
+            //const GidT gid = it->second;
+            if ( population < popLimit )
+                continue;
+            //std::cout << "oldPop[" << gid << "]: " << populations[gid].size() << ", new: " << populations2[gid].size() << std::endl;
         }
 
-
+        // save
         std::string input_prims_path = parsePrimitivesPath(argc, argv);
         std::string outName = boost::filesystem::path( input_prims_path).stem().string();
         std::stringstream ssPrims; ssPrims << outName << ".sub_" << ratio << "_" << primLimit << ".csv";
@@ -225,7 +268,7 @@ namespace globopt
         std::stringstream ssAssoc; ssAssoc << "points_" << outName << ".sub_" << ratio << "_" << primLimit << ".csv";
         GF2::io::writeAssociations<PointPrimitiveT>( points, ssAssoc.str() );
 
-        std::cout << "results written to " << ssPrims.str() << " and " << ssAssoc.str() << "\n";
+        std::cout << "[" << __func__ << "]: " << "results written to " << ssPrims.str() << " and " << ssAssoc.str() << "\n";
         std::cout << "../runGlobfit.py -s " << params.scale << " -p " << ssPrims.str() << " -a " << ssAssoc.str() << "\n";
 
         return EXIT_SUCCESS;
