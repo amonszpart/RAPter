@@ -23,8 +23,8 @@ parser.add_argument("-s", "--scale", type=float, help="Scale (rho) parameter as 
 parser.add_argument("-r", "--subsample", type=float, default=0.5, help="Decides how much to keep from the original assignments [0.01..1.0]")
 parser.add_argument("--popLimit", type=int, default=20, help="Decides at minimum, how many points to keep for each plane. [ 20..100 ]");
 parser.add_argument("--primLimit", type=int, default=0, help="Decides how many primitives to keep. 0 means keep all. [ 0..n ]");
-parser.add_argument("-p", "--primitives", default="segments.csv", help="Primitives.csv to convert to globfit input [segments.csv]")
-parser.add_argument("-a", "--assoc", default="points_segments.csv", help="Path to point to plane assignments [points_segments.csv]")
+parser.add_argument("-p", "--primitives", default="patches.csv", help="Primitives.csv to convert to globfit input [segments.csv]")
+parser.add_argument("-a", "--assoc", default="points_patches.csv", help="Path to point to plane assignments [points_segments.csv]")
 parser.add_argument("--angleThresh", type=float, default="10.0", help="Angle threshold given to globfit with -o and -g [0.1..10.0]")
 parser.add_argument('--run', action="store_true", help="Call the scripts (disabled by default)")
 
