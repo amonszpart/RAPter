@@ -26,7 +26,7 @@ parser.add_option("--paral-colours", "", type="float", dest="paralLimit", defaul
                   help="Show colours based on parallel normals. The threshold is this number in radians." )
 parser.add_option("--dir-colours", "", action="store_true", dest="dirColours", default=False,
                   help="Colour based on cluster id and not parallelity" )
-parser.add_option("--save-poly", "", action="store_true", dest="savePoly", default=False, help="adds \"--save-poly --draw-mode 24\" to save the rgb cloud");
+parser.add_option("--save-poly", "", action="store_true", dest="savePoly", default=False, help="adds \"--save-poly --draw-mode 21\" to save the rgb cloud");
 
 (options, args) = parser.parse_args()
 
@@ -44,7 +44,7 @@ if not options.showScale:
     defaultArgs += " --no-scale";
 savePolyArgs = "";
 if options.savePoly:
-    savePolyArgs = "--save-poly --draw-mode 24";
+    savePolyArgs = "--save-poly --draw-mode 21";
     
 showOption = "--show" if options._2d else "--show3D"
 print("default:", defaultArgs)
