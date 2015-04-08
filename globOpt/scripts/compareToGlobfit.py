@@ -25,7 +25,7 @@ parser.add_argument("--popLimit", type=int, default=20, help="Decides at minimum
 parser.add_argument("--primLimit", type=int, default=0, help="Decides how many primitives to keep. 0 means keep all. [ 0..n ]");
 parser.add_argument("--primRand", type=float, default=0., help="Decides how many of the kept primitives should be randomly chosen. [ 0.0..1.0 ]");
 parser.add_argument("-p", "--primitives", default="patches.csv", help="Primitives.csv to convert to globfit input [segments.csv]")
-parser.add_argument("-a", "--assoc", default="points_primitives.csv", help="Path to point to plane assignments [points_segments.csv]")
+parser.add_argument("-a", "--assoc", default="points_patches.csv", help="Path to point to plane assignments [points_segments.csv]")
 parser.add_argument("--angleThresh", type=float, default="10.0", help="Angle threshold given to globfit with -o and -g [0.1..10.0]")
 parser.add_argument('--run', action="store_true", help="Call the scripts (disabled by default)")
 
