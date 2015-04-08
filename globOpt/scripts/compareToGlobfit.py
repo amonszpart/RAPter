@@ -62,10 +62,11 @@ call(cmd, dry=not runIsNotDrySoGoAhead)
 
 outnames = [ "oa", "pa", "ae" ]
 for n in outnames:
-    name = root_prim_str + "_" + n + ".globfit" 
+    #name = root_prim_str + "_" + n + ".globfit" 
+    name = "segments_" + n + ".globfit" 
     if os.path.isfile(name): 
         out = root_prim_str  + ".primitives."+n
-        print "Working with " + n + " output... (" + out + ")"
+        print "# Converting " + name + " to " + out + ".globfit.csv"
         cmd = "%s --from %s --planes --prims %s --cloud cloud.ply -a %s --scale %f -o %s" % (toGlobFit, name, args.primitives, args.assoc, args.scale, out)
         call(cmd, dry=not runIsNotDrySoGoAhead)
         
