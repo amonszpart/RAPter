@@ -3,7 +3,7 @@ import argparse
 import os
 
 toGlobFit = "/home/bontius/workspace/globOpt/globOpt/build/Release/bin/toGlobFit";
-#toGlobFit = "/export/home/kandinsky/nmellado/workspace_globOpt//globOpt/globOpt/build/Release/bin/toGlobFit"
+#toGlobFit = "/export/home/kandinsky/nmellado/workspace_globOpt/globOpt/globOpt/build/Release/bin/toGlobFit"
 
 def call(cmd, dry=True, noExit=False):
 
@@ -57,16 +57,19 @@ subAssoc       = root_assoc_str + sub_str
 cmd = "../runGlobfit.py --angle-thresh %f -s %f -p %s -a %s" % (args.angleThresh, args.scale, subPrimitive, subAssoc)
 call(cmd, dry=not runIsNotDrySoGoAhead)
 
-cmd = "../show.py -s %f -p %s -a %s" % (args.scale, subPrimitive, subAssoc)
+cmd = "../show.py -s %f -p %s -a %s&" % (args.scale, subPrimitive, subAssoc)
 call(cmd, dry=not runIsNotDrySoGoAhead)
 
 outnames = [ "oa", "pa", "ae" ]
 for n in outnames:
     name = root_prim_str + "_" + n + ".globfit" 
     if os.path.isfile(name): 
-        out = root_prim_str  + ".primitives.globfit_"+n+".csv"
-        print "Working with " + n + " output..."
+        out = root_prim_str  + ".primitives."+n
+        print "Working with " + n + " output... (" + out + ")"
         cmd = "%s --from %s --planes --prims %s --cloud cloud.ply -a %s --scale %f -o %s" % (toGlobFit, name, args.primitives, args.assoc, args.scale, out)
+        call(cmd, dry=not runIsNotDrySoGoAhead)
+        
+        cmd = "../show.py -s %f -p %s -a %s &" % (args.scale, out + ".globfit.csv", "points_" + out + ".globfit.csv")
         call(cmd, dry=not runIsNotDrySoGoAhead)
 
 
