@@ -2,8 +2,8 @@
 import argparse
 import os
 
-toGlobFit = "/home/bontius/workspace/globOpt/globOpt/build/Release/bin/toGlobFit";
-#toGlobFit = "/export/home/kandinsky/nmellado/workspace_globOpt/globOpt/globOpt/build/Release/bin/toGlobFit"
+#toGlobFit = "/home/bontius/workspace/globOpt/globOpt/build/Release/bin/toGlobFit";
+toGlobFit = "/export/home/kandinsky/nmellado/workspace_globOpt/globOpt/globOpt/build/Release/bin/toGlobFit"
 
 def call(cmd, dry=True, noExit=False):
 
@@ -53,7 +53,7 @@ root_prim_str  = args.primitives[:-4]
 root_assoc_str = args.assoc[:-4]
 sub_str        = ".sub_" + str(args.subsample) + "_" + str(args.primLimit) + ".csv"
 subPrimitive   = root_prim_str  + sub_str
-subAssoc       = root_assoc_str + sub_str
+subAssoc       = "points_" + subPrimitive
 
 cmd = "../runGlobfit.py --angle-thresh %f -s %f -p %s -a %s" % (args.angleThresh, args.scale, subPrimitive, subAssoc)
 call(cmd, dry=not runIsNotDrySoGoAhead)
