@@ -90,4 +90,7 @@ mv plane_mesh.ply figure/pearl1_planes.ply
 
 ############################################################
 ## globfit
-../compareToGlobfit.py -s 0.005 --primLimit 350 --run
+../compareToGlobfit.py -s 0.001 --primLimit 50 --run
+../compareToGlobfit.py -s 0.001 --primLimit 100 --run
+../compareToGlobfit.py -s 0.001 --primLimit 150 --run
+
