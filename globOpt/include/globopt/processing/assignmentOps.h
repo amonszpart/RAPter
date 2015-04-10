@@ -1,0 +1,4 @@
+#ifndef ASSIGNMENTOPS_H
+#define ASSIGNMENTOPS_H
+
+#endif // ASSIGNMENTOPS_H
