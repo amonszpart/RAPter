@@ -144,7 +144,18 @@ namespace GF2
                     // first: unique id
                     // second: direction vector of unique id
 
-                    if ( std::abs(angleInRad(prim.template dir(), it->second) < angDiff) )
+//                    if ( std::abs(angleInRad(prim.template dir(), it->second) < angDiff) )
+//                    {
+//                        id = it->first;
+//                        break;
+//                    }
+
+                    Scalar diff = std::abs(angleInRad(prim.template dir(), it->second));
+
+                    if ( diff > M_PI ) diff -= M_PI;
+                    diff = std::min( diff, Scalar(M_PI) - diff );
+
+                    if ( diff < angDiffThresh )
                     {
                         id = it->first;
                         break;
