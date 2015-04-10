@@ -196,6 +196,7 @@ SET( TEMPLATE_INST_SRC_LIST
     src/templateInstantiation/segmentation.cpp
     src/templateInstantiation/taggable.cpp
     src/templateInstantiation/primitive.cpp
+    src/templateInstantiation/assignmentOps.cpp
 )
 
 #________________GLOBOPT________________#
@@ -465,6 +466,8 @@ IF(WITH_GLOBFIT)
     SET( GLOBFIT_H
         include/globfit2/comparison/impl/globFit.hpp
         include/globopt/processing/impl/subsamplePrimitives.hpp
+        include/globopt/processing/impl/assignmentOps.hpp
+        include/globopt/processing/assignmentOps.h
         include/globfit2/comparison/globFit.h
         include/globopt/processing/subsamplePrimitives.h
     )
@@ -472,8 +475,8 @@ IF(WITH_GLOBFIT)
     SET( GLOBFIT_SRC
         src/comparison/globFit.cpp
         src/comparison/globFitTemplateInst.cpp
+        src/comparison/subsampleTemplateInst.cpp
         ${TEMPLATE_INST_SRC_LIST}
-
     )
 
     add_executable( ${GLOBFIT_TARGET} ${GLOBFIT_SRC} ${GLOBFIT_H})

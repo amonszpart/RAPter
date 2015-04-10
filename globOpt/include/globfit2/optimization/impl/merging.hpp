@@ -655,8 +655,8 @@ Merging::mergeCli( int argc, char** argv )
         points[i].setTag( _PointPrimitiveT::TAGS::GID, points_primitives[i].first );
 
         // error check 2
-        if ( points[i].getTag(_PointPrimitiveT::TAGS::GID) == -1 )
-            std::cerr << "[" << __func__ << "]: " << "point assigned to patch with id -1" << std::endl;
+        //if ( points[i].getTag(_PointPrimitiveT::TAGS::GID) == -1 )
+        //    std::cerr << "[" << __func__ << "]: " << "point assigned to patch with id -1" << std::endl;
     }
 
     //____________________________WORK____________________________

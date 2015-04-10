@@ -48,7 +48,7 @@ if options.savePoly:
     
 showOption = "--show" if options._2d else "--show3D"
 print("default:", defaultArgs)
-colourOption = "--dir-colours" if options.dirColours else "--paral-colours %f" % (options.paralLimit);
+colourOption = "--dir-colours" if options.dirColours else "--paral-colours --perfect-angle %f" % (options.paralLimit);
 
 cmd = "../globOptVis %s --scale %f --pop-limit %d --title %s --angle-gens %s %s --bg-colour %s -p %s -a %s %s %s" % (
     showOption, options.scale, options.popLimit, options.title, options.angleGens, colourOption, options.bgColour, options.primitivesPath, options.assignmentsPath, defaultArgs, savePolyArgs)

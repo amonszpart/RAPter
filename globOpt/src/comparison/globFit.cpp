@@ -4,6 +4,7 @@
 #include "globfit2/util/parse.h"
 #include "globfit2/globOpt_types.h"
 #include "globopt/processing/subsamplePrimitives.h"
+#include "globopt/processing/assignmentOps.h"
 
 namespace globopt
 {
@@ -46,6 +47,14 @@ int main(int argc, char *argv[])
     else if ( GF2::console::find_switch(argc,argv,"--subsample-primitives") )
     {
         return globopt::subsamplePrimitives<GF2::_3d::PrimitiveVectorT
+                                           , GF2::_3d::PrimitiveMapT
+                                           , GF2::PointContainerT
+                                           , GF2::PclCloudT>
+                                           ( argc, argv );
+    }
+    else if ( GF2::console::find_switch(argc,argv,"--unass-w-planes") )
+    {
+        return globopt::approxUnassignedWPlanes<GF2::_3d::PrimitiveVectorT
                                            , GF2::_3d::PrimitiveMapT
                                            , GF2::PointContainerT
                                            , GF2::PclCloudT>

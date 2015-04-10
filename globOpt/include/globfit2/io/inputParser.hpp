@@ -47,7 +47,7 @@ inline int parseInput( _PointContainerT         &points
     typedef typename PrimitiveT::Scalar                     Scalar;
 
     bool valid_input = true;
-    std::string cloud_path, input_prims_path, associations_path;
+    std::string cloud_path("cloud.ply"), input_prims_path, associations_path;
 
     if (    (GF2::console::parse_argument( argc, argv, "--cloud", cloud_path) < 0)
          && (!boost::filesystem::exists(cloud_path)) )

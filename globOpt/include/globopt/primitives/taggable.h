@@ -91,7 +91,7 @@ namespace globopt
             _Scalar
             getTag( _Scalar key ) const;
 
-            inline int
+            int
             copyTagsFrom( Taggable const& other );
 
 

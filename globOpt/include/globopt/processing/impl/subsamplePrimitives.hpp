@@ -105,13 +105,17 @@ namespace globopt
             std::vector<MultiMapPair> gidMix; // contains the "small" primitives, to randomly sample from
             for ( ; it != gidsBySize.rend(); ++it )
                 gidMix.push_back( *it );
+            std::cout << "gidMix.size(): " << gidMix.size() << ", " << chosenGids.size() << std::endl;
 
             // shuffle the "small" primitives
             shuffle( gidMix.begin(), gidMix.end(), std::default_random_engine(seed) );
 
             // pick the first (primLimit-k) to fill chosen Gids
             for ( auto gidMixIt = gidMix.begin(); gidMixIt != gidMix.end() && (chosenGids.size() < primLimit); ++gidMixIt )
+            {
                 chosenGids.insert( *gidMixIt );
+                std::cout << "chosenGids.size(): " << chosenGids.size() << std::endl;
+            }
 
         }
 
@@ -136,7 +140,7 @@ namespace globopt
             else
             {
                 keepPrims.insert( gid );
-                //std::cout << "keeping " << gid << "/" << gidsBySize.size() << std::endl;
+                std::cout << "keeping " << gid << "/" << gidsBySize.size() << ", keepPrims.size(): " << keepPrims.size() << std::endl;
             }
 
             // don't cut points from too small planes
@@ -201,6 +205,7 @@ namespace globopt
 
             // store primitive
             containers::add( out, gid, *it );
+            std::cout << "adding " << gid << ", now " << out.size() << std::endl;
 
             // (2) just copy primitive to output, no assigned points to remove
             auto const cutIt = cutHowMuch.find( gid );
@@ -268,7 +273,7 @@ namespace globopt
         std::stringstream ssAssoc; ssAssoc << "points_" << outName << ".sub_" << ratio << "_" << primLimit << ".csv";
         GF2::io::writeAssociations<PointPrimitiveT>( points, ssAssoc.str() );
 
-        std::cout << "[" << __func__ << "]: " << "results written to " << ssPrims.str() << " and " << ssAssoc.str() << "\n";
+        std::cout << "[" << __func__ << "]: " << "results written to " << ssPrims.str() << "(#" << out.size() << ") and " << ssAssoc.str() << "\n";
         std::cout << "../runGlobfit.py -s " << params.scale << " -p " << ssPrims.str() << " -a " << ssAssoc.str() << "\n";
 
         return EXIT_SUCCESS;
