@@ -155,7 +155,7 @@ namespace GF2
                     if ( diff > M_PI ) diff -= M_PI;
                     diff = std::min( diff, Scalar(M_PI) - diff );
 
-                    if ( diff < angDiffThresh )
+                    if ( diff < angDiff )
                     {
                         id = it->first;
                         break;
