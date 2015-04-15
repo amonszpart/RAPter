@@ -95,6 +95,8 @@ namespace GF2
             //! \return The position of the point as a 3D Eigen::Vector.
             /*explicit*/ inline operator Eigen::Matrix<Scalar,3,1>()       { return this->pos(); }
 
+            inline bool gidUnset() const { return this->getTag(PointPrimitive::TAGS::GID) == LONG_VALUES::UNSET; }
+
             // ____________________STATICS____________________
             //! \brief                      Convenience conversion of an STL container of this class' objects to another container using the provided allocator functor and the push_back() function of \p cloud.
             //! \tparam CloudPtrT           A pointer to a container that implements reserve and push_back. Concept: pcl::PointCloud<pcl::PointXYZ>::Ptr.

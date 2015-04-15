@@ -19,6 +19,15 @@
 namespace GF2
 {
 
+inline std::string parseAssocPath( int argc, char** argv )
+{
+    std::string input_prims_path;
+    if ( GF2::console::parse_argument( argc, argv, "-a"     , input_prims_path) < 0 )
+        GF2::console::parse_argument( argc, argv, "--assoc", input_prims_path);
+
+    return input_prims_path;
+} //...parsePrimitivesPath()
+
 inline std::string parsePrimitivesPath( int argc, char** argv )
 {
     std::string input_prims_path;
@@ -67,9 +76,10 @@ inline int parseInput( _PointContainerT         &points
         valid_input = false;
     }
 
-    if (    (pcl::console::parse_argument( argc, argv, "-a", associations_path) < 0)
-         && (pcl::console::parse_argument( argc, argv, "--assoc", associations_path) < 0)
-         && (!boost::filesystem::exists(associations_path)) )
+    associations_path = parseAssocPath(argc,argv);
+    if (    /*(pcl::console::parse_argument( argc, argv, "-a", associations_path) < 0)
+         && (pcl::console::parse_argument( argc, argv, "--assoc", associations_path) < 0)*/
+            (!boost::filesystem::exists(associations_path)) )
     {
         if ( read_assoc )
         {

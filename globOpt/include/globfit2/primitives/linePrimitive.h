@@ -493,6 +493,8 @@ namespace GF2
             }
 #endif // GF2_USE_PCL
 
+            inline bool gidUnset() const { return this->getTag(LinePrimitive::TAGS::GID) == LONG_VALUES::UNSET; }
+
     }; // LinePrimitive
 
 } // ns GF2

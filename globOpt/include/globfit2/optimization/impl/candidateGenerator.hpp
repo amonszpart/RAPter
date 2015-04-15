@@ -238,7 +238,8 @@ namespace GF2
                     //_Scalar tmpAng = GF2::angleInRad( cand0.template dir(), it->template dir() );
                     _Scalar tmpAng = _PrimitivePrimitiveAngleFunctorT::template eval<_Scalar>( cand0, *it,
                                                                                                angles );
-                    if ( tmpAng > _Scalar(1e-2) )
+                    if ( tmpAng < 0. ) { std::cout << "[" << __func__ << "]: " << "halt, tmpAng < 0. " << std::endl; throw std::runtime_error("asdf"); }
+                    if ( tmpAng > _Scalar(1e-4) )
                     {
 //                        std::cout << "triplet cancel: "
 //                                  << "<" << gid0 << "," << dir_gid1 << "," << cand0.getTag(_PrimitiveT::TAGS::GEN_ANGLE) << "> "
@@ -247,8 +248,14 @@ namespace GF2
 //                                  << "\n";
                         add0 = false;
                     }
+                    else if ( gid0 == 125 || gid1 == 125 )
+                        std::cout << "ok: it.gid " << it.getGid() << "," << it.getDid() << ", ang: " << tmpAng << std::endl;
                 }
         } //...tripletSafe
+
+        // are we still adding it?
+        if ( !add0 ) // changed by Aron on 9/04/15
+            return false;
 
         // (1) if not restricted ? output, restrict
         // (2)                   : if angle allowed ? output
@@ -325,6 +332,8 @@ namespace GF2
         {
             if ( generators.size() > 1 ) { throw new CandidateGeneratorException("[addCandidate] generators.size > 1, are you sure about this?"); }
             added0 = output( cand0, out_prims, generated, copied, nLines, promoted, gid0, lid0, closest_angle_id0, generators.size() ? generators[0] : _PrimitiveT::GEN_ANGLE_VALUES::UNSET );
+            if ( gid0 == 125 || gid1 == 125 )
+                std::cout << "adding at " << gid0 << "," << dir_gid0 << " from " << gid1  << ", " << dir_gid1 << std::endl;
         }
 
         return added0;

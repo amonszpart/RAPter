@@ -62,14 +62,14 @@ namespace GF2
              *  \return \p out is only valid, if return true. We might decide, that there's nothing to create, in which case we return false.
              */
             template <class _AngleContainerT>
-            inline bool generateFrom( PlanePrimitive         & out
-                                    , PlanePrimitive    const& other
-                                    , int               const  closest_angle_id
-                                    , _AngleContainerT  const& angles
-                                    , Scalar            const  angle_multiplier = Scalar(1.)
-                                    ) const;
+            bool generateFrom( PlanePrimitive         & out
+                             , PlanePrimitive    const& other
+                             , int               const  closest_angle_id
+                             , _AngleContainerT  const& angles
+                             , Scalar            const  angle_multiplier = Scalar(1.)
+                             ) const;
             static
-            inline int generateFrom( PlanePrimitive                 & out
+            int generateFrom( PlanePrimitive                 & out
                                    , Eigen::Matrix<Scalar,3,1> const& normal
                                    , Scalar                    const  distanceFromOrigin );
 
@@ -96,23 +96,12 @@ namespace GF2
 
             /*! \brief Output <x0,n>, location and normal for the plane to a string that does *not* have an endline at the end.
              */
-            inline std::string toFileEntry() const
-            {
-                char line[1024];
-                sprintf( line, "%.9f,%.9f,%.9f,%.9f,%.9f,%.9f,"
-                         , pos   ()(0), pos   ()(1), pos   ()(2)
-                         , normal()(0), normal()(1), normal()(2) );
-                return std::string( line );
-            }
+            std::string toFileEntry() const;
 
             /*! \brief              Used in \ref io::readPrimitives to create the primitive from the read floats.
              *  \param[in] entries  Contains <x0,n> to create the plane from.
              */
-            static inline PlanePrimitive fromFileEntry( std::vector<Scalar> const& entries )
-            {
-                return PlanePrimitive( /*    pos: */ Eigen::Map<const Eigen::Matrix<Scalar,3,1> >( entries.data()  , 3 ),
-                                       /* normal: */ Eigen::Map<const Eigen::Matrix<Scalar,3,1> >( entries.data()+3, 3 ) );
-            }
+            static PlanePrimitive fromFileEntry( std::vector<Scalar> const& entries );
 
             // ____________________GEOMETRY____________________
 
@@ -129,15 +118,12 @@ namespace GF2
              *  \return             Distance from point to plane.
              */
             inline Scalar
-            getFiniteDistance( ExtentsT const& extrema, Position const& pnt ) const
-            {
-                return MyPointFinitePlaneDistanceFunctor::eval( extrema, *this, pnt );
-            }
+            getFiniteDistance( ExtentsT const& extrema, Position const& pnt ) const;
 
             inline int to4Coeffs( std::vector<Scalar> &coeffs ) const;
 
-            inline Eigen::Matrix<Scalar,3,1>
-            projectPoint( Eigen::Matrix<Scalar,3,1> const& point ) const { return point - (this->getDistance(point) * this->dir() ); }
+            Eigen::Matrix<Scalar,3,1>
+            projectPoint( Eigen::Matrix<Scalar,3,1> const& point ) const;
 
             /*! \brief                          Calculates the length of the plane based on the points in \p cloud, masked by \p indices and the distance from point to plane \p threshold.
              *
@@ -151,7 +137,8 @@ namespace GF2
              *  \param[in]  indices             Optional input to specify subset of points by indices.
              *  \return                         EXIT_SUCCESS
              */
-            template <typename _PointPrimitiveT, class _IndicesContainerT, typename _PointContainerT> inline int
+            template <typename _PointPrimitiveT, class _IndicesContainerT, typename _PointContainerT>
+            int
             getExtent( std::vector<Eigen::Matrix<Scalar,3,1> >       & minMax
                      , _PointContainerT                         const& cloud
                      , double                                   const  threshold          = 0.01
@@ -161,7 +148,7 @@ namespace GF2
             /*! \brief Calculates size, a bit smarter, than taking the area of #getExtent().
              *  \tparam MatrixDerived   Concept: Eigen::Matrix<_Scalar,-1,1>.
              */
-            template <class _IndicesContainerT, typename MatrixDerived, typename _Scalar, class _PointContainerT > inline
+            template <class _IndicesContainerT, typename MatrixDerived, typename _Scalar, class _PointContainerT >
             MatrixDerived& getSpatialSignificance( MatrixDerived             & in
                                                  , _PointContainerT     const& points
                                                  , _Scalar             const /*scale*/
@@ -238,6 +225,7 @@ namespace GF2
                 );
 #endif //...GF2_USE_PCL
 
+        bool gidUnset() const;
     }; //...class PlanePrimitive
 } //...ns GF2
 
@@ -245,6 +233,7 @@ namespace GF2
 
 // ________________________________________________________HPP_________________________________________________________
 
+#if 0
 #ifndef __GF2_INC_PLANEPRIMITIVE_HPP__
 #define __GF2_INC_PLANEPRIMITIVE_HPP__
 namespace GF2
@@ -437,7 +426,7 @@ namespace GF2
         Scalar step = Scalar(1. * M_PI) / Scalar(180.);
 
         Scalar limits[2] = { Scalar(0.), M_PI/Scalar(2.) };
-        for ( int it = 0; it != 2; ++it, step /= Scalar(10.) )
+        for ( int it = 0; it != 2; ++it, step /= Scalar(5.) )
         {
             std::pair <Scalar,Scalar> min_volume; // <ang, volume>
             min_volume.first  = Scalar(-1.);
@@ -445,7 +434,7 @@ namespace GF2
             int i = 0;
             for ( Scalar ang = limits[0]; ang < limits[1]; ang += step, ++i )
             {
-//                std::cout << "rot by " << ang << ", step: " << step << std::endl;
+                std::cout << "rot by " << ang << ", step: " << step << std::endl;
                 // rotated frame
                 Eigen::Matrix4f tmp_frame = frame;
 
@@ -462,7 +451,18 @@ namespace GF2
                 processing::getMinMax3D<_IndicesContainerT>( min_pt, max_pt, local_cloud, /* indices: */ NULL );
 
                 Eigen::Vector3f diag    = max_pt.template pos() - min_pt.template pos();
-                float           volume  = diag(0) * diag(1) * diag(2);
+
+                //get location of minimum
+                Eigen::MatrixXf::Index minRow, minCol;
+                diag.minCoeff( &minRow, &minCol );
+                std::cout << "minRow: " << minRow << std::endl;
+                float volume = 0.;
+                if ( minRow == 1 )
+                    volume = diag(0) * diag(2);
+                else if ( minRow )
+                    volume = diag(0) * diag(1);
+                else
+                    volume = diag(1) * diag(2);
                 // select min
                 if ( volume < min_volume.second )
                 {
@@ -851,9 +851,12 @@ namespace GF2
     }
 #   endif // GF2_USE_PCL
 
+    inline bool PlanePrimitive::gidUnset() const { return this->getTag(PlanePrimitive::TAGS::GID) == LONG_VALUES::UNSET; }
 } //...ns GF2
 
 #endif // __GF2_INC_PLANEPRIMITIVE_HPP__
+
+#endif
 
 #endif // __PLANEPRIMITIVE_H__
 

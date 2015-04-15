@@ -6,6 +6,7 @@
 #include "globfit2/io/inputParser.hpp"
 #include "globfit2/util/util.hpp"       // timeStamp2Str
 #include "globfit2/util/containers.hpp"
+#include "globopt/primitives/impl/planePrimitive.hpp"
 
 namespace globopt
 {

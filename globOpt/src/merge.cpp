@@ -2,6 +2,7 @@
 
 #include "globfit2/globOpt_types.h"         // _2d::PrimitiveT, _3d::PrimitiveT
 #include "globfit2/util/parse.h"            // find_switch
+#include "globopt/primitives/impl/planePrimitive.hpp"
 
 int merge( int argc, char** argv )
 {

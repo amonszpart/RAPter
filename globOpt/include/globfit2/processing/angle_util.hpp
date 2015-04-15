@@ -205,7 +205,7 @@ namespace GF2
                 continue;
             }
 
-            if ( (fmod(angle, angleGensInRad[i]) == _Scalar(0.)) && (angleGensInRad[i] != _Scalar(0.)) )
+            if ( (fmod(angle, angleGensInRad[i]) == _Scalar(0.)) && (angleGensInRad[i] != _Scalar(0.)) && (angleGensInRad[i] != _Scalar(M_PI)) )
             {
                 single_gen.push_back( angleGensInRad[i] );
                 break;

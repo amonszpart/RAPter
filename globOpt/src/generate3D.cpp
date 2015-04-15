@@ -2,6 +2,7 @@
 #include "globfit2/util/parse.h" // GF2::console
 
 #include "globfit2/optimization/candidateGenerator.h"
+#include "globopt/primitives/impl/planePrimitive.hpp"
 
 int generate3D( int argc, char** argv )
 {

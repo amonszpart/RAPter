@@ -1,5 +1,6 @@
 #include "globfit2/optimization/impl/segmentation.hpp"
 #include "globfit2/globOpt_types.h"
+#include "globopt/primitives/impl/planePrimitive.hpp"
 
 namespace GF2
 {

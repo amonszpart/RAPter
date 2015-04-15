@@ -2,6 +2,7 @@
 #include "globfit2/util/parse.h" // GF2::console
 
 #include "globfit2/optimization/problemSetup.h"
+#include "globopt/primitives/impl/planePrimitive.hpp"
 
 int formulate3D( int argc, char** argv )
 {

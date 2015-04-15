@@ -50,6 +50,7 @@ SET( WITH_DRAWGRAPHS ON CACHE BINARY "Compile drawGraphs." )
 SET( WITH_PLYCONVERTER ON CACHE BINARY "Compile ply-converter executable.")
 SET( WITH_CORRESP ON CACHE BINARY "Correspondance miniprogram compilation.")
 SET( WITH_GLOBFIT ON CACHE BINARY "GlobFit (Li'11) comparison.")
+SET( WITH_EVAL ON CACHE BINARY "Evaluation code")
 
 SET( WITH_SAMPLE_INPUT OFF CACHE BINARY "Compile --sample-input option")
 IF(WITH_SAMPLE_INPUT)
@@ -341,6 +342,7 @@ IF(WITH_PEARL)
     ## Sources
     SET( PEARL_SRC
         src/comparison/pearl.cpp
+        ${TEMPLATE_INST_SRC_LIST}
     )
     SET( PEARL_H
         ${PATH_GLOBOPT_DEPS_ROOT}/pearl/include/pearl/pearl.h
@@ -415,6 +417,7 @@ SET( SCHNABEL07_LIBRARIES libSchnabel07 libSchnabel07_MiscLib)
     SET( RSAC_SRC
         src/comparison/ransac.cpp
         src/schnabelEnv.cpp
+        ${TEMPLATE_INST_SRC_LIST}
     )
     SET( RSAC_H
 
@@ -485,3 +488,32 @@ IF(WITH_GLOBFIT)
         boost_filesystem
     )
 ENDIF(WITH_GLOBFIT)
+
+## _____________________________________Eval____________________________________________________
+
+IF(WITH_EVAL)
+    SET( EVAL_TARGET "eval" )
+
+    SET( EVAL_H
+        include/globopt/evaluation/assignPointsToTriangles.h
+    )
+
+    SET( EVAL_HPP
+        include/globopt/evaluation/impl/assignPointsToTriangles.hpp
+        include/globopt/primitives/impl/triangle.hpp
+        include/globfit2/primitives/planePrimitive.h
+    )
+
+    SET( EVAL_SRC
+        src/evaluation/eval.cpp
+        src/evaluation/assignPointsToTriangles.cpp
+        src/templateInstantiation/trianglesFromObj.cpp
+        ${TEMPLATE_INST_SRC_LIST}
+    )
+
+    add_executable( ${EVAL_TARGET} ${EVAL_SRC} ${EVAL_H} ${EVAL_HPP} )
+    TARGET_LINK_LIBRARIES( ${EVAL_TARGET}
+        ${PCL_LIBRARIES}
+        boost_filesystem
+    )
+ENDIF(WITH_EVAL)
