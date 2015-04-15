@@ -94,3 +94,27 @@ mv plane_mesh.ply figure/pearl1_planes.ply
 ../compareToGlobfit.py -s 0.001 --primLimit 100 --run
 ../compareToGlobfit.py -s 0.001 --primLimit 150 --run
 
+
+############################################################
+## globfit 300
+
+../show.py -s 0.001 -p globfit_0.5_300/patches.sub_0.5_300.csv -a globfit_0.5_300/points_patches.sub_0.5_300.csv --save-poly
+
+cd globfit_0.5_300
+mkdir figure
+
+meshlabserver -i ../cloudRGBNormal_patches_reProj_noUnass.ply -o figure/globfit_300_pts_segments.ply -om vc vn
+# input segments
+
+splatting figure/globfit_300_pts_segments.ply figure/globfit_300_segments.ply 1 0.005
+
+# output
+meshlabserver -i cloudRGBNormal_patches_reProj_noUnass.ply -o figure/globfit_300_pts.ply -om vc vn
+splatting figure/globfit_300_pts.ply figure/globfit_300.ply 1 0.005
+
+#distribution
+python ../normal_distr.py figure/globfit_300_pts_segments.ply figure/globfit_300_pts_segments.svg "Segments - 300" --noscatter
+python ../normal_distr.py  cloudRGBNormal_patches_reProj_noUnass.ply ndistr_globfit_300.svg "Lans - Globfit"
+
+cp plane_mesh_patches.ply figure/globfit_300_planes.ply
+
