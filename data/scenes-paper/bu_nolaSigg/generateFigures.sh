@@ -109,3 +109,32 @@ python ../normal_distr.py pearl9_pts.ply ndistr_pearl9.svg "Nola - Pearl"
 ../globOptVis --show3D --scale 0.02 --pop-limit 3 --title "Pearl" --angle-gens 90 --use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-scale --bg-colour .9,.9,.9 --no-rel -p primitives.pearl.9.csv -a points_primitives.pearl.9.csv --perfect-angle 0.0001  --draw-mode 1 --save-poly  --no-pts  --cloud cloud.pearl.600000.ply
 
 mv plane_mesh.ply figure/pearl9_planes.ply
+
+
+
+
+
+
+
+############################################################
+## globfit 120
+
+../show.py -s 0.00400 -p globfit_0.5_120/patches.sub_0.5_120.csv -a globfit_0.5_120/points_patches.sub_0.5_120.csv --save-poly
+
+cd globfit_0.5_120
+mkdir figure
+
+meshlabserver -i ../cloudRGBNormal_patches_reProj_noUnass.ply -o figure/globfit_120_pts_segments.ply -om vc vn
+# input segments
+
+splatting figure/globfit_120_pts_segments.ply figure/globfit_120_segments.ply 1 0.006
+
+# output
+meshlabserver -i cloudRGBNormal_patches_reProj_noUnass.ply -o figure/globfit_120_pts.ply -om vc vn
+splatting figure/globfit_120_pts.ply figure/globfit_120.ply 1 0.006
+
+#distribution
+python ../normal_distr.py figure/globfit_120_segments.ply figure/globfit_120_segments.svg "Segments - 120" --noscatter
+python ../normal_distr.py  cloudRGBNormal_patches_reProj_noUnass.ply ndistr_globfit_120.svg "Stairs - Globfit"
+
+cp plane_mesh_patches.ply figure/globfit_120_planes.ply
