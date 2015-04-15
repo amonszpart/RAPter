@@ -34,11 +34,17 @@ itmax=20
 ################################################################################
 ## Command line parsing
 parser = argparse.ArgumentParser(description='Compute reconstruction error in normal space.')
-parser.add_argument('gtmesh')
-parser.add_argument('cloud')
-parser.add_argument('primitives')
-parser.add_argument('assignment')
+parser.add_argument('angles')
 
 args = parser.parse_args()
+
+anglesFile  = args.angles
+
+angles = np.array( [np.float32(line.strip()) for line in open(anglesFile)] )
+
+print angles
+print "mean   = ", np.mean(angles)
+print "var    = ", np.var(angles)
+print "median = ", np.median(angles)
 
 
