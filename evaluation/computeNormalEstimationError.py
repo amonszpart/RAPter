@@ -26,7 +26,7 @@ def createGraph(anglesArrays, names):
     fig, ax = plt.subplots()
     offset=0.
     for i, angle in enumerate(anglesArrays):
-        n, bins = np.histogram(angle, N, (mmin, mmax), density=True)           
+        n, bins = np.histogram(angle, N, (mmin, mmax))           
         ax.bar(offset+bins[:-1], n, width, color=colors[i])
         offset = offset+width
         
