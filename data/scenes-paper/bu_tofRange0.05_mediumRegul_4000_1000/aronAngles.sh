@@ -1,0 +1,1 @@
+/home/bontius/workspace/globOpt/globOpt/build/Release/bin/eval --planes --assign gt.obj --cloud cloud.ply -p primitives_it6.bonmin.csv -a points_primitives_it5.csv --scale 0.15 --silent --filter-ambig 1
