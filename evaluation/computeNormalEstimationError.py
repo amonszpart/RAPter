@@ -31,9 +31,9 @@ def createGraph(anglesArrays, names):
         offset = offset+width
         
         print names[i]
-        print "mean   = ", np.mean(angles)
-        print "var    = ", np.var(angles)
-        print "median = ", np.median(angles)
+        print "mean   = ", np.mean(angle)
+        print "var    = ", np.var(angle)
+        print "median = ", np.median(angle)
 
     plt.show()
 
