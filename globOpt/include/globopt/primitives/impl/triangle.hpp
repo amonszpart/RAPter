@@ -46,13 +46,13 @@ namespace globopt
     inline typename Triangle<_Scalar>::VectorT Triangle<_Scalar>::dir() const
     {
         VectorT edge0 = this->getCorner(1) - this->getCorner(0);
-        std::cout << "edge0: " << edge0.template transpose()  << " = "
-                              << this->getCorner(1).template transpose() << " - "
-                              << this->getCorner(0).template transpose()
-                              << std::endl;
+//        std::cout << "edge0: " << edge0.template transpose()  << " = "
+//                              << this->getCorner(1).template transpose() << " - "
+//                              << this->getCorner(0).template transpose()
+//                              << std::endl;
         VectorT edge1 = this->getCorner(2) - this->getCorner(0);
-        std::cout << "edge1: " << edge1.template transpose()  << " = " << this->getCorner(2).template transpose() << " - " << this->getCorner(0).template transpose()
-                              << std::endl;
+//        std::cout << "edge1: " << edge1.template transpose()  << " = " << this->getCorner(2).template transpose() << " - " << this->getCorner(0).template transpose()
+//                              << std::endl;
         //return edge0.normalized().cross( edge1.normalized() );
         return edge0.cross( edge1 ).normalized();
     } //...dir()

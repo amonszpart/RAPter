@@ -529,7 +529,7 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
                 // add var
                 GidT gId = prims[lid][lid1].getTag( _PrimitiveT::TAGS::GID     );
                 LidT dId = prims[lid][lid1].getTag( _PrimitiveT::TAGS::DIR_GID );
-                sprintf( name, "x_%d_%d", gId, dId );
+                sprintf( name, "x_%ld_%ld", gId, dId );
 
                 // store var_id for later, add binary variable
                 const UidT var_id = problem.addVariable( OptProblemT::BOUND::RANGE, 0.0, 1.0, OptProblemT::VAR_TYPE::INTEGER
@@ -566,7 +566,7 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
             DidT dId     = dIdsIt->first;
             auto &varIds = dIdsIt->second;
 
-            sprintf( name, "dId%uL", dId );
+            sprintf( name, "dId%ld", dId );
 
             // store varId for later, add binary variable
             const LidT varId = problem.addVariable( OptProblemT::BOUND::RANGE, 0.0, 1.0, OptProblemT::VAR_TYPE::BINARY
@@ -712,14 +712,16 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
 
                             ProximityMapT::const_iterator gidNeighsIt = proximities.find( gid );
                             if (    ( did != dIdOther )
-                                    && ( gid != gIdOther ) // we don't want to pollute problem with unnecessary edges
-                                    && (    (    (gidNeighsIt != proximities.end()                               )
-                                                 && (gidNeighsIt->second.find(gIdOther) != gidNeighsIt->second.end()) )
-                                            //                                      || ()
-                                            )
+                                 && ( gid != gIdOther ) // we don't want to pollute problem with unnecessary edges
+                                 && (    (gidNeighsIt                        != proximities.end()        )
+                                      && (gidNeighsIt->second.find(gIdOther) != gidNeighsIt->second.end())
                                     )
+                               )
                             {
-                                //std::cout << "adding spatw " << halfSpatialWeightCoeff << " to " << gid << "-" << gIdOther << std::endl;
+//                                std::cout << "adding spatw " << halfSpatialWeightCoeff << " to "
+//                                          << lid << ", " << lid1 << " - "
+//                                          << lidOth  << ", " << lid1Oth
+//                                          << std::endl;
                                 const LidT varId0 = lids_varids.at( lidLid1 );
                                 const LidT varId1 = lids_varids.at( IntPair(lidOth,lid1Oth) );
 #                               pragma omp critical (PS_PROBLEM)
@@ -786,7 +788,7 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
                         LidT clusterId = 0;
                         for ( auto it = clusters.begin(); it != clusters.end(); ++it, ++clusterId )
                         {
-                            sprintf(name,"cl_%d", clusterId );
+                            sprintf(name,"cl_%ld", clusterId );
                             LidT varid = problem.addVariable( OptProblemT::BOUND::RANGE, 0.0, 1.0, OptProblemT::VAR_TYPE::INTEGER
                                                              , OptProblemT::LINEARITY::LINEAR, name );
 
@@ -1009,8 +1011,8 @@ namespace problemSetup {
     {
         typedef typename _AssocT::key_type IntPair;
 
-        const _Scalar w_mod_base     = ProblemSetupParams<_Scalar>::w_mod_base,
-                      w_mod_base_inv = _Scalar(1.) - w_mod_base;
+        //const _Scalar w_mod_base     = ProblemSetupParams<_Scalar>::w_mod_base;
+                      //w_mod_base_inv = _Scalar(1.) - w_mod_base;
 
         //int err = EXIT_SUCCESS;
 
@@ -1035,7 +1037,7 @@ namespace problemSetup {
             }
 #endif
 
-#       pragma omp parallel for num_threads(GF2_MAX_OMP_THREADS)
+#       pragma omp parallel for num_threads(4)
         for ( size_t lid = 0; lid < prims.size(); ++lid )
         {
             // check, if any directions for patch
@@ -1077,7 +1079,8 @@ namespace problemSetup {
                          _Scalar dist = std::numeric_limits<_Scalar>::max();
                         if ( err == EXIT_SUCCESS )
                         {
-                            dist = MyPointFiniteLineDistanceFunctor::eval( extrema, prims[lid][lid1], points[pid].template pos() );
+                            //dist = MyPointFiniteLineDistanceFunctor::eval( extrema, prims[lid][lid1], points[pid].template pos() );
+                            dist = prims[lid][lid1].getFiniteDistance( extrema, points[pid].template pos() );
                         }
                         else
                         {

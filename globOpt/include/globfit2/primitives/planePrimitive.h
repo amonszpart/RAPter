@@ -77,12 +77,14 @@ namespace GF2
             /*! \brief  Compulsory virtual overload of position getter. The position of the plane is calculated on the fly from the formula N . x0 + d = 0.
              *  \return The position of the plane as a 3D Eigen::Vector.
              */
-            virtual Eigen::Matrix<Scalar,3,1> pos() const { return _coeffs.template head<3>(); }
+            //virtual Eigen::Matrix<Scalar,3,1> pos() const { return _coeffs.template head<3>(); }
+            inline typename Eigen::Matrix<Scalar,Dim,1>::ConstFixedSegmentReturnType<3>::Type pos() const { return _coeffs.template head<3>(); }
 
             /*! \brief  Compulsory virtual overload of orientation getter. The orientation of the plane is the normal stored at the first three coordinates of #_coeffs.
              *  \return The normal of the plane as a 3D Eigen::Vector.
              */
-            virtual Eigen::Matrix<Scalar,3,1> dir() const { return _coeffs.template segment<3>(3); }
+            //virtual Eigen::Matrix<Scalar,3,1> dir() const { return _coeffs.template segment<3>(3); }
+            inline typename Eigen::Matrix<Scalar,Dim,1>::ConstFixedSegmentReturnType<3>::Type dir() const { return _coeffs.template segment<3>(3); }
 
             /*! \brief  Returns the normal, that is stored at the first three coordinates of the internal storage.
              *  \return The plane normal as a 3D Eigen::Vector Map.
@@ -117,10 +119,10 @@ namespace GF2
              *  \param[in] pnt      One of the extrema of the other primitive.
              *  \return             Distance from point to plane.
              */
-            inline Scalar
+            Scalar
             getFiniteDistance( ExtentsT const& extrema, Position const& pnt ) const;
 
-            inline int to4Coeffs( std::vector<Scalar> &coeffs ) const;
+            int to4Coeffs( std::vector<Scalar> &coeffs ) const;
 
             Eigen::Matrix<Scalar,3,1>
             projectPoint( Eigen::Matrix<Scalar,3,1> const& point ) const;
@@ -139,7 +141,7 @@ namespace GF2
              */
             template <typename _PointPrimitiveT, class _IndicesContainerT, typename _PointContainerT>
             int
-            getExtent( std::vector<Eigen::Matrix<Scalar,3,1> >       & minMax
+            getExtent( ExtentsT                                      & minMax
                      , _PointContainerT                         const& cloud
                      , double                                   const  threshold          = 0.01
                      , _IndicesContainerT                       const* indices_arg        = NULL

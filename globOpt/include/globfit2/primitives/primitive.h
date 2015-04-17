@@ -144,10 +144,10 @@ namespace GF2
             // ____________________VIRTUALS____________________
             //! \brief  Pure virtual function to return the location of the primitive.
             //! \return Location of the primitive as a 3D Eigen::Vector.
-            virtual Eigen::Matrix<Scalar,3,1>   pos() const = 0;
+            //virtual Eigen::Matrix<Scalar,3,1>   pos() const = 0;
             //! \brief  Pure virtual function to return the direction of the primitive.
             //! \return Direction of the primitive as a 3D Eigen::Vector.
-            virtual Eigen::Matrix<Scalar,3,1>   dir() const = 0;
+            //virtual Eigen::Matrix<Scalar,3,1>   dir() const = 0;
 
             // ____________________CONSOLE____________________
             //! \brief Convenience function for plotting.

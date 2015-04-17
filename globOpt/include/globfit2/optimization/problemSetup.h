@@ -177,9 +177,9 @@ namespace GF2
     }; //...class ProblemSetup
 } //...namespace GF2
 
-#ifndef GF2_INC_PROBLEMSETUP_HPP
-#   define GF2_INC_PROBLEMSETUP_HPP
-#   include "globfit2/optimization/impl/problemSetup.hpp"
-#endif //GF2_INC_PROBLEMSETUP_HPP
+//#ifndef GF2_INC_PROBLEMSETUP_HPP
+//#   define GF2_INC_PROBLEMSETUP_HPP
+//#   include "globfit2/optimization/impl/problemSetup.hpp"
+//#endif //GF2_INC_PROBLEMSETUP_HPP
 
 #endif // GF2_PROBLEMSETUP_H

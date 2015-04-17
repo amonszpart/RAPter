@@ -8,6 +8,7 @@
 #include "globfit2/util/containers.hpp" // add
 #include "globfit2/simple_types.h"
 #include "globfit2/util/containers.hpp"
+#include "globopt/primitives/impl/planePrimitive.hpp"
 
 
 template int
@@ -173,6 +174,8 @@ int pearlCli( int argc, char **argv )
         GF2::io::writeAssociations<PointPrimitiveT>( points, "./points_primitives.pearl.csv" );
         GF2::io::savePrimitives<PrimitiveT,typename _InnerPrimitiveContainerT::const_iterator>( out_prims, "./primitives.pearl.csv" );
     } //...work
+
+    std::cout << "../show.py -s " << params.scale << " -p points_primitives.pearl.csv -a primitives.pearl.csv" << std::endl;
 
     return err;
 }

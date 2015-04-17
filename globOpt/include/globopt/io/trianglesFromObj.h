@@ -4,7 +4,7 @@
 namespace globopt
 {
     template <class _TrianglesContainer>
-    inline int getTrianglesFromObj( _TrianglesContainer & triangles, std::string const& meshPath );
+    int getTrianglesFromObj( _TrianglesContainer & triangles, std::string const& meshPath );
 }
 
 

@@ -352,9 +352,9 @@ namespace GF2
                                                   , _PointContainerT     const& points
                                                   , _Scalar              const  scale )
             : AbstractPrimitivePrimitiveEnergyFunctor<_Scalar,PrimitiveT>( angles )
+            , _verbose( false )
             , _points( points )
             , _scale ( scale )
-            , _verbose( false )
             , _dirIdBias( 0. )
             , _truncAngle( 0. )
             , _useAngleGen( 0 )

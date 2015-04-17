@@ -44,7 +44,7 @@ namespace GF2
             //return false;
             //Scalar const angle = angles[ closest_angle_id ];
             Scalar angle = angles[ closest_angle_id ];
-#warning This has to be tested for angle sign
+//#warning This has to be tested for angle sign
             out = PlanePrimitive( /*  position: */ this->pos()
                                 , /* direction: */ Eigen::AngleAxisf( angle, other.dir().cross(dir()) ) * other.dir()
                                 );
@@ -126,46 +126,15 @@ namespace GF2
 
         // project cloud
         _PointContainerT on_plane_cloud;
-        on_plane_cloud.reserve( inliers.size() );
-        for ( PidT pid_id = 0; pid_id != inliers.size(); ++pid_id )
+        //on_plane_cloud.reserve( inliers.size() );
+        on_plane_cloud.resize( inliers.size() );
+#       pragma omp parallel for num_threads(4)
+        for ( PidT pid_id = 0; pid_id < inliers.size(); ++pid_id )
         {
-            const PidT pid = inliers[ pid_id ];
-            on_plane_cloud.push_back( _PointPrimitiveT(this->projectPoint(cloud[pid].template pos()), cloud[pid].template dir()) );
+            on_plane_cloud[pid_id] = _PointPrimitiveT( this->projectPoint(cloud[ inliers[pid_id] ].template pos()),
+                                                                          cloud[ inliers[pid_id] ].template dir()
+                                                     );
         }
-
-#if 0
-        // debug
-        {
-            pcl::PointCloud<pcl::PointXYZRGB>::Ptr c ( new pcl::PointCloud<pcl::PointXYZRGB>() );
-            pcl::visualization::PCLVisualizer::Ptr vptr( new pcl::visualization::PCLVisualizer("on_plane_cloud") );
-            vptr->setBackgroundColor( .5, .6, .6 );
-            for ( PidT pid = 0; pid != on_plane_cloud.size(); ++pid )
-            {
-                pcl::PointXYZRGB pnt;
-                pnt.getVector3fMap() = on_plane_cloud[pid].template pos();
-                pnt.r = 255; pnt.g = 0; pnt.b = 0;
-                c->push_back( pnt );
-            }
-            vptr->addPointCloud( c, "onplane");
-            vptr->setPointCloudRenderingProperties( pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3.f, "onplane" );
-
-            pcl::PointCloud<pcl::PointXYZRGB>::Ptr c1 ( new pcl::PointCloud<pcl::PointXYZRGB>() );
-            for ( PidT pid_id = 0; pid_id != inliers.size(); ++pid_id )
-            {
-                pcl::PointXYZRGB pnt;
-                pnt.getVector3fMap() = cloud[ inliers[pid_id] ].template pos();
-                pnt.r = 0; pnt.g = 0; pnt.b = 255;
-                c1->push_back( pnt );
-            }
-            vptr->addPointCloud( c1, "origcloud" );
-            vptr->setPointCloudRenderingProperties( pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3.f, "origcloud" );
-
-            char plane_name[255];
-            sprintf( plane_name, "plane%03d", 0 );
-            vptr->addPlane( *(this->modelCoefficients()), plane_name, 0 );
-            vptr->spin();
-        }
-#endif
 
         Eigen::Matrix<Scalar,4,4> frame; // 3 major vectors as columns, and the fourth is the centroid
         {
@@ -184,71 +153,68 @@ namespace GF2
                 frame.col(0).head<3>() = frame.col(2).head<3>().cross( dim3.first             ).normalized();
                 frame.col(1).head<3>() = frame.col(2).head<3>().cross( frame.col(0).head<3>() ).normalized();
             }
-        }
-
-#if 0
-        Scalar step = Scalar(1. * M_PI) / Scalar(180.);
-
-        Scalar limits[2] = { Scalar(0.), M_PI/Scalar(2.) };
-        for ( int it = 0; it != 2; ++it, step /= Scalar(5.) )
-        {
-            std::pair <Scalar,Scalar> min_volume; // <ang, volume>
-            min_volume.first  = Scalar(-1.);
-            min_volume.second = Scalar(FLT_MAX);
-            int i = 0;
-            for ( Scalar ang = limits[0]; ang < limits[1]; ang += step, ++i )
+            else
             {
-                std::cout << "rot by " << ang << ", step: " << step << std::endl;
-                // rotated frame
-                Eigen::Matrix4f tmp_frame = frame;
-
-                // rotate frame around up_vector by ang
-                Eigen::AngleAxisf rot( ang, tmp_frame.block<3,1>(0,2) );
-                tmp_frame.block<3,1>(0,0) = rot * tmp_frame.block<3,1>(0,0);
-                tmp_frame.block<3,1>(0,1) = rot * tmp_frame.block<3,1>(0,1);
-
-                // calculate volume
-                _PointContainerT local_cloud;
-                processing::cloud2Local<_PointPrimitiveT,_IndicesContainerT>( local_cloud, frame, on_plane_cloud, /* indices: */ NULL ); // no indices needed, it's already a full cloud
-
-                _PointPrimitiveT min_pt, max_pt;
-                processing::getMinMax3D<_IndicesContainerT>( min_pt, max_pt, local_cloud, /* indices: */ NULL );
-
-                Eigen::Vector3f diag    = max_pt.template pos() - min_pt.template pos();
-
-                //get location of minimum
-                Eigen::MatrixXf::Index minRow, minCol;
-                diag.minCoeff( &minRow, &minCol );
-                std::cout << "minRow: " << minRow << std::endl;
-                float volume = 0.;
-                if ( minRow == 1 )
-                    volume = diag(0) * diag(2);
-                else if ( minRow )
-                    volume = diag(0) * diag(1);
-                else
-                    volume = diag(1) * diag(2);
-                // select min
-                if ( volume < min_volume.second )
+#if 1
+                Scalar step      = Scalar(1. * M_PI) / Scalar(180.);
+                Scalar limits[2] = { -Scalar(M_PI_4), Scalar(M_PI_4) };
+                for ( int it = 0; it != 2; ++it, step /= Scalar(5.) )
                 {
-                    min_volume.first  = ang;
-                    min_volume.second = volume;
-                }
-            }
+                    std::pair <Scalar,Scalar> min_volume; // <ang, volume>
+                    min_volume.first  = Scalar(-1.);
+                    min_volume.second = Scalar(FLT_MAX);
+                    int i = 0;
+                    for ( Scalar ang = limits[0]; ang < limits[1]; ang += step, ++i )
+                    {
+                        //                std::cout << "rot by " << ang << ", step: " << step << std::endl;
+                        // rotated frame
+                        Eigen::Matrix4f tmp_frame = frame;
 
-//            if ( true )
-//                std::cout << "min_volume.first (angle): " << min_volume.first << " radians "
-//                          << min_volume.first * Scalar(180.)/Scalar(M_PI) << " degrees, "  << min_volume.second << " volume" << std::endl;
+                        // rotate frame around up_vector by ang
+                        Eigen::AngleAxisf rot( ang, tmp_frame.block<3,1>(0,2) );
+                        tmp_frame.block<3,1>(0,0) = rot * tmp_frame.block<3,1>(0,0);
+                        tmp_frame.block<3,1>(0,1) = rot * tmp_frame.block<3,1>(0,1);
 
-            // selected apply rotation
-            Eigen::AngleAxisf rot( min_volume.first, frame.block<3,1>(0,2) );
-            frame.block<3,1>(0,0) = rot * frame.block<3,1>(0,0);
-            frame.block<3,1>(0,1) = rot * frame.block<3,1>(0,1);
+                        // calculate volume
+                        _PointContainerT local_cloud;
+                        processing::cloud2Local<_PointPrimitiveT,_IndicesContainerT>( local_cloud, tmp_frame, on_plane_cloud, /* indices: */ NULL ); // no indices needed, it's already a full cloud
 
-            // modify lookup around chosen angle for next iteration
-            limits[0] = -step/2.f;
-            limits[1] = limits[0] + step;
-        }
+                        _PointPrimitiveT min_pt, max_pt;
+                        processing::getMinMax3D<_IndicesContainerT>( min_pt, max_pt, local_cloud, /* indices: */ NULL );
+
+                        Eigen::Vector3f diag    = max_pt.template pos() - min_pt.template pos();
+
+                        //get location of minimum
+                        Eigen::MatrixXf::Index minRow, minCol;
+                        diag.minCoeff( &minRow, &minCol );
+                        //                std::cout << "minRow: " << minRow << std::endl;
+                        float volume = 0.;
+                        if ( minRow == 1 )
+                            volume = diag(0) * diag(2);
+                        else if ( minRow )
+                            volume = diag(0) * diag(1);
+                        else
+                            volume = diag(1) * diag(2);
+                        // select min
+                        if ( volume < min_volume.second )
+                        {
+                            min_volume.first  = ang;
+                            min_volume.second = volume;
+                        }
+                    } // for caliper angles
+
+                    // selected apply rotation
+                    Eigen::AngleAxisf rot( min_volume.first, frame.block<3,1>(0,2) );
+                    frame.block<3,1>(0,0) = rot * frame.block<3,1>(0,0);
+                    frame.block<3,1>(0,1) = rot * frame.block<3,1>(0,1);
+
+                    // modify lookup around chosen angle for next iteration
+                    limits[0] = -step/2.f;
+                    limits[1] = limits[0] + step;
+                } //...for caliper levels
 #endif
+            } //calipers
+        } //...estimate frame
 
         _PointContainerT local_cloud;
         processing::cloud2Local<_PointPrimitiveT,_IndicesContainerT>( local_cloud, frame, on_plane_cloud, /* indices: */ NULL ); // no indices needed, it's already a full cloud

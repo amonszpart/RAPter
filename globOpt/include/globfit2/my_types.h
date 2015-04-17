@@ -11,9 +11,12 @@
 
 namespace GF2
 {
-    template<typename Scalar, int Dim> inline Scalar
-    angleInRad( Eigen::Matrix<Scalar,Dim,1> const& v1, Eigen::Matrix<Scalar,Dim,1> const& v2 )
+    //template<typename Scalar, int Dim> inline Scalar
+    //angleInRad( Eigen::Matrix<Scalar,Dim,1> const& v1, Eigen::Matrix<Scalar,Dim,1> const& v2 )
+    template<typename Derived, typename DerivedB> inline typename Derived::Scalar
+    angleInRad( Derived const& v1, DerivedB const& v2 )
     {
+        typedef typename DerivedB::Scalar Scalar;
         // better, than acos
         Scalar angle = atan2( v1.cross(v2).norm(), v1.dot(v2) );
 

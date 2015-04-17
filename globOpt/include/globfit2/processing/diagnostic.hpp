@@ -55,7 +55,7 @@ namespace GF2
 
                     if ( _qo.coeff(lid,0) > _Scalar(0.) )
                     {
-                        sprintf( name, "c%d", lid );
+                        sprintf( name, "c%ld", lid );
                         f << "\t\"" << it->second << "\""
                           << " -- "
                           << "\"" << name << "\"\n";
@@ -101,7 +101,8 @@ namespace GF2
                 {
                     char cmd[2048];
                     sprintf( cmd, "(dot -Tpng -o%s.png %s &)", path.c_str(), path.c_str() );
-                    system( cmd );
+                    int sysErr = system( cmd );
+                    if ( sysErr ) std::cout << "sysErr: " << sysErr << std::endl;
                 }
             }
 

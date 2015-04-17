@@ -26,6 +26,7 @@
 //#include "globfit2/optimization/energyFunctors.h"     // PointLineDistanceFunctor,
 #include "globfit2/optimization/problemSetup.h"         // everyPatchNeedsDirection()
 #include "globfit2/processing/diagnostic.hpp"           // Diagnostic
+#include "globfit2/processing/angle_util.hpp"
 
 namespace GF2
 {
@@ -313,7 +314,7 @@ Solver::solve( int    argc
 
                                     // diagnostic // 5/1/2015
                                     char name[256];
-                                    sprintf( name,"p%d,%d", prims[l][l1].getTag(_PrimitiveT::TAGS::GID),prims[l][l1].getTag(_PrimitiveT::TAGS::DIR_GID) );
+                                    sprintf( name,"p%ld,%ld", prims[l][l1].getTag(_PrimitiveT::TAGS::GID),prims[l][l1].getTag(_PrimitiveT::TAGS::DIR_GID) );
                                     diag.setNodeName( prim_id, name );
                                     diag.setNodePos( prim_id, prims[l][l1].template pos() );
                                 }
@@ -333,12 +334,12 @@ Solver::solve( int    argc
                             char name[256];
                             if ( int(round(x_out[prim_id])) > 0 )
                             {
-                                sprintf( name,"%d_on", prim_id );
+                                sprintf( name,"%ld_on", prim_id );
                                 diag.setNodeName( prim_id, name );
                             }
                             else
                             {
-                                sprintf( name,"%d_off", prim_id );
+                                sprintf( name,"%ld_off", prim_id );
                             }
                         }
                     }

@@ -130,7 +130,7 @@ Segmentation:: fitLocal( _PrimitiveContainerT        & primitives
     }
 
     // every point proposes primitive[s] using its neighbourhood
-    unsigned int step_count;
+    unsigned int step_count(0);
     LidT skipped = 0;
     for ( size_t pid = 0; pid != neighs.size(); ++pid )
     {
@@ -283,6 +283,7 @@ Segmentation::patchify( _PrimitiveContainerT                   & patches
 
         if ( _PrimitiveT::EmbedSpaceDim == 2) // added by Aron on 17 Sep 2014
         {
+            std::cout << "[" << __func__ << "]: " << groups[gid].getRepresentative().toString() << std::endl;
             // added by Aron on 16:42 15/01/2015
             _PrimitiveT toAdd;
             int err = processing::fitLinearPrimitive<_PrimitiveT::Dim>( /*  [in,out] primitive: */ toAdd
@@ -293,6 +294,8 @@ Segmentation::patchify( _PrimitiveContainerT                   & patches
                                                             , /*    start from input: */ &(groups[gid].getRepresentative())  // use to calculate initial weights
                                                             , /* refit position only: */ false
                                                             , /*               debug: */ false  );
+            if ( err != EXIT_SUCCESS )
+                std::cerr << "fitlinprim err " << err << ",";
 
             // LINE
 #           pragma omp critical( ADD_PATCHES )
@@ -351,6 +354,7 @@ Segmentation::patchify( _PrimitiveContainerT                   & patches
         else
             std::cerr << "[" << __func__ << "]: " << "Unrecognized EmbedSpaceDim - refit to patch did not work" << std::endl;
     }
+    std::cerr << std::endl;
     std::cout << "used " << patches.size() << " / " << groups.size() << "(" << (float)patches.size() / groups.size() *100.f << "%)\n";
 
     return EXIT_SUCCESS;
@@ -590,7 +594,7 @@ Segmentation::regionGrow( _PointContainerT                       & points
         }
     } //...while seeds
 
-    for ( int i = 1; i != patchesVector.size(); ++i )
+    for ( int i = 1; i < patchesVector.size(); ++i )
     {
         patchesVector[0].reserve( patchesVector.size() + patchesVector[i].size() );
         for ( int j = 0; j < patchesVector[i].size(); ++j )
@@ -611,7 +615,6 @@ Segmentation::regionGrow( _PointContainerT                       & points
     std::cout << "[" << __func__ << "]: " << "finished copying patches" << std::endl; fflush(stdout);
 
     // assign points to patches
-    std::cout << "[" << __func__ << "]: " << "tagging" << std::endl; fflush(stdout);
     _tagPointsFromGroups<_PointPrimitiveT,_Scalar>
                         ( points, groups_arg, patchPatchDistanceFunctor, gid_tag_name );
     std::cout << "[" << __func__ << "]: " << "finished tagging" << std::endl; fflush(stdout);

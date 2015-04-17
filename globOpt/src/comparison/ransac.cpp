@@ -16,6 +16,8 @@
     #include "pcl/sample_consensus/sac_model.h"
 #endif // GF2_USE_PCL
 
+#include "globopt/primitives/impl/planePrimitive.hpp"
+
 template <typename _Scalar>
 struct RansacParams
 {

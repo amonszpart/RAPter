@@ -13,5 +13,8 @@ int solve( int argc, char** argv )
                                  >( argc, argv );
     } //...if find_switch
     else
+    {
         std::cerr << "[" << __func__ << "]: " << "wrong switch" << std::endl;
+        return EXIT_FAILURE;
+    }
 }

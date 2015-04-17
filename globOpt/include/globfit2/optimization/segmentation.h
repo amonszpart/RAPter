@@ -6,6 +6,7 @@
 #include "Eigen/Dense"
 
 #include "globfit2/simple_types.h"
+#include <iostream>
 
 namespace GF2 {
 
@@ -63,16 +64,9 @@ namespace segmentation {
             template <class _PointT>
             inline void updateWithPoint( _PointT const& pnt )
             {
-                //_Scalar scalar_n( _n );
-                // take average of all points
-                //Eigen::Matrix<_Scalar,3,1> pos( _representative.pos() * _n + pnt.pos() );
-                //Eigen::Matrix<_Scalar,3,1> dir( _representative.dir() * _n + pnt.dir() );
-//                pos += pnt.pos();
-//                dir += pnt.dir();
-                //scalar_n += Scalar(1);
-                _representative = _PrimitiveT(  _representative.pos() * _n + pnt.pos() / (_n+_Scalar(1.))
-                                             , (_representative.dir() * _n + pnt.dir() / (_n+_Scalar(1.))).normalized() );
-                _n+=_Scalar(1.);
+                _representative = _PrimitiveT(  (_representative.pos() * _n + pnt.pos()) / (_n+_Scalar(1.))
+                                             , ((_representative.dir() * _n + pnt.dir()) / (_n+_Scalar(1.))).normalized() );
+                _n += _Scalar(1.);
                 //_n = scalar_n;
             }
 

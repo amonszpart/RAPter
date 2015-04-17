@@ -113,10 +113,12 @@ namespace GF2
             // ____________________VIRTUALS____________________
             //! \brief  Compulsory virtual overload of position getter. The position of the line is the location stored at the first three coordinates of #_coeffs.
             //! \return The position of the line as a 3D Eigen::Vector.
-            virtual Eigen::Matrix<Scalar,3,1> pos() const { return _coeffs.head   <3>( ); }
+            //virtual Eigen::Matrix<Scalar,3,1> pos() const { return _coeffs.head   <3>( ); }
+            inline typename Eigen::Matrix<Scalar,Dim,1>::ConstFixedSegmentReturnType<3>::Type pos() const { return _coeffs.template head<3>(); }
             //! \brief  Compulsory virtual overload of orientation getter. The orientation of the line is the direction stored at the second three coordinates of #_coeffs.
             //! \return The orientation of the line as a 3D Eigen::Vector.
-            virtual Eigen::Matrix<Scalar,3,1> dir() const { return _coeffs.segment<3>(3); }
+            //virtual Eigen::Matrix<Scalar,3,1> dir() const { return _coeffs.segment<3>(3); }
+            inline typename Eigen::Matrix<Scalar,Dim,1>::ConstFixedSegmentReturnType<3>::Type dir() const { return _coeffs.template segment<3>(3); }
 
             //! \brief                  Snippet to get the normal of a line that lines on a plane specified by \p plane_normal.
             //! \tparam Scalar          Scalar type to use for calculations. Concept: float.

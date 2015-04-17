@@ -72,7 +72,7 @@ namespace GF2
                 for ( LidT lid = 0; lid != it->size(); ++lid )
                 {
                     PrimitiveT const& prim = it->at( lid );
-                    sprintf( name, "prim%06d_%06d", prim.getTag( PrimitiveT::TAGS::GID ), lid );
+                    sprintf( name, "prim%06ld_%06ld", prim.getTag( PrimitiveT::TAGS::GID ), lid );
                     vptr->addPlane( *(prim.modelCoefficients()), prim. pos()(0), prim. pos()(1), prim. pos()(2), name );
 
                     ++plane_count;
@@ -148,9 +148,9 @@ namespace GF2
                     }
 
 
-                printf("\nBefore optimization energy is %d",gc->compute_energy()); fflush(stdout);
+                printf("\nBefore optimization energy is %f",gc->compute_energy()); fflush(stdout);
                 gc->expansion(2);// run expansion for 2 iterations. For swap use gc->swap(num_iterations);
-                printf("\nAfter optimization energy is %d",gc->compute_energy());
+                printf("\nAfter optimization energy is %f",gc->compute_energy());
 
                 for ( int  i = 0; i < num_pixels; i++ )
                 {

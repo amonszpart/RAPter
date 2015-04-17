@@ -75,17 +75,13 @@ namespace GF2
             // ____________________VIRTUALS____________________
             //! \brief  Compulsory virtual overload of position getter. The position of the point is the location stored at the first three coordinates of #_coeffs.
             //! \return The position of the point as a 3D Eigen::Vector.
-            virtual Eigen::Matrix<Scalar,3,1> pos() const
-            {
-                return _coeffs.template head<3>();
-            }
+            //virtual Eigen::Matrix<Scalar,3,1> pos() const { return _coeffs.template head<3>(); }
+            inline typename Eigen::Matrix<Scalar,Dim,1>::ConstFixedSegmentReturnType<3>::Type pos() const { return _coeffs.template head<3>(); }
 
             //! \brief  Compulsory virtual overload of orientation getter. The orientation of the point is the direction stored at the second three coordinates of #_coeffs.
             //! \return The orientation of the point as a 3D Eigen::Vector.
-            virtual Eigen::Matrix<Scalar,3,1> dir() const
-            {
-                return _coeffs.template segment<3>(3) ;
-            }
+            //virtual Eigen::Matrix<Scalar,3,1> dir() const { return _coeffs.template segment<3>(3) ; }
+            inline typename Eigen::Matrix<Scalar,Dim,1>::ConstFixedSegmentReturnType<3>::Type dir() const { return _coeffs.template segment<3>(3); }
 
             // ____________________GETTERS____________________
             //! \brief  Additional convenience getter to convert oriented point to 3D point.

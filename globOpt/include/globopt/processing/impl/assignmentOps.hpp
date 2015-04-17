@@ -25,7 +25,7 @@ namespace globopt
         typedef typename PrimitiveT::Scalar             Scalar;
         typedef typename _PointContainerT::PrimitiveT   PointPrimitiveT;
 
-        unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+        //unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
         srand( time(NULL) );
 
         _PointContainerT    points;
@@ -56,6 +56,7 @@ namespace globopt
         } //...for pids
         std::cout << "[" << __func__ << "]: " << "there are " << unassignedPIds.size() << "/" << points.size() << " unassigned or practically unassigned points\n";
 
+        return EXIT_SUCCESS;
     } //...approxUnassigned
 
 } //...ns globopt

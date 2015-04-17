@@ -1,6 +1,7 @@
 #include "globfit2/globOpt_types.h"
 #include "globopt/processing/impl/assignmentOps.hpp"
 #include "globfit2/primitives/planePrimitive.h"
+#include "globopt/primitives/impl/planePrimitive.hpp"
 
 namespace globopt
 {

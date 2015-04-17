@@ -134,7 +134,7 @@ namespace GF2
         if ( genAngle != _PrimitiveT::GEN_ANGLE_VALUES::UNSET )
             cand.setTag( _PrimitiveT::TAGS::GEN_ANGLE, genAngle );
         // Add
-        _PrimitiveT &added = containers::add( out_prims, gid, cand ); // insert into output
+        /*_PrimitiveT &added = */containers::add( out_prims, gid, cand ); // insert into output
         ++nlines;                                                     // keep track of output size
 
         // debug
@@ -161,7 +161,7 @@ namespace GF2
      */
     template < class _PrimitivePrimitiveAngleFunctorT, class _AliasesT
              , class _PrimitiveT, typename _Scalar, class _AnglesT, class _PromotedT
-             , class _AllowedAnglesT, class _CopiedT, class _GeneratedT, class _PrimitiveContainerT>
+             , class _AllowedAnglesT, class _CopiedT, class _GeneratedT, class _PrimitiveContainerT, class _PointContainerT>
     inline int addCandidate( _PrimitiveT        const& prim0
                            , _PrimitiveT        const& prim1
                            , LidT               const  lid0
@@ -177,16 +177,22 @@ namespace GF2
                            , _GeneratedT             & generated
                            , LidT                    & nLines
                            , _PrimitiveContainerT    & out_prims
+                           , _PointContainerT   const& points
+                           , Scalar             const  scale
                            , _AliasesT               * aliases
-                           , bool               const  tripletSafe = false
+                           , bool               const  tripletSafe  = false
+                           , bool               const  verbose      = false
                            )
     {
-        const bool verbose = false;
+        typedef typename _PointContainerT::value_type PointPrimitiveT;
 
         const GidT gid0     = prim0.getTag( _PrimitiveT::TAGS::GID );
         const GidT gid1     = prim1.getTag( _PrimitiveT::TAGS::GID );
         const DidT dir_gid0 = prim0.getTag( _PrimitiveT::TAGS::DIR_GID );
         const DidT dir_gid1 = prim1.getTag( _PrimitiveT::TAGS::DIR_GID );
+
+        if ( gid0 == 50 || gid1 == 50 )
+            std::cout << "at " << gid0 << "," << dir_gid0 << " from " << gid1  << ", " << dir_gid1 << std::endl;
 
         bool add0 = false;
 
@@ -230,9 +236,10 @@ namespace GF2
             return false;
 
         // TEST triplets
-        if ( tripletSafe )
+        if ( tripletSafe ) // cancel candidate, if not ideally angled with any of the candidates with same dId already
         {
             for ( typename _PrimitiveContainerT::ConstIterator it(out_prims); it.hasNext(); it.step() )
+            {
                 if ( it.getDid() == dir_gid1 )
                 {
                     //_Scalar tmpAng = GF2::angleInRad( cand0.template dir(), it->template dir() );
@@ -245,12 +252,62 @@ namespace GF2
 //                                  << "<" << gid0 << "," << dir_gid1 << "," << cand0.getTag(_PrimitiveT::TAGS::GEN_ANGLE) << "> "
 //                                  << tmpAng * 180. / M_PI << " with "
 //                                  << " <" << it.getGid() << "," << it.getDid() << "," << it->getTag(_PrimitiveT::TAGS::GEN_ANGLE) << ">"
+//                                  << ", existing angle: " << _PrimitivePrimitiveAngleFunctorT::template eval<_Scalar>( prim1, *it,
+//                                                                                                                       angles )
 //                                  << "\n";
                         add0 = false;
-                    }
-                    else if ( gid0 == 125 || gid1 == 125 )
-                        std::cout << "ok: it.gid " << it.getGid() << "," << it.getDid() << ", ang: " << tmpAng << std::endl;
-                }
+                        break;
+                    } //...if angle exceeds limits
+                } //...if same dId
+            } //...for all primitives
+
+            // overwrite with a parallel copy of the best datafit one
+            if ( !add0 )
+            {
+                typename _PrimitiveT::ExtentsT  extrema;
+                std::vector<PidT>               population;
+                processing::getPopulationOf( population, gid0, points );
+                _PrimitiveT const*              bestPrim = NULL;
+                Scalar                          bestDataCost = std::numeric_limits<Scalar>::max();
+
+                for ( typename _PrimitiveContainerT::ConstIterator it(out_prims); it.hasNext(); it.step() )
+                {
+                    if ( it.getDid() == dir_gid1 )
+                    {
+                        // record this primitive with the same dId, and see, if it has best datacost.
+                        // If the candidate get's cancelled, this might be the primitive,
+                        // from which the direction we want to copy
+
+                        _PrimitiveT tmp;
+                        prim0.generateFrom( tmp, *it, 0, angles, _Scalar(1.) );
+                        tmp.template getExtent<PointPrimitiveT>( extrema, points, scale, &population, true );
+                        if ( !extrema.size() )
+                            std::cout << "asdf" << std::endl;
+                        else
+                        {
+                            Scalar distSum( 0. );
+                            for ( int pid_id = 0; pid_id != population.size(); ++pid_id )
+                                distSum += cand0.getFiniteDistance( extrema, points[ population[pid_id] ].template pos() );
+                            if ( distSum < bestDataCost )
+                            {
+                                bestDataCost = distSum;
+                                bestPrim     = &(*it);
+                            }
+                        } //...if extrema exists for dId
+                    } //...if same dId
+                } //...for all prims
+
+                if ( bestPrim )
+                {
+                    closest_angle_id0 = 0; // parallel
+                    if ( !prim0.generateFrom(cand0, *bestPrim, 0, angles, _Scalar(1.)) )
+                        return false;
+                    if ( copied[gid0].find(DidAid(dir_gid1,closest_angle_id0)) != copied[gid0].end() )
+                        add0 = false;
+                    else
+                        add0 = true;
+                } //...if bestPrim
+            } //...if tripletCancel
         } //...tripletSafe
 
         // are we still adding it?
@@ -332,7 +389,7 @@ namespace GF2
         {
             if ( generators.size() > 1 ) { throw new CandidateGeneratorException("[addCandidate] generators.size > 1, are you sure about this?"); }
             added0 = output( cand0, out_prims, generated, copied, nLines, promoted, gid0, lid0, closest_angle_id0, generators.size() ? generators[0] : _PrimitiveT::GEN_ANGLE_VALUES::UNSET );
-            if ( gid0 == 125 || gid1 == 125 )
+            if ( gid0 == 50 || gid1 == 50 )
                 std::cout << "adding at " << gid0 << "," << dir_gid0 << " from " << gid1  << ", " << dir_gid1 << std::endl;
         }
 
@@ -686,10 +743,10 @@ namespace GF2
 
                         addCandidate<_PrimitivePrimitiveAngleFunctorT>(
                                     prim0, prim1, lid0, lid1, safe_mode, allowPromoted, angle_limit, angles, angle_gens_in_rad, promoted,
-                                    allowedAngles, copied, generated, nlines, outPrims, &aliases, tripletSafe );
+                                    allowedAngles, copied, generated, nlines, outPrims, points, scale, &aliases, tripletSafe );
                         addCandidate<_PrimitivePrimitiveAngleFunctorT>(
                                     prim1, prim0, lid1, lid0, safe_mode, allowPromoted, angle_limit, angles, angle_gens_in_rad, promoted,
-                                    allowedAngles, copied, generated, nlines, outPrims, &aliases, tripletSafe );
+                                    allowedAngles, copied, generated, nlines, outPrims, points, scale, &aliases, tripletSafe );
                     } //...for l3
                 } //...for l2
             } //...for l1
@@ -748,7 +805,7 @@ namespace GF2
                         // copy prim0 (the alias) to all compatible receivers given allowedAngles.
                         addCandidate<_PrimitivePrimitiveAngleFunctorT,AliasesT<_PrimitiveT,_Scalar> >(
                             prim1, prim0, lid1, lid0, safe_mode, allowPromoted, angle_limit, angles, angle_gens_in_rad, promoted,
-                            allowedAngles, copied, generated, nlines, outPrims, nullptr, tripletSafe );
+                            allowedAngles, copied, generated, nlines, outPrims, points, scale, nullptr, tripletSafe );
 
                     } //...inner for
                 } //...outer for

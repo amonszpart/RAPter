@@ -28,9 +28,9 @@ namespace pclutil {
         return EXIT_SUCCESS;
     } //...cloudToVector
 
-    template <typename _Scalar>
+    template <typename Derived>
     inline ::pcl::PointXYZ
-    asPointXYZ(Eigen::Matrix<_Scalar,3,1> const& vector3 )
+    asPointXYZ( Derived const& vector3 )
     {
         return ::pcl::PointXYZ( vector3.x(), vector3.y(), vector3.z() );
     }

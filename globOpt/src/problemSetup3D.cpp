@@ -2,6 +2,7 @@
 #include "globfit2/util/parse.h" // GF2::console
 
 #include "globfit2/optimization/problemSetup.h"
+#include "globfit2/optimization/impl/problemSetup.hpp"
 #include "globopt/primitives/impl/planePrimitive.hpp"
 
 int formulate3D( int argc, char** argv )
@@ -16,6 +17,9 @@ int formulate3D( int argc, char** argv )
                                               >( argc, argv );
     }
     else
+    {
         std::cerr << "[" << __func__ << "]: " << "switch error" << std::endl;
+        return EXIT_FAILURE;
+    }
 }
 

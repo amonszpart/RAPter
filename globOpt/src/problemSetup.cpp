@@ -2,6 +2,7 @@
 #include "globfit2/util/parse.h" // GF2::console
 
 #include "globfit2/optimization/problemSetup.h"
+#include "globfit2/optimization/impl/problemSetup.hpp"
 
 int formulate( int argc, char** argv )
 {

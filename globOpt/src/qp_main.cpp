@@ -16,7 +16,7 @@ int formulate3D( int argc, char** argv ); // problemSetup.cpp
 int solve     ( int argc, char** argv ); // solve.cpp
 int solve3D   ( int argc, char** argv ); // solve3D.cpp
 int merge     ( int argc, char** argv ); // merge.cpp
-int datafit   ( int argc, char** argv ); // datafit.cpp
+//int datafit   ( int argc, char** argv ); // datafit.cpp
 int reassign  ( int argc, char** argv );
 int represent ( int argc, char** argv ); // represent.cpp
 
@@ -76,11 +76,11 @@ int main( int argc, char *argv[] )
     {
         return solve3D( argc, argv );
     }
-    else if ( GF2::console::find_switch(argc,argv,"--datafit") || GF2::console::find_switch(argc,argv,"--datafit3D") )
-    {
-        return datafit( argc, argv );
-        //return GF2::Solver::datafit( argc, argv );
-    }
+//    else if ( GF2::console::find_switch(argc,argv,"--datafit") || GF2::console::find_switch(argc,argv,"--datafit3D") )
+//    {
+//        return datafit( argc, argv );
+//        //return GF2::Solver::datafit( argc, argv );
+//    }
     else if ( GF2::console::find_switch(argc,argv,"--merge") || GF2::console::find_switch(argc,argv,"--merge3D") )
     {
         return merge(argc, argv);
