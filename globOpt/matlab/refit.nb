@@ -1,0 +1,105 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 9.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       157,          7]
+NotebookDataLength[      2706,         95]
+NotebookOptionsPosition[      2399,         79]
+NotebookOutlinePosition[      2736,         94]
+CellTagsIndexPosition[      2693,         91]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"n", "=", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"{", "n0", "}"}], ",", 
+     RowBox[{"{", "n1", "}"}], ",", 
+     RowBox[{"{", "n2", "}"}]}], "}"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"p", "=", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"{", "p0", "}"}], ",", 
+     RowBox[{"{", "p1", "}"}], ",", 
+     RowBox[{"{", "p2", "}"}]}], "}"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"n", "=", 
+   RowBox[{"{", 
+    RowBox[{"n0", ",", "n1", ",", "n2"}], "}"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"p", "=", 
+   RowBox[{"{", 
+    RowBox[{"p0", ",", "p1", ",", "p2"}], "}"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{"Expand", "[", 
+  RowBox[{
+   RowBox[{"(", 
+    RowBox[{
+     RowBox[{"Dot", "[", 
+      RowBox[{"n", ",", "p"}], "]"}], "+", "d"}], ")"}], "^", "2"}], 
+  "]"}]}], "Input",
+ CellChangeTimes->{{3.638445487458188*^9, 3.638445536002262*^9}, {
+  3.638445566921883*^9, 3.638445677489984*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  SuperscriptBox["d", "2"], "+", 
+  RowBox[{"2", " ", "d", " ", "n0", " ", "p0"}], "+", 
+  RowBox[{
+   SuperscriptBox["n0", "2"], " ", 
+   SuperscriptBox["p0", "2"]}], "+", 
+  RowBox[{"2", " ", "d", " ", "n1", " ", "p1"}], "+", 
+  RowBox[{"2", " ", "n0", " ", "n1", " ", "p0", " ", "p1"}], "+", 
+  RowBox[{
+   SuperscriptBox["n1", "2"], " ", 
+   SuperscriptBox["p1", "2"]}], "+", 
+  RowBox[{"2", " ", "d", " ", "n2", " ", "p2"}], "+", 
+  RowBox[{"2", " ", "n0", " ", "n2", " ", "p0", " ", "p2"}], "+", 
+  RowBox[{"2", " ", "n1", " ", "n2", " ", "p1", " ", "p2"}], "+", 
+  RowBox[{
+   SuperscriptBox["n2", "2"], " ", 
+   SuperscriptBox["p2", "2"]}]}]], "Output",
+ CellChangeTimes->{{3.6384455868632298`*^9, 3.6384455950705338`*^9}, {
+  3.6384456387184134`*^9, 3.6384456787025337`*^9}}]
+}, Open  ]]
+},
+WindowSize->{740, 867},
+WindowMargins->{{Automatic, 482}, {64, Automatic}},
+FrontEndVersion->"9.0 for Linux x86 (64-bit) (January 25, 2013)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[579, 22, 993, 33, 121, "Input"],
+Cell[1575, 57, 808, 19, 91, "Output"]
+}, Open  ]]
+}
+]
+*)
+
+(* End of internal cache information *)
+

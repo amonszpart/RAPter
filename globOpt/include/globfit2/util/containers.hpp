@@ -101,7 +101,7 @@ namespace containers {
         protected:
             inline _InnerStdIteratorType startInnerAt( _StdIteratorType &outer_it )
             {
-                _lid = 0;
+                _lid1 = 0;
                 return outer_it->second.begin();
             }
 
@@ -112,7 +112,8 @@ namespace containers {
                 : _container( container )
                 , _outer_it ( _container.begin() )
                 , _inner_it ( startInnerAt( _outer_it ) )
-                , _lid( 0 )
+                , _lid0( 0 )
+                , _lid1( 0 )
                 , _uid( 0 )
             {}
 
@@ -129,7 +130,7 @@ namespace containers {
                 if ( _inner_it != _outer_it->second.end() )
                 {
                     ++_inner_it;
-                    ++_lid;
+                    ++_lid1;
                     if ( _inner_it == _outer_it->second.end() )
                         step_outer = true;
                 }
@@ -141,6 +142,7 @@ namespace containers {
                 if ( step_outer )
                 {
                     ++_outer_it;
+                    ++_lid0;
 
                     // if outer valid, restart inner
                     if ( _outer_it != _container.end() )
@@ -166,9 +168,18 @@ namespace containers {
                 return _inner_it->getTag( _PrimitiveT::TAGS::DIR_GID );
             }
 
-            inline LidT getLid() const
+            /*! \brief Returns linear index of gid in the map of gids.
+             */
+            inline LidT getLid0() const
             {
-                return _lid;
+                return _lid0;
+            }
+
+            /*! \brief Returns linear index of primitive in the vector of primitives contained under the current gid key in the map.
+             */
+            inline LidT getLid1() const
+            {
+                return _lid1;
             }
 
             inline bool hasNext() const
@@ -183,7 +194,7 @@ namespace containers {
             {
                 //"[PrimitiveContainer::Iterator] HACK, assumes GIDs come in ascending order! TODO: change to iterator comparison"
                 if   ( getGid() < other.getGid() )  return true;
-                else                                return (getLid() < other.getLid());
+                else                                return (getLid0() < other.getLid0());
             }
 
             //inline _PrimitiveT* operator->() const
@@ -213,7 +224,7 @@ namespace containers {
             _ParentT                            &_container;
             _StdIteratorType                    _outer_it;
             _InnerStdIteratorType               _inner_it;
-            LidT                                _lid;
+            LidT                                _lid0, _lid1;
             UidT                                _uid;
 
     }; //...struct Iterator

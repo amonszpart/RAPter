@@ -63,7 +63,7 @@ namespace GF2
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
             typedef ::globopt::Taggable<_Scalar> TaggableT;
-            typedef TaggableT                ParentT;
+            typedef TaggableT                    ParentT;
             enum { EmbedSpaceDim = _EmbedSpaceDim };
 #if 0
             enum STATUS_VALUES { ACTIVE = 1 //!< Used to show, that this primitive is active. Also used as starting point in \ref GF2::Solver.
@@ -103,7 +103,8 @@ namespace GF2
             enum {  Dim                        = _Dim };     //!< Standard typedef for _Dim template parameter.
             typedef Eigen::Matrix<Scalar,_Dim,1> VectorType; //!< Standard typedef of internal storage Eigen::Matrix.
             typedef Eigen::Matrix<Scalar,3,1>    Position;   //!< \brief Standard 3D point typedef.
-            typedef std::vector<Eigen::Matrix<Scalar,3,1> > ExtremaT; //!< Stores extrema of finite primitive.
+            typedef Eigen::Matrix<Scalar,3,1>    Direction;  //!< \brief Standard 3D vector typedef.
+            typedef std::vector  <Position>      ExtremaT;   //!< Stores extrema of finite primitive.
 
             // ____________________CONSTRUCTORS____________________
             //! \brief Default constructor, initializing coeffs to zeros.

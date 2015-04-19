@@ -28,7 +28,7 @@ static inline int representCli( int argc, char** argv )
     typedef typename _PrimitiveContainerT::value_type        InnerPrimitiveContainerT;
     typedef containers::PrimitiveContainer<_PrimitiveT>      PrimitiveMapT;
     typedef typename _PrimitiveT::Scalar                     Scalar;
-    typedef typename _PrimitiveT::ExtentsT                   ExtentsT;
+    typedef typename _PrimitiveT::ExtremaT                   ExtremaT;
     PointContainerT         points;
     PclCloudPtrT            pcl_cloud;
     _PrimitiveContainerT    prims;
@@ -215,7 +215,7 @@ static inline int representBackCli( int argc, char** argv )
     typedef typename _PrimitiveContainerT::value_type        InnerPrimitiveContainerT;
     typedef containers::PrimitiveContainer<_PrimitiveT>      PrimitiveMapT;
     typedef typename _PrimitiveT::Scalar                     Scalar;
-    typedef typename _PrimitiveT::ExtentsT                   ExtentsT;
+    typedef typename _PrimitiveT::ExtremaT                   ExtremaT;
     PointContainerT         points;
     PclCloudPtrT            pcl_cloud;
     PrimitiveMapT           patches,reprPatches;

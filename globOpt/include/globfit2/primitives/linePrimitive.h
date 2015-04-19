@@ -25,10 +25,11 @@ namespace GF2
     //! \warning Note, stores direction, NOT normal.
     class LinePrimitive : public ::GF2::Primitive<2,6>
     {
-            typedef ::GF2::Primitive<2,6> ParentT;
+            typedef ::GF2::Primitive<2,6>   ParentT;
         public:
-            typedef ParentT::Scalar Scalar;
-            typedef std::vector<Eigen::Matrix<Scalar,3,1> > ExtentsT;
+            typedef ParentT::Scalar         Scalar;
+            typedef ParentT::Position       Position;
+            typedef ParentT::ExtremaT       ExtremaT;
 
             // ____________________CONSTRUCT____________________
             LinePrimitive() : ParentT() {}
@@ -43,7 +44,7 @@ namespace GF2
             //! \warning        NOT endpoints, use #fromEndPoints for that!
             //! \param[in] p0   Point on line.
             //! \param[in] dir  Line direction.
-            LinePrimitive( Eigen::Matrix<Scalar,3,1> const& p0, Eigen::Matrix<Scalar,3,1> const& dir )
+            LinePrimitive( Position const& p0, Direction const& dir )
             {
                 _coeffs.head   <3>( ) = p0;
                 _coeffs.segment<3>(3) = dir.normalized();
@@ -110,6 +111,11 @@ namespace GF2
                 return true;
             } //...generateFrom
 
+            template <typename DerivedT> static
+            int generateFrom( LinePrimitive      & out
+                            , DerivedT      const& normal
+                            , Scalar        const  distanceFromOrigin );
+
             // ____________________VIRTUALS____________________
             //! \brief  Compulsory virtual overload of position getter. The position of the line is the location stored at the first three coordinates of #_coeffs.
             //! \return The position of the line as a 3D Eigen::Vector.
@@ -124,11 +130,11 @@ namespace GF2
             //! \tparam Scalar          Scalar type to use for calculations. Concept: float.
             //! \param[in] plane_normal Normal of plane, that needs to contain the normal of the line, that this function returns.
             //! \return                 Normal of the line lying in the plane specified by \p plane_normal.
-            inline Eigen::Matrix<Scalar,3,1>
-            normal( Eigen::Matrix<Scalar,3,1> plane_normal = (Eigen::Matrix<Scalar,3,1>() << 0.,0.,1.).finished() ) const
+            inline Direction
+            normal( Direction plane_normal = (Direction() << 0.,0.,1.).finished() ) const
             {
-                Eigen::Matrix<Scalar,3,1> perp  = plane_normal * dir().dot( plane_normal );
-                Eigen::Matrix<Scalar,3,1> par   = (dir() - perp).normalized();
+                Direction perp  = plane_normal * dir().dot( plane_normal );
+                Direction par   = (dir() - perp).normalized();
 
                 return par.cross( plane_normal ).normalized();
             } //...normal()
@@ -177,7 +183,7 @@ namespace GF2
              *  \return             Distance from point to plane.
              */
             inline Scalar
-            getFiniteDistance( ExtentsT const& extrema, Position const& pnt ) const
+            getFiniteDistance( ExtremaT const& extrema, Position const& pnt ) const
             {
                 return MyPointFiniteLineDistanceFunctor::eval( extrema, *this, pnt );
             }
@@ -194,13 +200,14 @@ namespace GF2
              *  \param[in]  indices             Optional input to specify subset of points by indices.
              *  \return                         EXIT_SUCCESS
              */
-            template <typename _PointT, typename _PointContainerT>
+            template <typename _PointT, class _IndicesContainerT, typename _PointContainerT>
             int
-            getExtent( ExtentsT                                      & minMax
+            getExtent( ExtremaT                                      & minMax
                      , _PointContainerT                         const& cloud
                      , double                                   const  threshold            = 0.01
-                     , std::vector<PidT>                        const* indices_arg          = NULL
-                     , bool                                     const  force_axis_aligned   = false ) const
+                     , _IndicesContainerT                       const* indices_arg          = NULL
+                     , bool                                     const  force_axis_aligned   = false ) const;
+#if 0
             {
                 typedef Eigen::Matrix<Scalar,3,1> Position;
 
@@ -271,6 +278,7 @@ namespace GF2
 
                 return EXIT_SUCCESS;
             } //...getExtent()
+#endif
     public:
 
             /*! \brief Calculates size, a bit smarter, than taking the area of #getExtent().
@@ -364,12 +372,12 @@ namespace GF2
              *  \tparam _IndicesContainerT Concept: std::vector<int>.
              *  \param  stretch     Multiplies the final length with this number, so that the line is a bit longer than the distance between its extrema.
              */
-            template <class _PointPrimitiveT, class _PointContainerT>
-            static inline int
+            template <class _PointPrimitiveT, class _IndicesContainerT, class _PointContainerT>
+            static int
             draw( LinePrimitive                    const& line
                 , _PointContainerT                 const& cloud
                 , Scalar                           const  radius
-                , std::vector<PidT>                const* indices
+                , _IndicesContainerT               const* indices
                 , pcl::visualization::PCLVisualizer::Ptr  v
                 , std::string                      const  plane_name
                 , double                           const  r
@@ -379,56 +387,7 @@ namespace GF2
                 , Scalar                           const  stretch     = Scalar( 1. )
                 , int                              const  draw_mode   = 0               // this is needed in plane
                 , float                            const  hull_alpha  = 0. // this is needed in plane
-                )
-            {
-                typedef Eigen::Matrix<Scalar,3,1> Position;
-
-                int err     = EXIT_SUCCESS;
-
-                std::vector< Position > minMax;
-                int      it          = 0;
-                int      max_it      = 10;
-                Scalar  tmp_radius  = radius;
-                do
-                {
-                    err = line.getExtent<_PointPrimitiveT>( minMax
-                                                          , cloud
-                                                          , tmp_radius
-                                                          , indices   );
-                    tmp_radius *= 2.f;
-                } while ( (minMax.size() < 2) && (++it < max_it) );
-
-                if ( it >= max_it )
-                {
-                    //std::cerr << "[" << __func__ << "]: " << "line.getExtent exceeded max radius increase iteration count...not drawing " << line.toString() << std::endl;
-                    std::cerr << "[" << __func__ << "]: " << "line.getExtent exceeded max radius increase iteration count...drawing unit " << line.toString() << std::endl;
-                    minMax.resize(2);
-                    minMax[0] = line.pos();
-                    minMax[1] = line.pos() + line.dir() / 10.;
-                    //return err;
-                }
-
-                std::vector<pcl::PointXYZ> ps;
-
-                Position const& p0 = minMax[0];
-                Position const& p1 = minMax[1];
-                Position diff = p1 - p0;
-                Scalar half_stretch = Scalar(1) + (stretch-Scalar(1)) / Scalar(2.);
-                Position p1_final  = p0 + diff * half_stretch;
-                Position p0_final  = p1 - diff * half_stretch;
-
-                pcl::PointXYZ pnt;
-                pnt.x = p0_final(0); pnt.y = p0_final(1); pnt.z = p0_final(2);
-                ps.push_back( pnt );
-                pnt.x = p1_final(0); pnt.y = p1_final(1); pnt.z = p1_final(2);
-                ps.push_back( pnt );
-
-                err += draw( ps, v, plane_name, r, g, b, viewport_id );
-
-                v->setShapeRenderingProperties( pcl::visualization::PCL_VISUALIZER_LINE_WIDTH, 4.0, plane_name, 0 );
-
-                return err;
-            } //...draw()
+                );
 
             /*! \brief Extract convec hull and display
              *  \tparam PointsT Concept: std::vector<pcl::PointXYZ>.

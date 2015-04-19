@@ -711,8 +711,8 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
                             const DidT dIdOther = prim1.getTag( _PrimitiveT::TAGS::DIR_GID );
 
                             ProximityMapT::const_iterator gidNeighsIt = proximities.find( gid );
-                            if (    ( did != dIdOther )
-                                 && ( gid != gIdOther ) // we don't want to pollute problem with unnecessary edges
+                            if (    /*( did != dIdOther )
+                                 && */( gid != gIdOther ) // we don't want to pollute problem with unnecessary edges
                                  && (    (gidNeighsIt                        != proximities.end()        )
                                       && (gidNeighsIt->second.find(gIdOther) != gidNeighsIt->second.end())
                                     )
@@ -726,7 +726,16 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
                                 const LidT varId1 = lids_varids.at( IntPair(lidOth,lid1Oth) );
 #                               pragma omp critical (PS_PROBLEM)
                                 {
-                                    problem.addQObjective( varId0, varId1, halfSpatialWeightCoeff ); // /2, since it's going to be added both ways Aron 6/1/2015
+                                    if ( did != dIdOther )
+                                        problem.addQObjective( varId0, varId1, halfSpatialWeightCoeff ); // /2, since it's going to be added both ways Aron 6/1/2015
+                                    else { // encourage parallel added by Aron 19/4/2015
+#warning "Temporary Tweak"
+                                        Scalar ang = GF2::angleInRad( prim.template dir(), prim1.template dir() );
+                                        while ( ang > M_PI ) ang -= M_PI;
+                                        ang = std::min( ang, Scalar(M_PI - ang) );
+                                        if ( ang > 0.01 )
+                                            problem.addQObjective( varId0, varId1, halfSpatialWeightCoeff/2. ); // /2, since it's going to be added both ways Aron 6/1/2015
+                                    }
                                 }
                             }
                         } // ... olid1

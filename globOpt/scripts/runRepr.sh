@@ -91,6 +91,7 @@ function runRepr() {
 		if [ -e "$rprDiagFTmp" ]; then
 			echo "mv $rprDiagFTmp $rprDiagF"
 			mv "$rprDiagFTmp" $rprDiagF
+			rm "$rprDiagFTmp";
 		fi
 	fi
 

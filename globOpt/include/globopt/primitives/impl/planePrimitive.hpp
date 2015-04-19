@@ -67,10 +67,10 @@ namespace GF2
         return true;
     } //...generateFrom
 
-    inline int
+    template <typename DerivedT> inline int
     PlanePrimitive::generateFrom( PlanePrimitive                 & out
-                                , Eigen::Matrix<Scalar,3,1> const& normal
-                                , Scalar                    const  distanceFromOrigin )
+                                , DerivedT                  const& normal
+                                , PlanePrimitive::Scalar    const  distanceFromOrigin )
     {
         out.coeffs().segment<3>(3) = normal.normalized();
         out.coeffs().segment<3>(0) = Eigen::Matrix<Scalar,3,1>::Zero() - normal * distanceFromOrigin;
@@ -618,12 +618,6 @@ namespace GF2
         //_coeffs                    (3) = Scalar(-1) * _coeffs.template head<3>().dot( pnt.template head<3>() ); // distance
     }
 
-    inline PlanePrimitive
-    PlanePrimitive::fromFileEntry( std::vector<PlanePrimitive::Scalar> const& entries )
-    {
-        return PlanePrimitive( /*    pos: */ Eigen::Map<const Eigen::Matrix<Scalar,3,1> >( entries.data()  , 3 ),
-                               /* normal: */ Eigen::Map<const Eigen::Matrix<Scalar,3,1> >( entries.data()+3, 3 ) );
-    }
 } //...ns GF2
 
 #endif // GO_PLANEPRIMITIVE_HPP

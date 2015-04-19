@@ -5,13 +5,11 @@
 #include "globfit2/io/inputParser.hpp"
 #include "globfit2/processing/util.hpp"
 #include "globfit2/util/containers.hpp"
+#include "globopt/util/impl/randUtil.hpp"
 #include <chrono>
 
 namespace globopt
 {
-    template <typename _Scalar>
-    inline _Scalar randf() { return rand() / _Scalar(RAND_MAX); }
-
     // Usage: .../Release/bin/toGlobFit --subsample-primitives 0.1 --pop-limit 100 --prims segments.csv --cloud cloud.ply -a points_segments.csv --scale 0.005
     template < class _PrimitiveVectorT
              , class _PrimitiveMapT

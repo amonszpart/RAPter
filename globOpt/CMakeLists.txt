@@ -51,6 +51,7 @@ SET( WITH_PLYCONVERTER ON CACHE BINARY "Compile ply-converter executable.")
 SET( WITH_CORRESP ON CACHE BINARY "Correspondance miniprogram compilation.")
 SET( WITH_GLOBFIT ON CACHE BINARY "GlobFit (Li'11) comparison.")
 SET( WITH_EVAL ON CACHE BINARY "Evaluation code")
+SET( WITH_REFIT ON CACHE BINARY "Constrained refit project")
 
 SET( WITH_SAMPLE_INPUT OFF CACHE BINARY "Compile --sample-input option")
 IF(WITH_SAMPLE_INPUT)
@@ -194,6 +195,7 @@ ENDIF()
 #INCLUDE_DIRECTORIES( ${FH_DIR}/include )
 SET( TEMPLATE_INST_SRC_LIST
     src/templateInstantiation/planePrimitive.cpp
+    src/templateInstantiation/linePrimitive.cpp
     src/templateInstantiation/segmentation.cpp
     src/templateInstantiation/taggable.cpp
     src/templateInstantiation/primitive.cpp
@@ -225,6 +227,7 @@ SET( GLOBOPT_HPP_LIST
     include/globfit2/optimization/impl/candidateGenerator.hpp
     include/globopt/primitives/impl/taggable.hpp
     include/globopt/primitives/impl/planePrimitive.hpp
+    include/globopt/primitives/impl/linePrimitive.hpp
     include/globfit2/io/impl/io.hpp
     include/globfit2/util/diskUtil.hpp
     include/globfit2/util/util.hpp
@@ -497,12 +500,15 @@ IF(WITH_EVAL)
 
     SET( EVAL_H
         include/globopt/evaluation/assignPointsToTriangles.h
+        include/globfit2/primitives/planePrimitive.h
+        include/globfit2/primitives/linePrimitive.h
     )
 
     SET( EVAL_HPP
         include/globopt/evaluation/impl/assignPointsToTriangles.hpp
         include/globopt/primitives/impl/triangle.hpp
-        include/globfit2/primitives/planePrimitive.h
+        include/globopt/primitives/impl/linePrimitive.hpp
+        include/globopt/primitives/impl/planePrimitive.hpp
     )
 
     SET( EVAL_SRC
@@ -518,3 +524,38 @@ IF(WITH_EVAL)
         boost_filesystem
     )
 ENDIF(WITH_EVAL)
+
+## _____________________________________Refit____________________________________________________
+
+IF(WITH_REFIT)
+    SET( REFIT_TARGET "refit" )
+
+    SET( REFIT_H
+        include/globfit2/primitives/planePrimitive.h
+        include/globfit2/globOpt_types.h
+        include/globfit2/util/parse.h
+        include/globfit2/io/io.h
+    )
+
+    SET( REFIT_HPP
+        include/globopt/primitives/impl/planePrimitive.hpp
+        include/globopt/primitives/impl/linePrimitive.hpp
+        include/globfit2/processing/angle_util.hpp
+    )
+
+    SET( REFIT_SRC
+        src/refit.cpp
+        #${TEMPLATE_INST_SRC_LIST}
+        src/templateInstantiation/planePrimitive.cpp
+        src/templateInstantiation/linePrimitive.cpp
+        src/templateInstantiation/taggable.cpp
+    )
+
+    add_executable( ${REFIT_TARGET} ${REFIT_SRC} ${REFIT_H} ${REFIT_HPP} )
+    TARGET_LINK_LIBRARIES( ${REFIT_TARGET}
+        ${BONMIN_LIBRARIES}
+        ${PCL_LIBRARIES}
+        boost_filesystem
+    )
+ENDIF(WITH_REFIT)
+

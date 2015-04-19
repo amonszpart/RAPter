@@ -264,7 +264,7 @@ namespace GF2
             // overwrite with a parallel copy of the best datafit one
             if ( !add0 )
             {
-                typename _PrimitiveT::ExtentsT  extrema;
+                typename _PrimitiveT::ExtremaT  extrema;
                 std::vector<PidT>               population;
                 processing::getPopulationOf( population, gid0, points );
                 _PrimitiveT const*              bestPrim = NULL;

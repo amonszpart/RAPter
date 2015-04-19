@@ -68,10 +68,10 @@ namespace GF2
                              , _AngleContainerT  const& angles
                              , Scalar            const  angle_multiplier = Scalar(1.)
                              ) const;
-            static
+            template <typename DerivedT> static
             int generateFrom( PlanePrimitive                 & out
-                                   , Eigen::Matrix<Scalar,3,1> const& normal
-                                   , Scalar                    const  distanceFromOrigin );
+                            , DerivedT                  const& normal
+                            , Scalar                    const  distanceFromOrigin );
 
             // ____________________VIRTUALS____________________
             /*! \brief  Compulsory virtual overload of position getter. The position of the plane is calculated on the fly from the formula N . x0 + d = 0.
@@ -210,7 +210,7 @@ namespace GF2
              * \tparam _PointContainerT   Concept: std::vector< _PointPrimitiveT >.
              * \tparam _IndicesContainerT Concept: std::vector<int>.
              */
-            template <class _PointPrimitiveT, class _PointContainerT, class _IndicesContainerT> static inline int
+            template <class _PointPrimitiveT, class _PointContainerT, class _IndicesContainerT> static int
             draw( PlanePrimitive                        const& plane
                 , _PointContainerT                      const& cloud
                 , Scalar                                const  radius
