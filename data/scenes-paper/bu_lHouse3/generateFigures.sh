@@ -84,3 +84,21 @@ python ../normal_distr.py pearl_pts.ply ndistr_pearl.svg "lHouse - Pearl"
 ../globOptVis --show3D --scale 0.02 --pop-limit 3 --title "Pearl" --angle-gens 90 --use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-scale --bg-colour .9,.9,.9 --no-rel -p primitives.pearl.csv -a points_primitives.pearl.csv --perfect-angle 0.0001  --draw-mode 1 --save-poly  --no-pts 
 
 mv plane_mesh.ply figure/pearl_planes.ply
+
+
+############################################################
+## globfit
+
+# need to modify the script show.py for this run and switch to draw-mode 28
+../show.py -s 0.02 -p primitives.globfit.csv -a points_primitives.globfit.csv --save-poly
+
+# output
+meshlabserver -i cloudRGBNormal_reProj_noUnass.ply -o figure/globfit_pts.ply -om vc vn
+splatting figure/globfit_pts.ply figure/globfit.ply 2 0.015
+
+#distribution
+python ../normal_distr.py  cloudRGBNormal_reProj_noUnass.ply ndistr_globfit.svg "LHouse - Globfit"
+
+# need to modify the script show.py for this run: switch to draw-mode 28, --no-pts
+../show.py -s 0.02 -p primitives.globfit.csv -a points_primitives.globfit.csv --save-poly
+cp plane_mesh.ply figure/globfit_planes.ply
