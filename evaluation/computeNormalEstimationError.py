@@ -11,8 +11,9 @@ import packages.polarPlot as polarplot
 import math
 import glob
 
-# this is really stupid, I know...
+# Surrounds output with \textbf{} if minimum in row (or maximum in case of "precision" ).
 def checkMin( value, values, unitStr = "", doMax = False ):
+    # this is really stupid, I know...
     extrema = True;
     for v in values:
         if doMax:
@@ -31,6 +32,7 @@ def checkMin( value, values, unitStr = "", doMax = False ):
 
     return pattern;
 
+# Hack to get table column title (method name) from input angle filename
 def guessShortNames( names ):
     shortNames = [];
     order = [];
@@ -63,13 +65,14 @@ def createGraph(anglesArrays, names):
     
     colors = color.getMediumPalette()
     
-    
+    # identify method names ("RANSAC, Pearl, ...") and their order in the table 
     shortNames,order = guessShortNames(names);
-    means = {};
-    variances = {};
-    medians = {};
-    counts = {};
-    precisions = {};
+    # init storage dictionaries. key: shortName, value: statistic (i.e. mean)
+    means       = {};
+    variances   = {};
+    medians     = {};
+    counts      = {};
+    precisions  = {};
 
     fig, ax = plt.subplots()
     offset=0.
@@ -78,52 +81,72 @@ def createGraph(anglesArrays, names):
         ax.bar(offset+bins[:-1], n, width, color=colors[i])
         offset = offset+width
         
-        print names[i]
-        mean = np.mean(angle);
-        variance = np.var(angle);
-        median = np.median(angle);
+        # estimate
+        mean      = np.mean(angle);
+        variance  = np.var(angle);
+        median    = np.median(angle);
         precision = len(angle[np.where( angle == 0. )]) / float(len(angle));
 
+        # print
         print "mean   = ", mean, "rad,", mean * 180.0 / math.pi, "deg"
         print "var    = ", variance, "rad, ", variance * 180.0 / math.pi, "deg"
         print "median = ", median, "rad, ", median * 180.0 / math.pi, "deg"
         print "precision = ", precision * 100.0, "%";
 
+        # record
         means[ shortNames[i] ] = mean;
         variances[ shortNames[i] ] = variance;
         medians[ shortNames[i] ]   = median;
         counts[ shortNames[i] ] = len(angle);
         precisions[ shortNames[i] ] = precision;
 
-    strTitles = "   &";
-    strMeans = "    & mean";
-    strVars = "    & variance";
-    strMedians = "    & median";
-    strPrecisions = "    & ==$0^{\\circ}$";
-    strCounts = "    & N ";
+    # init latex strings
+    strTitles       = "    &";
+    strMeans        = "    & mean";
+    strVars         = "    & variance";
+    strMedians      = "    & median";
+    strPrecisions   = "    & ==$0^{\\circ}$";
+    strCounts       = "    & N ";
 
+    # init ordered names
     keys = [None] * len(order);
+    # determine final position
     for i,pos in enumerate(order):
+        # hack for missing methods
         finalPos = sorted(order).index(pos);
-        print( "pos: %d, finalPos: %d" % (pos,finalPos) );
+        # store keys in order
         keys[finalPos] = shortNames[i];
+
+    # print values in order:
     for key in keys:
+        # print method name, just to be sure
         strTitles = "%s & %s" % (strTitles, key);
         
+        # Check, if this method had the minimum score.
+        # If yes, surround with \textbf{}. Appeend degree sign in either case.
         pattern = checkMin( means[key], means, "$^{\\circ}$" );
         strMeans = pattern % (strMeans, means[key] * 180.0 / math.pi );
 
+        # Check, if this method had the minimum score.
+        # If yes, surround with \textbf{}. Appeend degree sign in either case.
         pattern = checkMin( variances[key], variances, "$^{\\circ}$"  );
         strVars = pattern % (strVars,   variances[key] * 180.0 / math.pi );
         
+        # Check, if this method had the minimum score.
+        # If yes, surround with \textbf{}. Appeend degree sign in either case.
         pattern = checkMin( medians[key], medians, "$^{\\circ}$" );
         strMedians = pattern % (strMedians,  medians[key] * 180.0 / math.pi );
 
+        # Check, if this method had the *maximum* score.
+        # If yes, surround with \textbf{}. Appeend degree sign in either case.
         pattern = checkMin( precisions[key], precisions, "\\%%", True );
         strPrecisions = pattern % (strPrecisions, precisions[key] * 180.0 / math.pi );
 
+        # Print number of samples (pairs of points compared)
         strCounts = "%s & %d" % (strCounts, counts[key] );
 
+    # Print to console. 
+    # TODO: print to file with scene name
     print ( "%s %s" % (strTitles , " \\\\ ") );
     print ( "%s %s" % (strMeans  , " \\\\ ") );
     print ( "%s %s" % (strVars   , " \\\\ ") );
