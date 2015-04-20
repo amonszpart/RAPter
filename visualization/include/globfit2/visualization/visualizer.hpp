@@ -76,6 +76,8 @@ namespace GF2 {
                 , std::string          const  problemPath           = ""
                 , bool                 const  paralColours          = false
                 , std::string                 outStem               = ""
+                , bool                 const  saveHough             = false
+                , std::string          const  screenshotPath        = ""
                 );
 
             //! \brief Shows a polygon that approximates the bounding ellipse of a cluster
@@ -214,10 +216,10 @@ namespace GF2
                                                            , std::string          const  problemPath         /* = "" */
                                                            , bool                 const  paralColours        /* = false */
                                                            , std::string                 outStem             /* = "" */
+                                                           , bool                 const  saveHough           /* = false */
+                                                           , std::string          const  screenshotPath      /* = "" */
                                                            )
     {
-        bool save_hough = true;
-
         // TYPEDEFS
         typedef typename PrimitiveContainerT::value_type::value_type    PrimitiveT;
         typedef typename PointContainerT::value_type                    PointPrimitiveT;
@@ -649,7 +651,7 @@ namespace GF2
                             throw new std::runtime_error("need angles");
                         }
 
-                        typename PrimitiveT::ExtentsT extents0, extents1;
+                        typename PrimitiveT::ExtremaT extents0, extents1;
                         SpatialSqrtPrimitivePrimitiveEnergyFunctor<MyFinitePrimitiveToFinitePrimitiveCompatFunctor<PrimitiveT>,PointContainerT,Scalar,PrimitiveT>
                                 distFunctor( *angles, points, scale );
                         distFunctor.setDirIdBias( 0 );
@@ -828,7 +830,7 @@ namespace GF2
 
         // --------------------------------------------------------------------
 
-        if ( save_hough )
+        if ( saveHough )
         {
             std::string     houghFilePath( "hough" + outStem + ".csv"   );
             util::saveBackup( houghFilePath );
@@ -920,6 +922,12 @@ namespace GF2
         } //...if save_poly
 
         // --------------------------------------------------------------------
+
+        if ( !screenshotPath.empty() )
+        {
+            vptr->spinOnce();
+            vptr->saveScreenshot( screenshotPath );
+        }
 
         if ( spin )
             vptr->spin();
@@ -1018,4 +1026,3 @@ namespace GF2
 #undef FILTER_STATUS
 
 #endif // __GF2_VISUALIZER_HPP__
-

@@ -60,6 +60,8 @@ GF2::vis::showCli( int argc, char** argv )
                   << "\t[ --statuses \t\t Show only specific statuses (comma separated) ]\n\n"
 
                   << "\t[ --save-poly \t\t Save polygons ]\n"
+                  << "\t[ --save-hough \t\t Save hough csv]\n"
+                  << "\t[ --screenshot \t\t ]\n"
                   << std::endl;
         return EXIT_SUCCESS;
     }
@@ -90,6 +92,7 @@ GF2::vis::showCli( int argc, char** argv )
     bool    no_paral            = pcl::console::find_switch( argc, argv, "--no-paral" );
     bool    no_scale_sphere     = pcl::console::find_switch( argc, argv, "--no-scale" );
     bool    save_poly           = pcl::console::find_switch( argc, argv, "--save-poly" );
+    bool    save_hough          = pcl::console::find_switch( argc, argv, "--save-hough" );
     bool    show_empty          = !pcl::console::find_switch( argc, argv, "--hide-empty" );
 
 
@@ -109,6 +112,9 @@ GF2::vis::showCli( int argc, char** argv )
     std::vector<float> bg_colours;
     pcl::console::parse_x_arguments( argc, argv, "--bg-colour", bg_colours );
     if ( bg_colours.size() == 3 ) { bg_colour(0) = bg_colours[0]; bg_colour(1) = bg_colours[1]; bg_colour(2) = bg_colours[2]; }
+
+    std::string screenshotPath("");
+    pcl::console::parse_argument( argc, argv, "--screenshot", screenshotPath );
 
     std::string title = "";
     pcl::console::parse_argument( argc, argv, "--title", title );
@@ -263,7 +269,7 @@ GF2::vis::showCli( int argc, char** argv )
                                                                                , scale
                                                                                , /*               colour: */ (Eigen::Vector3f() << 1,0,0).finished() // probably unused
                                                                                , /*            bg_colour: */ bg_colour
-                                                                               , /*                 spin: */ true
+                                                                               , /*                 spin: */ screenshotPath.empty()
                                                                                , /*          connections: */ (dont_show_rels && !show_spatial) ? NULL : &angles
                                                                                , /*             show_ids: */ show_ids
                                                                                , /*             use_tags: */ use_tags
@@ -290,6 +296,8 @@ GF2::vis::showCli( int argc, char** argv )
                                                                                , /* problemPath (unused): */ ""
                                                                                , /*      parallelColours: */ paralColours
                                                                                , /*              outStem: */ outStem
+                                                                               , /*            saveHough: */ save_hough
+                                                                               , /*       screenshotPath: */ screenshotPath
                                                                                );
     return EXIT_SUCCESS;
 } // ... Solver::show()

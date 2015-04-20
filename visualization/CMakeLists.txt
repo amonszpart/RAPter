@@ -58,6 +58,8 @@ SET( GLOBOPTVIS_HPP_LIST
 SET( GLOBOPTVIS_SRC_LIST
     src/visualization.cpp
     ../globOpt/src/templateInstantiation/taggable.cpp
+    ../globOpt/src/templateInstantiation/planePrimitive.cpp
+    ../globOpt/src/templateInstantiation/linePrimitive.cpp
 )
 
 SET( LIB_NAME ${PROJECT_NAME})

@@ -5,6 +5,8 @@
 #include "globfit2/globOpt_types.h"
 
 #include "globfit2/visualization/mst.hpp"
+#include "globopt/primitives/impl/planePrimitive.hpp"
+#include "globopt/primitives/impl/linePrimitive.hpp"
 
 int main(int argc, char *argv[])
 {
