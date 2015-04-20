@@ -191,8 +191,8 @@ namespace GF2
         const DidT dir_gid0 = prim0.getTag( _PrimitiveT::TAGS::DIR_GID );
         const DidT dir_gid1 = prim1.getTag( _PrimitiveT::TAGS::DIR_GID );
 
-        if ( gid0 == 50 || gid1 == 50 )
-            std::cout << "at " << gid0 << "," << dir_gid0 << " from " << gid1  << ", " << dir_gid1 << std::endl;
+        //if ( gid0 == 283 || gid1 == 283 )
+        //    std::cout << " a t " << gid0 << "," << dir_gid0 << " from " << gid1  << ", " << dir_gid1 << std::endl;
 
         bool add0 = false;
 
@@ -222,8 +222,9 @@ namespace GF2
 
         // was this direction-angle pair already covered?
         {
-            if ( copied[gid0].find(DidAid(dir_gid1,closest_angle_id0)) != copied[gid0].end() )
-                add0 = false;
+#warning "bumm 19/4/2015"
+            //if ( copied[gid0].find(DidAid(dir_gid1,closest_angle_id0)) != copied[gid0].end() )
+            //    add0 = false;
         }
 
         // are we still adding it?
@@ -476,9 +477,10 @@ namespace GF2
                                 , bool                              const  allowPromoted
                                 , bool                              const  tripletSafe
                                 , bool const noAngleGuess
+                                , bool const verbose
                                 )
     {
-        const bool verbose = true;
+        //const bool verbose = true;
 
         // _________ typedefs _________
 
@@ -557,7 +559,8 @@ namespace GF2
                          || (prim_status == _PrimitiveT::STATUS_VALUES::UNSET) )    // first ranking has to be done, since this is first iteration patchify output
                     {
                         // Promote: check, if patch is large by now
-                        if (    ((populations.find(gid) != populations.end()) && (populations[gid].size() > params.patch_population_limit) )
+                        if (    ((populations.find(gid) != populations.end()) &&
+                                 (populations[gid].size() > params.patch_population_limit) )
                              && (prim.getSpatialSignificance( spatialSignif, points, scale, &(populations[gid]))(0) >= smallThresh  )   )
                         {
                             // store primitives, that have just been promoted to large from small
@@ -743,10 +746,23 @@ namespace GF2
 
                         addCandidate<_PrimitivePrimitiveAngleFunctorT>(
                                     prim0, prim1, lid0, lid1, safe_mode, allowPromoted, angle_limit, angles, angle_gens_in_rad, promoted,
-                                    allowedAngles, copied, generated, nlines, outPrims, points, scale, &aliases, tripletSafe );
+                                    allowedAngles, copied, generated, nlines, outPrims, points, scale, &aliases, tripletSafe, verbose );
                         addCandidate<_PrimitivePrimitiveAngleFunctorT>(
                                     prim1, prim0, lid1, lid0, safe_mode, allowPromoted, angle_limit, angles, angle_gens_in_rad, promoted,
-                                    allowedAngles, copied, generated, nlines, outPrims, points, scale, &aliases, tripletSafe );
+                                    allowedAngles, copied, generated, nlines, outPrims, points, scale, &aliases, tripletSafe, verbose );
+
+#warning "wasteful 19/4/2015"
+                        if ( gid1 == 299 || gid0 == 299 )
+                            std::cout << "deb" << std::endl;
+
+                        AnglesT tmpAngles = AnglesT({0.});
+                        addCandidate<_PrimitivePrimitiveAngleFunctorT>(
+                                    prim0, prim1, lid0, lid1, safe_mode, allowPromoted, angle_limit, tmpAngles, angle_gens_in_rad, promoted,
+                                    allowedAngles, copied, generated, nlines, outPrims, points, scale, &aliases, tripletSafe, verbose );
+                        addCandidate<_PrimitivePrimitiveAngleFunctorT>(
+                                    prim1, prim0, lid1, lid0, safe_mode, allowPromoted, angle_limit, tmpAngles, angle_gens_in_rad, promoted,
+                                    allowedAngles, copied, generated, nlines, outPrims, points, scale, &aliases, tripletSafe, verbose );
+
                     } //...for l3
                 } //...for l2
             } //...for l1
@@ -805,7 +821,7 @@ namespace GF2
                         // copy prim0 (the alias) to all compatible receivers given allowedAngles.
                         addCandidate<_PrimitivePrimitiveAngleFunctorT,AliasesT<_PrimitiveT,_Scalar> >(
                             prim1, prim0, lid1, lid0, safe_mode, allowPromoted, angle_limit, angles, angle_gens_in_rad, promoted,
-                            allowedAngles, copied, generated, nlines, outPrims, points, scale, nullptr, tripletSafe );
+                            allowedAngles, copied, generated, nlines, outPrims, points, scale, nullptr, tripletSafe, verbose );
 
                     } //...inner for
                 } //...outer for
@@ -1108,7 +1124,7 @@ namespace GF2
                 return EXIT_FAILURE;
             }
         } // ... parse input
-
+        bool verbose = pcl::console::find_switch( argc, argv, "--verbose" ) || pcl::console::find_switch( argc, argv, "-v" );
         bool no_paral = pcl::console::find_switch( argc, argv, "--no-paral");
         // Read desired angles
         AnglesT angleGensInRad;
@@ -1176,6 +1192,8 @@ namespace GF2
                           , keepSingles
                           , allowPromoted
                           , tripletSafe
+                          , false
+                          , verbose
                           );
 
                 //if ( err != EXIT_SUCCESS ) std::cerr << "[" << __func__ << "]: " << "generate exited with error! Code: " << err << std::endl;

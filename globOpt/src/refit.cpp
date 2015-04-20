@@ -154,7 +154,10 @@ refit( int    argc
 
         /// cost -> objective: minimize \sum_n \sum_p ((n_j . p_i) + d)^2  where point p_i is assigned to line with normal n_j
         if ( Dims == 3 ) throw new std::runtime_error("datafit unimplemented for 3D");
-        // n0^2 p0^2 + n1^2 p1^2 + 2 d n0 p0  + d^2   + 2 d n1 p1 + 2 n0 n1 p0 p1 + 2 d n2 p2 + 2 n0 n2 p0 p2 + 2 n1 n2 p1 p2 + n2^2 p2^2
+        // n0^2 p0^2 + n1^2 p1^2 + n2^2 p2^2 +
+        // 2 n0 p0 d + 2 n1 p1 d + 2 n2 p2 d +
+        // 2 n0 n1 p0 p1 + d^2 +
+        // 2 n0 n2 p0 p2 + 2 n1 n2 p1 p2
         {
             // for each line
             Scalar coeff = Scalar( 0. );
@@ -217,8 +220,6 @@ refit( int    argc
                                              << problem.getVarName( prims_vars[varKey][Dims] )
                                              << std::endl;
 
-#                   warning "[refit.cpp][refit]TODO: derive this for pz,nz (Dims==3)"
-
                     // 2 . px . py . nx . ny
                     coeff = Scalar(2.) * points[pid].pos()(0) * points[pid].pos()(1);
                     problem.addQObjective( prims_vars[varKey][0], prims_vars[varKey][1], coeff );
@@ -229,6 +230,17 @@ refit( int    argc
                                                 << problem.getVarName( prims_vars[varKey][0] ) << " * "
                                                 << problem.getVarName( prims_vars[varKey][1] )
                                                 << std::endl;
+
+                    // 2 n0 n2 p0 p2 + 2 n1 n2 p1 p2
+                    if ( Dims > 2 )
+                    {
+                        // 2 n0 n2 p0 p2
+                        coeff = Scalar(2.) * points[pid].pos()(0) * points[pid].pos()(2);
+                        problem.addQObjective( prims_vars[varKey][0], prims_vars[varKey][2], coeff );
+                        // 2 n1 n2 p1 p2
+                        coeff = Scalar(2.) * points[pid].pos()(1) * points[pid].pos()(2);
+                        problem.addQObjective( prims_vars[varKey][1], prims_vars[varKey][2], coeff );
+                    }
                 } // for points
             } //...for primitives
         } //...add objective
