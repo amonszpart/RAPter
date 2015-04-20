@@ -11,6 +11,47 @@ import packages.polarPlot as polarplot
 import math
 import glob
 
+# this is really stupid, I know...
+def checkMin( value, values, unitStr = "", doMax = False ):
+    extrema = True;
+    for v in values:
+        if doMax:
+            if values[v] > value:
+                extrema = False;
+                break;
+        else:
+            if values[v] < value:
+                extrema = False;
+                break;
+    
+    if not extrema:
+        pattern =  "%%s & %%2.4f%s" % unitStr;
+    else:
+        pattern = "%%s & \\textbf{%%2.4f%s}" % unitStr;
+
+    return pattern;
+
+def guessShortNames( names ):
+    shortNames = [];
+    order = [];
+    for name in names:
+        if name.lower().find("schnabel") >= 0:
+            shortNames.append( "RANSAC" );
+            order.append(0);
+        elif name.lower().find("globfit") >= 0 or name.lower().find("sub") >= 0:
+            shortNames.append("Globfit");
+            order.append(2);
+        elif name.lower().find("pearl") >= 0:
+            shortNames.append("\\textsc{Pearl}");
+            order.append(1);
+        elif name.lower().find("bonmin") >= 0:
+            shortNames.append("Ours");
+            order.append(3);
+        else:
+            shortNames.append(name);
+            order.append(2);
+
+    return shortNames,order;
 
 def createGraph(anglesArrays, names):
     N = 20                                  # number of bins in the histogram
@@ -23,10 +64,17 @@ def createGraph(anglesArrays, names):
     colors = color.getMediumPalette()
     
     
+    shortNames,order = guessShortNames(names);
+    means = {};
+    variances = {};
+    medians = {};
+    counts = {};
+    precisions = {};
+
     fig, ax = plt.subplots()
     offset=0.
     for i, angle in enumerate(anglesArrays):
-        n, bins = np.histogram(angle, N, (mmin, mmax))           
+        n, bins = np.histogram(angle, N, (mmin, mmax))
         ax.bar(offset+bins[:-1], n, width, color=colors[i])
         offset = offset+width
         
@@ -34,9 +82,54 @@ def createGraph(anglesArrays, names):
         mean = np.mean(angle);
         variance = np.var(angle);
         median = np.median(angle);
+        precision = len(angle[np.where( angle == 0. )]) / float(len(angle));
+
         print "mean   = ", mean, "rad,", mean * 180.0 / math.pi, "deg"
         print "var    = ", variance, "rad, ", variance * 180.0 / math.pi, "deg"
         print "median = ", median, "rad, ", median * 180.0 / math.pi, "deg"
+        print "precision = ", precision * 100.0, "%";
+
+        means[ shortNames[i] ] = mean;
+        variances[ shortNames[i] ] = variance;
+        medians[ shortNames[i] ]   = median;
+        counts[ shortNames[i] ] = len(angle);
+        precisions[ shortNames[i] ] = precision;
+
+    strTitles = "   &";
+    strMeans = "    & mean";
+    strVars = "    & variance";
+    strMedians = "    & median";
+    strPrecisions = "    & ==$0^{\\circ}$";
+    strCounts = "    & N ";
+
+    keys = [None] * len(order);
+    for i,pos in enumerate(order):
+        finalPos = sorted(order).index(pos);
+        print( "pos: %d, finalPos: %d" % (pos,finalPos) );
+        keys[finalPos] = shortNames[i];
+    for key in keys:
+        strTitles = "%s & %s" % (strTitles, key);
+        
+        pattern = checkMin( means[key], means, "$^{\\circ}$" );
+        strMeans = pattern % (strMeans, means[key] * 180.0 / math.pi );
+
+        pattern = checkMin( variances[key], variances, "$^{\\circ}$"  );
+        strVars = pattern % (strVars,   variances[key] * 180.0 / math.pi );
+        
+        pattern = checkMin( medians[key], medians, "$^{\\circ}$" );
+        strMedians = pattern % (strMedians,  medians[key] * 180.0 / math.pi );
+
+        pattern = checkMin( precisions[key], precisions, "\\%%", True );
+        strPrecisions = pattern % (strPrecisions, precisions[key] * 180.0 / math.pi );
+
+        strCounts = "%s & %d" % (strCounts, counts[key] );
+
+    print ( "%s %s" % (strTitles , " \\\\ ") );
+    print ( "%s %s" % (strMeans  , " \\\\ ") );
+    print ( "%s %s" % (strVars   , " \\\\ ") );
+    print ( "%s %s" % (strMedians, " \\\\ ") );
+    print ( "%s %s" % (strPrecisions, " \\\\ ") );
+    print ( "%s %s" % (strCounts, " \\\\ ") );
 
     plt.show()
 
