@@ -78,3 +78,20 @@ splatting figure/ours_300_pts.ply figure/ours_300.ply 1 0.005
 python ../normal_distr.py  cloudRGBNormal_it15_reProj_noUnass.ply ndistr_globfit_300.svg "Stairs 300 - Ours"
 
 cp plane_mesh_it15.ply figure/ours_300_planes.ply
+
+
+############################################################
+## ours 300 NEW
+cd  ../stairs_moos_globfit_0.5_300
+ln -s ../stairs_moos/cloud.ply .
+../show.py -s 0.010000 -p primitives_it15.bonmin.csv -a points_primitives_it14.csv --save-poly
+
+mkdir figure
+meshlabserver -i ./cloudRGBNormal_it15_reProj_noUnass.ply -o figure/ours_300_pts.ply -om vc vn
+
+splatting figure/ours_300_pts.ply figure/ours_300.ply 1 0.005
+
+#distribution
+python ../normal_distr.py  cloudRGBNormal_it15_reProj_noUnass.ply ndistr_globfit_300.svg "Stairs 300"
+
+cp plane_mesh_it15.ply figure/ours_300_planes.ply
