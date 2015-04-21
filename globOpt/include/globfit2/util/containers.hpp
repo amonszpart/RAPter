@@ -117,6 +117,15 @@ namespace containers {
                 , _uid( 0 )
             {}
 
+//            inline PrimitiveContainerIterator( _ParentT const& container )
+//                : _container( container )
+//                , _outer_it ( _container.begin() )
+//                , _inner_it ( startInnerAt( _outer_it ) )
+//                , _lid0( 0 )
+//                , _lid1( 0 )
+//                , _uid( 0 )
+//            {}
+
             inline void step()
             {
                 if ( _outer_it == _container.end() )
@@ -244,7 +253,7 @@ namespace containers {
             typedef typename InnerContainerT::const_iterator InnerContainerConstIteratorT;
 
             typedef PrimitiveContainerIterator<ParentT,_PrimitiveT,ParentIteratorT, InnerContainerIteratorT>          Iterator;
-            typedef PrimitiveContainerIterator<ParentT,_PrimitiveT,ParentConstIteratorT,InnerContainerConstIteratorT> ConstIterator;
+            typedef PrimitiveContainerIterator<const ParentT,_PrimitiveT,ParentConstIteratorT,InnerContainerConstIteratorT> ConstIterator;
     }; //...struct PrimitiveContainer
 
 

@@ -18,22 +18,29 @@ namespace globopt
 
         public:
 
-            inline Triangle() : corners( CornersT::Zero() ) {}
-            inline Triangle( VectorT a, VectorT b, VectorT c ) : corners( (CornersT() << a,b,c).finished() ) {}
+            inline Triangle() : _corners( CornersT::Zero() ) {}
+            inline Triangle( VectorT a, VectorT b, VectorT c ) : _corners( (CornersT() << a,b,c).finished() ) {}
+
             // todo: figure out non-copy return type
-            inline const VectorT getCorner( int const id ) const { return corners.col( id ); }
-            inline Scalar getDistance( Eigen::Matrix<Scalar,3,1> const& point ) const { return getDistance(*this,point); }
-            inline Scalar getSquaredDistance( Eigen::Matrix<Scalar,3,1> const& point ) const { return getSquaredDistance(*this,point); }
+            inline const VectorT getCorner         ( int const id )                           const { return _corners.col( id ); }
+            inline const int     getCornersCount   ()                                         const { return _corners.cols()   ; }
+            inline       Scalar  getDistance       ( Eigen::Matrix<Scalar,3,1> const& point ) const { return getDistance       (*this,point); }
+            inline       Scalar  getSquaredDistance( Eigen::Matrix<Scalar,3,1> const& point ) const { return getSquaredDistance(*this,point); }
+
             template <typename _VectorT>
             static inline Scalar getSquaredDistance( Triangle const& tri, _VectorT const& point );
+
             template <typename _VectorT>
             static inline Scalar getDistance( Triangle const& tri, _VectorT const& point );
-            Triangle<_Scalar>::VectorT dir() const;
-            VectorT getMean() const { return corners.rowwise().mean(); }
+
+            VectorT              dir()            const;
+            std::vector<_Scalar> getSideLengths() const;
+
+            inline VectorT getMean() const { return _corners.rowwise().mean(); }
 
         protected:
             //! \brief Corner points in columns
-            CornersT corners;
+            CornersT _corners;
 
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     }; //...cls Triangle
@@ -45,17 +52,22 @@ namespace globopt
     template <typename _Scalar>
     inline typename Triangle<_Scalar>::VectorT Triangle<_Scalar>::dir() const
     {
-        VectorT edge0 = this->getCorner(1) - this->getCorner(0);
-//        std::cout << "edge0: " << edge0.template transpose()  << " = "
-//                              << this->getCorner(1).template transpose() << " - "
-//                              << this->getCorner(0).template transpose()
-//                              << std::endl;
-        VectorT edge1 = this->getCorner(2) - this->getCorner(0);
-//        std::cout << "edge1: " << edge1.template transpose()  << " = " << this->getCorner(2).template transpose() << " - " << this->getCorner(0).template transpose()
-//                              << std::endl;
-        //return edge0.normalized().cross( edge1.normalized() );
-        return edge0.cross( edge1 ).normalized();
+//        VectorT edge0 = this->getCorner(1) - this->getCorner(0);
+//        VectorT edge1 = this->getCorner(2) - this->getCorner(0);
+//        return edge0.cross( edge1 ).normalized();
+
+        return (this->getCorner(1) - this->getCorner(0) ).cross
+               (this->getCorner(2) - this->getCorner(0) ).normalized();
     } //...dir()
+
+    template <typename _Scalar>
+    inline std::vector<_Scalar> Triangle<_Scalar>::getSideLengths() const
+    {
+        std::vector<_Scalar> corners( this->getCornersCount() );
+        for ( size_t col = 0; col != this->getCornersCount(); ++col )
+            corners[col] = (this->getCorner(col+1 == _corners.cols() ? 0 : col+1) - this->getCorner(col)).norm();
+        return corners;
+    } //...getSideLengths()
 
     // from: http://kyousai.googlecode.com/svn/trunk/LibMathematics/Distance/Wm5DistPoint3Triangle3.cpp
     template <typename _Scalar>

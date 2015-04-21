@@ -8,23 +8,25 @@ namespace globopt
 {
 
     template <class _PclCloud, typename _TriangleT>
-    inline int getFace( _TriangleT & triangle, _PclCloud const& cloud, ::pcl::Vertices const& face )
+    inline int getTriangleFromFace( _TriangleT & triangle, _PclCloud const& cloud, ::pcl::Vertices const& face )
     {
         typedef typename _TriangleT::Scalar Scalar;
         typedef typename _TriangleT::VectorT Vector;
 
         triangle = _TriangleT( cloud.at(face.vertices[0]).template getVector3fMap().template cast<Scalar>(),
-                cloud.at(face.vertices[1]).template getVector3fMap().template cast<Scalar>(),
-                cloud.at(face.vertices[2]).template getVector3fMap().template cast<Scalar>() );
+                               cloud.at(face.vertices[1]).template getVector3fMap().template cast<Scalar>(),
+                               cloud.at(face.vertices[2]).template getVector3fMap().template cast<Scalar>() );
         return EXIT_SUCCESS;
     } //...getFace
 
-    template <class _TrianglesContainer>
-    inline int getTrianglesFromObj( _TrianglesContainer & triangles, std::string const& meshPath )
+    template <class _TrianglesContainer, typename Scalar>
+    inline int getTrianglesFromObj( _TrianglesContainer & triangles, std::string const& meshPath, Scalar minPlaneEdge )
     {
         typedef typename _TrianglesContainer::value_type Triangle;
+        bool filterBySize = minPlaneEdge > 0.;
 
         // parse input mesh
+        size_t cnt = 0;
         if ( meshPath.find("obj") < 0 )
         {
             std::cout << "--assign " << meshPath << " has to be obj and contain triangles!" << std::endl;
@@ -50,13 +52,21 @@ namespace globopt
                 }
 
                 Triangle tri;
-                getFace( tri, polyCloud, *it );
-                triangles.push_back( tri );
+                getTriangleFromFace( tri, polyCloud, *it );
+                std::vector<Scalar> sideLengths = tri.getSideLengths();
+                if ( filterBySize && *std::min_element(sideLengths.begin(), sideLengths.end()) < minPlaneEdge )
+                {
+                    //std::cout << "filtering triangle, since minedge: " << *std::min_element(sideLengths.begin(), sideLengths.end()) << " < " << minPlaneEdge << std::endl;
+                    ++cnt;
+                }
+                else
+                    triangles.push_back( tri );
+
                 //triangles.push_back( Triangle(it->vertices[0], it->verticess[1], it->vertices[2]) );
             } //...for polygons
         } //...read obj
 
-        std::cout << "have " << triangles.size() << " triangles" << std::endl;
+        std::cout << "have " << triangles.size() << " triangles" << ", filtered " << cnt << " = " << float(cnt)/triangles.size() << std::endl;
         return EXIT_SUCCESS;
     }
 

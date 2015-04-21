@@ -47,7 +47,7 @@ namespace GF2
              *  \param[in] p0    Point on plane.
              *  \param[in] dir   Plane normal.
              */
-            inline PlanePrimitive( Eigen::Matrix<Scalar,3,1> pnt, Eigen::Matrix<Scalar,3,1> normal );
+            PlanePrimitive( Eigen::Matrix<Scalar,3,1> pnt, Eigen::Matrix<Scalar,3,1> normal );
 
             /*! \brief Creates plane primitive from an ordered local frame
              */

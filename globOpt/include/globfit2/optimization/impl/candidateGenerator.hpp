@@ -191,8 +191,8 @@ namespace GF2
         const DidT dir_gid0 = prim0.getTag( _PrimitiveT::TAGS::DIR_GID );
         const DidT dir_gid1 = prim1.getTag( _PrimitiveT::TAGS::DIR_GID );
 
-        //if ( gid0 == 283 || gid1 == 283 )
-        //    std::cout << " a t " << gid0 << "," << dir_gid0 << " from " << gid1  << ", " << dir_gid1 << std::endl;
+        if ( gid0 == 283 || gid1 == 283 )
+            std::cout << " at " << gid0 << "," << dir_gid0 << " from " << gid1  << ", " << dir_gid1 << std::endl;
 
         bool add0 = false;
 

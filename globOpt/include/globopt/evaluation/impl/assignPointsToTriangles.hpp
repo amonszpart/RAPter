@@ -8,50 +8,39 @@
 #include "pcl/PolygonMesh.h"
 
 #include "pcl/visualization/pcl_visualizer.h"
+#include <chrono>
 
 namespace globopt
 {
 
-    template <typename _Scalar>
-    _Scalar sgn( _Scalar a )
+    template <typename _PointContainerT, typename _PrimitivesMapT, class _PopulationsT, typename _Scalar>
+    inline GF2::GidT getClosestPrimitive( _PointContainerT const& points, GF2::PidT const pId, _PrimitivesMapT & primitives, _PopulationsT const& populations, _Scalar scale )
     {
-        return (a > _Scalar(0.)) - (a < _Scalar(0.));
-        //_Scalar sign = (a > _Scalar(0.)) - (a < _Scalar(0.));
+        typedef typename _PrimitivesMapT::PrimitiveT PrimitiveT;
+        typedef typename _PointContainerT::PrimitiveT PointPrimitiveT;
 
-        //return (sign == _Scalar(0.)) ? _Scalar(1.) : sign;
-    }
+        PointPrimitiveT const& point = points[ pId ];
 
-#if 0
-    template <typename Scalar, typename _VectorT, class _TriangleT>
-    inline Scalar getDistance( _TriangleT const& tri, _VectorT const& point )
-    {
-        _VectorT p1  = tri.getCorner(0);
-        _VectorT p2  = tri.getCorner(1);
-        _VectorT p3  = tri.getCorner(2);
-         // calculate vectors from point f to vertices p1, p2 and p3:
-         _VectorT f1 = p1 - point;
-         _VectorT f2 = p2 - point;
-         _VectorT f3 = p3 - point;
+        _Scalar    min_dist( std::numeric_limits<_Scalar>::max() ), tmp;
+        GF2::GidT min_gid ( PrimitiveT::LONG_VALUES::UNSET );
+        typename PrimitiveT::ExtremaT extrema;
+        for ( typename _PrimitivesMapT::ConstIterator it(primitives); it.hasNext(); it.step() )
+        {
+            auto popIt = populations.find(it.getGid());
+            if ( popIt == populations.end() )
+                continue;
 
-         // calculate the areas (parameters order is essential in this case):
-         _VectorT va  = ( p1-p2 ).cross( p1-p3 ); // main triangle cross product
-         _VectorT va1 = f2.cross( f3 ); // p1's triangle cross product
-         _VectorT va2 = f3.cross( f1 ); // p2's triangle cross product
-         _VectorT va3 = f1.cross( f2 ); // p3's triangle cross product
-         Scalar   a   = va.norm(); // main triangle area
+            it->template getExtent<PointPrimitiveT>( extrema, points, scale, &(popIt->second), /* force_axis_aligned: */ true );
+            tmp = it->getFiniteDistance( extrema, point.template pos() );
 
-         // calculate barycentric coordinates with sign:
-         Scalar   a1  = va1.norm() / a * sgn( va.dot(va1) );
-         Scalar   a2  = va2.norm() / a * sgn( va.dot(va2) );
-         Scalar   a3  = va3.norm() / a * sgn( va.dot(va3) );
-
-         // find the uv corresponding to point f (uv1/uv2/uv3 are associated to p1/p2/p3):
-         std::cout << "a1: " << a1 << ", a2: " << a2 << ", a3: " << a3 << std::endl;
-
-         return -1.f;
-    } // ..getDistance
-
-#endif
+            if ( tmp < min_dist )
+            {
+                min_dist = tmp;
+                min_gid = it.getGid();
+            }
+        }
+        return min_gid;
+    } //...closestPrimitive
 
     template <typename TriangleT>
     inline void addTriangle( pcl::visualization::PCLVisualizer::Ptr &vptr, TriangleT triangle, GF2::LidT id, Eigen::Vector3f colour = Eigen::Vector3f::Ones() )
@@ -69,7 +58,7 @@ namespace globopt
         vptr->addPolygon<pcl::PointXYZRGB>( polyCloud, colour(0), colour(1), colour(2), triangleName.str(), 0 );
     }
 
-    // Usage: Release/bin/eval --planes --assign gtHandAligned.obj --cloud cloud.ply -p primitives_it9.bonmin.csv -a points_primitives_it8.csv --scale 0.05
+    // Release/bin/eval --planes --assign gt.obj --cloud cloud.ply --scale 0.02 -p primitives.globfit.csv -a points_primitives.globfit.csv --silent --filter-ambig 1
     template < class _PrimitiveVectorT
              , class _PrimitiveMapT
              , class _PointContainerT
@@ -106,68 +95,64 @@ namespace globopt
 
         bool silent = GF2::console::find_switch( argc, argv, "--silent" );
 
-        int  ambig(0);
+        int ambig(0);
         GF2::console::parse_argument( argc, argv, "--filter-ambig", ambig );
         std::cout << "[" << __func__ << "]: " << "Filtering points, that have more than " << ambig << " triangles inside " << params.scale << " radius\n";
 
+        Scalar minPlaneEdge( 0 );
+        GF2::console::parse_argument( argc, argv, "--min-plane-edge", minPlaneEdge );
+        std::cout << "[" << __func__ << "]: " << "Filtering triangles and points, that have an edge shorter, than " << minPlaneEdge << "\n";
+
+        LidT N(10000);
+        GF2::console::parse_argument( argc, argv, "--n-rels", N );
+        std::cout << "[" << __func__ << "]: " << "Using " << N << " pairwise comparisons, change with --n-rels" << std::endl;
+
         // parse input mesh
         std::vector<Triangle> triangles;
-        getTrianglesFromObj( triangles, meshPath );
+        getTrianglesFromObj( triangles, meshPath, minPlaneEdge );
         std::cout << "have " << triangles.size() << " triangles" << std::endl;
 
         // debug ( add triangles )
-        pcl::visualization::PCLVisualizer::Ptr vptr( new pcl::visualization::PCLVisualizer() );
-        vptr->setBackgroundColor( .5, .6, .6 );
-        for ( int i = 0; i != triangles.size(); ++i )
-        {
-            addTriangle( vptr, triangles[i], i );
-        }
+//        pcl::visualization::PCLVisualizer::Ptr vptr( new pcl::visualization::PCLVisualizer() );
+//        vptr->setBackgroundColor( .5, .6, .6 );
+//        for ( int i = 0; i != triangles.size(); ++i )
+//        {
+//            addTriangle( vptr, triangles[i], i );
+//        }
 
         // debug
-        vptr->addPointCloud<typename _PclCloudT::PointType>( pclCloud );
-        vptr->addCoordinateSystem( 0.1 );
-        vptr->spinOnce(200);
+//        vptr->addPointCloud<typename _PclCloudT::PointType>( pclCloud );
+//        vptr->addCoordinateSystem( 0.1 );
+//        vptr->spinOnce(200);
 
         // parse input names
         std::string primPath        = parsePrimitivesPath( argc, argv );
         std::string primStem        = primPath.substr( 0, primPath.size() - 3 );
         std::string outAnglesPath   = primStem + "angles.csv";
+        std::string outAnglesSimplePath = primStem + "simple.angles.csv";
         std::string assocPath       = parseAssocPath( argc, argv );
         std::string assocStem       = assocPath.substr( 0, assocPath.size() - 3 );
 
         // work: 1. match point to triangles                         --> [points_]primitives.gt.csv
         //       2. compare triangles to already assigned primitives -->                    .angles.csv
 
+        GF2::GidPidVectorMap populations; // populations[patch_id] = all points with GID==patch_id
+        GF2::processing::getPopulations( populations, points );
+
         // pointid => < triangleId, primitiveGid >
+        PidT reassignedCount = 0;
         std::map<PidT,std::pair< LidT, LidT> > pointsTriangles;
         // pointid
-        PidT pId( 0 );
-        for ( PointConstIteratorT pIt = points.begin(); pIt != points.end(); ++pIt, ++pId )
+        //PidT pId( 0 );
+#pragma omp parallel for num_threads(4)
+        //for ( PointConstIteratorT pIt = points.begin(); pIt points.end(); ++pIt, ++pId )
+        for ( PidT pId = 0; pId < points.size(); ++pId )
         {
             // cache point reference
-            PointPrimitiveT const& point = *pIt;
+            //PointPrimitiveT const& point = *pIt;
+            PointPrimitiveT const& point = points[ pId ];
             // skip not assigned points
-            if ( point.gidUnset() ) continue;
-
-            // get point group Id
-            const GidT gid = point.getTag( PointPrimitiveT::TAGS::GID );
-
-            // get assigned primitive
-            auto primIt = primitives.find( gid );
-            // skip, if not found
-            if ( primIt == primitives.end() )
-            {
-                if ( !silent )
-                    std::cerr << "could not find primitive by gid " << gid << ", for point " << pId << std::endl; fflush(stderr);
-                continue;
-            }
-
-            // skip, if patch is empty
-            if ( !primIt->second.size() )
-            {
-                std::cerr << "gid " << gid << " is empty...no primitive in group" << std::endl; fflush(stderr);
-                continue;
-            }
+            //if ( point.gidUnset() ) continue;
 
             // cache primitive
             //PrimitiveT const& prim = primIt->second.at(0);
@@ -202,9 +187,39 @@ namespace globopt
             // if triangle found
             if ( (closestTriangleId >= 0) )
             {
-                // note point to triangle assignment
-                pointsTriangles[ pId ] = std::pair<LidT,GidT>( closestTriangleId, gid );
-            }
+                // we *need* a primitive for this point, since it ended up in the GT
+                GidT gid( PrimitiveT::LONG_VALUES::UNSET );
+
+                // get point group Id
+                gid = point.getTag( PointPrimitiveT::TAGS::GID );
+
+                // make sure primitive exists
+                if ( gid != PrimitiveT::LONG_VALUES::UNSET )
+                {
+                    auto primIt = primitives.find( gid );
+                    if ( primIt == primitives.end() || !primIt->second.size() )
+                        gid = PrimitiveT::LONG_VALUES::UNSET;
+                }
+
+                // assign closest, if not assigned
+                if ( gid == PrimitiveT::LONG_VALUES::UNSET )
+                {
+                    gid = getClosestPrimitive( points, pId, primitives, populations, params.scale );
+                    //std::cout << "assigned " << gid << " to pid " << pId << std::endl;
+                    ++reassignedCount;
+                }
+
+                // remember point for later
+                if ( gid != PrimitiveT::LONG_VALUES::UNSET )
+                {
+#                   pragma omp critical (PTR)
+                    {
+                        // note point to triangle assignment
+                        pointsTriangles[ pId ] = std::pair<LidT,GidT>( closestTriangleId, gid );
+                    }
+                } //...gid not unset
+
+            } //...triangle found
             else if ( !silent )
             {
                 std::cerr << "no triangle found for point..." << std::endl;
@@ -213,6 +228,7 @@ namespace globopt
             if ( !(pId % 100000) )
                 std::cout << pId << std::endl;
         } //...points
+        std::cout << "[" << __func__ << "]: " << "reassigned " << reassignedCount << " points" << std::endl;
 
         // store new assignments
         _PointContainerT gtPoints;
@@ -224,32 +240,87 @@ namespace globopt
             gtPoints.back().setTag( PointPrimitiveT::TAGS::GID, PointPrimitiveT::LONG_VALUES::UNSET );
         } // ...for all points
 
+        std::ofstream fAnglesSimple( outAnglesSimplePath );
         // write angles to file
-        std::ofstream fAngles( outAnglesPath );
+        _PointContainerT orientedPoints, orientedGtPoints;
+        orientedPoints  .reserve( pointsTriangles.size() );
+        orientedGtPoints.reserve( pointsTriangles.size() );
         for ( auto it = pointsTriangles.begin(); it != pointsTriangles.end(); ++it )
         {
             // read
             PidT              pid        = it->first;
-            LidT              triangleId = it->second.first;
             GidT              primGid    = it->second.second;
+            LidT              triangleId = it->second.first;
             Triangle   const& triangle   = triangles.at( triangleId );
             PrimitiveT const& prim       = primitives.at( primGid ).at( 0 );
 
+            orientedPoints  .push_back( PointPrimitive(points.at(pid).template pos(),prim    .template dir()) );
+            orientedGtPoints.push_back( PointPrimitive(points.at(pid).template pos(),triangle.template dir()) );
+
+            // save point assignment
+            gtPoints.at( pid ).setTag( PointPrimitiveT::TAGS::GID, triangleId );
+
+            // Deprecated
             // calculate angle
             Scalar angle = GF2::angleInRad( prim.template dir(), triangle.template dir() );
             // reduce to parallel
             angle = std::min( angle, Scalar(std::abs(M_PI-angle)));
 
             // write angle
-            fAngles << angle << "\n";
-
-            // save point assignment
-            gtPoints.at( pid ).setTag( PointPrimitiveT::TAGS::GID, triangleId );
+            fAnglesSimple << angle << "\n";
         } //...for all points that have triangles
+        fAnglesSimple.close();
+
+        // subsample
+        unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+        std::vector<LidT> ids( orientedPoints.size() );
+        {
+            for ( LidT id = 0; id != orientedPoints.size(); ++id )
+                ids[id] = id;
+            shuffle( ids.begin(), ids.end(), std::default_random_engine(seed) );
+        }
+
+        // pairwise relative comparisons
+        Scalar angle;
+        std::cout << "have " << orientedPoints.size() << " orientedPOints and " << orientedGtPoints.size() << " gt points\n" << std::endl;
+        if ( orientedPoints.size() * orientedPoints.size() / 2. < N )
+        {
+            N = 0.5 * orientedPoints.size() * orientedPoints.size();
+            std::cout << " set N to " << N << std::endl;
+        }
+        //for ( PidT pId0 = 0; pId0 != orientedPoints.size() - 1; ++pId0 )
+        //    for ( PidT pId1 = pId0+1; pId1 != orientedPoints.size(); ++pId1 )
+        PidT sqrtN = std::floor( std::sqrt(Scalar(2.*N)) );
+        std::cout << "sqrtN: " << sqrtN << ", N*N-1/2: " << sqrtN * (sqrtN-1) * 0.5 << ", N: " << N << std::endl;
+        //std::vector<Scalar> outAngles; outAngles.reserve(N);
+        PidT pId0, pId1;
+        //Scalar mean = 0.;
+        //size_t meanCount = 0;
+        std::ofstream fAngles( outAnglesPath );
+        for ( PidT id0 = 0; id0 != sqrtN-1; ++id0 )
+        {
+            if ( id0 % 10000 == 0 )
+                std::cout << "id0 " << id0 << " / " << sqrtN-1 << std::endl;
+            for ( PidT id1 = id0+1; id1 != sqrtN; ++id1/*, ++meanCount*/ )
+            {
+                pId0 = ids[id0];
+                pId1 = ids[id1];
+                angle = std::abs( GF2::angleInRad( orientedPoints  [pId0].template dir(), orientedPoints  [pId1].template dir() )
+                                - GF2::angleInRad( orientedGtPoints[pId0].template dir(), orientedGtPoints[pId1].template dir() ) );
+                while ( angle > M_PI ) angle -= M_PI;
+                angle = std::min( angle, Scalar(M_PI - angle) );
+                //outAngles.push_back( angle );
+                //mean += angle;
+                fAngles << angle << "\n";
+            }
+        }
+
         // close file
+
         fAngles.close();
         // log
         std::cout << "[" << __func__ << "]: " << "wrote angles to " << outAnglesPath << std::endl;
+        std::cout << "written to " << outAnglesSimplePath << std::endl;
 
         // save triangles as primitives
         _PrimitiveMapT gtPrims;
@@ -278,3 +349,4 @@ namespace globopt
 } //...ns globopt
 
 #endif // GO_ASSIGNPOINTSTOTRIANGLES_HPP
+

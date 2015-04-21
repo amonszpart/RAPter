@@ -588,26 +588,17 @@ namespace GF2
 
     inline bool PlanePrimitive::gidUnset() const { return this->getTag(PlanePrimitive::TAGS::GID) == LONG_VALUES::UNSET; }
 
-    inline PlanePrimitive::Scalar
-    PlanePrimitive::getFiniteDistance( PlanePrimitive::ExtentsT const& extrema, PlanePrimitive::Position const& pnt ) const
-    {
-        return MyPointFinitePlaneDistanceFunctor::eval( extrema, *this, pnt );
-    }
+//    inline PlanePrimitive::Scalar
+//    PlanePrimitive::getFiniteDistance( PlanePrimitive::ExtentsT const& extrema, PlanePrimitive::Position const& pnt ) const
+//    {
+//        return MyPointFinitePlaneDistanceFunctor::eval( extrema, *this, pnt );
+//    }
 
     inline Eigen::Matrix<PlanePrimitive::Scalar,3,1>
     PlanePrimitive::projectPoint( Eigen::Matrix<PlanePrimitive::Scalar,3,1> const& point ) const
     {
         return point - (this->getDistance(point) * this->dir() );
     }
-
-    inline std::string PlanePrimitive::toFileEntry() const
-    {
-        char line[1024];
-        sprintf( line, "%.9f,%.9f,%.9f,%.9f,%.9f,%.9f,"
-                 , pos   ()(0), pos   ()(1), pos   ()(2)
-                 , normal()(0), normal()(1), normal()(2) );
-        return std::string( line );
-    } //...PlanePrimitive::toFileEntry
 
     inline PlanePrimitive::PlanePrimitive( Eigen::Matrix<PlanePrimitive::Scalar, 3, 1> pnt,
                                            Eigen::Matrix<PlanePrimitive::Scalar, 3, 1> normal )

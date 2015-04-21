@@ -3,8 +3,8 @@
 
 namespace globopt
 {
-    template <class _TrianglesContainer>
-    int getTrianglesFromObj( _TrianglesContainer & triangles, std::string const& meshPath );
+    template <class _TrianglesContainer, typename Scalar>
+    int getTrianglesFromObj( _TrianglesContainer & triangles, std::string const& meshPath, Scalar minPlaneEdge = 1. );
 }
 
 
