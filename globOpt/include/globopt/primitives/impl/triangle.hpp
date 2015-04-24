@@ -24,14 +24,16 @@ namespace globopt
             // todo: figure out non-copy return type
             inline const VectorT getCorner         ( int const id )                           const { return _corners.col( id ); }
             inline const int     getCornersCount   ()                                         const { return _corners.cols()   ; }
-            inline       Scalar  getDistance       ( Eigen::Matrix<Scalar,3,1> const& point ) const { return getDistance       (*this,point); }
-            inline       Scalar  getSquaredDistance( Eigen::Matrix<Scalar,3,1> const& point ) const { return getSquaredDistance(*this,point); }
+            template <typename _DerivedT, typename _DerivedT2 = Eigen::Matrix<float,3,1> >
+            inline       Scalar  getDistance       ( _DerivedT const& point, _DerivedT2 *closestPoint = NULL ) const { return getDistance       (*this,point, closestPoint); }
+            template <typename _DerivedT, typename _DerivedT2 = Eigen::Matrix<float,3,1> >
+            inline       Scalar  getSquaredDistance( _DerivedT const& point, _DerivedT2 *closestPoint = NULL ) const { return getSquaredDistance(*this,point, closestPoint); }
 
-            template <typename _VectorT>
-            static inline Scalar getSquaredDistance( Triangle const& tri, _VectorT const& point );
+            template <typename _DerivedT, typename _DerivedT2 = Eigen::Matrix<float,3,1> >
+            static inline Scalar getSquaredDistance( Triangle const& tri, _DerivedT const& point, _DerivedT2 *closestPoint = NULL );
 
-            template <typename _VectorT>
-            static inline Scalar getDistance( Triangle const& tri, _VectorT const& point );
+            template <typename _DerivedT, typename _DerivedT2 = Eigen::Matrix<float,3,1> >
+            static inline Scalar getDistance( Triangle const& tri, _DerivedT const& point, _DerivedT2 *closestPoint = NULL );
 
             VectorT              dir()            const;
             std::vector<_Scalar> getSideLengths() const;
@@ -71,13 +73,13 @@ namespace globopt
 
     // from: http://kyousai.googlecode.com/svn/trunk/LibMathematics/Distance/Wm5DistPoint3Triangle3.cpp
     template <typename _Scalar>
-    template <typename _VectorT>
-    inline _Scalar Triangle<_Scalar>::getSquaredDistance( Triangle<_Scalar> const& tri, _VectorT const& point )
+    template <typename _DerivedT, typename _DerivedT2>
+    inline _Scalar Triangle<_Scalar>::getSquaredDistance( Triangle<_Scalar> const& tri, _DerivedT const& point, _DerivedT2 *closestPoint )
     {
 
-        _VectorT diff  = tri.getCorner(0) - point;
-        _VectorT edge0 = tri.getCorner(1) - tri.getCorner(0);
-        _VectorT edge1 = tri.getCorner(2) - tri.getCorner(0);
+        _DerivedT diff  = tri.getCorner(0) - point;
+        _DerivedT edge0 = tri.getCorner(1) - tri.getCorner(0);
+        _DerivedT edge1 = tri.getCorner(2) - tri.getCorner(0);
         Scalar a00 = edge0.squaredNorm();
         Scalar a01 = edge0.dot(edge1);
         Scalar a11 = edge1.squaredNorm();
@@ -302,7 +304,8 @@ namespace globopt
         }
 
     //        mClosestPoint0 = point;
-    //        mClosestPoint1 = tri.getCorner(0) + s*edge0 + t*edge1;
+    if ( closestPoint )
+        *closestPoint = tri.getCorner(0) + s*edge0 + t*edge1;
     //        mTriangleBary[1] = s;
     //        mTriangleBary[2] = t;
     //        mTriangleBary[0] = (Scalar)1 - s - t;
@@ -310,8 +313,8 @@ namespace globopt
     } //...getSquaredDistance()
 
     template <typename _Scalar>
-    template <typename _VectorT>
-    inline _Scalar Triangle<_Scalar>::getDistance( Triangle<_Scalar> const& tri, _VectorT const& point ) { return std::sqrt( Triangle<_Scalar>::getSquaredDistance(tri,point) ); }
+    template <typename _DerivedT, typename _DerivedT2>
+    inline _Scalar Triangle<_Scalar>::getDistance( Triangle<_Scalar> const& tri, _DerivedT const& point, _DerivedT2 *closestPoint ) { return std::sqrt( Triangle<_Scalar>::getSquaredDistance(tri,point, closestPoint) ); }
 }
 
 

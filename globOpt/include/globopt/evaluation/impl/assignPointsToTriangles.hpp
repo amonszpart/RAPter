@@ -29,8 +29,10 @@ namespace globopt
             auto popIt = populations.find(it.getGid());
             if ( popIt == populations.end() )
                 continue;
-
-            it->template getExtent<PointPrimitiveT>( extrema, points, scale, &(popIt->second), /* force_axis_aligned: */ true );
+#           pragma omp critical (CRIT_GETEXTENT)
+            {
+                it->template getExtent<PointPrimitiveT>( extrema, points, scale, &(popIt->second), /* force_axis_aligned: */ true );
+            }
             tmp = it->getFiniteDistance( extrema, point.template pos() );
 
             if ( tmp < min_dist )
@@ -144,8 +146,7 @@ namespace globopt
         std::map<PidT,std::pair< LidT, LidT> > pointsTriangles;
         // pointid
         //PidT pId( 0 );
-#pragma omp parallel for num_threads(4)
-        //for ( PointConstIteratorT pIt = points.begin(); pIt points.end(); ++pIt, ++pId )
+#       pragma omp parallel for num_threads(4)
         for ( PidT pId = 0; pId < points.size(); ++pId )
         {
             // cache point reference
@@ -167,7 +168,6 @@ namespace globopt
             // iterate triangles
             for ( auto triIt = triangles.begin(); triIt != triangles.end(); ++triIt, ++triangleId )
             {
-                // estimate distance
                 Scalar dist = triIt->getDistance( pos );
                 // note, if closer and close enough
                 if ( (dist < minPointTriangleDistance) && (dist < params.scale) )
@@ -205,7 +205,6 @@ namespace globopt
                 if ( gid == PrimitiveT::LONG_VALUES::UNSET )
                 {
                     gid = getClosestPrimitive( points, pId, primitives, populations, params.scale );
-                    //std::cout << "assigned " << gid << " to pid " << pId << std::endl;
                     ++reassignedCount;
                 }
 
@@ -235,9 +234,10 @@ namespace globopt
         gtPoints.reserve( points.size() );
         for ( PidT pid = 0; pid != points.size(); ++pid )
         {
-            gtPoints.push_back( points[pid] );
+            gtPoints.push_back( PointPrimitiveT(points[pid].template pos(), points[pid].template dir()) );
+            gtPoints.back().setTag( PointPrimitiveT::TAGS::PID, pid );
             // clear previous assignment
-            gtPoints.back().setTag( PointPrimitiveT::TAGS::GID, PointPrimitiveT::LONG_VALUES::UNSET );
+            //gtPoints.back().setTag( PointPrimitiveT::TAGS::GID, PointPrimitiveT::LONG_VALUES::UNSET );
         } // ...for all points
 
         std::ofstream fAnglesSimple( outAnglesSimplePath );
@@ -249,8 +249,8 @@ namespace globopt
         {
             // read
             PidT              pid        = it->first;
-            GidT              primGid    = it->second.second;
             LidT              triangleId = it->second.first;
+            GidT              primGid    = it->second.second;
             Triangle   const& triangle   = triangles.at( triangleId );
             PrimitiveT const& prim       = primitives.at( primGid ).at( 0 );
 
@@ -270,7 +270,32 @@ namespace globopt
             fAnglesSimple << angle << "\n";
         } //...for all points that have triangles
         fAnglesSimple.close();
+#if 1
+        double avg = 0.;
+        PidT   pId0, pId1;
+        double angle(0.);
+        std::ofstream fAngles( outAnglesPath );
+        for ( PidT id0 = 0; id0 != N; ++id0 )
+        {
+            do {
+                pId0 = rand() % orientedPoints.size();
+                pId1 = rand() % orientedPoints.size();
+            }
+            while (pId0 == pId1);
 
+            angle = std::abs( GF2::angleInRad( orientedPoints  [pId0].template dir().template cast<double>(), orientedPoints  [pId1].template dir().template cast<double>() )
+                            - GF2::angleInRad( orientedGtPoints[pId0].template dir().template cast<double>(), orientedGtPoints[pId1].template dir().template cast<double>() ) );
+            while ( angle > M_PI ) { angle -= M_PI; std::cout << "hit" << std::endl; }
+            angle = std::min( angle, double(M_PI - angle) );
+            //outAngles.push_back( angle );
+            avg += angle / double(N);
+            fAngles << angle << "\n";
+        }
+        std::cout << "[" << primPath << "] mean: " << avg << std::endl;
+
+        // close file
+        fAngles.close();
+#else
         // subsample
         unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
         std::vector<LidT> ids( orientedPoints.size() );
@@ -318,6 +343,7 @@ namespace globopt
         // close file
 
         fAngles.close();
+#endif
         // log
         std::cout << "[" << __func__ << "]: " << "wrote angles to " << outAnglesPath << std::endl;
         std::cout << "written to " << outAnglesSimplePath << std::endl;
@@ -327,7 +353,10 @@ namespace globopt
         for ( int triangleId = 0; triangleId != triangles.size(); ++triangleId )
         {
             // plane from triangle centroid
-            gtPrims[triangleId].push_back( PrimitiveT(triangles[triangleId].getMean(), triangles[triangleId].template dir()) );
+            if ( triangleId % 2 )
+                gtPrims[triangleId].push_back( PrimitiveT(triangles[triangleId].getMean(), -triangles[triangleId].template dir()) );
+            else
+                gtPrims[triangleId].push_back( PrimitiveT(triangles[triangleId].getMean(), triangles[triangleId].template dir()) );
             // assign triangle id
             gtPrims[triangleId].back().setTag( PrimitiveT::TAGS::GID    , triangleId );
             gtPrims[triangleId].back().setTag( PrimitiveT::TAGS::DIR_GID, triangleId );
@@ -341,7 +370,7 @@ namespace globopt
         std::stringstream ssAssoc; ssAssoc << assocStem << "gt.csv";
         GF2::io::writeAssociations<PointPrimitiveT>( gtPoints, ssAssoc.str() );
         std::cout << "results written to " << ssPrims.str() << " and " << ssAssoc.str() << "\n";
-        std::cout << "../show.py -s " << params.scale << " -p " << ssPrims.str() << " -a " << ssAssoc.str() << " --save-poly" << std::endl;
+        std::cout << "../show.py --cloud -s " << params.scale << " -p " << ssPrims.str() << " -a " << ssAssoc.str() << " --save-poly" << std::endl;
 
         return EXIT_SUCCESS;
     } //...assignPointsToTriangles

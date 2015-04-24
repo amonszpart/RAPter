@@ -1,5 +1,5 @@
 #include "globfit2/globOpt_types.h"
-#include "globopt/primitives/impl/planePrimitive.hpp"
+//#include "globopt/primitives/impl/planePrimitive.hpp"
 #include "globopt/evaluation/impl/assignPointsToTriangles.hpp"
 
 namespace globopt

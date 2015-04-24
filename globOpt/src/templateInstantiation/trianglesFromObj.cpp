@@ -12,5 +12,6 @@ namespace globopt
     }
 
     template
-    int getTrianglesFromObj( templ_inst::TrianglesContainer & triangles, std::string const& meshPath );
+    int getTrianglesFromObj( templ_inst::TrianglesContainer & triangles, std::string const& meshPath, GF2::__Scalar minPlaneEdge );
+
 }

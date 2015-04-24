@@ -53,6 +53,7 @@ refit( int    argc
     struct Params { Scalar scale; } params;
 
     // parse
+    std::string primsPath(""), assocPath("");
     {
         valid_input = (EXIT_SUCCESS ==
                        GF2::parseInput<InnerContainerT,_PclCloudT>(points, pclCloud, primitivesVector, primitives, params, argc, argv) );
@@ -64,6 +65,9 @@ refit( int    argc
 
         GF2::console::parse_argument( argc, argv, "--target-pop", targetPop );
         std::cout << "[" << __func__ << "]: " << "counting " << targetPop << " points from each primitive, change with --target-pop\n";
+
+        primsPath = GF2::parsePrimitivesPath( argc, argv );
+        assocPath = GF2::parseAssocPath     ( argc, argv );
     }
 
 #if 1
@@ -394,6 +398,12 @@ refit( int    argc
         } //...solve
     } //...work
 #endif
+
+    std::string outName = primsPath.substr( 0, primsPath.rfind(".csv") );
+    std::stringstream ssPrims; ssPrims << outName << ".refit.csv";
+    GF2::io::savePrimitives<PrimitiveT,typename InnerContainerT::const_iterator>( outPrims, ssPrims.str() );
+    std::cout << "results written to " << ssPrims.str() << "\n";
+    std::cout << "../show.py -s " << scale << " -p " << ssPrims.str() << " -a " << assocPath << " --save-poly" << std::endl;
 
     pcl::visualization::PCLVisualizer::Ptr vptr( new pcl::visualization::PCLVisualizer() );
     vptr->setBackgroundColor( .1, .1, .1 );

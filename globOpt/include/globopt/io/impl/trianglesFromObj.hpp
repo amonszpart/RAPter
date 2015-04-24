@@ -25,6 +25,10 @@ namespace globopt
         typedef typename _TrianglesContainer::value_type Triangle;
         bool filterBySize = minPlaneEdge > 0.;
 
+        // get mesh
+        pcl::PolygonMesh mesh;
+        pcl::io::loadOBJFile( meshPath, mesh );
+
         // parse input mesh
         size_t cnt = 0;
         if ( meshPath.find("obj") < 0 )
@@ -34,9 +38,6 @@ namespace globopt
         }
         else
         {
-            // get mesh
-            pcl::PolygonMesh mesh;
-            pcl::io::loadOBJFile( meshPath, mesh );
             // get mesh poins
             pcl::PointCloud<pcl::PointXYZRGB> polyCloud;
             pcl::fromPCLPointCloud2( mesh.cloud, polyCloud );
@@ -66,7 +67,7 @@ namespace globopt
             } //...for polygons
         } //...read obj
 
-        std::cout << "have " << triangles.size() << " triangles" << ", filtered " << cnt << " = " << float(cnt)/triangles.size() << std::endl;
+        std::cout << "have " << triangles.size() << " triangles" << ", filtered " << cnt << " = " << float(cnt)/mesh.polygons.size() << std::endl;
         return EXIT_SUCCESS;
     }
 

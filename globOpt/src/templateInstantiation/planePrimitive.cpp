@@ -20,6 +20,12 @@ namespace GF2
                  , normal()(0), normal()(1), normal()(2) );
         return std::string( line );
     } //...PlanePrimitive::toFileEntry
+
+    PlanePrimitive::Scalar
+    PlanePrimitive::getFiniteDistance( PlanePrimitive::ExtentsT const& extrema, PlanePrimitive::Position const& pnt ) const
+    {
+        return MyPointFinitePlaneDistanceFunctor::eval( extrema, *this, pnt );
+    }
 } //...ns GF2
 
 namespace GF2
@@ -73,7 +79,6 @@ namespace GF2
                         , int                                   const  draw_mode    /* = 0*/
                         , float                                 const  alpha        /* = 2.*/
                         );
-
 
     PlanePrimitive plane;
 }
