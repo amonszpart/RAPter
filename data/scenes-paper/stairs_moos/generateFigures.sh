@@ -95,3 +95,8 @@ splatting figure/ours_300_pts.ply figure/ours_300.ply 1 0.005
 python ../normal_distr.py  cloudRGBNormal_it15_reProj_noUnass.ply ndistr_globfit_300.svg "Stairs 300"
 
 cp plane_mesh_it15.ply figure/ours_300_planes.ply
+
+############################################################
+## Schnabel 1500
+
+../show.py -p ./schnabel_minsup1500.primitives.csv -a ./schnabel_minsup1500.points_primitives.csv --cloud ./schnabel_minsup1500.cloud.ply --scale 0.003 --save-poly
