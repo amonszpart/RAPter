@@ -45,3 +45,4 @@
 [04/17/15 15:58:51] ../run.sh 0.01 0.3 100 10 3D 16 --reprPwMult 1 --extendedAngleGens 60,90 --no-clusters  --spat-weight 15 --trunc-angle  --spat-dist-mult 2. --freqweight 0 --angle-limit 0.3 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 0 --cost-fn spatsqrt --small-thresh 16 --small-thresh-limit --smallThreshDiv 1.5 --unary 100000 --cmp 0 
 [04/17/15 16:01:31] ../run.sh 0.01 0.3 100 10 3D 96 --reprPwMult 1 --extendedAngleGens 60,90 --no-clusters  --spat-weight 15 --trunc-angle  --spat-dist-mult 2. --freqweight 0 --angle-limit 0.3 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 0 --cost-fn spatsqrt --small-thresh 96 --small-thresh-limit --smallThreshDiv 1.5 --unary 100000 --cmp 0 
 ../ransac -p segments.csv -a points_segments.csv --scale 0.003 --schnabel3D --minsup 1500
+../pearl --cloud cloud.ply -p patches.csv -N 100  -a points_primitives.csv --scale 0.01 --pw 20 --cmp 10 --3D --int-mult 100
