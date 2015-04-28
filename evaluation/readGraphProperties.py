@@ -1,6 +1,6 @@
 import packages.project as project
 import packages.primitive as primitive
-import packages.processing
+import packages.processing as processing
 import packages.relationGraph as relgraph
 import packages.io
 import packages.utils as utils
@@ -62,6 +62,8 @@ cloud      = packages.io.readPointCloudFromPly(args.cloud)
 lines  = primitive.readPrimitivesFromFile(linesfile)
 assign = packages.io.readPointAssignementFromFiles(assignfile)
 
+#cleanlines = processing.removeUnassignedPrimitives(lines, assign)
+
 ################################################################################
 ## Build and display relation graphs
 graph = relgraph.RelationGraph(lines, assign, angles, tolerance)
@@ -72,9 +74,6 @@ print "Number of metanodes:   ", graph.getNumberOfMetanodes()
 print "Number of N to N rels: ", graph.getNumberOfNodeToNodeRelations()
 #print "Number of connections: ",graph.G.number_of_edges()
 #print "Max nb of connections: ",graph.G.number_of_nodes()*graph.G.number_of_nodes()
-
-max_conn = graph.G.number_of_nodes()* ((graph.G.number_of_nodes()-1)/2)
-print "Coverage: ",float(graph.G.number_of_edges())/float(max_conn)
 
 exit()
 

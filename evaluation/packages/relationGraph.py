@@ -73,6 +73,6 @@ class RelationGraph(object):
         num = 0
         # each subgraph is a connected graph
         for did, r in self.relationStats.iteritems():
-            num += r*r
+            num += r*(r-1)/2.
             
         return num
