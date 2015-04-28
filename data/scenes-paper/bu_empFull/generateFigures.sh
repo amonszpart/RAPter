@@ -92,7 +92,7 @@ mv plane_mesh.ply figure/pearl_planes.ply
 ############################################################
 ## globfit 13
 
-../show.py -s 0.0001 -p globfit_0.5_13/patches.sub_0.5_13.csv -a globfit_0.5_13/points_patches.sub_0.5_13.csv --save-poly
+../show.py -s 0.02 -p globfit_0.5_13/patches.sub_0.5_13.csv -a globfit_0.5_13/points_patches.sub_0.5_13.csv --save-poly
 
 cd globfit_0.5_13
 mkdir figure
@@ -106,8 +106,17 @@ splatting figure/globfit_13_pts_segments.ply figure/globfit_13_segments.ply 1 0.
 meshlabserver -i cloudRGBNormal_patches_reProj_noUnass.ply -o figure/globfit_13_pts.ply -om vc vn
 splatting figure/globfit_13_pts.ply figure/globfit_13.ply 1 0.003
 
-#distribution
-python ../normal_distr.py figure/globfit_13_segments.ply figure/globfit_13_pts_segments.svg "Segments - 13" --noscatter
-python ../normal_distr.py  cloudRGBNormal_patches_reProj_noUnass.ply ndistr_globfit_13.svg "Stairs - Globfit"
 
-cp plane_mesh_patches.ply figure/globfit_13_planes.ply
+############################################################
+## lafarge
+
+../show.py -s 0.02 -p primitives.lafarge.csv -a points_primitives.lafarge.csv  --save-poly
+
+# output
+meshlabserver -i cloudRGBNormal_reProj_noUnass.ply -o figure/lafarge_pts.ply -om vc vn
+splatting figure/lafarge_pts.ply figure/lafarge.ply 1 0.003
+
+#distribution
+python ../normal_distr.py figure/lafarge_pts.ply ndistr_lafarge.svg "empire - Lafarge"
+
+cp plane_mesh_lafarge.ply figure/lafarge_planes.ply
