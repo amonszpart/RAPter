@@ -1,17 +1,12 @@
-#include "rapter/io/io.h"
+#ifndef __RAPTER_IO_HPP__
+#define __RAPTER_IO_HPP__
+
+//#include "rapter/io/io.h"
 #include <fstream>
 
 #ifdef WITH_QCQPCPP
-#   include "qcqpcpp/io/io.h"
+//#   include "qcqpcpp/io/io.h"
 #endif
-
-namespace rapter
-{
-    namespace io
-    {
-
-    } // ... ns io
-} // ... ns rapter
 
 namespace rapter
 {
@@ -39,6 +34,8 @@ namespace rapter
             ss << "../show.py -p " << outPrimsPath << " -a " << outAssocPath << " --cloud " << outCloudPath;
 
             return ss.str();
-        }
-    }
-}
+        } //...writePrimAssocCloud()
+    } //...ns io
+} //...ns rapter
+
+#endif // __RAPTER_IO_HPP__

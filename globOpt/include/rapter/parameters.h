@@ -3,9 +3,11 @@
 
 #include <iostream>
 #include <vector>
+
 #include "Eigen/Dense"
-#include "rapter/simple_types.h"
-#include "rapter/primitives/angles.hpp" // AnglesT
+
+#include "rapter/simpleTypes.h"
+#include "rapter/primitives/angles.h" // AnglesT
 
 namespace rapter {
 
@@ -40,12 +42,6 @@ namespace rapter {
              * \copydoc CandidateGeneratorParams::patch_dist_mode.
              */
             enum PatchPatchDistMode {
-#if RAPTER_WITH_FULL_LINKAGE
-                                      FULL_MIN      //!< \brief \ref FullLinkagePatchPatchDistanceFunctorT, \ref SpatialPatchPatchMinDistanceFunctorT
-                                    , FULL_MAX      //!< \brief \ref FullLinkagePatchPatchDistanceFunctorT, \ref SpatialPatchPatchMaxDistanceFunctorT
-                                    , SQR_MIN       //!< \brief \ref SquaredPatchPatchDistanceFunctorT
-                                    , REPR_MIN,      //!< \brief \ref RepresentativePatchPatchDistanceFunctorT
-#endif // RAPTER_WITH_FULL_LINKAGE
                                       REPR_SQR      //!< \brief \ref RepresentativeSqrPatchPatchDistanceFunctorT, \ref SpatialPatchPatchSingleDistanceFunctorT
                                     };
 
@@ -110,26 +106,7 @@ namespace rapter {
             inline int parsePatchDistMode( std::string const& patch_dist_mode_string )
             {
                 int err = EXIT_SUCCESS;
-#if RAPTER_WITH_FULL_LINKAGE
-                if ( !patch_dist_mode_string.compare("full_min") )
-                {
-                    this->patch_dist_mode = FULL_MIN;
-                }
-                else if ( !patch_dist_mode_string.compare("full_max") )
-                {
-                    this->patch_dist_mode = FULL_MAX;
-                }
-                else if ( !patch_dist_mode_string.compare("squared_min") )
-                {
-                    this->patch_dist_mode = SQR_MIN;
-                }
-                else if ( !patch_dist_mode_string.compare("representative_min") )
-                {
-                    this->patch_dist_mode = REPR_MIN;
-                }
-                else
-#endif // RAPTER_WITH_FULL_LINKAGE
-                    if ( !patch_dist_mode_string.compare("representative_sqr") )
+                if ( !patch_dist_mode_string.compare("representative_sqr") )
                 {
                     this->patch_dist_mode = REPR_SQR;
                 }
@@ -146,56 +123,10 @@ namespace rapter {
             {
                 switch ( patch_dist_mode )
                 {
-#if RAPTER_WITH_FULL_LINKAGE
-                    case FULL_MIN: return std::string("full_min"); break;
-                    case FULL_MAX: return std::string("full_max"); break;
-                    case SQR_MIN:  return std::string("squared_min"); break;
-                    case REPR_MIN: return std::string("representative_min"); break;
-#endif
                     case REPR_SQR: return std::string("representative_sqr"); break;
                     default:       return "UNKNOWN"; break;
                 }
             } // ...printPatchDistMode()
-
-#if RAPTER_WITH_REFIT_MODE
-            enum RefitMode { SPATIAL    //!< \deprecated Spatial refit to the member points does not make sense for oriented points.
-                           , AVG_DIR    //!< \brief Patch representative direction will be the average position and average direction of member oriented points.
-                           };
-            //! \brief Determines, how a patch gets it's final direction. A NL-LSQ to the points, or the average of local orientations.
-            //RefitMode refit_mode                  = AVG_DIR;
-
-            inline std::string printRefitMode() const
-            {
-                switch ( refit_mode )
-                {
-                    case AVG_DIR: return "avg_dir"; break;
-                    case SPATIAL: return "spatial"; break;
-                    default:      return "UNKNOWN"; break;
-                }
-            } // ...printRefitMode()
-
-            inline int parseRefitMode( std::string const& refit_mode_string )
-            {
-                int err = EXIT_SUCCESS;
-
-                if ( !refit_mode_string.compare("avg_dir") )
-                {
-                    this->refit_mode = AVG_DIR;
-                }
-                else if ( !refit_mode_string.compare("spatial") )
-                {
-                    this->refit_mode = SPATIAL;
-                }
-                else
-                {
-                    err = EXIT_FAILURE;
-                    this->refit_mode = SPATIAL;
-                    std::cerr << "[" << __func__ << "]: " << "Could NOT parse " << refit_mode_string << ", assuming SPATIAL" << std::endl;
-                }
-
-                return err;
-            } // ...parseRefitMode()
-#endif // RAPTER_WITH_REFIT_MODE
 
     }; // ...struct CandidateGeneratorParams
 

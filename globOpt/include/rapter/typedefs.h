@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "rapter/simple_types.h"
+#include "rapter/simpleTypes.h"
 #include "rapter/primitives/linePrimitive.h"
 #include "rapter/primitives/planePrimitive.h"
 #include "rapter/primitives/pointPrimitive.h"

@@ -3,18 +3,18 @@
 
 #include <map>
 
-#include "rapter/my_types.h"                      // PCLPointAllocator
-#include "rapter/util/util.hpp"                   // parseIteration()
-#include "rapter/processing/util.hpp"             // calcPopulations()
-#include "rapter/optimization/energyFunctors.h"   // MyPointPrimitiveDistanceFunctor
 #include "rapter/io/io.h"                         // readPrimities,savePrimitives,etc.
+#include "rapter/optimization/energyFunctors.h"   // MyPointPrimitiveDistanceFunctor
+#include "rapter/processing/util.hpp"             // calcPopulations()
+#include "rapter/processing/impl/angleUtil.hpp"       // selectAngles
 #include "rapter/util/diskUtil.hpp"               // saveBackup
-#include "rapter/processing/angle_util.hpp"       // selectAngles
+#include "rapter/util/impl/pclUtil.hpp"           // PCLPointAllocator
+#include "rapter/util/util.hpp"                   // parseIteration()
 
 //debug
-#include "pcl/point_types.h" // debug
-#include "pcl/point_cloud.h" // debug
-#include "pcl/console/parse.h"
+//#include "pcl/point_types.h" // debug
+//#include "pcl/point_cloud.h" // debug
+//#include "pcl/console/parse.h"
 
 #define isSMALL(prim) (prim.getTag(_PrimitiveT::TAGS::STATUS) == _PrimitiveT::STATUS_VALUES::SMALL)
 #define notSMALL(prim) (prim.getTag(_PrimitiveT::TAGS::STATUS) != _PrimitiveT::STATUS_VALUES::SMALL)
@@ -178,7 +178,7 @@ namespace rapter
                            , LidT                    & nLines
                            , _PrimitiveContainerT    & out_prims
                            , _PointContainerT   const& points
-                           , Scalar             const  scale
+                           , _Scalar            const  scale
                            , _AliasesT               * aliases
                            , bool               const  tripletSafe  = false
                            , bool               const  verbose      = false
@@ -269,7 +269,7 @@ namespace rapter
                 std::vector<PidT>               population;
                 processing::getPopulationOf( population, gid0, points );
                 _PrimitiveT const*              bestPrim = NULL;
-                Scalar                          bestDataCost = std::numeric_limits<Scalar>::max();
+                _Scalar                         bestDataCost = std::numeric_limits<_Scalar>::max();
 
                 for ( typename _PrimitiveContainerT::ConstIterator it(out_prims); it.hasNext(); it.step() )
                 {
@@ -286,7 +286,7 @@ namespace rapter
                             std::cout << "asdf" << std::endl;
                         else
                         {
-                            Scalar distSum( 0. );
+                            _Scalar distSum( 0. );
                             for ( int pid_id = 0; pid_id != population.size(); ++pid_id )
                                 distSum += cand0.getFiniteDistance( extrema, points[ population[pid_id] ].template pos() );
                             if ( distSum < bestDataCost )

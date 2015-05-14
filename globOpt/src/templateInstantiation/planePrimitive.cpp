@@ -1,7 +1,7 @@
 #include "Eigen/Dense"
 
 #include "rapter/primitives/impl/planePrimitive.hpp"
-#include "rapter/globOpt_types.h"
+#include "rapter/typedefs.h"
 
 rapter::PlanePrimitive
 rapter::PlanePrimitive::fromFileEntry( std::vector<rapter::PlanePrimitive::Scalar> const& entries )

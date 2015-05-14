@@ -2,10 +2,10 @@
 #define RAPTER_PROBLEMSETUP_HPP
 
 #include <iostream>                               // cout, cerr, endl
-#include "Eigen/Dense"
 #include <vector>
 #include <map>
 #include <set> // edgelist
+#include "Eigen/Dense"
 
 #if RAPTER_USE_PCL
 #   include "pcl/console/parse.h" // pcl::console::parse_argument
@@ -16,11 +16,12 @@
 #include "rapter/optimization/energyFunctors.h" // AbstractPrimitivePrimitiveEnergyFunctor,
 #include "rapter/parameters.h"                  // ProblemSetupParams
 #include "rapter/processing/util.hpp"           // getPopulation()
-#include "rapter/processing/angle_util.hpp"     // appendAngle...
+#include "rapter/processing/impl/angleUtil.hpp" // appendAngle...
 #include "rapter/io/io.h"                       // readPrimitives(), readPoints()
+#include "rapter/util/pclUtil.h"                // PclCloudPtrT
 
 #include "rapter/processing/graph.hpp"
-#include "rapter/processing/angle_util.hpp" // appendAnglefromgen
+#include "rapter/processing/impl/angleUtil.hpp" // appendAnglefromgen
 #include "omp.h"
 
 namespace rapter {
@@ -325,7 +326,7 @@ ProblemSetup::formulateCli( int    argc
 template <class NeighMapT, typename _PointContainerT, typename _Scalar>
 inline void calculateNeighbourhoods( NeighMapT &proximity, _PointContainerT const& points, const _Scalar radius )
 {
-    //typedef typename _PointContainerT::value_type PointPrimitiveT;
+    typedef typename _PointContainerT::PrimitiveT PointPrimitiveT;
     //typedef typename PointPrimitiveT::Scalar Scalar;
     using pclutil::PclSearchPointT;
     typedef Eigen::Vector3f Colour;
@@ -418,7 +419,7 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
     std::set<LidT> chosen_varids;
 
     AnglesT angles = primPrimDistFunctor->getAngles();
-    if ( angle_gens_in_rad.end() != std::find_if( angle_gens_in_rad.begin(), angle_gens_in_rad.end(), [](Scalar const& angle) { return angle > 2. * M_PI; } ) )
+    if ( angle_gens_in_rad.end() != std::find_if( angle_gens_in_rad.begin(), angle_gens_in_rad.end(), [](_Scalar const& angle) { return angle > 2. * M_PI; } ) )
     {
         std::cerr << "[" << __func__ << "]: " << "angle_gens need to be in rad, are you sure?" << std::endl;
         std::cerr<<"angle_gens_in_rad:";for(size_t vi=0;vi!=angle_gens_in_rad.size();++vi)std::cerr<<angle_gens_in_rad[vi]<<" ";std::cerr << "\n";

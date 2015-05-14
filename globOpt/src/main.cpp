@@ -1,11 +1,6 @@
 #include <iostream>
 
-//#include <pcl/console/parse.h>
 #include "rapter/util/parse.h"
-
-//#include "optimization/qp/solver.h"
-//#include "rapter/optimization/problemSetup.h"
-
 
 int subsample ( int argc, char** argv ); // subsample.cpp
 int segment   ( int argc, char** argv ); // segment.cpp
@@ -17,7 +12,7 @@ int solve     ( int argc, char** argv ); // solve.cpp
 int solve3D   ( int argc, char** argv ); // solve3D.cpp
 int merge     ( int argc, char** argv ); // merge.cpp
 //int datafit   ( int argc, char** argv ); // datafit.cpp
-int reassign  ( int argc, char** argv );
+//int reassign  ( int argc, char** argv );
 int represent ( int argc, char** argv ); // represent.cpp
 
 int main( int argc, char *argv[] )
@@ -95,10 +90,10 @@ int main( int argc, char *argv[] )
     {
         return subsample( argc, argv );
     }
-    else if ( rapter::console::find_switch(argc,argv,"--reassign") )
-    {
-        return reassign( argc, argv );
-    }
+//    else if ( rapter::console::find_switch(argc,argv,"--reassign") )
+//    {
+//        return reassign( argc, argv );
+//    }
     else if ( rapter::console::find_switch(argc,argv,"--represent") || rapter::console::find_switch(argc,argv,"--represent3D")
               || rapter::console::find_switch(argc,argv,"--representBack") || rapter::console::find_switch(argc,argv,"--representBack3D") )
     {

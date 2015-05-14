@@ -1,9 +1,9 @@
 #ifndef RAPTER_SOLVER_H__
 #define RAPTER_SOLVER_H__
 
-//#include "qcqpcpp/io/io.h"                      // read/writeSparseMatrix
-#include "Eigen/Sparse"                           // Eigen::SparseMatrix (solve)
-#include "rapter/globOpt_types.h"               // rapter::Scalar (solve)
+//#include "qcqpcpp/io/io.h"    // read/writeSparseMatrix
+#include "Eigen/Sparse"         // Eigen::SparseMatrix (solve)
+#include "rapter/typedefs.h"    // rapter::Scalar (solve)
 
 namespace rapter {
 

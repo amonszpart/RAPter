@@ -1,6 +1,6 @@
 #!/bin/bash
 # Executable path
-executable="../glob_opt";
+executable="../rapter";
 execLog="lastRun.log"
 execPyRelGraph="python ../readGraphProperties.py"
 execPyStats="python ../collectStatistics.py"

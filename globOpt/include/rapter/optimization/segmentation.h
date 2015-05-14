@@ -5,7 +5,7 @@
 #include <vector>
 #include "Eigen/Dense"
 
-#include "rapter/simple_types.h"
+#include "rapter/simpleTypes.h"
 #include <iostream>
 
 namespace rapter {

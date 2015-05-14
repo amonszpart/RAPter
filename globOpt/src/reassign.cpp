@@ -5,7 +5,7 @@
 #include "pcl/common/common.h"
 #include "rapter/globOpt_types.h"
 #include "rapter/io/io.h"
-#include "rapter/simple_types.h" //GidT,LidT
+#include "simpleTypes.h"
 
 int reassign( int argc, char** argv )
 {

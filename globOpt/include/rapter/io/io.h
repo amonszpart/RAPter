@@ -1,19 +1,22 @@
-#ifndef RAPTER_IO_H__
-#define RAPTER_IO_H__
+#ifndef __RAPTER_IO_H__
+#define __RAPTER_IO_H__
 
 #include <string>
 #include <iomanip>
 #include <fstream> // ifstream
+
 #include "Eigen/Sparse"
+
+//#include "rapter/typedefs.h" // PclCloudPtrT, PclCloudT
 
 #if RAPTER_USE_PCL
 #   include <pcl/io/ply_io.h>
 #   include <pcl/io/pcd_io.h>
 #endif // RAPTER_USE_PCL
 
-#include "rapter/util/pcl_util.hpp"
+#include "rapter/util/pclUtil.h"
+#include "rapter/util/impl/pclUtil.hpp"
 #include "rapter/util/containers.hpp"
-#include "rapter/my_types.h"
 
 
 namespace rapter
@@ -377,5 +380,5 @@ namespace rapter
 
 #include "rapter/io/impl/io.hpp"
 
-#endif // RAPTER_IO_H__
+#endif // __RAPTER_IO_H__
 

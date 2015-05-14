@@ -1,74 +1,10 @@
 #ifndef RAPTER_PATCHDISTANCEFUNCTORS_H
 #define RAPTER_PATCHDISTANCEFUNCTORS_H
 
-#include "rapter/my_types.h" // angleInRad
+#include "rapter/processing/impl/angle.hpp" // angleInRad
 
 namespace rapter
 {
-
-#if RAPTER_WITH_FULL_LINKAGE
-//! \brief Spatial patch-patch distance is the maximum distance between any two members (farthest two points).
-template <typename _Scalar>
-struct SpatialPatchPatchMaxDistanceFunctorT
-{
-        // spatial distanceToPatch
-        // Concept: PointContainerT = std::vector<PointPrimitive>, PatchT = std::vector<int>, PointT = PointPrimitive
-        template <class _PointT /* = typename _PointContainerT::value_type*/, class _PatchAT, class _PatchBT, class _PointContainerT >
-        static inline _Scalar eval( _PatchAT const& patch0, _PatchBT const& patch1, _PointContainerT const& points, _Scalar const* cut_off )
-        {
-            typedef typename _PointT::VectorType VectorType; // concept: Eigen::Vector3f
-
-            _Scalar max_distance = _Scalar(0);
-            for ( int pid_id0 = 0; pid_id0 != patch0.size(); ++pid_id0 )
-            {
-                const int pid0 = patch0[pid_id0].first;
-                for ( int pid_id1 = 0; pid_id1 != patch1.size(); ++pid_id1 )
-                {
-                    const int pid1 = patch1[ pid_id1 ].first;
-                    _Scalar dist  = ((VectorType)points.at(pid1) - (VectorType)points.at(pid0)).norm();
-                    if ( dist > max_distance )
-                        max_distance = dist;
-
-                    // early stop
-                    if ( cut_off && (max_distance > *cut_off ) )
-                        return max_distance;
-                }
-            }
-
-            return max_distance;
-        }
-
-        static std::string toString() { return "SpatialPatchPatchMaxDistanceFunctorT"; }
-}; //...struct SpatialPatchPatchMaxDistanceFunctorT
-
-//! \brief Spatial patch-patch distance is the minimum distance between any two members (closest two points).
-template <typename _Scalar>
-struct SpatialPatchPatchMinDistanceFunctorT
-{
-        // Concept: PointContainerT = std::vector<PointPrimitive>, PatchT = std::vector<int>, PointT = PointPrimitive
-        template <class _PointT /*= typename _PointContainerT::value_type*/, class _PatchAT, class _PatchBT, class _PointContainerT>
-        static inline _Scalar eval( _PatchAT const& patch0, _PatchBT const& patch1, _PointContainerT const& points, _Scalar const* /*cut_off*/ )
-        {
-            typedef typename _PointT::VectorType VectorType; // concept: Eigen::Vector3f
-
-            _Scalar min_distance = _Scalar( std::numeric_limits<_Scalar>::max() );
-            for ( int pid_id0 = 0; pid_id0 != patch0.size(); ++pid_id0 )
-            {
-                const int pid0 = patch0[pid_id0].first;
-                for ( int pid_id1 = 0; pid_id1 != patch1.size(); ++pid_id1 )
-                {
-                    const int pid1 = patch1[ pid_id1 ].first;
-                    _Scalar dist  = ((VectorType)points.at(pid1) - (VectorType)points.at(pid0)).norm();
-                    if ( dist < min_distance )
-                        min_distance = dist;
-                }
-            }
-            return min_distance;
-        } // ... SpatialPointPatchMinDistanceFunctorT::eval()
-
-        static std::string toString() { return "SpatialPatchPatchMinDistanceFunctorT"; }
-};  //...struct SpatialPatchPatchMinDistanceFunctorT
-#endif
 
 //! \brief Spatial patch-patch distance is the distance of the two patch positions.
 template <typename _Scalar>

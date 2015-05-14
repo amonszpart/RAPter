@@ -13,7 +13,7 @@
 //#include "rapter/visualization/visualization.h"
 #include "rapter/io/io.h"
 #include "rapter/processing/util.hpp"          //getPopulations()
-#include "rapter/processing/angle_util.hpp" // appendAngles...
+#include "rapter/processing/impl/angleUtil.hpp" // appendAngles...
 #include "rapter/optimization/patchDistanceFunctors.h" // RepresentativeSqrPatchPatchDistanceFunctorT
 #include "rapter/util/util.hpp"
 #include "omp.h"

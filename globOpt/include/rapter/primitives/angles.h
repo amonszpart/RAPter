@@ -1,7 +1,7 @@
 #ifndef RAPTER_ANGLES_HPP
 #define RAPTER_ANGLES_HPP
 
-#include "rapter/simple_types.h" //...__Scalar
+#include "rapter/simpleTypes.h" //...__Scalar
 
 namespace rapter
 {

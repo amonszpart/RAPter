@@ -1,4 +1,4 @@
-#include "rapter/globOpt_types.h" // _2d, _3d namespaces
+#include "rapter/typedefs.h"   // _2d, _3d namespaces
 #include "rapter/util/parse.h" // rapter::console
 
 #include "rapter/optimization/candidateGenerator.h"

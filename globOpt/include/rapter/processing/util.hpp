@@ -7,9 +7,9 @@
 #include <algorithm>
 #include "Eigen/Dense"
 #include "rapter/util/containers.hpp" // add()
-#include "rapter/simple_types.h"      // GidT
+#include "rapter/simpleTypes.h"      // GidT
 #include "pcl/search/kdtree.h"
-#include "rapter/simple_types.h"
+#include "rapter/simpleTypes.h"
 
 // #include "pcl/common/common.h" //debug: getminmax3D
 

@@ -2,7 +2,7 @@
 #define __RAPTER_POINTPRIMITIVE_H__
 
 #include "rapter/primitives/primitive.h"
-#include "rapter/simple_types.h"
+#include "rapter/simpleTypes.h"
 //#include "rapter/primitives/taggable.h"
 
 namespace rapter

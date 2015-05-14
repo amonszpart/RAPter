@@ -1,7 +1,7 @@
 #ifndef RAPTER_ASSIGNMENTOPS_HPP
 #define RAPTER_ASSIGNMENTOPS_HPP
 
-#include "rapter/simple_types.h"
+#include "rapter/simpleTypes.h"
 #include "rapter/io/inputParser.hpp"
 //#include "rapter/processing/util.hpp"
 //#include "rapter/util/containers.hpp"

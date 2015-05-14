@@ -4,7 +4,7 @@
 #include <map>
 #include <vector>
 #include <set>
-#include "rapter/simple_types.h"
+#include "rapter/simpleTypes.h"
 #include "rapter/util/exception.h"
 
 namespace rapter {

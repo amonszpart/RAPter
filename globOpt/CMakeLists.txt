@@ -1,207 +1,136 @@
-SET(PROJECT_NAME globOpt)
+SET(PROJECT_NAME RAPter)
 PROJECT(${PROJECT_NAME})
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+
+#_____________________________________#
+#_______________PATHS_________________#
+#_____________________________________#
 
 SET( WORKSPACE_DIR "$ENV{HOME}/workspace" )
 SET( THIRD_PARTY_DIR "${WORKSPACE_DIR}/3rdparty" )
 
+# PCL
 SET( PCL_DIR "${THIRD_PARTY_DIR}/pcl-trunk2/install/share/pcl-1.8/"
         CACHE FILEPATH "Folder containing \"PCLConfig.cmake\", usually \"{PCL_INSTALL_DIR}/share/pcl-1.8/\"." )
-MESSAGE( STATUS "Pcl_DIR ${PCL_DIR}")
-
-#SET( PATH_MOSEK_DIR  "${THIRD_PARTY_DIR}/mosek/7/tools/platform/linux64x86" )
+# BONMIN
 SET( PATH_BONMIN_DIR "${THIRD_PARTY_DIR}/CoinBonmin-stable/build/")
 
-SET( PATH_LIBFBI_ROOT "${THIRD_PARTY_DIR}/libfbi/")
-
+# QCQPCPP
 SET( PATH_QCQPCPP_ROOT "${WORKSPACE_DIR}/QCQPcpp/"
         CACHE FILEPATH "Root directory of QCQPcpp library containing the \"include\" directory.")
-SET( PATH_VIS_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../visualization/"
-        CACHE FILEPATH "Folder containing separate visulizer library")
 
+# PEARL, GCO
 SET( PATH_GLOBOPT_DEPS_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../../globOptDeps"
         CACHE PATH "Folder containing additional dependency libraries (pearl, gco-v3, etc.)" FORCE )
 
-ADD_DEFINITIONS(-DRAPTER_WITH_BONMIN)
+# FBI
+SET( PATH_LIBFBI_ROOT "${THIRD_PARTY_DIR}/libfbi/")
+
+#_____________________________________#
+#______________TARGETS________________#
+#_____________________________________#
 
 SET( WITH_PEARL OFF CACHE BINARY "Compile pearl executable.")
-#SET( WITH_PEARL YES CACHE BINARY "Compile pearl executable." FORCE)
 SET( WITH_RSAC OFF CACHE BINARY "Compile ransac executable.")
-SET( WITH_GAUSSSPHERE OFF CACHE BINARY "Compile gaussSphere." )
-#SET( WITH_DRAWGRAPHS ON CACHE BINARY "Compile drawGraphs." )
-#SET( WITH_PLYCONVERTER ON CACHE BINARY "Compile ply-converter executable.")
 SET( WITH_CORRESP OFF CACHE BINARY "Correspondance miniprogram compilation.")
 SET( WITH_GLOBFIT OFF CACHE BINARY "GlobFit (Li'11) comparison.")
 SET( WITH_EVAL OFF CACHE BINARY "Evaluation code")
 SET( WITH_REFIT OFF CACHE BINARY "Constrained refit project")
+#SET( WITH_GAUSSSPHERE OFF CACHE BINARY "Compile gaussSphere." )
+#SET( WITH_DRAWGRAPHS ON CACHE BINARY "Compile drawGraphs." )
+#SET( WITH_PLYCONVERTER ON CACHE BINARY "Compile ply-converter executable.")
 
-#SET( WITH_SAMPLE_INPUT OFF CACHE BINARY "Compile --sample-input option")
-#IF(WITH_SAMPLE_INPUT)
-#    ADD_DEFINITIONS(-DRAPTER_WITH_SAMPLE_INPUT)
-#ENDIF(WITH_SAMPLE_INPUT)
+#_____________________________________#
+#________________BUILD________________#
+#_____________________________________#
 
-#SET( WITH_FULL_LINKAGE OFF CACHE BINARY "Compile other patchpatch distance functors than representativeSqr")
-#IF(WITH_FULL_LINKAGE)
-#    ADD_DEFINITIONS(-DRAPTER_WITH_FULL_LINKAGE)
-#ENDIF(WITH_FULL_LINKAGE)
-
-#SET( FH_DIR ${THIRD_PARTY_DIR}/segmentFH )
-
-# BUILD
 SET( dir ${CMAKE_CURRENT_SOURCE_DIR}/build/${CMAKE_BUILD_TYPE} )
 SET( EXECUTABLE_OUTPUT_PATH ${dir}/bin CACHE PATH "Build directory" FORCE)
 SET( LIBRARY_OUTPUT_PATH ${dir}/lib CACHE PATH "Build directory" FORCE)
 
 SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -Wall -Wno-unused-local-typedefs " ) #-Wreturn-type
-#SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall" ) #-Wreturn-type
-#SET( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG} " )
 SET( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE} -O2" )
+ADD_DEFINITIONS(-DRAPTER_WITH_BONMIN)
 
+#____________________________________#
 #________________DEPS________________#
 #____________________________________#
 
-find_package(OpenMP)
-if (OPENMP_FOUND)
-    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-endif()
-
-#OpenGL
+# OpenGL
 FIND_PACKAGE( OpenGL REQUIRED )
 INCLUDE_DIRECTORIES( ${OPENGL_INCLUDE_DIRS} )
 
-#OpenCV
-#FIND_PACKAGE( OpenCV COMPONENTS imgproc highgui core REQUIRED)
-#INCLUDE_DIRECTORIES( ${OpenCV_INCLUDE_DIRS} )
-
-#PCL
-#if(1)
-    FIND_PACKAGE( PCL REQUIRED ) # COMPONENTS COMMON IO SEARCH FEATURES FILTERS SEGMENTATION VISUALIZATION SAMPLE_CONSENSUS
-    INCLUDE_DIRECTORIES( ${PCL_INCLUDE_DIRS} )
-    ADD_DEFINITIONS( ${PCL_DEFINITIONS} )
-#else()
-#    SET( PCL_INCLUDE_DIRS
-#        /usr/include/eigen3/
-#        /usr/include/pcl-1.7/
-#        /usr/include/vtk-5.8/
-#    )
-#    SET( PCL_LIBRARIES
-#        pcl_visualization
-#        pcl_sample_consensus
-#        pcl_features
-#        pcl_segmentation
-#        pcl_common
-#        pcl_io
-#        pcl_search
-#        pcl_filters
-#        vtkCommon
-#        vtkHybrid
-#        vtkFiltering
-#        vtkRendering
-#        vtkGraphics
-#    )
-#endif()
-
+# PCL
+FIND_PACKAGE( PCL REQUIRED ) # COMPONENTS COMMON IO SEARCH FEATURES FILTERS SEGMENTATION VISUALIZATION SAMPLE_CONSENSUS
 INCLUDE_DIRECTORIES( ${PCL_INCLUDE_DIRS} )
+ADD_DEFINITIONS( ${PCL_DEFINITIONS} )
 
-#IF(WITH_GUROBI)
-#    # GUROBI - gurobi license in symlink /opt/gurobi/gurobi.lic
-#    add_library( libgurobi SHARED IMPORTED )
-#    set_property( TARGET libgurobi PROPERTY IMPORTED_LOCATION_RELEASE ${PATH_GUROBI_DIR}/lib/libgurobi56.so )
-#    set_property( TARGET libgurobi PROPERTY IMPORTED_LOCATION_DEBUG ${PATH_GUROBI_DIR}/lib/libgurobi56.so )
-#    add_library( libgurobi_c++ STATIC IMPORTED )
-#    set_property( TARGET libgurobi_c++ PROPERTY IMPORTED_LOCATION_RELEASE ${PATH_GUROBI_DIR}/lib/libgurobi_c++.a )
-#    set_property( TARGET libgurobi_c++ PROPERTY IMPORTED_LOCATION_DEBUG ${PATH_GUROBI_DIR}/lib/libgurobi_c++.a )
-#    INCLUDE_DIRECTORIES( ${PATH_GUROBI_DIR}/include )
-#    SET( GUROBI_LIBRARIES libgurobi_c++ libgurobi )
-#ENDIF(WITH_GUROBI)
-
-# Mosek
-#IF(WITH_MOSEK)
-#    add_library( libmosek64 SHARED IMPORTED )
-#    set_property( TARGET libmosek64 PROPERTY IMPORTED_LOCATION_RELEASE ${PATH_MOSEK_DIR}/bin/libmosek64.so )
-#    set_property( TARGET libmosek64 PROPERTY IMPORTED_LOCATION_DEBUG ${PATH_MOSEK_DIR}/bin/libmosek64.so )
-#    INCLUDE_DIRECTORIES( ${PATH_MOSEK_DIR}/h )
-#    SET( MOSEK_LIBRARIES "libmosek64" )
-#ENDIF(WITH_MOSEK)
-
+# OpenMP
+FIND_PACKAGE(OpenMP)
+IF(OPENMP_FOUND)
+    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+ENDIF(OPENMP_FOUND)
 
 # Bonmin
-#IF(WITH_BONMIN)
-    IF(EXISTS ${PATH_BONMIN_DIR}lib/libcoinhsl.so)
-      SET (BONMIN_SOLVER_LIB ${PATH_BONMIN_DIR}lib/libcoinhsl.so)
-      MESSAGE(STATUS "HSL Solver available, using HSL instead of MUMPS")
-    ELSE()
-        SET (BONMIN_SOLVER_LIB ${PATH_BONMIN_DIR}lib/libcoinmumps.so)
-    ENDIF(EXISTS ${PATH_BONMIN_DIR}lib/libcoinhsl.so)
+IF(EXISTS ${PATH_BONMIN_DIR}lib/libcoinhsl.so)
+  SET (BONMIN_SOLVER_LIB ${PATH_BONMIN_DIR}lib/libcoinhsl.so)
+  MESSAGE(STATUS "HSL Solver available, using HSL instead of MUMPS")
+ELSE()
+    SET (BONMIN_SOLVER_LIB ${PATH_BONMIN_DIR}lib/libcoinmumps.so)
+ENDIF(EXISTS ${PATH_BONMIN_DIR}lib/libcoinhsl.so)
 
-    SET( BONMIN_LIBRARIES
-        ${PATH_BONMIN_DIR}/lib/libipopt.so
-        ${PATH_BONMIN_DIR}/lib/libbonmin.so
-        ${PATH_BONMIN_DIR}/lib/libCbc.so
-        #${PATH_BONMIN_DIR}lib/libCbcSolver.so
-        ${PATH_BONMIN_DIR}/lib/libCgl.so
-        ${PATH_BONMIN_DIR}/lib/libClp.so
-        ${BONMIN_SOLVER_LIB}
-        #${BONMIN_DIR}lib/libcoinhsl.so
-        ${PATH_BONMIN_DIR}/lib/libCoinUtils.so
-        ${PATH_BONMIN_DIR}/lib/libOsi.so
-        #${PATH_BONMIN_DIR}/lib/libOsiCbc.so
-        ${PATH_BONMIN_DIR}/lib/libOsiClp.so
-        #${PATH_BONMIN_DIR}/lib/libOsiCommonTests.so
-        lapack
-        dl
-    )
-    INCLUDE_DIRECTORIES( ${PATH_BONMIN_DIR}/include )
-#ENDIF(WITH_BONMIN)
+SET(BONMIN_LIBRARIES
+    ${PATH_BONMIN_DIR}/lib/libipopt.so
+    ${PATH_BONMIN_DIR}/lib/libbonmin.so
+    ${PATH_BONMIN_DIR}/lib/libCbc.so
+    ${PATH_BONMIN_DIR}/lib/libCgl.so
+    ${PATH_BONMIN_DIR}/lib/libClp.so
+    ${BONMIN_SOLVER_LIB}
+    ${PATH_BONMIN_DIR}/lib/libCoinUtils.so
+    ${PATH_BONMIN_DIR}/lib/libOsi.so
+    ${PATH_BONMIN_DIR}/lib/libOsiClp.so
+    lapack
+    dl
+)
+INCLUDE_DIRECTORIES( ${PATH_BONMIN_DIR}/include )
 
 # QCQPCPP
 INCLUDE_DIRECTORIES( ${PATH_QCQPCPP_ROOT}/include )
 
-# libPCLTools
-#INCLUDE_DIRECTORIES( ${PATH_PCLTOOLS_ROOT}/include )
-
 # libfbi
 INCLUDE_DIRECTORIES( ${PATH_LIBFBI_ROOT}/include )
 
-# vis
-IF(1)
-    add_library( libglobOptVis STATIC IMPORTED )
-    set_property( TARGET libglobOptVis PROPERTY IMPORTED_LOCATION_RELEASE "${PATH_VIS_ROOT}/build/Release/lib/libglobOptVis.a" )
-    set_property( TARGET libglobOptVis PROPERTY IMPORTED_LOCATION_DEBUG ${PATH_VIS_ROOT}/build/Debug/lib/libglobOptVisd.a )
-    INCLUDE_DIRECTORIES( ${PATH_VIS_ROOT}/include )
-    SET( GLOBOPTVIS_LIBRARIES "libglobOptVis" )
-ENDIF()
+#_______________________________________#
+#____________TemplateInst_______________#
+#_______________________________________#
 
-
-#INCLUDE_DIRECTORIES( ${FH_DIR}/include )
+# Common template instantiations for all projects
 SET( TEMPLATE_INST_SRC_LIST
-    src/templateInstantiation/planePrimitive.cpp
-    src/templateInstantiation/linePrimitive.cpp
-    src/templateInstantiation/segmentation.cpp
     src/templateInstantiation/taggable.cpp
     src/templateInstantiation/primitive.cpp
+    src/templateInstantiation/linePrimitive.cpp
+    src/templateInstantiation/planePrimitive.cpp
+    src/templateInstantiation/segmentation.cpp
     src/templateInstantiation/assignmentOps.cpp
 )
 
-#________________GLOBOPT________________#
-#_______________________________________#
+##___________________________________________________________________________##
+##                                  RAPTER                                   ##
+##___________________________________________________________________________##
 
 ADD_DEFINITIONS( -DRAPTER_USE_PCL=1
-#                 -D__x86_64__=1
-#                 -Dlinux=1
-#                 -DHAVE_OPENCV=1
-#                 #-DHAVE_OPENNI=1
-#                 -DQT_NO_KEYWORDS
                  -DVTK_EXCLUDE_STRSTREAM_HEADERS
-                 )
+               )
 
-SET( GLOBOPT_TARGET_NAME glob_opt )
+SET(RAPTER_TARGET_NAME rapter)
 INCLUDE_DIRECTORIES( include
-    ${EIGEN_INCLUDE_DIRS}
+                    ${EIGEN_INCLUDE_DIRS}
 )
 
-SET( GLOBOPT_HPP_LIST
+SET( RAPTER_HPP_LIST
+    include/rapter/io/impl/io.hpp
+    include/rapter/io/inputParser.hpp
     include/rapter/optimization/impl/segmentation.hpp
     include/rapter/optimization/impl/solver.hpp
     include/rapter/optimization/impl/problemSetup.hpp
@@ -210,34 +139,23 @@ SET( GLOBOPT_HPP_LIST
     include/rapter/primitives/impl/taggable.hpp
     include/rapter/primitives/impl/planePrimitive.hpp
     include/rapter/primitives/impl/linePrimitive.hpp
-    include/rapter/io/impl/io.hpp
-    include/rapter/util/diskUtil.hpp
-    include/rapter/util/util.hpp
-    include/rapter/util/pcl_util.hpp
-    include/rapter/util/containers.hpp
-    include/rapter/util/lruCache.hpp
     include/rapter/processing/util.hpp
-    include/rapter/primitives/angles.hpp
-    include/rapter/processing/angle_util.hpp
+    include/rapter/processing/impl/angleUtil.hpp
     include/rapter/processing/graph.hpp
     include/rapter/processing/diagnostic.hpp
-    include/rapter/comparison/impl/reassign.hpp
-    include/rapter/io/inputParser.hpp
+    include/rapter/processing/impl/angle.hpp
+    include/rapter/util/diskUtil.hpp
+    include/rapter/util/util.hpp
+    include/rapter/util/impl/pclUtil.hpp
+    include/rapter/util/containers.hpp
+    include/rapter/util/lruCache.hpp
 )
 
-SET( GLOBOPT_H_LIST
-    #include/params.h
-    include/rapter/util/parse.h
+SET( RAPTER_H_LIST
+    include/rapter/simpleTypes.h
+    include/rapter/typedefs.h
     include/rapter/parameters.h
-    include/rapter/my_types.h
-    include/rapter/simple_types.h
-    include/rapter/globOpt_types.h
-    include/rapter/primitives/linePrimitive.h
-    include/rapter/primitives/taggable.h
-    include/rapter/primitives/primitive.h
-    #include/rapter/primitives/linePrimitive2.h
-    include/rapter/primitives/pointPrimitive.h
-    include/rapter/primitives/planePrimitive.h
+    include/rapter/io/io.h
     include/rapter/optimization/patchDistanceFunctors.h
     include/rapter/optimization/energyFunctors.h
     include/rapter/optimization/candidateGenerator.h
@@ -245,14 +163,19 @@ SET( GLOBOPT_H_LIST
     include/rapter/optimization/merging.h
     include/rapter/optimization/mergingFunctors.h
     include/rapter/optimization/segmentation.h
-    #include/optimization/qp/gurobiOpt.h
-    #include/optimization/qp/MyGRBCallback.h
     include/rapter/optimization/solver.h
-    include/rapter/io/io.h
+    include/rapter/primitives/angles.h
+    include/rapter/primitives/linePrimitive.h
+    include/rapter/primitives/taggable.h
+    include/rapter/primitives/primitive.h
+    include/rapter/primitives/pointPrimitive.h
+    include/rapter/primitives/planePrimitive.h
+    include/rapter/util/parse.h
+    include/rapter/util/pclUtil.h
 )
 
-SET( GLOBOPT_SRC_LIST
-    src/qp_main.cpp
+SET( RAPTER_SRC_LIST
+    src/main.cpp
     src/subsample.cpp
     src/segment.cpp
     src/generate.cpp
@@ -263,40 +186,25 @@ SET( GLOBOPT_SRC_LIST
     src/solve3D.cpp
     src/merge.cpp
 #    src/datafit.cpp
-    src/reassign.cpp
+#    src/reassign.cpp
     src/represent.cpp
-    #src/optimization/candidateGenerator.cpp # cached compilation
-    #src/optimization/qp/visualizer.cpp     # cached compilation
     ${TEMPLATE_INST_SRC_LIST}
 )
 
-#IF(WITH_SAMPLE_INPUT)
-#    SET( GLOBOPT_H_LIST ${GLOBOPT_H_LIST}
-#        include/rapter/ground_truth/gtCreator.h
-#    )
-#    SET( GLOBOPT_SRC_LIST ${GLOBOPT_SRC_LIST}
-#        src/ground_truth/ground_truth.cpp
-#        src/ground_truth/gtCreator.cpp
-#    )
-#ENDIF(WITH_SAMPLE_INPUT)
+ADD_EXECUTABLE(${RAPTER_TARGET_NAME} ${RAPTER_SRC_LIST} ${RAPTER_HPP_LIST} ${RAPTER_H_LIST})
 
-ADD_EXECUTABLE( ${GLOBOPT_TARGET_NAME} ${GLOBOPT_SRC_LIST} ${GLOBOPT_HPP_LIST} ${GLOBOPT_H_LIST})
-TARGET_LINK_LIBRARIES( ${GLOBOPT_TARGET_NAME}
-#    ${GUROBI_LIBRARIES}
-#    ${MOSEK_LIBRARIES}
-    ${BONMIN_LIBRARIES}
-#    ${GLOBOPTVIS_LIBRARIES}
-#    ${WORKSPACE_DIR}/globOpt/globOpt/../visualization/build/Release/lib/libglobOptVis.a
-#    ${OpenCV_LIBRARIES}
-    ${PCL_LIBRARIES}
-    #pthread
-    boost_filesystem
-    boost_system
-    boost_thread
+TARGET_LINK_LIBRARIES( ${RAPTER_TARGET_NAME}
+                       ${BONMIN_LIBRARIES}
+                       ${PCL_LIBRARIES}
+                       boost_filesystem
+                       boost_system
+                       boost_thread
 )
 
-## _____________________________________PEaRL____________________________________________________
-## _____________________________________PEaRL____________________________________________________
+##___________________________________________________________________________##
+##                                  PEaRL                                    ##
+##___________________________________________________________________________##
+
 IF(WITH_PEARL)
     SET( PEARL_TARGET pearl)
 
@@ -331,9 +239,11 @@ IF(WITH_PEARL)
     ## Sources
     SET( PEARL_SRC
         src/comparison/pearl.cpp
+        src/reassign.cpp
         ${TEMPLATE_INST_SRC_LIST}
     )
     SET( PEARL_H
+        include/rapter/comparison/impl/reassign.hpp
         ${PATH_GLOBOPT_DEPS_ROOT}/pearl/include/pearl/pearl.h
     )
 
@@ -348,55 +258,26 @@ IF(WITH_PEARL)
     )
 ENDIF(WITH_PEARL)
 
-## _____________________________________PLY CONVERTER____________________________________________________
-#IF(WITH_PLYCONVERTER)
-#    SET( PLYCONVERTER_TARGET "convert2ply" )
-#    SET( PLYCONVERTER_SRC
-#        src/comparison/plyConverter.cpp
-#    )
+##___________________________________________________________________________##
+##                                  RSAC                                     ##
+##___________________________________________________________________________##
 
-#    add_executable( ${PLYCONVERTER_TARGET} ${PLYCONVERTER_SRC} ${PLYCONVERTER_H})
-#    TARGET_LINK_LIBRARIES( ${PLYCONVERTER_TARGET}
-#        opencv_calib3d
-#        opencv_highgui
-#        opencv_imgproc
-#        opencv_core
-#        ${PCL_LIBRARIES}
-#        boost_filesystem
-#    )
-#ENDIF(WITH_PLYCONVERTER)
-
-## _____________________________________CORRESPONDENCE____________________________________________________
-IF(WITH_CORRESP)
-    SET( CORRESP_TARGET "corresp" )
-    SET( CORRESP_SRC
-        src/correspondence.cpp
-        ${TEMPLATE_INST_SRC_LIST}
-    )
-
-    add_executable( ${CORRESP_TARGET} ${CORRESP_SRC} ${CORRESP_H})
-    TARGET_LINK_LIBRARIES( ${CORRESP_TARGET}
-        ${PCL_LIBRARIES}
-        boost_filesystem
-    )
-ENDIF(WITH_CORRESP)
-
-## _____________________________________RSAC____________________________________________________
 IF(WITH_RSAC)
     SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-local-typedefs " ) #-Wreturn-type # removed c++11
     SET( RSAC_TARGET ransac)
 
-#################################
-# libSchnabel
-SET( SCHNABEL07_DIR /home/bontius/workspace/SmartGeometry/schnabel07/)
-add_library( libSchnabel07 SHARED IMPORTED )
-set_property( TARGET libSchnabel07 PROPERTY IMPORTED_LOCATION_RELEASE ${SCHNABEL07_DIR}/lib/libSchnabel07.so )
-set_property( TARGET libSchnabel07 PROPERTY IMPORTED_LOCATION_DEBUG ${SCHNABEL07_DIR}/lib/libSchnabel07d.so )
-add_library( libSchnabel07_MiscLib SHARED IMPORTED )
-set_property( TARGET libSchnabel07_MiscLib PROPERTY IMPORTED_LOCATION_RELEASE ${SCHNABEL07_DIR}/lib/libMiscLib.so )
-set_property( TARGET libSchnabel07_MiscLib PROPERTY IMPORTED_LOCATION_DEBUG ${SCHNABEL07_DIR}/lib/libMiscLibd.so )
-INCLUDE_DIRECTORIES( ${SCHNABEL07_DIR} )
-SET( SCHNABEL07_LIBRARIES libSchnabel07 libSchnabel07_MiscLib)
+    #################################
+    # libSchnabel
+    SET( SCHNABEL07_DIR /home/bontius/workspace/SmartGeometry/schnabel07/)
+    add_library( libSchnabel07 SHARED IMPORTED )
+    set_property( TARGET libSchnabel07 PROPERTY IMPORTED_LOCATION_RELEASE ${SCHNABEL07_DIR}/lib/libSchnabel07.so )
+    set_property( TARGET libSchnabel07 PROPERTY IMPORTED_LOCATION_DEBUG ${SCHNABEL07_DIR}/lib/libSchnabel07d.so )
+    add_library( libSchnabel07_MiscLib SHARED IMPORTED )
+    set_property( TARGET libSchnabel07_MiscLib PROPERTY IMPORTED_LOCATION_RELEASE ${SCHNABEL07_DIR}/lib/libMiscLib.so )
+    set_property( TARGET libSchnabel07_MiscLib PROPERTY IMPORTED_LOCATION_DEBUG ${SCHNABEL07_DIR}/lib/libMiscLibd.so )
+    INCLUDE_DIRECTORIES( ${SCHNABEL07_DIR} )
+    SET( SCHNABEL07_LIBRARIES libSchnabel07 libSchnabel07_MiscLib)
+    #################################
 
     INCLUDE_DIRECTORIES(
         ${PATH_RSAC_ROOT}/include
@@ -408,8 +289,8 @@ SET( SCHNABEL07_LIBRARIES libSchnabel07 libSchnabel07_MiscLib)
         src/schnabelEnv.cpp
         ${TEMPLATE_INST_SRC_LIST}
     )
-    SET( RSAC_H
 
+    SET( RSAC_H
     )
 
     ## Linking
@@ -425,33 +306,27 @@ SET( SCHNABEL07_LIBRARIES libSchnabel07 libSchnabel07_MiscLib)
     )
 ENDIF(WITH_RSAC)
 
-## _______________________________________________________________________________________________
-#SET( TEST_TARGET test_bst)
-#add_executable( ${TEST_TARGET} src/test/test_main.cpp )
-#TARGET_LINK_LIBRARIES( ${TEST_TARGET}
-#    ${PCL_LIBRARIES}
-#)
+##___________________________________________________________________________##
+##                           CORRESPONDENCE                                  ##
+##___________________________________________________________________________##
 
-## _____________________________________PLY CONVERTER____________________________________________________
-IF(WITH_GAUSSSPHERE)
-    SET( GAUSSSPHERE_TARGET "gaussSphere" )
-    SET( GAUSSSPHERE_SRC
-        src/gaussSphere.cpp
+IF(WITH_CORRESP)
+    SET( CORRESP_TARGET "corresp" )
+    SET( CORRESP_SRC
+        src/correspondence.cpp
+        ${TEMPLATE_INST_SRC_LIST}
     )
 
-    add_executable( ${GAUSSSPHERE_TARGET} ${GAUSSSPHERE_SRC} ${GAUSSSPHERE_H})
-    TARGET_LINK_LIBRARIES( ${GAUSSSPHERE_TARGET}
-        opencv_calib3d
-        opencv_highgui
-        opencv_imgproc
-        opencv_core
+    add_executable( ${CORRESP_TARGET} ${CORRESP_SRC} ${CORRESP_H})
+    TARGET_LINK_LIBRARIES( ${CORRESP_TARGET}
         ${PCL_LIBRARIES}
         boost_filesystem
     )
-ENDIF(WITH_GAUSSSPHERE)
+ENDIF(WITH_CORRESP)
 
-
-## _____________________________________toGlobFit____________________________________________________
+##___________________________________________________________________________##
+##______________________________toGlobFit____________________________________##
+##___________________________________________________________________________##
 
 IF(WITH_GLOBFIT)
     SET( GLOBFIT_TARGET "toGlobFit" )
@@ -478,7 +353,9 @@ IF(WITH_GLOBFIT)
     )
 ENDIF(WITH_GLOBFIT)
 
-## _____________________________________Eval____________________________________________________
+##___________________________________________________________________________##
+##________________________________Eval_______________________________________##
+##___________________________________________________________________________##
 
 IF(WITH_EVAL)
     SET( EVAL_TARGET "eval" )
@@ -512,7 +389,9 @@ IF(WITH_EVAL)
     )
 ENDIF(WITH_EVAL)
 
-## _____________________________________Refit____________________________________________________
+##___________________________________________________________________________##
+##________________________________ReFit______________________________________##
+##___________________________________________________________________________##
 
 IF(WITH_REFIT)
     SET( REFIT_TARGET "refit" )
@@ -527,7 +406,7 @@ IF(WITH_REFIT)
     SET( REFIT_HPP
         include/rapter/primitives/impl/planePrimitive.hpp
         include/rapter/primitives/impl/linePrimitive.hpp
-        include/rapter/processing/angle_util.hpp
+        include/rapter/processing/impl/angleUtil.hpp
     )
 
     SET( REFIT_SRC
@@ -546,3 +425,45 @@ IF(WITH_REFIT)
     )
 ENDIF(WITH_REFIT)
 
+
+##___________________________________________________________________________##
+##                              PLY CONVERTER                                ##
+##___________________________________________________________________________##
+
+#IF(WITH_PLYCONVERTER)
+#    SET( PLYCONVERTER_TARGET "convert2ply" )
+#    SET( PLYCONVERTER_SRC
+#        src/comparison/plyConverter.cpp
+#    )
+
+#    add_executable( ${PLYCONVERTER_TARGET} ${PLYCONVERTER_SRC} ${PLYCONVERTER_H})
+#    TARGET_LINK_LIBRARIES( ${PLYCONVERTER_TARGET}
+#        opencv_calib3d
+#        opencv_highgui
+#        opencv_imgproc
+#        opencv_core
+#        ${PCL_LIBRARIES}
+#        boost_filesystem
+#    )
+#ENDIF(WITH_PLYCONVERTER)
+
+##___________________________________________________________________________##
+##______________________________GAUSSSPHERE__________________________________##
+##___________________________________________________________________________##
+
+#IF(WITH_GAUSSSPHERE)
+#    SET( GAUSSSPHERE_TARGET "gaussSphere" )
+#    SET( GAUSSSPHERE_SRC
+#        src/gaussSphere.cpp
+#    )
+
+#    add_executable( ${GAUSSSPHERE_TARGET} ${GAUSSSPHERE_SRC} ${GAUSSSPHERE_H})
+#    TARGET_LINK_LIBRARIES( ${GAUSSSPHERE_TARGET}
+#        opencv_calib3d
+#        opencv_highgui
+#        opencv_imgproc
+#        opencv_core
+#        ${PCL_LIBRARIES}
+#        boost_filesystem
+#    )
+#ENDIF(WITH_GAUSSSPHERE)

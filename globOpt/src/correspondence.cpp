@@ -1,5 +1,5 @@
 #include "rapter/util/parse.h"
-#include "rapter/globOpt_types.h" // _2d::, _3d::
+#include "rapter/typedefs.h" // _2d::, _3d::
 
 // ________________correspondance___________________
 

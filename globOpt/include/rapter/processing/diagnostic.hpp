@@ -4,7 +4,7 @@
 #include <string>
 #include <map>
 #include "Eigen/Sparse"
-#include "rapter/simple_types.h"
+#include "rapter/simpleTypes.h"
 
 namespace rapter
 {

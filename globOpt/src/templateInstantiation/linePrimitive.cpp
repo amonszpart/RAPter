@@ -1,4 +1,4 @@
-#include "rapter/globOpt_types.h"
+#include "rapter/typedefs.h"
 #include "rapter/primitives/linePrimitive.h"
 #include "rapter/primitives/impl/linePrimitive.hpp"
 

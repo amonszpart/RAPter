@@ -19,7 +19,7 @@
 //#include "rapter/optimization/energyFunctors.h"     // PointLineDistanceFunctor,
 #include "rapter/optimization/problemSetup.h"         // everyPatchNeedsDirection()
 #include "rapter/processing/diagnostic.hpp"           // Diagnostic
-#include "rapter/processing/angle_util.hpp"
+#include "rapter/processing/impl/angleUtil.hpp"
 
 namespace rapter
 {

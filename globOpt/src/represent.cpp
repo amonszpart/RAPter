@@ -1,7 +1,7 @@
 #include "rapter/io/inputParser.hpp"
 #include "rapter/util/parse.h"
-#include "rapter/globOpt_types.h"
-#include "rapter/my_types.h"
+#include "rapter/typedefs.h"
+//#include "rapter/my_types.h"
 #include "rapter/processing/graph.hpp"
 #include "rapter/util/containers.hpp" // class PrimitiveContainer
 

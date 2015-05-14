@@ -1,5 +1,6 @@
+#include "rapter/typedefs.h"
+#include "rapter/optimization/segmentation.h"
 #include "rapter/optimization/impl/segmentation.hpp"
-#include "rapter/globOpt_types.h"
 #include "rapter/primitives/impl/planePrimitive.hpp"
 
 namespace rapter

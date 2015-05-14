@@ -1,12 +1,13 @@
-#ifndef RAPTER_PROBLEMSETUP_H
-#define RAPTER_PROBLEMSETUP_H
+#ifndef __RAPTER_PROBLEMSETUP_H__
+#define __RAPTER_PROBLEMSETUP_H__
 
 #include <vector>
 #include <map>
 #include <set>
 
-#include "qcqpcpp/optProblem.h"  // OptProblem
-#include "rapter/parameters.h" // ProblemSetupParams
+#include "qcqpcpp/optProblem.h"     // OptProblem
+#include "rapter/parameters.h"      // ProblemSetupParams
+#include "rapter/util/pclUtil.h"    // PclCloudPtrT
 
 namespace rapter
 {
@@ -83,7 +84,7 @@ namespace rapter
                      , class _FiniteFiniteDistFunctor
                      >
             static inline int formulateCli( int argc, char** argv );
-
+#if 0
             /*! \brief                          Step 2. Reads the output from generate and sets up the optimization problem in form of sparse matrices.
              *  \tparam _PrimitiveContainerT    Concept: vector< vector< \ref rapter::LinePrimitive2 > >.
              *  \tparam _PointContainerT        Concept: vector< \ref rapter::PointPrimitive >.
@@ -127,6 +128,7 @@ namespace rapter
                      , _Scalar                                                            const  freq_weight            = 0.
                      , int                                                                const  clusterMode            = 1
                      );
+#endif
 
             /*! \brief                          Step 2. Reads the output from generate and sets up the optimization problem in form of sparse matrices.
              *  \tparam _PrimitiveContainerT    Concept: vector< vector< \ref rapter::LinePrimitive2 > >.
@@ -177,9 +179,4 @@ namespace rapter
     }; //...class ProblemSetup
 } //...namespace rapter
 
-//#ifndef RAPTER_INC_PROBLEMSETUP_HPP
-//#   define RAPTER_INC_PROBLEMSETUP_HPP
-//#   include "rapter/optimization/impl/problemSetup.hpp"
-//#endif //RAPTER_INC_PROBLEMSETUP_HPP
-
-#endif // RAPTER_PROBLEMSETUP_H
+#endif // __RAPTER_PROBLEMSETUP_H__

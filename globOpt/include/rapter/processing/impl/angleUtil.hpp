@@ -1,8 +1,8 @@
-#ifndef RAPTER_ANGLE_UTIL_HPP
-#define RAPTER_ANGLE_UTIL_HPP
+#ifndef __RAPTER_ANGLE_UTIL_HPP__
+#define __RAPTER_ANGLE_UTIL_HPP__
 
 #include "rapter/optimization/energyFunctors.h"
-#include "rapter/primitives/angles.hpp" // AnglesT
+#include "rapter/primitives/angles.h" // AnglesT
 
 namespace rapter
 {
@@ -331,4 +331,4 @@ namespace rapter
     } //...selectAngles()
 } //...ns rapter
 
-#endif // RAPTER_ANGLE_UTIL_HPP
+#endif // __RAPTER_ANGLE_UTIL_HPP__

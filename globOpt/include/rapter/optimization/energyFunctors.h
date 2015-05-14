@@ -2,7 +2,8 @@
 #define RAPTER_ENERGYFUNCTORS_H__
 
 #include <vector>
-#include "rapter/my_types.h" // angleInRad
+//#include "rapter/my_types.h" // angleInRad
+#include "rapter/processing/impl/angle.hpp" // angleInRad
 #include "rapter/parameters.h"
 
 #include <Eigen/StdVector>

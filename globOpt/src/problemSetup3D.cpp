@@ -1,5 +1,5 @@
-#include "rapter/globOpt_types.h" // _2d, _3d namespaces
-#include "rapter/util/parse.h" // rapter::console
+#include "rapter/typedefs.h"                        // _2d, _3d namespaces
+#include "rapter/util/parse.h"                      // rapter::console
 
 #include "rapter/optimization/problemSetup.h"
 #include "rapter/optimization/impl/problemSetup.hpp"

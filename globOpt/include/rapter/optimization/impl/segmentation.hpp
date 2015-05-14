@@ -1,35 +1,32 @@
-#ifndef RAPTER_SEGMENTATION_HPP
-#define RAPTER_SEGMENTATION_HPP
+#ifndef __RAPTER_SEGMENTATION_HPP__
+#define __RAPTER_SEGMENTATION_HPP__
 
-#include "rapter/optimization/segmentation.h"
-#include "rapter/my_types.h"                  // PCLPointAllocator
-#include "rapter/globOpt_types.h"
+//#include "rapter/optimization/segmentation.h"
+
 #include <vector>
 
 #include "boost/filesystem.hpp"
 
 #if RAPTER_USE_PCL
 #   include "pcl/point_types.h"
-#   include <pcl/point_cloud.h>
+#   include "pcl/point_cloud.h"
 #   include "pcl/console/parse.h"
 #endif
 
-//#include "pcltools/util.hpp"
-
-#include "rapter/util/containers.hpp" // add( map, gid, primitive), add( vector, gid, primitive )
-#include "rapter/parameters.h"        // CandidateGeneratorParams
-#include "rapter/processing/util.hpp" // getNeighbourIndices
-#include "rapter/processing/angle_util.hpp" // appendAngles
-#include "rapter/util/diskUtil.hpp"   // saveBackup
-#include "rapter/io/io.h"             // readPoints
-#include "rapter/optimization/patchDistanceFunctors.h" // RepresentativeSqrPatchPatchDistanceFunctorT
+#include "rapter/parameters.h"                          // CandidateGeneratorParams
+#include "rapter/util/containers.hpp"                   // add( map, gid, primitive), add( vector, gid, primitive )
+#include "rapter/processing/util.hpp"                   // getNeighbourIndices
+#include "rapter/processing/impl/angleUtil.hpp"         // appendAngles
+#include "rapter/util/diskUtil.hpp"                     // saveBackup
+#include "rapter/io/io.h"                               // readPoints
+#include "rapter/optimization/patchDistanceFunctors.h"  // RepresentativeSqrPatchPatchDistanceFunctorT
 #include "omp.h"
 
 #include <chrono>
 #define TIC auto start = std::chrono::system_clock::now();
 #define RETIC start = std::chrono::system_clock::now();
 #define TOC(title,it) { std::chrono::duration<double> elapsed_seconds = std::chrono::system_clock::now() - start; \
-                     std::cout << title << ": " << elapsed_seconds.count()/it << " s" << std::endl; }
+                        std::cout << title << ": " << elapsed_seconds.count()/it << " s" << std::endl; }
 
 // from pcltools
 namespace smartgeometry {
@@ -276,7 +273,7 @@ Segmentation::orientPoints( _PointContainerT          &points
 
     // to pcl cloud
     CloudXYZ::Ptr cloud( new CloudXYZ() );
-    _PointPrimitiveT::template toCloud<CloudXYZ::Ptr, _PointContainerT, PCLPointAllocator<_PointPrimitiveT::Dim> >
+    _PointPrimitiveT::template toCloud<CloudXYZ::Ptr, _PointContainerT, pclutil::PCLPointAllocator<_PointPrimitiveT::Dim> >
             ( cloud, points );
 
     // (1) local fit lines from pcl cloud
