@@ -80,5 +80,18 @@ namespace GF2
                         , float                                 const  alpha        /* = 2.*/
                         );
 
+//    PlanePrimitive::PlanePrimitive( Eigen::Matrix<PlanePrimitive::Scalar, 3, 1> const& pnt,
+//                                    Eigen::Matrix<PlanePrimitive::Scalar, 3, 1> const& normal )
+//    {
+//        _coeffs.template head<3>() = pnt;
+//        _coeffs.template segment<3>(3) = normal.normalized();
+//    }
+
+    Eigen::Matrix<PlanePrimitive::Scalar,3,1>
+    PlanePrimitive::projectPoint( Eigen::Matrix<PlanePrimitive::Scalar,3,1> const& point ) const
+    {
+        return point - (this->getDistance(point) * this->dir() );
+    }
+
     PlanePrimitive plane;
 }

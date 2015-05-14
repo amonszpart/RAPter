@@ -2,6 +2,7 @@
 #define GF2_ANGLE_UTIL_HPP
 
 #include "globfit2/optimization/energyFunctors.h"
+#include "globopt/primitives/angles.hpp" // AnglesT
 
 namespace GF2
 {

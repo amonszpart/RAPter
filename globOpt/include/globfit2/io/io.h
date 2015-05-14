@@ -366,6 +366,15 @@ namespace GF2
     } // ... ns io
 } // ... ns GF2
 
+namespace globopt
+{
+    namespace io
+    {
+        template <class _PrimitiveContainerT, class _PointContainerT>
+        std::string writePrimAssocCloud( _PrimitiveContainerT const& prims, _PointContainerT const& points, std::string stem, std::string dir = "./" );
+    } //...ns io
+} //...ns globopt
+
 #ifndef __GF2_IO_INC_HPP__
 #   define __GF2_IO_INC_HPP__
 #   include "globfit2/io/impl/io.hpp"

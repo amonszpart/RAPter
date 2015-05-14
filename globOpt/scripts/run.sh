@@ -1,3 +1,4 @@
+#!/bin/bash
 # Executable path
 executable="../glob_opt";
 execLog="lastRun.log"
@@ -6,16 +7,17 @@ execPyStats="python ../collectStatistics.py"
 ###############################################
 doExecPy=true          # Set to true if generating graphs
 dryRun=false           # Values: [true/false]. If "true", don't execute, just show calls
-noVis=false            # Only show premerge and final output
+noVis=true            # Only show premerge and final output
+echo `pwd`
 
 # startAt=0: do segment
 # startAt=1: don't do segment, do premerge
 # startAt=2: don't do premerge, do iteration 0
 startAt=0
-mergeMult="1"           # Values: [0.5, 0.8, 1 ] Be conservative with merge, multiply the scale with this. ( < 1 does not work well for some reason, parallel planes survive)
-nbExtraIter=50          # Values: [ 1..20 ] iteration count. Default: 2.
+mergeMult="1"        # Values: [0.5, 0.8, 1 ] Be conservative with merge, multiply the scale with this. ( < 1 does not work well for some reason, parallel planes survive)
+nbExtraIter=10          # Values: [ 1..20 ] iteration count. Default: 2.
 reprPwMult=1           # Values: [ 1, 5 ,10]. Multiplies pw with this number when doing lvl2 (representatives)
-use90=20                 # Values: [ 6, 100 ] Controls, when to add a 90 generation step. If large, will be re-set by runscript to be after "adopt".
+use90=0                # Values: [ 6, 100 ] Controls, when to add a 90 generation step. If large, will be re-set by runscript to be after "adopt".
 keep90=true # Holds 90 in candgen as well, once turned on.
 extendedAngleGens="90"  # Values: [ "0", "90", ... ] Turned on by use90.
 premerge=0              # Values: [ 0, 1 ] Call merge after segmentation.
@@ -24,20 +26,27 @@ tripletSafe="--triplet-safe" #Values: ["", "--triplet-safe"]
 reprAngleMult="1.0" # 
 collapseThreshDeg=0.4
 
-anglegens="0"          # Values: ["0", "60", "90", "60,90", ... ] Desired angle generators in degrees. Default: 90.
+# In candidate generation, divide angle limit with this to match copies. Default: 1. Set to 10, if too many candidates (variables).
+cand_anglediv="1";          # for 3D: "2.5"; 0.2 for room initialization experiment
+# Multiply scale by this number to get the segmentation (regionGrowing) spatial distance
+segmentScaleMultiplier="1"; # for 3D: "2.5"; 0.15 for room_n0.04, with scale=0.025
+
+anglegens="0,90"           # Values: ["0", "60", "90", "60,90", ... ] Desired angle generators in degrees. Default: 90.
 candAngleGens="0"       # used to mirror anglegens, but keep const "0" for generate
-unary=50000             # Values: [1000000, 1000, 1000000]
-spatWeight=0            # Values: [ 10, 0 ] (Penalty that's added, if two primitives with different directions are closer than 2 x scale)
+unary=100000            # Values: [1000000, 1000, 1000000]
 truncAngle=$anglelimit  # Values: [ 0, $anglelimit, 0.15 ] (Pairwise cost truncation angle in radians)
-smallThreshDiv="2"      # Values: [ 2, 3, ... ] Stepsize of working scale.
+smallThreshDiv="1.5"      # Values: [ 2, 3, ... ] Stepsize of working scale.
 safeMode="";            # Values: [ "", "--safe-mode"] Disallows copy of direction to already selected (large) primitives.
 
 # Parse runScripts
 runFileName=`basename $0`;
 runPath=$(dirname "`file $0 | awk '{print $5}' |cut -c 2-`");
 echo "runPath:" $runPath
-source "$runPath/runRepr.sh"; echo "loaded runRepr.sh"
-source "$runPath/runFuncs.sh"; echo "loaded runFuncs.sh"
+echo "source $runPath/runRepr.sh"
+source "$runPath/runRepr.sh";
+echo "loaded runRepr.sh"
+source "$runPath/runFuncs.sh"; 
+echo "loaded runFuncs.sh"
 
 function print_usage() {
         echo "usage:\t run.sh scale anglelimit pairwisecost [pop-limit] [3D] [smallThreshStart]"
@@ -54,9 +63,15 @@ if [[ -z "$3" ]]; then print_usage; exit 1; else pw=$3; fi
 # parse population limit
 if [ -n "$4" ]; then poplimit=$4; else poplimit=5; fi
 # parse 3D
-if [ -n "$5" ]; then flag3D=$5; else flag3D=""; fi
+if [ -n "$5" ]; then flag3D=$5; else flag3D=""; tripletSafe=""; fi
 # parse smallThresh (a size(spatialSignificance) threshold for primitives to work with)
 if [ -n "$6" ]; then smallThresh=$6; else smallThresh="0"; fi
+
+if [ -n "$7" ]; then startAt=$7; fi
+
+spatWeight=0           # Values: [ 10, 0 ] (Penalty that's added, if two primitives with different directions are closer than 2 x scale)
+spatWeight=`python -c "print($pw/10.)"`; # /2. worked
+#spatWeight="0.1";
 
 ########################################
 #### We usually don't change the following:
@@ -73,18 +88,14 @@ keepSingles="--keep-singles"     # Will be turned off after 1 iteration at the e
 
 noClusters="--no-clusters"  # Values: [ "", "--no-clusters" ] (Flag that turns spatial clustering extra variables off)
 useAngleGen=""              # Values: [ "", "--use-angle-gen" ] (Flag which makes not same directioned primitives not to penalize eachother)
-formParams="$noClusters $useAngleGen --spat-weight $spatWeight --trunc-angle $truncAngle"
+formParams="$noClusters $useAngleGen --spat-weight $spatWeight --trunc-angle $truncAngle --spat-dist-mult 2."
 
-# In candidate generation, divide angle limit with this to match copies. Default: 1. Set to 10, if too many candidates (variables).
-cand_anglediv="1";          # for 3D: "2.5";
-# Multiply scale by this number to get the segmentation (regionGrowing) spatial distance
-segmentScaleMultiplier="1"; # for 3D: "2.5";
 pwCostFunc="spatsqrt"       # Spatial cost function.
 
-visdefparam="--angle-gens $anglegens --use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-rel --no-scale --bg-colour .9,.9,.9" #"--use-tags --no-clusters" #--ids
+visdefparam="--angle-gens $anglegens --use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-rel --no-scale --bg-colour 1.,1.,1." #"--use-tags --no-clusters" #--ids
 iterationConstrMode="patch" # what to add in the second iteration formulate. Default: 0 (everyPatchNeedsDirection), experimental: 2 (largePatchesNeedDirection).
 
-variableLimit=3000; # 1300; # Safe mode gets turned on, and generate rerun, if candidates exceed this number (1300)
+variableLimit=500; # 1300; # Safe mode gets turned on, and generate rerun, if candidates exceed this number (1300)
 algCode=0                   # 0==B_BB, OA, QG, 3==Hyb, ECP, IFP
 #######################################
 #######################################
@@ -148,6 +159,8 @@ if [ $startAt -le 1 ]; then
         my_exec "../globOptVis --show$flag3D --scale $scale --use-tags --pop-limit $poplimit -p patches.csv -a $assoc --normals 100 --title \"GlobOpt - PreMerge output\" --no-clusters --no-pop --no-rel --bg-colour .9,.9,.9 --angle-gens $anglegens &"
     fi #...if premerge
 fi #...startAt <= 1
+
+#exit
 
 # If true, stay on the same level for one more iteration (too many variables)
 decrease_level=false;
@@ -272,6 +285,8 @@ do
     # Increment iteration counter (while loop)
     c=$(( $c + 1 ))
 done
+c2=$(( $c - 1 ))
+my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p primitives_it$c2.bonmin.csv -a $assoc --title \"GlobOpt - $c2 iteration output ($pw)\" $visdefparam &"
 
 if [ "$doExecPy" = true ]; then
     my_exec "$execPyStats .  --angles $anglegens"
@@ -283,3 +298,6 @@ fi
 # remove safemode
 # put back startat
 # put back adopt?
+
+# Normal plot
+# python normal_distr.py ../data/scenes-paper/bu_nola/..../file.ply out.svg "toto" --noscatter

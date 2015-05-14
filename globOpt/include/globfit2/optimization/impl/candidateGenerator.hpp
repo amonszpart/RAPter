@@ -247,7 +247,7 @@ namespace GF2
                     _Scalar tmpAng = _PrimitivePrimitiveAngleFunctorT::template eval<_Scalar>( cand0, *it,
                                                                                                angles );
                     if ( tmpAng < 0. ) { std::cout << "[" << __func__ << "]: " << "halt, tmpAng < 0. " << std::endl; throw std::runtime_error("asdf"); }
-                    if ( tmpAng > _Scalar(1e-4) )
+                    if ( tmpAng > _Scalar(1e-6) )
                     {
 //                        std::cout << "triplet cancel: "
 //                                  << "<" << gid0 << "," << dir_gid1 << "," << cand0.getTag(_PrimitiveT::TAGS::GEN_ANGLE) << "> "

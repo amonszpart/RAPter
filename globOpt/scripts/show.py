@@ -27,6 +27,7 @@ parser.add_option("--paral-colours", "", type="float", dest="paralLimit", defaul
 parser.add_option("--dir-colours", "", action="store_true", dest="dirColours", default=False,
                   help="Colour based on cluster id and not parallelity" )
 parser.add_option("--save-poly", "", action="store_true", dest="savePoly", default=False, help="adds \"--save-poly --draw-mode 21\" to save the rgb cloud");
+parser.add_option("--cloud", "", default="cloud.ply", dest="cloudPath", help="Allows to specify the .ply file to use as the input point cloud [ cloud.ply ].");
 
 (options, args) = parser.parse_args()
 
@@ -50,8 +51,8 @@ showOption = "--show" if options._2d else "--show3D"
 print("default:", defaultArgs)
 colourOption = "--dir-colours" if options.dirColours else "--paral-colours --perfect-angle %f" % (options.paralLimit);
 
-cmd = "../globOptVis %s --scale %f --pop-limit %d --title %s --angle-gens %s %s --bg-colour %s -p %s -a %s %s %s" % (
-    showOption, options.scale, options.popLimit, options.title, options.angleGens, colourOption, options.bgColour, options.primitivesPath, options.assignmentsPath, defaultArgs, savePolyArgs)
+cmd = "../globOptVis %s --scale %f --pop-limit %d --title %s --angle-gens %s %s --bg-colour %s -p %s -a %s %s %s --cloud %s" % (
+    showOption, options.scale, options.popLimit, options.title, options.angleGens, colourOption, options.bgColour, options.primitivesPath, options.assignmentsPath, defaultArgs, savePolyArgs, options.cloudPath)
 
 print("[Calling] ", cmd)
 print(os.system(cmd))

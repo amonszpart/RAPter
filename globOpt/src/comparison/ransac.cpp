@@ -434,6 +434,8 @@ inline int schnabelCli( int argc, char** argv )
                                , extrude2D
                                , pointMultiplier
                                );
+    if ( err != EXIT_SUCCESS )
+        std::cerr << "[" << __func__ << "]: " << "schnabel failed with " << err << std::endl;
     PrimitiveMapT out_prims;
     for ( size_t gid = 0; gid != planes.size(); ++gid )
     {
@@ -486,18 +488,20 @@ inline int schnabelCli( int argc, char** argv )
     vptr->spin();
 #endif
 
-    char path[ 256 ];
-    sprintf( path, "./schnabel_minsup%d.primitives.csv", min_support_arg );
-    std::cout << " writing " << out_prims.size() << " primitives to " << path << std::endl;
-    GF2::io::savePrimitives<PrimitiveT,std::vector<GF2::PlanePrimitive>::const_iterator >( out_prims, std::string(path) );
+    char outPrimsPath[ 512 ], outAssocPath[512], outCloudPath[512];
+    sprintf( outPrimsPath, "./schnabel_minsup%d.primitives.csv", min_support_arg );
+    std::cout << " writing " << out_prims.size() << " primitives to " << outPrimsPath << std::endl;
+    GF2::io::savePrimitives<PrimitiveT,std::vector<GF2::PlanePrimitive>::const_iterator >( out_prims, std::string(outPrimsPath) );
 
-    sprintf( path, "./schnabel_minsup%d.points_primitives.csv", min_support_arg );
-    std::cout << " writing " << outPoints.size() << " assignments to " << path << std::endl;
-    GF2::io::writeAssociations<PointPrimitiveT>( outPoints, path );
+    sprintf( outAssocPath, "./schnabel_minsup%d.points_primitives.csv", min_support_arg );
+    std::cout << " writing " << outPoints.size() << " assignments to " << outAssocPath << std::endl;
+    GF2::io::writeAssociations<PointPrimitiveT>( outPoints, outAssocPath );
 
-    sprintf( path, "./schnabel_minsup%d.cloud.ply", min_support_arg );
-    std::cout << " writing " << outPoints.size() << " points to " << path << std::endl;
-    GF2::io::writePoints<PointPrimitiveT>( outPoints, path );
+    sprintf( outCloudPath, "./schnabel_minsup%d.cloud.ply", min_support_arg );
+    std::cout << " writing " << outPoints.size() << " points to " << outCloudPath << std::endl;
+    GF2::io::writePoints<PointPrimitiveT>( outPoints, outCloudPath );
+
+    std::cout << "../show.py -p " << outPrimsPath << " -a " << outAssocPath << " --cloud " << outCloudPath << " --scale " << params.scale << "\n";
 
     return EXIT_SUCCESS;
 }

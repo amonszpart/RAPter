@@ -49,7 +49,7 @@ namespace GF2
             }
         }
 
-        int err = EXIT_SUCCESS;
+        //int err = EXIT_SUCCESS;
 
         // debug visualize
         int plane_count = 0;
@@ -101,7 +101,7 @@ namespace GF2
                 for ( typename _PrimitiveContainerT::const_iterator it = primitives.begin(); it != primitives.end(); ++it, ++lid0 )
                     for ( LidT lid1 = 0; lid1 != it->size(); ++lid1, ++label )
                     {
-                        Scalar dist = it->at(lid1).getDistance( points[pid] );
+                        Scalar dist = it->at(lid1).getDistance( points[pid].template pos() );
                         data[ pid*num_labels + label] = Scalar(100.) * dist * dist;
                         labelMap[ label ] = std::pair<int,int>( lid0, lid1 );
                     }
@@ -175,5 +175,6 @@ namespace GF2
             delete [] data;
         }
 
+        return EXIT_SUCCESS;
     } //...reassignCli
 } //...ns GF2

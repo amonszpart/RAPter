@@ -47,7 +47,7 @@ namespace GF2
              *  \param[in] p0    Point on plane.
              *  \param[in] dir   Plane normal.
              */
-            PlanePrimitive( Eigen::Matrix<Scalar,3,1> pnt, Eigen::Matrix<Scalar,3,1> normal );
+            PlanePrimitive( Eigen::Matrix<Scalar,3,1> const& pnt, Eigen::Matrix<Scalar,3,1> const& normal );
 
             /*! \brief Creates plane primitive from an ordered local frame
              */
@@ -111,8 +111,8 @@ namespace GF2
              *  \param[in] point    Point to calculate distance from.
              *  \return             Distance from point to plane.
              */
-            inline Scalar
-            getDistance( Eigen::Matrix<Scalar,3,1> const& point ) const {  return (point - this->pos()).dot( this->dir() ); }
+            template <typename _DerivedT> inline Scalar
+            getDistance( _DerivedT const& point ) const { return (point - this->pos()).dot( this->dir() ); }
 
             /*! \brief              Helps calculating plane to plane distance.
              *  \param[in] extrema  Extrema of this primitive.

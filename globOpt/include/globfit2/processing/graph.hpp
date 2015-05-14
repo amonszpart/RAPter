@@ -5,6 +5,7 @@
 #include <iostream>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/connected_components.hpp>
+#include <boost/graph/kruskal_min_spanning_tree.hpp>
 
 namespace GF2
 {
@@ -126,7 +127,7 @@ namespace GF2
             addEdge( const LidT v0, const LidT v1, _Scalar const weight )
             {
                 //throw new std::runtime_exception("todo" );
-                return boost::add_edge( v0, v1, _undigraph );
+                return boost::add_edge( v0, v1, weight, _undigraph );
                 //return 0;
             }
 
@@ -256,6 +257,47 @@ namespace GF2
                     std::cout << "[" << __func__ << "]: " << cmd << std::endl;
                     system( cmd );
                 }
+            }
+
+            // concept: vector<pair<gid,gid>>
+            template <class _OutContainerT>
+            inline int spanningTree( _OutContainerT &edges )
+            {
+                std::vector < EdgeT > spanning_tree;
+
+                kruskal_minimum_spanning_tree( _undigraph, std::back_inserter(spanning_tree) );
+
+                std::cout << "Print the edges in the MST:" << std::endl;
+                for ( typename std::vector < EdgeT >::iterator ei = spanning_tree.begin();
+                      ei != spanning_tree.end(); ++ei)
+                {
+                    auto src = source(*ei, _undigraph);
+                    auto trg = target(*ei, _undigraph);
+                    std::cout << src << " <--> " << trg << std::endl;
+                    edges.insert( typename _OutContainerT::value_type( std::min(src,trg),std::max(src,trg)) );
+                }
+
+#if 0
+                std::ofstream fout("figs/kruskal-eg.dot");
+                fout << "graph A {\n"
+                  << " rankdir=LR\n"
+                  << " size=\"3,3\"\n"
+                  << " ratio=\"filled\"\n"
+                  << " edge[style=\"bold\"]\n" << " node[shape=\"circle\"]\n";
+                typename boost::graph_traits<Graph>::edge_iterator eiter, eiter_end;
+                for (tie(eiter, eiter_end) = edges(_undigraph); eiter != eiter_end; ++eiter)
+                {
+                  fout << source(*eiter, _undigraph) << " -- " << target(*eiter, _undigraph);
+                  if ( std::find(spanning_tree.begin(), spanning_tree.end(), *eiter) != spanning_tree.end() )
+                    fout << "[color=\"black\", label=\"" << get(edge_weight, _undigraph, *eiter)
+                         << "\"];\n";
+                  else
+                    fout << "[color=\"gray\", label=\"" << get(edge_weight, _undigraph, *eiter)
+                         << "\"];\n";
+                }
+                fout << "}\n";
+#endif
+                return EXIT_SUCCESS;
             }
 
         protected:

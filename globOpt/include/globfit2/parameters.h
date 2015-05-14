@@ -4,6 +4,7 @@
 #include <vector>
 #include "Eigen/Dense"
 #include "globfit2/simple_types.h"
+#include "globopt/primitives/angles.hpp" // AnglesT
 
 namespace GF2 {
 

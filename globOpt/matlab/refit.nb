@@ -1,19 +1,12 @@
-(* Content-type: application/vnd.wolfram.mathematica *)
-
-(*** Wolfram Notebook File ***)
-(* http://www.wolfram.com/nb *)
-
-(* CreatedBy='Mathematica 9.0' *)
-
 (*CacheID: 234*)
 (* Internal cache information:
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
-NotebookDataPosition[       157,          7]
+NotebookDataPosition[         0,          0]
 NotebookDataLength[      2706,         95]
-NotebookOptionsPosition[      2399,         79]
-NotebookOutlinePosition[      2736,         94]
-CellTagsIndexPosition[      2693,         91]
+NotebookOptionsPosition[      2242,         72]
+NotebookOutlinePosition[      2579,         87]
+CellTagsIndexPosition[      2536,         84]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -94,12 +87,10 @@ CellTagsIndex->{}
 (*NotebookFileOutline
 Notebook[{
 Cell[CellGroupData[{
-Cell[579, 22, 993, 33, 121, "Input"],
-Cell[1575, 57, 808, 19, 91, "Output"]
+Cell[422, 15, 993, 33, 121, "Input"],
+Cell[1418, 50, 808, 19, 91, "Output"]
 }, Open  ]]
 }
 ]
 *)
-
-(* End of internal cache information *)
 

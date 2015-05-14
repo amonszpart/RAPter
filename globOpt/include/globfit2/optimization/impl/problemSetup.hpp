@@ -728,6 +728,7 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
                                 {
                                     if ( did != dIdOther )
                                         problem.addQObjective( varId0, varId1, halfSpatialWeightCoeff ); // /2, since it's going to be added both ways Aron 6/1/2015
+#if 0
                                     else { // encourage parallel added by Aron 19/4/2015
 #warning "Temporary Tweak"
                                         Scalar ang = GF2::angleInRad( prim.template dir(), prim1.template dir() );
@@ -736,6 +737,7 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
                                         if ( ang > 0.01 )
                                             problem.addQObjective( varId0, varId1, halfSpatialWeightCoeff/2. ); // /2, since it's going to be added both ways Aron 6/1/2015
                                     }
+#endif
                                 }
                             }
                         } // ... olid1

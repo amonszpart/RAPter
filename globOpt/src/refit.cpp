@@ -8,76 +8,147 @@
 #include "globopt/util/impl/randUtil.hpp"     // randf()
 
 #include "qcqpcpp/bonminOptProblem.h"
+#include "globopt/primitives/impl/planePrimitive.hpp" // PlanePrimitive( pos ,normal )
+#include "globfit2/processing/graph.hpp"
 
 namespace globopt
 {
-
-//! \brief Unfinished function. Supposed to do GlobFit.
-template < class _PrimitiveMapT
-         , class _PointContainerT
-         , class _PclCloudT
-         >
-int
-refit( int    argc
-     , char** argv )
-{
-    typedef typename _PrimitiveMapT::PrimitiveT                         PrimitiveT;
-    typedef typename _PrimitiveMapT::InnerContainerT                    InnerContainerT;
-    typedef typename std::vector<InnerContainerT>                       PrimitiveVectorT;
-    typedef typename PrimitiveT::Scalar                                 Scalar;
-    typedef typename _PointContainerT::PrimitiveT                       PointPrimitiveT;
-    typedef typename _PclCloudT::Ptr                                    PclCloudPtrT;
-    typedef          GF2::PidT                                          PidT;
-    typedef          GF2::LidT                                          LidT;
-    typedef          GF2::GidT                                          GidT;
-    typedef          GF2::DidT                                          DidT;
-    typedef typename PrimitiveT::Position                               Position;
-    typedef          Eigen::Map< Position >                             PositionMap;
-
-    int                     err             = EXIT_SUCCESS;
-    Scalar                  scale           = 0.05f;
-    std::string             cloud_path      = "cloud.ply",
-                            primitives_path,
-                            associations_path = "";
-    GF2::AnglesT            angle_gens( {GF2::AnglesT::Scalar(90.)} );
-    bool                    verbose         = false;
-    PidT                    targetPop       = 100;
-
-    std::cout << "hello refit" << std::endl;
-
-    _PointContainerT        points;
-    PclCloudPtrT            pclCloud;
-    PrimitiveVectorT        primitivesVector;
-    _PrimitiveMapT          primitives;
-    bool                    valid_input = true;
-    struct Params { Scalar scale; } params;
-
-    // parse
-    std::string primsPath(""), assocPath("");
+    // ../refit -p primitives_it20.bonmin.csv -a points_primitives_it19.csv --scale 0.0175 --simple --3D
+    template < class _PrimitiveMapT
+             , class _PointContainerT
+             >
+    int refitNormals( _PrimitiveMapT             & outPrims
+                   , _PrimitiveMapT        const& primitives
+                   , _PointContainerT      const& points
+                   , GF2::GidPidVectorMap  const& populations
+                   , PidT                  const  targetPop
+                   , bool                  const  verbose      = false )
     {
-        valid_input = (EXIT_SUCCESS ==
-                       GF2::parseInput<InnerContainerT,_PclCloudT>(points, pclCloud, primitivesVector, primitives, params, argc, argv) );
-        if ( !valid_input )
+
+        typedef typename _PrimitiveMapT::PrimitiveT                         PrimitiveT;
+    //        typedef typename _PrimitiveMapT::InnerContainerT                    InnerContainerT;
+    //        typedef typename std::vector<InnerContainerT>                       PrimitiveVectorT;
+        typedef typename PrimitiveT::Scalar                                 Scalar;
+    //        typedef typename _PointContainerT::PrimitiveT                       PointPrimitiveT;
+    //        typedef typename _PclCloudT::Ptr                                    PclCloudPtrT;
+        typedef typename PrimitiveT::Position                               Position;
+        typedef typename PrimitiveT::Direction                              Direction;
+        typedef Eigen::Matrix<Scalar,4,1>                                   Vector4;
+
+    //        typedef          Eigen::Map< Position >                             PositionMap;
+
+
+        for ( typename _PrimitiveMapT::ConstIterator it(primitives); it.hasNext(); it.step() )
         {
-            std::cerr << "[" << __func__ << "]: " << "could not parse input..." << std::endl;
-            return EXIT_FAILURE;
-        }
+            const GidT          gId     = it.getGid();
+            const PrimitiveT&   prim    = *it;
 
-        GF2::console::parse_argument( argc, argv, "--target-pop", targetPop );
-        std::cout << "[" << __func__ << "]: " << "counting " << targetPop << " points from each primitive, change with --target-pop\n";
+            Position avgPos ( Position::Zero() );
+            Vector4  normal ; normal  << prim.template normal(), Scalar(0.);
+            Vector4  primPos; primPos << prim.template pos   (), Scalar(0.);
+            for ( auto it = populations.at(gId).begin(); it != populations.at(gId).end(); ++it )
+            {
+                auto &pos = points[*it].template pos();
 
-        primsPath = GF2::parsePrimitivesPath( argc, argv );
-        assocPath = GF2::parseAssocPath     ( argc, argv );
-    }
+                Vector4 pt; pt << pos(0), pos(1), pos(2), Scalar(0.);
+                // double k = (DOT_PROD_3D (points[i], p21) - dotA_B) / dotB_B;
+                Scalar k =   (pt.dot(normal) - primPos.dot(normal))
+                          /
+                            normal.dot( normal );
 
-#if 1
-    // assignments
-    GF2::GidPidVectorMap populations;
-    GF2::processing::getPopulations( populations, points );
+                Vector4 pp = primPos + k * normal;
+                // Calculate the projection of the point on the line (pointProj = A + k * B)
+                avgPos += pp.template head<3>();
+            } //...for inliers
+            avgPos /= Scalar(populations.at(gId).size());
 
-    // WORK
-    _PrimitiveMapT outPrims;
+            PrimitiveT outPrim( avgPos, prim.template dir() );
+            outPrim.copyTagsFrom( prim );
+            GF2::containers::add( outPrims, gId, outPrim );
+            std::cout << "moved [" << gId << "]: " << (outPrim.template pos() - prim.template pos()).norm() << std::endl;
+        } //...for primitives
+
+        return EXIT_SUCCESS;
+    } //...refitSimple()
+
+
+    // ../refit -p primitives_it20.bonmin.csv -a points_primitives_it19.csv --scale 0.0175 --simple --3D
+    template < class _PrimitiveMapT
+             , class _PointContainerT
+             >
+    int refitSimple( _PrimitiveMapT             & outPrims
+                   , _PrimitiveMapT        const& primitives
+                   , _PointContainerT      const& points
+                   , GF2::GidPidVectorMap  const& populations
+                   , PidT                  const  targetPop
+                   , bool                  const  verbose      = false )
     {
+
+        typedef typename _PrimitiveMapT::PrimitiveT                         PrimitiveT;
+    //        typedef typename _PrimitiveMapT::InnerContainerT                    InnerContainerT;
+    //        typedef typename std::vector<InnerContainerT>                       PrimitiveVectorT;
+        typedef typename PrimitiveT::Scalar                                 Scalar;
+    //        typedef typename _PointContainerT::PrimitiveT                       PointPrimitiveT;
+    //        typedef typename _PclCloudT::Ptr                                    PclCloudPtrT;
+        typedef typename PrimitiveT::Position                               Position;
+        typedef typename PrimitiveT::Direction                              Direction;
+        typedef Eigen::Matrix<Scalar,4,1>                                   Vector4;
+
+    //        typedef          Eigen::Map< Position >                             PositionMap;
+
+        for ( typename _PrimitiveMapT::ConstIterator it(primitives); it.hasNext(); it.step() )
+        {
+            const GidT          gId     = it.getGid();
+            const PrimitiveT&   prim    = *it;
+
+            Position avgPos ( Position::Zero() );
+            Vector4  normal ; normal  << prim.template normal(), Scalar(0.);
+            Vector4  primPos; primPos << prim.template pos   (), Scalar(0.);
+            for ( auto it = populations.at(gId).begin(); it != populations.at(gId).end(); ++it )
+            {
+                auto &pos = points[*it].template pos();
+
+                Vector4 pt; pt << pos(0), pos(1), pos(2), Scalar(0.);
+                // double k = (DOT_PROD_3D (points[i], p21) - dotA_B) / dotB_B;
+                Scalar k =   (pt.dot(normal) - primPos.dot(normal))
+                          /
+                            normal.dot( normal );
+
+                Vector4 pp = primPos + k * normal;
+                // Calculate the projection of the point on the line (pointProj = A + k * B)
+                avgPos += pp.template head<3>();
+            } //...for inliers
+            avgPos /= Scalar(populations.at(gId).size());
+
+            PrimitiveT outPrim( avgPos, prim.template dir() );
+            outPrim.copyTagsFrom( prim );
+            GF2::containers::add( outPrims, gId, outPrim );
+            std::cout << "moved [" << gId << "]: " << (outPrim.template pos() - prim.template pos()).norm() << std::endl;
+        } //...for primitives
+
+        return EXIT_SUCCESS;
+    } //...refitSimple()
+
+    template < class _PrimitiveMapT
+             , class _PointContainerT
+             >
+    int refitNonLin( _PrimitiveMapT             & outPrims
+                   , _PrimitiveMapT        const& primitives
+                   , _PointContainerT      const& points
+                   , GF2::GidPidVectorMap  const& populations
+                   , PidT                  const  targetPop
+                   , bool                  const  verbose      = false )
+    {
+
+        typedef typename _PrimitiveMapT::PrimitiveT                         PrimitiveT;
+//        typedef typename _PrimitiveMapT::InnerContainerT                    InnerContainerT;
+//        typedef typename std::vector<InnerContainerT>                       PrimitiveVectorT;
+        typedef typename PrimitiveT::Scalar                                 Scalar;
+//        typedef typename _PointContainerT::PrimitiveT                       PointPrimitiveT;
+//        typedef typename _PclCloudT::Ptr                                    PclCloudPtrT;
+        typedef typename PrimitiveT::Position                               Position;
+//        typedef          Eigen::Map< Position >                             PositionMap;
+
         typedef double                        OptScalar;
         typedef qcqpcpp::BonminOpt<OptScalar> OptProblemT;
         OptProblemT problem;
@@ -136,9 +207,9 @@ refit( int    argc
             {
                 const LidT          lId0    = it.getLid0();
                 const LidT          lId1    = it.getLid1();
-//                const GidT          gId     = it.getGid();
-//                const DidT          dId     = it.getDid();
-//                const PrimitiveT&   prim    = *it;
+        //                const GidT          gId     = it.getGid();
+        //                const DidT          dId     = it.getDid();
+        //                const PrimitiveT&   prim    = *it;
                 const LIdPair       varKey  = LIdPair( lId0, lId1 );
 
                 // sparse quadratic matrix
@@ -157,7 +228,7 @@ refit( int    argc
         } //...constraints
 
         /// cost -> objective: minimize \sum_n \sum_p ((n_j . p_i) + d)^2  where point p_i is assigned to line with normal n_j
-        if ( Dims == 3 ) throw new std::runtime_error("datafit unimplemented for 3D");
+        //if ( Dims == 3 ) throw new std::runtime_error("datafit unimplemented for 3D");
         // n0^2 p0^2 + n1^2 p1^2 + n2^2 p2^2 +
         // 2 n0 p0 d + 2 n1 p1 d + 2 n2 p2 d +
         // 2 n0 n1 p0 p1 + d^2 +
@@ -170,16 +241,16 @@ refit( int    argc
                 const LidT          lId0    = it.getLid0();
                 const LidT          lId1    = it.getLid1();
                 const GidT          gId     = it.getGid();
-//                const DidT          dId     = it.getDid();
-//                const PrimitiveT&   prim    = *it;
+        //                const DidT          dId     = it.getDid();
+        //                const PrimitiveT&   prim    = *it;
                 const LIdPair       varKey  = LIdPair( lId0, lId1 );
 
                 // for each assigned point
                 Scalar rat = std::min( Scalar(1.), targetPop / Scalar(populations.at(gId).size()) );
-                for ( size_t pIdId = 0; pIdId != populations[gId].size(); ++pIdId )
+                for ( size_t pIdId = 0; pIdId != populations.at(gId).size(); ++pIdId )
                 {
                     if ( randf<Scalar>() > rat ) continue;
-                    const PidT pid = populations[gId][pIdId];
+                    const PidT pid = populations.at(gId)[pIdId];
 
                     // debug
                     if ( verbose ) std::cout << "[" << __func__ << "]: " << "adding pid " << pid << " -> " << "lines[" << lId0 << "][" << lId1 << "]" << std::endl;
@@ -255,7 +326,14 @@ refit( int    argc
                             : prim0(prim0), prim1(prim1), rhs(rhs) {}
                        };
 
-        const Scalar angTolRad = 0.5 / 180. * M_PI;
+        typedef GF2::graph::EdgeT<Scalar>                                       EdgeT;
+        typedef GF2::graph::EdgeListT<Scalar>                                   EdgeListT;
+        typedef typename GF2::Graph<Scalar, typename GF2::MyGraphConfig<Scalar>::UndirectedGraph> GraphT;
+
+        EdgeListT edgeList;
+
+
+        const Scalar angTolRad = 0.01 / 180. * M_PI;
         std::vector< Triplet > constraints;
         int perpCount = 0, paralCount = 0;
         for ( typename _PrimitiveMapT::ConstIterator it0(primitives); it0.hasNext(); it0.step() )
@@ -272,9 +350,10 @@ refit( int    argc
                 if ( !perpCount && std::abs( M_PI_2 - angle ) < angTolRad ) // 90degs
                 {
                     constraints.push_back( Triplet( LIdPair(it0.getLid0(),it0.getLid1()),
-                                              LIdPair(it1.getLid0(),it1.getLid1()),
-                                              0.) );
-                    ++perpCount;
+                                                    LIdPair(it1.getLid0(),it1.getLid1()),
+                                                    0.) );
+                    //++perpCount;
+                    edgeList.insert( EdgeT(it0.getGid(), it1.getGid(), 20.)  );
                     std::cout << "perpconstr: <"
                               << constraints.back().prim0.first << ","
                               << constraints.back().prim0.second << ","
@@ -297,7 +376,8 @@ refit( int    argc
                     constraints.push_back( Triplet( LIdPair(it0.getLid0(),it0.getLid1()),
                                                     LIdPair(it1.getLid0(),it1.getLid1()),
                                                     1.) );
-                    ++paralCount;
+                    //++paralCount;
+                    edgeList.insert( EdgeT(it0.getGid(), it1.getGid(), 1.)  );
                     std::cout << "paralconstr: <"
                               << constraints.back().prim0.first << ","
                               << constraints.back().prim0.second << ","
@@ -315,12 +395,26 @@ refit( int    argc
                 }
             }
 
+        GraphT g(edgeList);
+        typedef std::pair<GidT,GidT> GidPair;
+        std::set< GidPair > mstEdges;
+        g.spanningTree( mstEdges );
 
         for ( int i = 0; i != constraints.size(); ++i ) // perps.size()
         {
             OptProblemT::SparseMatrix perp_constraint( problem.getVarCount(), problem.getVarCount() );
             const std::vector<LidT>& prim0VarIds = prims_vars.at( constraints[i].prim0 );
             const std::vector<LidT>& prim1VarIds = prims_vars.at( constraints[i].prim1 );
+            auto getGid = [&primitives]( LidT const lid0, LidT const lid1 ) {
+                auto it = primitives.begin();
+                std::advance( it, lid0 );
+                return it->second.at( lid1 );
+            };
+            const GidT gid0 = getGid( constraints[i].prim0.first, constraints[i].prim0.second ).getTag( PrimitiveT::TAGS::GID );
+            const GidT gid1 = getGid( constraints[i].prim1.first, constraints[i].prim1.second ).getTag( PrimitiveT::TAGS::GID );
+            if ( mstEdges.find( GidPair(std::min(gid0,gid1), std::max(gid0,gid1) ) ) == mstEdges.end() )
+                continue;
+            std::cout << "constraint: " << gid0 << " - " << gid1 << " = " << constraints[i].rhs << std::endl;
 
             // 1 * nx0 * nx1 + 1 * ny0 * ny1 = 1/0
             for ( int dim = 0; dim != Dims; ++dim )
@@ -353,6 +447,7 @@ refit( int    argc
             problem.write( "./datafit_problem" );
         }
 
+        int err = EXIT_SUCCESS;
         // solve
         {
             OptProblemT::ReturnType r = problem.getOkCode();
@@ -396,44 +491,134 @@ refit( int    argc
                 }
             } //...optimize
         } //...solve
-    } //...work
-#endif
 
-    std::string outName = primsPath.substr( 0, primsPath.rfind(".csv") );
-    std::stringstream ssPrims; ssPrims << outName << ".refit.csv";
-    GF2::io::savePrimitives<PrimitiveT,typename InnerContainerT::const_iterator>( outPrims, ssPrims.str() );
-    std::cout << "results written to " << ssPrims.str() << "\n";
-    std::cout << "../show.py -s " << scale << " -p " << ssPrims.str() << " -a " << assocPath << " --save-poly" << std::endl;
+        return err;
+    } //...refitNonLin()
 
-    pcl::visualization::PCLVisualizer::Ptr vptr( new pcl::visualization::PCLVisualizer() );
-    vptr->setBackgroundColor( .1, .1, .1 );
-    vptr->addPointCloud<GF2::PclPointT>( pclCloud, "cloud" );
-
-
-    char name[255];
-    for ( typename _PrimitiveMapT::ConstIterator it(outPrims); it.hasNext(); it.step() )
+    //! \brief Unfinished function. Supposed to do GlobFit.
+    template < class _PrimitiveMapT
+             , class _PointContainerT
+             , class _PclCloudT
+             >
+    int
+    refit( int    argc
+         , char** argv )
     {
-        sprintf( name, "line_%ld", it.getUniqueId() );
-        PrimitiveT::template draw<PointPrimitiveT>( /*   primitive: */ *it
-                                                  , /*      points: */ points
-                                                  , /*   threshold: */ scale
-                                                  , /*     indices: */ &populations.at( it.getGid() )
-                                                  , /*      viewer: */ vptr
-                                                  , /*   unique_id: */ name
-                                                  , /*      colour: */ 1., 0., 0.
-                                                  , /* viewport_id: */ 0
-                                                  );
-    }
+        typedef typename _PrimitiveMapT::PrimitiveT                         PrimitiveT;
+        typedef typename _PrimitiveMapT::InnerContainerT                    InnerContainerT;
+        typedef typename std::vector<InnerContainerT>                       PrimitiveVectorT;
+        typedef typename PrimitiveT::Scalar                                 Scalar;
+        typedef typename _PointContainerT::PrimitiveT                       PointPrimitiveT;
+        typedef typename _PclCloudT::Ptr                                    PclCloudPtrT;
+        typedef          GF2::PidT                                          PidT;
+        typedef          GF2::LidT                                          LidT;
+        typedef          GF2::GidT                                          GidT;
+        typedef          GF2::DidT                                          DidT;
+        typedef typename PrimitiveT::Position                               Position;
+        typedef          Eigen::Map< Position >                             PositionMap;
 
-    vptr->spin();
-    return err;
-} // ...refit()
+        int                     err             = EXIT_SUCCESS;
+        Scalar                  scale           = 0.05f;
+        std::string             cloud_path      = "cloud.ply",
+                                primitives_path,
+                                associations_path = "";
+        GF2::AnglesT            angle_gens( {GF2::AnglesT::Scalar(90.)} );
+        bool                    verbose         = false;
+        PidT                    targetPop       = 100;
+
+        std::cout << "hello refit" << std::endl;
+
+        _PointContainerT        points;
+        PclCloudPtrT            pclCloud;
+        PrimitiveVectorT        primitivesVector;
+        _PrimitiveMapT          primitives;
+        bool                    valid_input = true, simple = false;
+        struct Params { Scalar scale; } params;
+
+        // parse
+        std::string primsPath(""), assocPath("");
+        {
+            valid_input = (EXIT_SUCCESS ==
+                           GF2::parseInput<InnerContainerT,_PclCloudT>(points, pclCloud, primitivesVector, primitives, params, argc, argv) );
+            if ( !valid_input )
+            {
+                std::cerr << "[" << __func__ << "]: " << "could not parse input..." << std::endl;
+                return EXIT_FAILURE;
+            }
+
+            GF2::console::parse_argument( argc, argv, "--target-pop", targetPop );
+            std::cout << "[" << __func__ << "]: " << "counting " << targetPop << " points from each primitive, change with --target-pop\n";
+
+            simple = GF2::console::find_switch( argc, argv, "--simple" );
+            std::cout << "[" << __func__ << "]: " << "performint simple fitting: " << ( simple ? "YES" : "NO" ) << std::endl;
+
+            primsPath = GF2::parsePrimitivesPath( argc, argv );
+            assocPath = GF2::parseAssocPath     ( argc, argv );
+        }
+
+        // assignments
+        GF2::GidPidVectorMap populations;
+        GF2::processing::getPopulations( populations, points );
+
+        // WORK
+        _PrimitiveMapT outPrims;
+        if ( !simple )
+            refitNonLin( outPrims, primitives, points, populations, targetPop, verbose );
+        else
+            refitSimple( outPrims, primitives, points, populations, targetPop, verbose );
+
+        // save
+        std::string outName = primsPath.substr( 0, primsPath.rfind(".csv") );
+        std::stringstream ssPrims; ssPrims << outName << ".refit.csv";
+        GF2::io::savePrimitives<PrimitiveT,typename InnerContainerT::const_iterator>( outPrims, ssPrims.str() );
+        std::cout << "results written to " << ssPrims.str() << "\n";
+        std::cout << "../show.py -s " << scale << " -p " << ssPrims.str() << " -a " << assocPath << " --save-poly" << std::endl;
+
+        // visualize
+        pcl::visualization::PCLVisualizer::Ptr vptr( new pcl::visualization::PCLVisualizer() );
+        vptr->setBackgroundColor( .1, .1, .1 );
+        vptr->addPointCloud<GF2::PclPointT>( pclCloud, "cloud" );
+
+
+        char name[255];
+        for ( typename _PrimitiveMapT::ConstIterator it(outPrims); it.hasNext(); it.step() )
+        {
+            sprintf( name, "line_%ld", it.getUniqueId() );
+            PrimitiveT::template draw<PointPrimitiveT>( /*   primitive: */ *it
+                                                      , /*      points: */ points
+                                                      , /*   threshold: */ scale
+                                                      , /*     indices: */ &populations.at( it.getGid() )
+                                                      , /*      viewer: */ vptr
+                                                      , /*   unique_id: */ name
+                                                      , /*      colour: */ 1., 0., 0.
+                                                      , /* viewport_id: */ 0
+                                                      );
+        }
+
+        vptr->spin();
+        return err;
+    } // ...refit()
 
 } //...ns globopt
 
-
 int main( int argc, char** argv )
 {
+//    typedef float                                                           Scalar;
+//    typedef GF2::graph::EdgeT<Scalar>                                       EdgeT;
+//    typedef GF2::graph::EdgeListT<Scalar>                                   EdgeListT;
+//    typedef GF2::Graph<Scalar, GF2::MyGraphConfig<Scalar>::UndirectedGraph> GraphT;
+
+//    EdgeListT edgeList;
+//    edgeList.insert( EdgeT(0,1,1) );
+//    edgeList.insert( EdgeT(0,2,1) );
+//    edgeList.insert( EdgeT(1,2,1) );
+//    edgeList.insert( EdgeT(1,3,1) );
+//    edgeList.insert( EdgeT(3,4,1) );
+//    edgeList.insert( EdgeT(4,0,1) );
+//    GraphT g(edgeList);
+//    g.spanningTree();
+//    return EXIT_SUCCESS;
+
     if ( GF2::console::find_switch(argc,argv,"--3D") )
     {
         return globopt::refit< GF2::_3d::PrimitiveMapT

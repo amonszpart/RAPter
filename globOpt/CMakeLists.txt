@@ -235,6 +235,7 @@ SET( GLOBOPT_HPP_LIST
     include/globfit2/util/containers.hpp
     include/globfit2/util/lruCache.hpp
     include/globfit2/processing/util.hpp
+    include/globopt/primitives/angles.hpp
     include/globfit2/processing/angle_util.hpp
     include/globfit2/processing/graph.hpp
     include/globfit2/processing/diagnostic.hpp

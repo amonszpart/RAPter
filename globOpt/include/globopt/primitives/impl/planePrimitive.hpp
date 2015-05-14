@@ -21,6 +21,13 @@ namespace GF2
         _coeffs.template segment<3>(3) = eigen_vectors.col(min_eig_val_id).normalized();
     }
 
+    inline PlanePrimitive::PlanePrimitive( Eigen::Matrix<PlanePrimitive::Scalar, 3, 1> const& pnt,
+                                           Eigen::Matrix<PlanePrimitive::Scalar, 3, 1> const& normal )
+    {
+        _coeffs.template head   <3>( ) = pnt;
+        _coeffs.template segment<3>(3) = normal.normalized();
+    }
+
     /*! \brief Called from \ref GF2::CandidateGenerator::generate to create a new candidate from this and \p other.
      *         Create back-rotated version of the other at this position.
      *  \param[out] out              Created output primitive.
@@ -269,14 +276,22 @@ namespace GF2
         }
         in.setConstant( _Scalar(0.) );
 
+        _PointContainerT projectedPoints;
+        projectedPoints.reserve( points.size() );
+        for ( PidT pId = 0; pId != points.size(); ++pId )
+        {
+            projectedPoints.push_back( PointPrimitiveT(this->projectPoint(points[pId].template pos()), points[pId].template dir()) );
+            projectedPoints.back().copyTagsFrom( points[pId] );
+        }
+
 #if 1 // biggest eigen value
         Eigen::Matrix<_Scalar,3,1> eigen_values;
         Eigen::Matrix<_Scalar,3,3> eigen_vectors;
-        processing::eigenDecomposition( eigen_values, eigen_vectors, points, pop );
+        processing::eigenDecomposition( eigen_values, eigen_vectors, projectedPoints, pop );
         if ( return_squared )
-            in(0) = eigen_values( 0 );
+            in(0) = eigen_values( 0 ) * eigen_values( 1 ); // added "* eigen_values(1)", changed by Aron on 240415
         else
-            in(0) = std::sqrt( eigen_values(0) );
+            in(0) = std::sqrt( eigen_values(0) * eigen_values(1) );
 #else // variance
         Eigen::Matrix<_Scalar,3,1> centroid = processing::getCentroid<_Scalar>( points, &population );
         for ( size_t pid_id = 0; pid_id != population.size(); ++pid_id )
@@ -594,21 +609,11 @@ namespace GF2
 //        return MyPointFinitePlaneDistanceFunctor::eval( extrema, *this, pnt );
 //    }
 
-    inline Eigen::Matrix<PlanePrimitive::Scalar,3,1>
-    PlanePrimitive::projectPoint( Eigen::Matrix<PlanePrimitive::Scalar,3,1> const& point ) const
-    {
-        return point - (this->getDistance(point) * this->dir() );
-    }
-
-    inline PlanePrimitive::PlanePrimitive( Eigen::Matrix<PlanePrimitive::Scalar, 3, 1> pnt,
-                                           Eigen::Matrix<PlanePrimitive::Scalar, 3, 1> normal )
-    {
-        _coeffs.template head<3>() = pnt;
-        _coeffs.template segment<3>(3) = normal.normalized();
-        //_coeffs.template segment<3>(0) = normal.normalized();
-        //_coeffs                    (3) = Scalar(-1) * _coeffs.template head<3>().dot( pnt.template head<3>() ); // distance
-    }
-
+//    inline Eigen::Matrix<PlanePrimitive::Scalar,3,1>
+//    PlanePrimitive::projectPoint( Eigen::Matrix<PlanePrimitive::Scalar,3,1> const& point ) const
+//    {
+//        return point - (this->getDistance(point) * this->dir() );
+//    }
 } //...ns GF2
 
 #endif // GO_PLANEPRIMITIVE_HPP

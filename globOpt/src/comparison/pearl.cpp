@@ -16,8 +16,9 @@ am::Pearl::run(
         std::vector<int>                                        & labels
         , std::vector<GF2::LinePrimitive>      & lines
         , boost::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB> >            const& cloud
+        , GF2::PointContainerT const& points
         , std::vector<int>   const* indices
-        , am::Pearl::Params                    params
+        , am::Pearl::Params                   const& params
         , std::vector<std::vector<int> > *label_history
         , std::vector<std::vector<GF2::LinePrimitive> > *line_history
         , int const nPropose
@@ -28,10 +29,11 @@ am::Pearl::run(
         std::vector<int>          & labels
         , std::vector<GF2::PlanePrimitive>      & lines
         , boost::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB> >            const& cloud
-        , std::vector<int>   const* indices
-        , am::Pearl::Params                    params
-        , std::vector<std::vector<int> > *label_history
-        , std::vector<std::vector<GF2::PlanePrimitive> > *line_history
+        , GF2::PointContainerT                      const& points
+        , std::vector<int>                          const* indices
+        , am::Pearl::Params                         const& params
+        , std::vector<std::vector<int                > > * label_history
+        , std::vector<std::vector<GF2::PlanePrimitive> > * line_history
         , int const nPropose
         );
 
@@ -84,6 +86,7 @@ int pearlCli( int argc, char **argv )
 
         // weights
         pcl::console::parse_argument( argc, argv, "--unary", params.lambdas(0) );
+        pcl::console::parse_argument( argc, argv, "--int-mult", params.int_mult );
         pcl::console::parse_argument( argc, argv, "--cmp"  , params.beta );
         valid_input &= pcl::console::parse_argument( argc, argv, "--pw"  , params.lambdas(2) ) >= 0;
 
@@ -98,7 +101,9 @@ int pearlCli( int argc, char **argv )
                       << "\t -N " << nPropose << "\n"
                       << "\t --pw " << params.lambdas(2) << "\n"
                       << "\t --cmp " << params.beta << "\n"
-                      << "\n\t Example: ../pearl --scale 0.03 --cloud cloud.ply -p patches.csv --pw 1000 -cmp 1000\n"
+                      << "\t --unary " << params.lambdas(0) << "\n"
+                      << "\t --int-mult " << params.int_mult << "\n"
+                      << "\n\t Example: ../pearl --scale 0.03 --cloud cloud.ply -p patches.csv --pw 1000 --cmp 1000 --int-mult 1000\n"
                       << "\n";
 
             return EXIT_FAILURE;
@@ -139,6 +144,7 @@ int pearlCli( int argc, char **argv )
         err = am::Pearl::run( /* [out]        labels: */ labels
                             , /* [out]    primitives: */ primitives
                             , /* [in]      pcl_cloud: */ pcl_cloud
+                            , /* [in]         points: */ points
                             , /* [in]      p_indices: */ NULL
                             , /* [in]    pearlParams: */ params
                             , /* [out] label_history: */ NULL
@@ -175,7 +181,7 @@ int pearlCli( int argc, char **argv )
         GF2::io::savePrimitives<PrimitiveT,typename _InnerPrimitiveContainerT::const_iterator>( out_prims, "./primitives.pearl.csv" );
     } //...work
 
-    std::cout << "../show.py -s " << params.scale << " -p points_primitives.pearl.csv -a primitives.pearl.csv" << std::endl;
+    std::cout << "../show.py -s " << params.scale << " -a points_primitives.pearl.csv -p primitives.pearl.csv" << std::endl;
 
     return err;
 }

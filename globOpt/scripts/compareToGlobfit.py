@@ -2,8 +2,8 @@
 import argparse
 import os
 
-#toGlobFit = "/home/bontius/workspace/globOpt/globOpt/build/Release/bin/toGlobFit";
-toGlobFit = "/export/home/kandinsky/nmellado/workspace_globOpt/globOpt/globOpt/build/Release/bin/toGlobFit"
+toGlobFit = "/home/bontius/workspace/globOpt/globOpt/build/Release/bin/toGlobFit";
+#toGlobFit = "/export/home/kandinsky/nmellado/workspace_globOpt/globOpt/globOpt/build/Release/bin/toGlobFit"
 
 def call(cmd, dry=True, noExit=False):
 

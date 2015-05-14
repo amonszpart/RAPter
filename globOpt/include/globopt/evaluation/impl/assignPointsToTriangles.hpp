@@ -13,31 +13,6 @@
 
 namespace globopt
 {
-
-    template <class _PrimitiveContainerT, class _PointContainerT>
-    inline std::string writePrimAssocCloud( _PrimitiveContainerT const& prims, _PointContainerT const& points, std::string stem, std::string dir = "./" )
-    {
-        typedef typename _PointContainerT::PrimitiveT PointPrimitiveT;
-
-        char outPrimsPath[ 512 ], outAssocPath[512], outCloudPath[512];
-        sprintf( outPrimsPath, "%s/%s.csv", dir.c_str(), stem.c_str() );
-        std::cout << " writing " << prims.size() << " primitives to " << outPrimsPath << std::endl;
-        GF2::io::savePrimitives<typename _PrimitiveContainerT::PrimitiveT,typename _PrimitiveContainerT::mapped_type::const_iterator >( prims, std::string(outPrimsPath) );
-
-        sprintf( outAssocPath, "%s/points_%s.csv", dir.c_str(), stem.c_str() );
-        std::cout << " writing " << points.size() << " assignments to " << outAssocPath << std::endl;
-        GF2::io::writeAssociations<PointPrimitiveT>( points, outAssocPath );
-
-        sprintf( outCloudPath, "%s/%s.cloud.ply", dir.c_str(), stem.c_str() );
-        std::cout << " writing " << points.size() << " points to " << outCloudPath << std::endl;
-        GF2::io::writePoints<PointPrimitiveT>( points, outCloudPath );
-
-        std::stringstream ss;
-        ss << "../show.py -p " << outPrimsPath << " -a " << outAssocPath << " --cloud " << outCloudPath;
-
-        return ss.str();
-    }
-
     template <typename _PointContainerT, typename _PrimitivesMapT, class _PopulationsT, typename _Scalar>
     inline GF2::GidT getClosestPrimitive( _PointContainerT const& points, GF2::PidT const pId, _PrimitivesMapT & primitives, _PopulationsT const& populations, _Scalar scale )
     {
@@ -52,12 +27,14 @@ namespace globopt
         for ( typename _PrimitivesMapT::ConstIterator it(primitives); it.hasNext(); it.step() )
         {
             auto popIt = populations.find(it.getGid());
-            if ( popIt == populations.end() )
+            if ( popIt == populations.end() || popIt->second.size() == 0 )
                 continue;
 #           pragma omp critical (CRIT_GETEXTENT)
             {
                 it->template getExtent<PointPrimitiveT>( extrema, points, scale, &(popIt->second), /* force_axis_aligned: */ true );
             }
+            if ( !extrema.size() )
+                continue;
             tmp = it->getFiniteDistance( extrema, point.template pos() );
 
             if ( tmp < min_dist )
@@ -141,6 +118,46 @@ namespace globopt
         std::string statLogPath( "" );
         GF2::console::parse_argument( argc, argv, "--stat-log", statLogPath );
         std::cout << "[" << __func__ << "]: " << "Appending stats to \"" << statLogPath << "\", change with --stat-log" << std::endl;
+
+        std::string origCloudPath("");
+        GF2::console::parse_argument( argc, argv, "--cloud-orig", origCloudPath );
+        _PointContainerT origPoints;
+        if ( !origCloudPath.empty() )
+        {
+            int err = GF2::io::readPoints<PointPrimitiveT>( origPoints, origCloudPath );
+            if ( err != EXIT_SUCCESS )
+            {
+                std::cerr << "[" << __func__ << "]: " << "could not load origCloud:" << origCloudPath << std::endl;
+                return err;
+            }
+
+            // ID points in input cloud to points in original cloud
+            std::map<PidT,PidT> corresp;
+            for ( PidT pid = 0; pid < points.size(); ++pid )
+            {
+                double dist = 0.;
+                double minDist = std::numeric_limits<double>::max();
+                for ( PidT pid1 = 0; pid1 != origPoints.size(); ++pid1 )
+                {
+                    dist = (points[pid].template pos() - origPoints[pid1].template pos()).norm();
+                    if ( (dist < minDist) && (dist < params.scale) )
+                    {
+                        minDist = dist;
+                        corresp[ pid ] = pid1;
+                    }
+                }
+            }
+            std::cout << "corresp.size(): " << corresp.size() << ", points.size(): " << points.size() << std::endl;
+            auto oldPoints = points;
+            points         = origPoints;
+            for ( PidT pid = 0; pid != oldPoints.size(); ++pid )
+            {
+                std::cout << "pid: " << pid  << "/" << oldPoints.size() << " -> ";  fflush(stdout);
+                std::cout << corresp.at(pid) << "/" << points.size() << std::endl;fflush(stdout);
+                points.at( corresp.at(pid) ).setTag( PrimitiveT::TAGS::GID, oldPoints.at( pid ).getTag(PrimitiveT::TAGS::GID) );
+            }
+        }
+
 
         // parse input mesh
         std::vector<Triangle> triangles;
@@ -390,24 +407,27 @@ namespace globopt
             angle = std::min( angle, Scalar(std::abs(M_PI-angle)));
 
             // write angle
-            fAnglesSimple << std::setprecision(9) << angle << "\n";
+            fAnglesSimple << std::setprecision(16) << angle << "\n";
         } //...for all points that have triangles
         fAnglesSimple.close();
 #if 1
         double avg = 0.;
-        PidT   pId0, pId1;
+        PidT   pId0, pId1, below001 = 0;
         //double angle(0.);
         std::ofstream fAngles( outAnglesPath );
 
-        auto angleLambda = [&orientedPoints, &orientedGtPoints, &avg, &fAngles, &N]( PidT const pId0, PidT const pId1 )
+        auto angleLambda = [&orientedPoints, &orientedGtPoints, &avg, &fAngles, &N, &below001]( PidT const pId0, PidT const pId1 )
         {
+            static const double limit001 = 0.01 / 180.0 * M_PI;
             double angle = std::abs( GF2::angleInRad( orientedPoints  [pId0].template dir().template cast<double>(), orientedPoints  [pId1].template dir().template cast<double>() )
                                    - GF2::angleInRad( orientedGtPoints[pId0].template dir().template cast<double>(), orientedGtPoints[pId1].template dir().template cast<double>() ) );
             while ( angle > M_PI ) { angle -= M_PI; std::cout << "hit" << std::endl; }
             angle = std::min( angle, double(M_PI - angle) );
             //outAngles.push_back( angle );
             avg += angle / double(N);
-            fAngles << std::setprecision(9) << angle << "\n";
+            fAngles << std::setprecision(16) << angle << "\n";
+            if ( angle < limit001 )
+                ++below001;
         };
 
         if ( N > orientedPoints.size() * orientedPoints.size() / 2. )
@@ -435,10 +455,11 @@ namespace globopt
         std::cout << "\n\n mean: " << avg << " rad, " << avg * 180.0 / M_PI << " deg" << std::endl;
         double recall = orientedPoints.size() / double(unambigGtPointsCount); //Scalar(pointsTriangles.size());
         std::cout << "recall: " << recall * Scalar(100.0) << " %" << std::endl << "\n\n";
+        std::cout << "below001: " << below001 / double(N) << std::endl;
         if ( !statLogPath.empty() )
         {
             std::ofstream fStats( statLogPath, std::ios_base::app );
-            fStats << recall * 100.0 << "," << avg << std::endl;
+            fStats << recall * 100.0 << "," << avg << "," << below001/double(N) << std::endl;
             fStats.close();
             std::cout << "appended recall,avg to " << statLogPath << std::endl;
         }
@@ -509,7 +530,7 @@ namespace globopt
         std::cout << "../show.py --cloud -s " << params.scale << " -p " << ssPrims.str() << " -a " << ssAssoc.str() << " --save-poly" << std::endl;
 
         std::stringstream cmd;
-        cmd << writePrimAssocCloud( primitives, orientedPoints, primStem + "recalled" );
+        cmd << io::writePrimAssocCloud( primitives, orientedPoints, primStem + "recalled" );
         cmd << " -s " << params.scale;
         std::cout << cmd.str() << std::endl;
 

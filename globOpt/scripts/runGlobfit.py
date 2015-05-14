@@ -15,8 +15,8 @@ def call(cmd, dry=False, noExit=False):
             else:
                 print("call returned ", ret)
 
-#globOptPath = "/home/bontius/workspace/globOpt";
-globOptPath = "/export/home/kandinsky/nmellado/workspace_globOpt/globOpt"
+globOptPath = "/home/bontius/workspace/globOpt";
+#globOptPath = "/export/home/kandinsky/nmellado/workspace_globOpt/globOpt"
 
 parser = OptionParser()
 parser.add_option("-s", "--scale", type="float", dest="scale",
@@ -28,7 +28,7 @@ parser.add_option("--matlab", "", type="string", dest="matlabExecutableFolder",
 parser.add_option("--toGlobFit", "", type="string", dest="toGlobFitExecutable",
                   default="%s/globOpt/build/Release/bin/toGlobFit" % (globOptPath), help="Path to executable \"toGlobFit\"")
 parser.add_option("--globfit", "", type="string", dest="globfitExecutable",
-                  default="%s/globfit/build/bin/globfit_release" %(globOptPath), help="Path to executable \"globfit\"")
+                  default="%s/globfit/build/bin/globfit_release" % (globOptPath), help="Path to executable \"globfit\"")
 
 parser.add_option("-p", "--primitives", type="string", dest="primitivesPath", default="segments.csv",
                   help="Primitives.csv to convert to globfit input [segments.csv]")
