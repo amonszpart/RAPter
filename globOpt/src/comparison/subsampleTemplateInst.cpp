@@ -2,7 +2,7 @@
 #include "globopt/processing/impl/subsamplePrimitives.hpp"
 #include "globfit2/globOpt_types.h"
 
-namespace globopt
+namespace rapter
 {
 //    template
 //    int toGlobFit< GF2::PclCloudT
@@ -17,8 +17,8 @@ namespace globopt
 //                   , GF2::PointContainerT>( int argc, char **argv );
 
     template
-    int subsamplePrimitives< GF2::_3d::PrimitiveVectorT
-                           , GF2::_3d::PrimitiveMapT
-                           , GF2::PointContainerT
-                           , GF2::PclCloudT>( int argc, char** argv );
+    int subsamplePrimitives< rapter::_3d::PrimitiveVectorT
+                           , rapter::_3d::PrimitiveMapT
+                           , rapter::PointContainerT
+                           , rapter::PclCloudT>( int argc, char** argv );
 }

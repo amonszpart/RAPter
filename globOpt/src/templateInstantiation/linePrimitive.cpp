@@ -1,11 +1,11 @@
-#include "globfit2/globOpt_types.h"
-#include "globfit2/primitives/linePrimitive.h"
-#include "globopt/primitives/impl/linePrimitive.hpp"
+#include "rapter/globOpt_types.h"
+#include "rapter/primitives/linePrimitive.h"
+#include "rapter/primitives/impl/linePrimitive.hpp"
 
-namespace GF2
+namespace rapter
 {
     template
-    class Primitive<2,6,GF2::Scalar>;
+    class Primitive<2,6, rapter::Scalar>;
 
     LinePrimitive line;
 
@@ -53,4 +53,4 @@ namespace GF2
                        , int                              const  /*draw_mode*/
                        , float                            const  /*hull_alpha*/
                        );
-} //...ns GF2
+} //...ns rapter

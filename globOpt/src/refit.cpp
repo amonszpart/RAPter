@@ -11,7 +11,7 @@
 #include "globopt/primitives/impl/planePrimitive.hpp" // PlanePrimitive( pos ,normal )
 #include "globfit2/processing/graph.hpp"
 
-namespace globopt
+namespace rapter
 {
     // ../refit -p primitives_it20.bonmin.csv -a points_primitives_it19.csv --scale 0.0175 --simple --3D
     template < class _PrimitiveMapT
@@ -20,7 +20,7 @@ namespace globopt
     int refitNormals( _PrimitiveMapT             & outPrims
                    , _PrimitiveMapT        const& primitives
                    , _PointContainerT      const& points
-                   , GF2::GidPidVectorMap  const& populations
+                   , rapter::GidPidVectorMap  const& populations
                    , PidT                  const  targetPop
                    , bool                  const  verbose      = false )
     {
@@ -64,7 +64,7 @@ namespace globopt
 
             PrimitiveT outPrim( avgPos, prim.template dir() );
             outPrim.copyTagsFrom( prim );
-            GF2::containers::add( outPrims, gId, outPrim );
+            rapter::containers::add( outPrims, gId, outPrim );
             std::cout << "moved [" << gId << "]: " << (outPrim.template pos() - prim.template pos()).norm() << std::endl;
         } //...for primitives
 
@@ -79,7 +79,7 @@ namespace globopt
     int refitSimple( _PrimitiveMapT             & outPrims
                    , _PrimitiveMapT        const& primitives
                    , _PointContainerT      const& points
-                   , GF2::GidPidVectorMap  const& populations
+                   , rapter::GidPidVectorMap  const& populations
                    , PidT                  const  targetPop
                    , bool                  const  verbose      = false )
     {
@@ -122,7 +122,7 @@ namespace globopt
 
             PrimitiveT outPrim( avgPos, prim.template dir() );
             outPrim.copyTagsFrom( prim );
-            GF2::containers::add( outPrims, gId, outPrim );
+            rapter::containers::add( outPrims, gId, outPrim );
             std::cout << "moved [" << gId << "]: " << (outPrim.template pos() - prim.template pos()).norm() << std::endl;
         } //...for primitives
 
@@ -135,7 +135,7 @@ namespace globopt
     int refitNonLin( _PrimitiveMapT             & outPrims
                    , _PrimitiveMapT        const& primitives
                    , _PointContainerT      const& points
-                   , GF2::GidPidVectorMap  const& populations
+                   , rapter::GidPidVectorMap  const& populations
                    , PidT                  const  targetPop
                    , bool                  const  verbose      = false )
     {
@@ -326,9 +326,9 @@ namespace globopt
                             : prim0(prim0), prim1(prim1), rhs(rhs) {}
                        };
 
-        typedef GF2::graph::EdgeT<Scalar>                                       EdgeT;
-        typedef GF2::graph::EdgeListT<Scalar>                                   EdgeListT;
-        typedef typename GF2::Graph<Scalar, typename GF2::MyGraphConfig<Scalar>::UndirectedGraph> GraphT;
+        typedef rapter::graph::EdgeT<Scalar>                                       EdgeT;
+        typedef rapter::graph::EdgeListT<Scalar>                                   EdgeListT;
+        typedef typename rapter::Graph<Scalar, typename rapter::MyGraphConfig<Scalar>::UndirectedGraph> GraphT;
 
         EdgeListT edgeList;
 
@@ -345,7 +345,7 @@ namespace globopt
                 if ( it0.getGid() == it1.getGid() &&
                      it0.getLid1() == it1.getLid1() ) continue;
 
-                Scalar angle = std::abs( GF2::angleInRad(it0->template dir(), it1->template dir()) );
+                Scalar angle = std::abs( rapter::angleInRad(it0->template dir(), it1->template dir()) );
                 while ( angle > M_PI ) angle -= M_PI;
                 if ( !perpCount && std::abs( M_PI_2 - angle ) < angTolRad ) // 90degs
                 {
@@ -487,7 +487,7 @@ namespace globopt
                         normal(d) = x_out[ i+d ];
                     PrimitiveT::generateFrom( outPrim, (normal).eval(), Scalar(x_out[i+Dims]) );
                     outPrim.copyTagsFrom( *it );
-                    GF2::containers::add( outPrims, it.getGid(), outPrim );
+                    rapter::containers::add( outPrims, it.getGid(), outPrim );
                 }
             } //...optimize
         } //...solve
@@ -510,10 +510,10 @@ namespace globopt
         typedef typename PrimitiveT::Scalar                                 Scalar;
         typedef typename _PointContainerT::PrimitiveT                       PointPrimitiveT;
         typedef typename _PclCloudT::Ptr                                    PclCloudPtrT;
-        typedef          GF2::PidT                                          PidT;
-        typedef          GF2::LidT                                          LidT;
-        typedef          GF2::GidT                                          GidT;
-        typedef          GF2::DidT                                          DidT;
+        typedef          rapter::PidT                                          PidT;
+        typedef          rapter::LidT                                          LidT;
+        typedef          rapter::GidT                                          GidT;
+        typedef          rapter::DidT                                          DidT;
         typedef typename PrimitiveT::Position                               Position;
         typedef          Eigen::Map< Position >                             PositionMap;
 
@@ -522,7 +522,7 @@ namespace globopt
         std::string             cloud_path      = "cloud.ply",
                                 primitives_path,
                                 associations_path = "";
-        GF2::AnglesT            angle_gens( {GF2::AnglesT::Scalar(90.)} );
+        rapter::AnglesT            angle_gens( {rapter::AnglesT::Scalar(90.)} );
         bool                    verbose         = false;
         PidT                    targetPop       = 100;
 
@@ -539,26 +539,26 @@ namespace globopt
         std::string primsPath(""), assocPath("");
         {
             valid_input = (EXIT_SUCCESS ==
-                           GF2::parseInput<InnerContainerT,_PclCloudT>(points, pclCloud, primitivesVector, primitives, params, argc, argv) );
+                           rapter::parseInput<InnerContainerT,_PclCloudT>(points, pclCloud, primitivesVector, primitives, params, argc, argv) );
             if ( !valid_input )
             {
                 std::cerr << "[" << __func__ << "]: " << "could not parse input..." << std::endl;
                 return EXIT_FAILURE;
             }
 
-            GF2::console::parse_argument( argc, argv, "--target-pop", targetPop );
+            rapter::console::parse_argument( argc, argv, "--target-pop", targetPop );
             std::cout << "[" << __func__ << "]: " << "counting " << targetPop << " points from each primitive, change with --target-pop\n";
 
-            simple = GF2::console::find_switch( argc, argv, "--simple" );
+            simple = rapter::console::find_switch( argc, argv, "--simple" );
             std::cout << "[" << __func__ << "]: " << "performint simple fitting: " << ( simple ? "YES" : "NO" ) << std::endl;
 
-            primsPath = GF2::parsePrimitivesPath( argc, argv );
-            assocPath = GF2::parseAssocPath     ( argc, argv );
+            primsPath = rapter::parsePrimitivesPath( argc, argv );
+            assocPath = rapter::parseAssocPath     ( argc, argv );
         }
 
         // assignments
-        GF2::GidPidVectorMap populations;
-        GF2::processing::getPopulations( populations, points );
+        rapter::GidPidVectorMap populations;
+        rapter::processing::getPopulations( populations, points );
 
         // WORK
         _PrimitiveMapT outPrims;
@@ -570,14 +570,14 @@ namespace globopt
         // save
         std::string outName = primsPath.substr( 0, primsPath.rfind(".csv") );
         std::stringstream ssPrims; ssPrims << outName << ".refit.csv";
-        GF2::io::savePrimitives<PrimitiveT,typename InnerContainerT::const_iterator>( outPrims, ssPrims.str() );
+        rapter::io::savePrimitives<PrimitiveT,typename InnerContainerT::const_iterator>( outPrims, ssPrims.str() );
         std::cout << "results written to " << ssPrims.str() << "\n";
         std::cout << "../show.py -s " << scale << " -p " << ssPrims.str() << " -a " << assocPath << " --save-poly" << std::endl;
 
         // visualize
         pcl::visualization::PCLVisualizer::Ptr vptr( new pcl::visualization::PCLVisualizer() );
         vptr->setBackgroundColor( .1, .1, .1 );
-        vptr->addPointCloud<GF2::PclPointT>( pclCloud, "cloud" );
+        vptr->addPointCloud<rapter::PclPointT>( pclCloud, "cloud" );
 
 
         char name[255];
@@ -599,7 +599,7 @@ namespace globopt
         return err;
     } // ...refit()
 
-} //...ns globopt
+} //...ns rapter
 
 int main( int argc, char** argv )
 {
@@ -619,18 +619,18 @@ int main( int argc, char** argv )
 //    g.spanningTree();
 //    return EXIT_SUCCESS;
 
-    if ( GF2::console::find_switch(argc,argv,"--3D") )
+    if ( rapter::console::find_switch(argc,argv,"--3D") )
     {
-        return globopt::refit< GF2::_3d::PrimitiveMapT
-                             , GF2::PointContainerT
-                             , GF2::PclCloudT
+        return rapter::refit< rapter::_3d::PrimitiveMapT
+                             , rapter::PointContainerT
+                             , rapter::PclCloudT
                              >( argc, argv );
     }
     else
     {
-        return globopt::refit< GF2::_2d::PrimitiveMapT
-                             , GF2::PointContainerT
-                             , GF2::PclCloudT
+        return rapter::refit< rapter::_2d::PrimitiveMapT
+                             , rapter::PointContainerT
+                             , rapter::PclCloudT
                              >( argc, argv );
     } //...if find_switch
 } //...main

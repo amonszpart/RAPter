@@ -1,19 +1,19 @@
-#include "globfit2/globOpt_types.h" // _2d, _3d namespaces
-#include "globfit2/util/parse.h" // GF2::console
+#include "rapter/globOpt_types.h" // _2d, _3d namespaces
+#include "rapter/util/parse.h" // rapter::console
 
-#include "globfit2/optimization/problemSetup.h"
-#include "globfit2/optimization/impl/problemSetup.hpp"
-#include "globopt/primitives/impl/planePrimitive.hpp"
+#include "rapter/optimization/problemSetup.h"
+#include "rapter/optimization/impl/problemSetup.hpp"
+#include "rapter/primitives/impl/planePrimitive.hpp"
 
 int formulate3D( int argc, char** argv )
 {
-    if ( GF2::console::find_switch(argc,argv,"--formulate3D") )
+    if ( rapter::console::find_switch(argc,argv,"--formulate3D") )
     {
-        return GF2::ProblemSetup::formulateCli< GF2::_3d::PrimitiveContainerT
-                                              , GF2::PointContainerT
-                                              , GF2::_3d::PrimitiveT
-                                              , GF2::PointPrimitiveT
-                                              , GF2::_3d::MyFinitePlaneToFinitePlaneCompatFunctor
+        return rapter::ProblemSetup::formulateCli< rapter::_3d::PrimitiveContainerT
+                                              , rapter::PointContainerT
+                                              , rapter::_3d::PrimitiveT
+                                              , rapter::PointPrimitiveT
+                                              , rapter::_3d::MyFinitePlaneToFinitePlaneCompatFunctor
                                               >( argc, argv );
     }
     else

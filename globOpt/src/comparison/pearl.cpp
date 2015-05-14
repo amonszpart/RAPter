@@ -14,26 +14,26 @@
 template int
 am::Pearl::run(
         std::vector<int>                                        & labels
-        , std::vector<GF2::LinePrimitive>      & lines
+        , std::vector<rapter::LinePrimitive>      & lines
         , boost::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB> >            const& cloud
-        , GF2::PointContainerT const& points
+        , rapter::PointContainerT const& points
         , std::vector<int>   const* indices
         , am::Pearl::Params                   const& params
         , std::vector<std::vector<int> > *label_history
-        , std::vector<std::vector<GF2::LinePrimitive> > *line_history
+        , std::vector<std::vector<rapter::LinePrimitive> > *line_history
         , int const nPropose
         );
 
 template int
 am::Pearl::run(
         std::vector<int>          & labels
-        , std::vector<GF2::PlanePrimitive>      & lines
+        , std::vector<rapter::PlanePrimitive>      & lines
         , boost::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB> >            const& cloud
-        , GF2::PointContainerT                      const& points
+        , rapter::PointContainerT                      const& points
         , std::vector<int>                          const* indices
         , am::Pearl::Params                         const& params
         , std::vector<std::vector<int                > > * label_history
-        , std::vector<std::vector<GF2::PlanePrimitive> > * line_history
+        , std::vector<std::vector<rapter::PlanePrimitive> > * line_history
         , int const nPropose
         );
 
@@ -44,7 +44,7 @@ int pearlCli( int argc, char **argv )
 {
     typedef typename _InnerPrimitiveContainerT::value_type    PrimitiveT;
     typedef typename _PointContainerT::value_type             PointPrimitiveT;
-    typedef          std::map<GF2::GidT, _InnerPrimitiveContainerT> PrimitiveMapT;
+    typedef          std::map<rapter::GidT, _InnerPrimitiveContainerT> PrimitiveMapT;
     typedef          pcl::PointCloud<pcl::PointNormal>        PclCloudT;
 
     bool valid_input = true;
@@ -57,7 +57,7 @@ int pearlCli( int argc, char **argv )
 
     // parse
     {
-        if (    (GF2::console::parse_argument( argc, argv, "--cloud", cloud_path) < 0)
+        if (    (rapter::console::parse_argument( argc, argv, "--cloud", cloud_path) < 0)
              && (!boost::filesystem::exists(cloud_path)) )
         {
             std::cerr << "[" << __func__ << "]: " << "--cloud does not exist: " << cloud_path << std::endl;
@@ -65,11 +65,11 @@ int pearlCli( int argc, char **argv )
         }
 
         // primitives
-        if (    (GF2::console::parse_argument( argc, argv, "-p"     , input_prims_path) < 0)
-             && (GF2::console::parse_argument( argc, argv, "--prims", input_prims_path) < 0)
+        if (    (rapter::console::parse_argument( argc, argv, "-p"     , input_prims_path) < 0)
+             && (rapter::console::parse_argument( argc, argv, "--prims", input_prims_path) < 0)
              && (!boost::filesystem::exists(input_prims_path)) )
         {
-            if (    (GF2::console::parse_argument( argc, argv, "-N"     , nPropose) < 0) )
+            if (    (rapter::console::parse_argument( argc, argv, "-N"     , nPropose) < 0) )
             {
                 std::cerr << "[" << __func__ << "]: " << "-p or --prims  OR -N (nPropose) is compulsory" << std::endl;
                 valid_input = false;
@@ -77,8 +77,8 @@ int pearlCli( int argc, char **argv )
         }
 
         // scale
-        if (    (GF2::console::parse_argument( argc, argv, "--scale", params.scale) < 0)
-             && (GF2::console::parse_argument( argc, argv, "-sc"    , params.scale) < 0) )
+        if (    (rapter::console::parse_argument( argc, argv, "--scale", params.scale) < 0)
+             && (rapter::console::parse_argument( argc, argv, "-sc"    , params.scale) < 0) )
         {
             std::cerr << "[" << __func__ << "]: " << "--scale is compulsory" << std::endl;
             valid_input = false;
@@ -91,8 +91,8 @@ int pearlCli( int argc, char **argv )
         valid_input &= pcl::console::parse_argument( argc, argv, "--pw"  , params.lambdas(2) ) >= 0;
 
         if (     !valid_input
-              || (GF2::console::find_switch(argc,argv,"-h"    ))
-              || (GF2::console::find_switch(argc,argv,"--help")) )
+              || (rapter::console::find_switch(argc,argv,"-h"    ))
+              || (rapter::console::find_switch(argc,argv,"--help")) )
         {
             std::cout << "[" << __func__ << "]: " << "Usage: " << argv[0] << "\n"
                       << "\t --cloud " << cloud_path << "\n"
@@ -117,7 +117,7 @@ int pearlCli( int argc, char **argv )
     PclCloudT::Ptr   pcl_cloud( new PclCloudT );
     if ( EXIT_SUCCESS == err )
     {
-        err = GF2::io::readPoints<PointPrimitiveT>( points, cloud_path, &pcl_cloud );
+        err = rapter::io::readPoints<PointPrimitiveT>( points, cloud_path, &pcl_cloud );
         if ( err != EXIT_SUCCESS )  std::cerr << "[" << __func__ << "]: " << "readPoints returned error " << err << std::endl;
     } //...read points
 
@@ -126,7 +126,7 @@ int pearlCli( int argc, char **argv )
     if ( EXIT_SUCCESS == err && !input_prims_path.empty() )
     {
         std::cout << "[" << __func__ << "]: " << "reading primitives from " << input_prims_path << "...";
-        GF2::io::readPrimitives<PrimitiveT, _InnerPrimitiveContainerT>( initial_primitives, input_prims_path, &patches );
+        rapter::io::readPrimitives<PrimitiveT, _InnerPrimitiveContainerT>( initial_primitives, input_prims_path, &patches );
         std::cout << "reading primitives ok (#: " << initial_primitives.size() << ")\n";
     } //...read primitives
 
@@ -137,7 +137,7 @@ int pearlCli( int argc, char **argv )
         // add input initialization, if exists
         if ( patches.size() )
         {
-            for ( typename GF2::containers::PrimitiveContainer<PrimitiveT>::Iterator it( patches ); it.hasNext(); it.step() )
+            for ( typename rapter::containers::PrimitiveContainer<PrimitiveT>::Iterator it( patches ); it.hasNext(); it.step() )
                 primitives.push_back( *it );
         }
 
@@ -171,14 +171,14 @@ int pearlCli( int argc, char **argv )
             if ( out_prims.find(gid) == out_prims.end() )
             {
                 std::cout << "[" << __func__ << "]: " << "adding primitive[" << gid << "]: " << primitives[gid].toString() << std::endl;
-                GF2::containers::add( out_prims, gid, primitives[gid] )
+                rapter::containers::add( out_prims, gid, primitives[gid] )
                         .setTag( PrimitiveT::TAGS::GID    , gid )
                         .setTag( PrimitiveT::TAGS::DIR_GID, gid );
             }
         }
 
-        GF2::io::writeAssociations<PointPrimitiveT>( points, "./points_primitives.pearl.csv" );
-        GF2::io::savePrimitives<PrimitiveT,typename _InnerPrimitiveContainerT::const_iterator>( out_prims, "./primitives.pearl.csv" );
+        rapter::io::writeAssociations<PointPrimitiveT>( points, "./points_primitives.pearl.csv" );
+        rapter::io::savePrimitives<PrimitiveT,typename _InnerPrimitiveContainerT::const_iterator>( out_prims, "./primitives.pearl.csv" );
     } //...work
 
     std::cout << "../show.py -s " << params.scale << " -a points_primitives.pearl.csv -p primitives.pearl.csv" << std::endl;
@@ -190,20 +190,20 @@ int pearlCli( int argc, char **argv )
 int main(int argc, char *argv[])
 {
     std::cout << "hello pearl\n";
-    if ( GF2::console::find_switch(argc,argv,"--3D") )
+    if ( rapter::console::find_switch(argc,argv,"--3D") )
     {
         std::cout << "running planes" << std::endl;
-        return pearlCli< GF2::PointContainerT
-                       , GF2::_3d::InnerPrimitiveContainerT
-                       , GF2::_3d::PrimitiveContainerT
+        return pearlCli< rapter::PointContainerT
+                       , rapter::_3d::InnerPrimitiveContainerT
+                       , rapter::_3d::PrimitiveContainerT
                        >( argc, argv );
         return EXIT_FAILURE;
     }
     else
     {
-        return pearlCli< GF2::PointContainerT
-                       , GF2::_2d::InnerPrimitiveContainerT
-                       , GF2::_2d::PrimitiveContainerT
+        return pearlCli< rapter::PointContainerT
+                       , rapter::_2d::InnerPrimitiveContainerT
+                       , rapter::_2d::PrimitiveContainerT
                        >( argc, argv );
     } // if 3D
 

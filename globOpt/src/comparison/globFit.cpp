@@ -6,7 +6,7 @@
 #include "globopt/processing/subsamplePrimitives.h"
 #include "globopt/processing/assignmentOps.h"
 
-namespace globopt
+namespace rapter
 {
     namespace globfit
     {
@@ -20,48 +20,48 @@ namespace globopt
 
 int main(int argc, char *argv[])
 {
-    if ( GF2::console::find_switch(argc,argv,"--help") )
+    if ( rapter::console::find_switch(argc,argv,"--help") )
     {
-        return globopt::globfit::printUsage( argc, argv );
+        return rapter::globfit::printUsage( argc, argv );
     }
-    else if ( GF2::console::find_switch(argc,argv,"--planes") )
+    else if ( rapter::console::find_switch(argc,argv,"--planes") )
     {
-        if ( GF2::console::find_switch(argc,argv,"--from") )
-            return globopt::fromGlobFit< GF2::PclCloudT
-                                       , GF2::_3d::PrimitiveMapT
-                                       , GF2::_3d::PrimitiveVectorT
-                                       , GF2::PointContainerT
+        if ( rapter::console::find_switch(argc,argv,"--from") )
+            return rapter::fromGlobFit< rapter::PclCloudT
+                                       , rapter::_3d::PrimitiveMapT
+                                       , rapter::_3d::PrimitiveVectorT
+                                       , rapter::PointContainerT
                                        >( argc, argv );
         else
-            return globopt::toGlobFit< GF2::PclCloudT
-                                     , GF2::_3d::PrimitiveMapT
-                                     , GF2::_3d::PrimitiveVectorT
-                                     , GF2::PointContainerT
+            return rapter::toGlobFit< rapter::PclCloudT
+                                     , rapter::_3d::PrimitiveMapT
+                                     , rapter::_3d::PrimitiveVectorT
+                                     , rapter::PointContainerT
                                      >( argc, argv );
     }
-    else if ( GF2::console::find_switch(argc,argv,"--lines") )
+    else if ( rapter::console::find_switch(argc,argv,"--lines") )
     {
         std::cout << "--lines (2D) unimplemented" << std::endl;
         return EXIT_FAILURE;
     }
-    else if ( GF2::console::find_switch(argc,argv,"--subsample-primitives") )
+    else if ( rapter::console::find_switch(argc,argv,"--subsample-primitives") )
     {
-        return globopt::subsamplePrimitives<GF2::_3d::PrimitiveVectorT
-                                           , GF2::_3d::PrimitiveMapT
-                                           , GF2::PointContainerT
-                                           , GF2::PclCloudT>
+        return rapter::subsamplePrimitives<rapter::_3d::PrimitiveVectorT
+                                           , rapter::_3d::PrimitiveMapT
+                                           , rapter::PointContainerT
+                                           , rapter::PclCloudT>
                                            ( argc, argv );
     }
-    else if ( GF2::console::find_switch(argc,argv,"--unass-w-planes") )
+    else if ( rapter::console::find_switch(argc,argv,"--unass-w-planes") )
     {
-        return globopt::approxUnassignedWPlanes<GF2::_3d::PrimitiveVectorT
-                                           , GF2::_3d::PrimitiveMapT
-                                           , GF2::PointContainerT
-                                           , GF2::PclCloudT>
+        return rapter::approxUnassignedWPlanes<rapter::_3d::PrimitiveVectorT
+                                           , rapter::_3d::PrimitiveMapT
+                                           , rapter::PointContainerT
+                                           , rapter::PclCloudT>
                                            ( argc, argv );
     }
     else
-        return globopt::globfit::printUsage( argc, argv );
+        return rapter::globfit::printUsage( argc, argv );
 
     return EXIT_FAILURE;
 }

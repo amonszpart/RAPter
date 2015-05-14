@@ -1,11 +1,11 @@
-#include "globfit2/io/inputParser.hpp"
-#include "globfit2/util/parse.h"
-#include "globfit2/globOpt_types.h"
-#include "globfit2/my_types.h"
-#include "globfit2/processing/graph.hpp"
-#include "globfit2/util/containers.hpp" // class PrimitiveContainer
+#include "rapter/io/inputParser.hpp"
+#include "rapter/util/parse.h"
+#include "rapter/globOpt_types.h"
+#include "rapter/my_types.h"
+#include "rapter/processing/graph.hpp"
+#include "rapter/util/containers.hpp" // class PrimitiveContainer
 
-namespace GF2
+namespace rapter
 {
 
 template <typename _Scalar>
@@ -41,7 +41,7 @@ static inline int representCli( int argc, char** argv )
     typedef typename GraphT::ComponentListT                                 ComponentListT;
     typedef typename GraphT::ClustersT                                      ClustersT;
 
-    int ret = GF2::parseInput<InnerPrimitiveContainerT,PclCloudT>(
+    int ret = rapter::parseInput<InnerPrimitiveContainerT,PclCloudT>(
                 points, pcl_cloud, prims, patches, params, argc, argv );
     std::cout << "[" << __func__ << "]: " << "parseInput ret: " << ret << std::endl;
     bool valid_input = (EXIT_SUCCESS == ret);
@@ -231,7 +231,7 @@ static inline int representBackCli( int argc, char** argv )
     bool valid_input = true;
     {
         _PrimitiveContainerT prims;
-        valid_input = ( EXIT_SUCCESS == GF2::parseInput<InnerPrimitiveContainerT,PclCloudT>(
+        valid_input = ( EXIT_SUCCESS == rapter::parseInput<InnerPrimitiveContainerT,PclCloudT>(
                                  points, pcl_cloud, prims, patches, params, argc, argv, true ) );
         if ( !valid_input ) std::cout << "failed first" << std::endl;
     }
@@ -243,11 +243,11 @@ static inline int representBackCli( int argc, char** argv )
 
     // read finished representatives
     std::string representativesPath;
-    valid_input &= (0 <= GF2::console::parse_argument(argc, argv, "--repr", representativesPath));
+    valid_input &= (0 <= rapter::console::parse_argument(argc, argv, "--repr", representativesPath));
     if ( !valid_input ) std::cout << "failed reprpath" << std::endl;
     {
         _PrimitiveContainerT representatives;
-        valid_input &= (EXIT_SUCCESS == GF2::io::readPrimitives<_PrimitiveT, InnerPrimitiveContainerT>( representatives, representativesPath, &reprPatches) );
+        valid_input &= (EXIT_SUCCESS == rapter::io::readPrimitives<_PrimitiveT, InnerPrimitiveContainerT>( representatives, representativesPath, &reprPatches) );
         if ( !valid_input ) std::cout << "failed read" << std::endl;
     }
 
@@ -326,45 +326,45 @@ static inline int representBackCli( int argc, char** argv )
     return io::savePrimitives<_PrimitiveT, typename InnerPrimitiveContainerT::const_iterator >( outPrims, "subs.csv" );
 } //...representBack
 
-} //...GF2
+} //...ns rapter
 
 int represent( int argc, char** argv )
 {
 #if 1
-     if ( GF2::console::find_switch(argc,argv,"--represent3D") )
+     if ( rapter::console::find_switch(argc,argv,"--represent3D") )
      {
-         return GF2::representCli< GF2::_3d::PrimitiveContainerT
-                 , GF2::PointContainerT
-                 , GF2::_3d::PrimitiveT
-                 , GF2::PointPrimitiveT
-                 , GF2::_3d::MyFinitePlaneToFinitePlaneCompatFunctor
+         return rapter::representCli< rapter::_3d::PrimitiveContainerT
+                 , rapter::PointContainerT
+                 , rapter::_3d::PrimitiveT
+                 , rapter::PointPrimitiveT
+                 , rapter::_3d::MyFinitePlaneToFinitePlaneCompatFunctor
                  >( argc, argv );
      }
-     else if ( GF2::console::find_switch(argc,argv,"--represent") )
+     else if ( rapter::console::find_switch(argc,argv,"--represent") )
      {
-         return GF2::representCli< GF2::_2d::PrimitiveContainerT
-                                 , GF2::PointContainerT
-                                 , GF2::_2d::PrimitiveT
-                                 , GF2::PointPrimitiveT
-                                 , GF2::_2d::MyFiniteLineToFiniteLineCompatFunctor
+         return rapter::representCli< rapter::_2d::PrimitiveContainerT
+                                 , rapter::PointContainerT
+                                 , rapter::_2d::PrimitiveT
+                                 , rapter::PointPrimitiveT
+                                 , rapter::_2d::MyFiniteLineToFiniteLineCompatFunctor
                                  >( argc, argv );
      }
-     else if ( GF2::console::find_switch(argc,argv,"--representBack3D") )
+     else if ( rapter::console::find_switch(argc,argv,"--representBack3D") )
      {
-         return GF2::representBackCli< GF2::_3d::PrimitiveContainerT
-                 , GF2::PointContainerT
-                 , GF2::_3d::PrimitiveT
-                 , GF2::PointPrimitiveT
-                 , GF2::_3d::MyFinitePlaneToFinitePlaneCompatFunctor
+         return rapter::representBackCli< rapter::_3d::PrimitiveContainerT
+                 , rapter::PointContainerT
+                 , rapter::_3d::PrimitiveT
+                 , rapter::PointPrimitiveT
+                 , rapter::_3d::MyFinitePlaneToFinitePlaneCompatFunctor
                  >( argc, argv );
      }
-     else if ( GF2::console::find_switch(argc,argv,"--representBack") )
+     else if ( rapter::console::find_switch(argc,argv,"--representBack") )
      {
-         return GF2::representBackCli< GF2::_2d::PrimitiveContainerT
-                 , GF2::PointContainerT
-                 , GF2::_2d::PrimitiveT
-                 , GF2::PointPrimitiveT
-                 , GF2::_2d::MyFiniteLineToFiniteLineCompatFunctor
+         return rapter::representBackCli< rapter::_2d::PrimitiveContainerT
+                 , rapter::PointContainerT
+                 , rapter::_2d::PrimitiveT
+                 , rapter::PointPrimitiveT
+                 , rapter::_2d::MyFiniteLineToFiniteLineCompatFunctor
                  >( argc, argv );
      }
      else

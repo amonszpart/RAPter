@@ -17,7 +17,7 @@
 #include "PlanePrimitiveShape.h"
 // --- END schnabel07 ---
 
-namespace GF2
+namespace rapter
 {
     template <class PclCloudT, typename PrimitiveT, /*class PidGidT,*/ class PointContainerT >
     int SchnabelEnv::run( std::vector<PrimitiveT>          &planes

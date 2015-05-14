@@ -5,7 +5,7 @@
 #include "pcl/point_cloud.h"
 #include "globfit2/my_types.h"
 
-namespace GF2
+namespace rapter
 {
     //class PlanePrimitive;
 

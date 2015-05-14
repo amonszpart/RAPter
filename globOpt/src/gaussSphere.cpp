@@ -5,7 +5,7 @@
 #include "globfit2/processing/graph.hpp"
 #include "globfit2/util/containers.hpp" // class PrimitiveContainer
 
-namespace GF2
+namespace rapter
 {
 
     /*! \brief Takes oriented, coloured points and saves the normals to a new cloud.
@@ -73,7 +73,7 @@ namespace GF2
 
 int main( int argc, char *argv[] )
 {
-    return GF2::gaussSphereCli( argc, argv );
+    return rapter::gaussSphereCli( argc, argv );
 
     return 0;
 }

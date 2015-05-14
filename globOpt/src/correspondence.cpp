@@ -1,18 +1,18 @@
-#include "globfit2/util/parse.h"
-#include "globfit2/globOpt_types.h" // _2d::, _3d::
+#include "rapter/util/parse.h"
+#include "rapter/globOpt_types.h" // _2d::, _3d::
 
 // ________________correspondance___________________
 
-#include "globfit2/io/io.h"         // readPrimitives()
-#include "globfit2/util/diskUtil.hpp" // saveBackup()
-#include "globfit2/util/util.hpp"
+#include "rapter/io/io.h"         // readPrimitives()
+#include "rapter/util/diskUtil.hpp" // saveBackup()
+#include "rapter/util/util.hpp"
 
-#include "globfit2/optimization/energyFunctors.h"
+#include "rapter/optimization/energyFunctors.h"
 
 #define CHECK(err,text) { if ( err != EXIT_SUCCESS )  std::cerr << "[" << __func__ << "]: " << text << " returned an error! Code: " << err << std::endl; }
 
 
-namespace GF2 {
+namespace rapter {
 namespace correspondence
 {
     template <typename Scalar,
@@ -77,8 +77,8 @@ namespace correspondence
         int err = EXIT_SUCCESS;
 
         // print usage
-        if (    GF2::console::find_switch(argc,argv,"-h")
-             || GF2::console::find_switch(argc,argv,"--help")
+        if (    rapter::console::find_switch(argc,argv,"-h")
+             || rapter::console::find_switch(argc,argv,"--help")
              || (argc != 7) )
         {
             std::cout << "Usage: "
@@ -101,7 +101,7 @@ namespace correspondence
                     assoc_pathA;
         Scalar scale;
         {
-            //if ( GF2::console::parse_argument(argc,argv,"--gt",gt_path) < 0 )
+            //if ( rapter::console::parse_argument(argc,argv,"--gt",gt_path) < 0 )
             prims_pathA = std::string( argv[1] );
             if ( !boost::filesystem::exists(prims_pathA) )
             {
@@ -109,7 +109,7 @@ namespace correspondence
                 return EXIT_FAILURE;
             }
 
-            // if ( GF2::console::parse_argument(argc,argv,"--gta",gt_assoc_path) < 0 )
+            // if ( rapter::console::parse_argument(argc,argv,"--gta",gt_assoc_path) < 0 )
             assoc_pathA = std::string( argv[2] );
             if ( !boost::filesystem::exists(assoc_pathA) )
             {
@@ -117,7 +117,7 @@ namespace correspondence
                 return EXIT_FAILURE;
             }
 
-            //if ( GF2::console::parse_argument(argc,argv,"--p",prims_path) < 0 )
+            //if ( rapter::console::parse_argument(argc,argv,"--p",prims_path) < 0 )
             prims_pathB = std::string( argv[3] );
             if ( !boost::filesystem::exists(prims_pathB) )
             {
@@ -125,7 +125,7 @@ namespace correspondence
                 return EXIT_FAILURE;
             }
 
-            //if ( GF2::console::parse_argument(argc,argv,"--pa", assoc_path) < 0 )
+            //if ( rapter::console::parse_argument(argc,argv,"--pa", assoc_path) < 0 )
             assoc_pathB = std::string( argv[4] );
             if ( !boost::filesystem::exists(assoc_pathB) )
             {
@@ -133,7 +133,7 @@ namespace correspondence
                 return EXIT_FAILURE;
             }
 
-            //if ( (GF2::console::parse_argument(argc,argv,"--cloud",cloud_path) < 0) && !boost::filesystem::exists(cloud_path) )
+            //if ( (rapter::console::parse_argument(argc,argv,"--cloud",cloud_path) < 0) && !boost::filesystem::exists(cloud_path) )
             cloud_path = std::string( argv[5] );
             if ( !boost::filesystem::exists(cloud_path) )
             {
@@ -430,7 +430,7 @@ namespace correspondence
             cout << "Correspondances: Output " << corresp_path.c_str() << endl;
 
             // backup previous copy
-            GF2::util::saveBackup( corresp_path );
+            rapter::util::saveBackup( corresp_path );
 
             // open file
             std::ofstream corresp_f( corresp_path );
@@ -477,29 +477,29 @@ namespace correspondence
             corresp_f.close();
 
             // debug
-            GF2::io::savePrimitives<_PrimitiveT,typename _InnerPrimitiveContainerT::const_iterator>( subs, "subs.csv" );
+            rapter::io::savePrimitives<_PrimitiveT,typename _InnerPrimitiveContainerT::const_iterator>( subs, "subs.csv" );
         } //...print
 
         return EXIT_SUCCESS;
     } //...correspCli()
 
 } //...namespace correspondance
-} //...namespace GF2
+} //...namespace rapter
 
 int main( int argc, char** argv )
 {
-    if ( GF2::console::find_switch(argc,argv,"--corresp3D") )
+    if ( rapter::console::find_switch(argc,argv,"--corresp3D") )
     {
         std::cerr << "corresp3D unimplemented" << std::endl;
     }
     else
     {
-        return GF2::correspondence::correspCli< GF2::_2d::PrimitiveT
-                                              , GF2::_2d::InnerPrimitiveContainerT
-                                              , GF2::_2d::PrimitiveContainerT
-                                              , GF2::PointPrimitiveT
-                                              , GF2::PointContainerT
-                                              , GF2::SharedAreaForLinesWithScaleFunctor>( argc, argv );
+        return rapter::correspondence::correspCli< rapter::_2d::PrimitiveT
+                                              , rapter::_2d::InnerPrimitiveContainerT
+                                              , rapter::_2d::PrimitiveContainerT
+                                              , rapter::PointPrimitiveT
+                                              , rapter::PointContainerT
+                                              , rapter::SharedAreaForLinesWithScaleFunctor>( argc, argv );
     }
 
     return EXIT_FAILURE;

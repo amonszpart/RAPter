@@ -5,64 +5,45 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 SET( WORKSPACE_DIR "$ENV{HOME}/workspace" )
 SET( THIRD_PARTY_DIR "${WORKSPACE_DIR}/3rdparty" )
 
-#SET( OpenCV_DIR "${THIRD_PARTY_DIR}/opencv-trunk/install/share/OpenCV/"
-#        CACHE FILEPATH "Folder containing the OpenCVConfig.cmake file, usually \"{OPENCV_INSTALL_DIR}/share/OpenCV/\"")
 SET( PCL_DIR "${THIRD_PARTY_DIR}/pcl-trunk2/install/share/pcl-1.8/"
-        CACHE FILEPATH "Folder containing \"PCLConfig.cmake\", usually \"{PCL_INSTALL_DIR}/share/pcl-1.8/\"." FORCE )
+        CACHE FILEPATH "Folder containing \"PCLConfig.cmake\", usually \"{PCL_INSTALL_DIR}/share/pcl-1.8/\"." )
 MESSAGE( STATUS "Pcl_DIR ${PCL_DIR}")
 
 #SET( PATH_MOSEK_DIR  "${THIRD_PARTY_DIR}/mosek/7/tools/platform/linux64x86" )
 SET( PATH_BONMIN_DIR "${THIRD_PARTY_DIR}/CoinBonmin-stable/build/")
 
-#SET( PATH_GUROBI_DIR "${THIRD_PARTY_DIR}/gurobi562/linux64/"
-#        CACHE FILEPATH "Folder containing libgurobixx.so and libgurobi_c++.a, usually \"{GUROBI_INSTALL_DIR}/gurobi562/linux64/\".")
-
 SET( PATH_LIBFBI_ROOT "${THIRD_PARTY_DIR}/libfbi/")
 
 SET( PATH_QCQPCPP_ROOT "${WORKSPACE_DIR}/QCQPcpp/"
         CACHE FILEPATH "Root directory of QCQPcpp library containing the \"include\" directory.")
-#SET( PATH_PCLTOOLS_ROOT "${WORKSPACE_DIR}/geometry-tools/PCLTools/"
-#        CACHE FILEPATH "Folder containing \"include\" directory from the SG PCLTools library. Can be downloaded from \"https://github.com/smartgeometry-ucl/geometry-tools/tree/master/PCLTools\".")
 SET( PATH_VIS_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../visualization/"
         CACHE FILEPATH "Folder containing separate visulizer library")
 
 SET( PATH_GLOBOPT_DEPS_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../../globOptDeps"
         CACHE PATH "Folder containing additional dependency libraries (pearl, gco-v3, etc.)" FORCE )
 
-#SET( WITH_MOSEK OFF CACHE BINARY "Allow Mosek to be used for optimization.")
-#IF(WITH_MOSEK)
-#    ADD_DEFINITIONS(-DGF2_WITH_MOSEK)
-#ENDIF()
+ADD_DEFINITIONS(-DRAPTER_WITH_BONMIN)
 
-#SET( WITH_BONMIN ON CACHE BINARY "Allow Bonmin to be used for optimization.")
-#IF(WITH_BONMIN)
-    ADD_DEFINITIONS(-DGF2_WITH_BONMIN)
-#ENDIF()
-#SET( WITH_GUROBI OFF CACHE BINARY "Allow Gurobi to be used for optimization.")
-#IF(WITH_GUROBI)
-#    ADD_DEFINITIONS(-DGF2_WITH_GUROBI)
-#ENDIF()
-
-SET( WITH_PEARL ON CACHE BINARY "Compile pearl executable.")
+SET( WITH_PEARL OFF CACHE BINARY "Compile pearl executable.")
 #SET( WITH_PEARL YES CACHE BINARY "Compile pearl executable." FORCE)
-SET( WITH_RSAC ON CACHE BINARY "Compile ransac executable.")
-SET( WITH_GAUSSSPHERE ON CACHE BINARY "Compile gaussSphere." )
+SET( WITH_RSAC OFF CACHE BINARY "Compile ransac executable.")
+SET( WITH_GAUSSSPHERE OFF CACHE BINARY "Compile gaussSphere." )
 #SET( WITH_DRAWGRAPHS ON CACHE BINARY "Compile drawGraphs." )
 #SET( WITH_PLYCONVERTER ON CACHE BINARY "Compile ply-converter executable.")
-SET( WITH_CORRESP ON CACHE BINARY "Correspondance miniprogram compilation.")
-SET( WITH_GLOBFIT ON CACHE BINARY "GlobFit (Li'11) comparison.")
-SET( WITH_EVAL ON CACHE BINARY "Evaluation code")
-SET( WITH_REFIT ON CACHE BINARY "Constrained refit project")
+SET( WITH_CORRESP OFF CACHE BINARY "Correspondance miniprogram compilation.")
+SET( WITH_GLOBFIT OFF CACHE BINARY "GlobFit (Li'11) comparison.")
+SET( WITH_EVAL OFF CACHE BINARY "Evaluation code")
+SET( WITH_REFIT OFF CACHE BINARY "Constrained refit project")
 
-SET( WITH_SAMPLE_INPUT OFF CACHE BINARY "Compile --sample-input option")
-IF(WITH_SAMPLE_INPUT)
-    ADD_DEFINITIONS(-DGF2_WITH_SAMPLE_INPUT)
-ENDIF(WITH_SAMPLE_INPUT)
+#SET( WITH_SAMPLE_INPUT OFF CACHE BINARY "Compile --sample-input option")
+#IF(WITH_SAMPLE_INPUT)
+#    ADD_DEFINITIONS(-DRAPTER_WITH_SAMPLE_INPUT)
+#ENDIF(WITH_SAMPLE_INPUT)
 
-SET( WITH_FULL_LINKAGE OFF CACHE BINARY "Compile other patchpatch distance functors than representativeSqr")
-IF(WITH_FULL_LINKAGE)
-    ADD_DEFINITIONS(-DGF2_WITH_FULL_LINKAGE)
-ENDIF(WITH_FULL_LINKAGE)
+#SET( WITH_FULL_LINKAGE OFF CACHE BINARY "Compile other patchpatch distance functors than representativeSqr")
+#IF(WITH_FULL_LINKAGE)
+#    ADD_DEFINITIONS(-DRAPTER_WITH_FULL_LINKAGE)
+#ENDIF(WITH_FULL_LINKAGE)
 
 #SET( FH_DIR ${THIRD_PARTY_DIR}/segmentFH )
 
@@ -206,7 +187,7 @@ SET( TEMPLATE_INST_SRC_LIST
 #________________GLOBOPT________________#
 #_______________________________________#
 
-ADD_DEFINITIONS( -DGF2_USE_PCL=1
+ADD_DEFINITIONS( -DRAPTER_USE_PCL=1
 #                 -D__x86_64__=1
 #                 -Dlinux=1
 #                 -DHAVE_OPENCV=1
@@ -221,52 +202,53 @@ INCLUDE_DIRECTORIES( include
 )
 
 SET( GLOBOPT_HPP_LIST
-    include/globfit2/optimization/impl/segmentation.hpp
-    include/globfit2/optimization/impl/solver.hpp
-    include/globfit2/optimization/impl/problemSetup.hpp
-    include/globfit2/optimization/impl/merging.hpp
-    include/globfit2/optimization/impl/candidateGenerator.hpp
-    include/globopt/primitives/impl/taggable.hpp
-    include/globopt/primitives/impl/planePrimitive.hpp
-    include/globopt/primitives/impl/linePrimitive.hpp
-    include/globfit2/io/impl/io.hpp
-    include/globfit2/util/diskUtil.hpp
-    include/globfit2/util/util.hpp
-    include/globfit2/util/pcl_util.hpp
-    include/globfit2/util/containers.hpp
-    include/globfit2/util/lruCache.hpp
-    include/globfit2/processing/util.hpp
-    include/globopt/primitives/angles.hpp
-    include/globfit2/processing/angle_util.hpp
-    include/globfit2/processing/graph.hpp
-    include/globfit2/processing/diagnostic.hpp
-    include/globfit2/comparison/impl/reassign.hpp
+    include/rapter/optimization/impl/segmentation.hpp
+    include/rapter/optimization/impl/solver.hpp
+    include/rapter/optimization/impl/problemSetup.hpp
+    include/rapter/optimization/impl/merging.hpp
+    include/rapter/optimization/impl/candidateGenerator.hpp
+    include/rapter/primitives/impl/taggable.hpp
+    include/rapter/primitives/impl/planePrimitive.hpp
+    include/rapter/primitives/impl/linePrimitive.hpp
+    include/rapter/io/impl/io.hpp
+    include/rapter/util/diskUtil.hpp
+    include/rapter/util/util.hpp
+    include/rapter/util/pcl_util.hpp
+    include/rapter/util/containers.hpp
+    include/rapter/util/lruCache.hpp
+    include/rapter/processing/util.hpp
+    include/rapter/primitives/angles.hpp
+    include/rapter/processing/angle_util.hpp
+    include/rapter/processing/graph.hpp
+    include/rapter/processing/diagnostic.hpp
+    include/rapter/comparison/impl/reassign.hpp
+    include/rapter/io/inputParser.hpp
 )
 
 SET( GLOBOPT_H_LIST
     #include/params.h
-    include/globfit2/util/parse.h
-    include/globfit2/parameters.h
-    include/globfit2/my_types.h
-    include/globfit2/simple_types.h
-    include/globfit2/globOpt_types.h
-    include/globfit2/primitives/linePrimitive.h
-    include/globopt/primitives/taggable.h
-    include/globfit2/primitives/primitive.h
-    #include/globfit2/primitives/linePrimitive2.h
-    include/globfit2/primitives/pointPrimitive.h
-    include/globfit2/primitives/planePrimitive.h
-    include/globfit2/optimization/patchDistanceFunctors.h
-    include/globfit2/optimization/energyFunctors.h
-    include/globfit2/optimization/candidateGenerator.h
-    include/globfit2/optimization/problemSetup.h
-    include/globfit2/optimization/merging.h
-    include/globfit2/optimization/mergingFunctors.h
-    include/globfit2/optimization/segmentation.h
+    include/rapter/util/parse.h
+    include/rapter/parameters.h
+    include/rapter/my_types.h
+    include/rapter/simple_types.h
+    include/rapter/globOpt_types.h
+    include/rapter/primitives/linePrimitive.h
+    include/rapter/primitives/taggable.h
+    include/rapter/primitives/primitive.h
+    #include/rapter/primitives/linePrimitive2.h
+    include/rapter/primitives/pointPrimitive.h
+    include/rapter/primitives/planePrimitive.h
+    include/rapter/optimization/patchDistanceFunctors.h
+    include/rapter/optimization/energyFunctors.h
+    include/rapter/optimization/candidateGenerator.h
+    include/rapter/optimization/problemSetup.h
+    include/rapter/optimization/merging.h
+    include/rapter/optimization/mergingFunctors.h
+    include/rapter/optimization/segmentation.h
     #include/optimization/qp/gurobiOpt.h
     #include/optimization/qp/MyGRBCallback.h
-    include/globfit2/optimization/solver.h
-    include/globfit2/io/io.h
+    include/rapter/optimization/solver.h
+    include/rapter/io/io.h
 )
 
 SET( GLOBOPT_SRC_LIST
@@ -290,7 +272,7 @@ SET( GLOBOPT_SRC_LIST
 
 #IF(WITH_SAMPLE_INPUT)
 #    SET( GLOBOPT_H_LIST ${GLOBOPT_H_LIST}
-#        include/globfit2/ground_truth/gtCreator.h
+#        include/rapter/ground_truth/gtCreator.h
 #    )
 #    SET( GLOBOPT_SRC_LIST ${GLOBOPT_SRC_LIST}
 #        src/ground_truth/ground_truth.cpp
@@ -474,12 +456,12 @@ ENDIF(WITH_GAUSSSPHERE)
 IF(WITH_GLOBFIT)
     SET( GLOBFIT_TARGET "toGlobFit" )
     SET( GLOBFIT_H
-        include/globfit2/comparison/impl/globFit.hpp
-        include/globopt/processing/impl/subsamplePrimitives.hpp
-        include/globopt/processing/impl/assignmentOps.hpp
-        include/globopt/processing/assignmentOps.h
-        include/globfit2/comparison/globFit.h
-        include/globopt/processing/subsamplePrimitives.h
+        include/rapter/comparison/impl/globFit.hpp
+        include/rapter/processing/impl/subsamplePrimitives.hpp
+        include/rapter/processing/impl/assignmentOps.hpp
+        include/rapter/processing/assignmentOps.h
+        include/rapter/comparison/globFit.h
+        include/rapter/processing/subsamplePrimitives.h
     )
 
     SET( GLOBFIT_SRC
@@ -502,16 +484,18 @@ IF(WITH_EVAL)
     SET( EVAL_TARGET "eval" )
 
     SET( EVAL_H
-        include/globopt/evaluation/assignPointsToTriangles.h
-        include/globfit2/primitives/planePrimitive.h
-        include/globfit2/primitives/linePrimitive.h
+        include/rapter/evaluation/assignPointsToTriangles.h
+        include/rapter/primitives/planePrimitive.h
+        include/rapter/primitives/linePrimitive.h
+        include/rapter/io/trianglesFromObj.h
     )
 
     SET( EVAL_HPP
-        include/globopt/evaluation/impl/assignPointsToTriangles.hpp
-        include/globopt/primitives/impl/triangle.hpp
-        include/globopt/primitives/impl/linePrimitive.hpp
-        include/globopt/primitives/impl/planePrimitive.hpp
+        include/rapter/evaluation/impl/assignPointsToTriangles.hpp
+        include/rapter/primitives/impl/triangle.hpp
+        include/rapter/primitives/impl/linePrimitive.hpp
+        include/rapter/primitives/impl/planePrimitive.hpp
+        include/rapter/io/ps.hpp
     )
 
     SET( EVAL_SRC
@@ -534,16 +518,16 @@ IF(WITH_REFIT)
     SET( REFIT_TARGET "refit" )
 
     SET( REFIT_H
-        include/globfit2/primitives/planePrimitive.h
-        include/globfit2/globOpt_types.h
-        include/globfit2/util/parse.h
-        include/globfit2/io/io.h
+        include/rapter/primitives/planePrimitive.h
+        include/rapter/globOpt_types.h
+        include/rapter/util/parse.h
+        include/rapter/io/io.h
     )
 
     SET( REFIT_HPP
-        include/globopt/primitives/impl/planePrimitive.hpp
-        include/globopt/primitives/impl/linePrimitive.hpp
-        include/globfit2/processing/angle_util.hpp
+        include/rapter/primitives/impl/planePrimitive.hpp
+        include/rapter/primitives/impl/linePrimitive.hpp
+        include/rapter/processing/angle_util.hpp
     )
 
     SET( REFIT_SRC

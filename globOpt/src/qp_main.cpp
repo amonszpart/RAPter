@@ -1,10 +1,10 @@
 #include <iostream>
 
 //#include <pcl/console/parse.h>
-#include "globfit2/util/parse.h"
+#include "rapter/util/parse.h"
 
 //#include "optimization/qp/solver.h"
-//#include "globfit2/optimization/problemSetup.h"
+//#include "rapter/optimization/problemSetup.h"
 
 
 int subsample ( int argc, char** argv ); // subsample.cpp
@@ -23,8 +23,8 @@ int represent ( int argc, char** argv ); // represent.cpp
 int main( int argc, char *argv[] )
 {
     if ( (argc == 2) &&
-         (   (GF2::console::find_switch(argc,argv,"--help"))
-          || (GF2::console::find_switch(argc,argv,"-h"    ))
+         (   (rapter::console::find_switch(argc,argv,"--help"))
+          || (rapter::console::find_switch(argc,argv,"-h"    ))
          )
        )
     {
@@ -45,66 +45,66 @@ int main( int argc, char *argv[] )
 
         return EXIT_SUCCESS;
     }
-    else if ( GF2::console::find_switch(argc,argv,"--segment") || GF2::console::find_switch(argc,argv,"--segment3D") )
+    else if ( rapter::console::find_switch(argc,argv,"--segment") || rapter::console::find_switch(argc,argv,"--segment3D") )
     {
        return segment( argc, argv );
     }
-    else if ( GF2::console::find_switch(argc,argv,"--generate") )
+    else if ( rapter::console::find_switch(argc,argv,"--generate") )
     {
         return generate(argc,argv);
     }
-    else if ( GF2::console::find_switch(argc,argv,"--generate3D") )
+    else if ( rapter::console::find_switch(argc,argv,"--generate3D") )
     {
         return generate3D(argc,argv);
     }
-    else if ( GF2::console::find_switch(argc,argv,"--formulate") )
+    else if ( rapter::console::find_switch(argc,argv,"--formulate") )
     {
         return formulate( argc, argv );
-        //return GF2::ProblemSetup::formulateCli<GF2::Solver::PrimitiveContainerT, GF2::Solver::PointContainerT>( argc, argv );
+        //return rapter::ProblemSetup::formulateCli<rapter::Solver::PrimitiveContainerT, rapter::Solver::PointContainerT>( argc, argv );
     }
-    else if ( GF2::console::find_switch(argc,argv,"--formulate3D") )
+    else if ( rapter::console::find_switch(argc,argv,"--formulate3D") )
     {
         return formulate3D( argc, argv );
-        //return GF2::ProblemSetup::formulateCli<GF2::Solver::PrimitiveContainerT, GF2::Solver::PointContainerT>( argc, argv );
+        //return rapter::ProblemSetup::formulateCli<rapter::Solver::PrimitiveContainerT, rapter::Solver::PointContainerT>( argc, argv );
     }
-    else if ( GF2::console::find_switch(argc,argv,"--solver") ) // Note: "solver", not "solve" :-S
+    else if ( rapter::console::find_switch(argc,argv,"--solver") ) // Note: "solver", not "solve" :-S
     {
         return solve( argc, argv );
-        //return GF2::Solver::solve( argc, argv );
+        //return rapter::Solver::solve( argc, argv );
     }
-    else if ( GF2::console::find_switch(argc,argv,"--solver3D") ) // Note: "solver", not "solve" :-S
+    else if ( rapter::console::find_switch(argc,argv,"--solver3D") ) // Note: "solver", not "solve" :-S
     {
         return solve3D( argc, argv );
     }
-//    else if ( GF2::console::find_switch(argc,argv,"--datafit") || GF2::console::find_switch(argc,argv,"--datafit3D") )
+//    else if ( rapter::console::find_switch(argc,argv,"--datafit") || rapter::console::find_switch(argc,argv,"--datafit3D") )
 //    {
 //        return datafit( argc, argv );
-//        //return GF2::Solver::datafit( argc, argv );
+//        //return rapter::Solver::datafit( argc, argv );
 //    }
-    else if ( GF2::console::find_switch(argc,argv,"--merge") || GF2::console::find_switch(argc,argv,"--merge3D") )
+    else if ( rapter::console::find_switch(argc,argv,"--merge") || rapter::console::find_switch(argc,argv,"--merge3D") )
     {
         return merge(argc, argv);
     }
-    else if ( GF2::console::find_switch(argc,argv,"--show") )
+    else if ( rapter::console::find_switch(argc,argv,"--show") )
     {
         std::cerr << "[" << __func__ << "]: " << "the show option has been moved to a separate executable, please use thatt one" << std::endl;
         return 1;
-        //return GF2::Solver::show( argc, argv );
+        //return rapter::Solver::show( argc, argv );
     }
-    else if ( GF2::console::find_switch(argc,argv,"--subsample") )
+    else if ( rapter::console::find_switch(argc,argv,"--subsample") )
     {
         return subsample( argc, argv );
     }
-    else if ( GF2::console::find_switch(argc,argv,"--reassign") )
+    else if ( rapter::console::find_switch(argc,argv,"--reassign") )
     {
         return reassign( argc, argv );
     }
-    else if ( GF2::console::find_switch(argc,argv,"--represent") || GF2::console::find_switch(argc,argv,"--represent3D")
-              || GF2::console::find_switch(argc,argv,"--representBack") || GF2::console::find_switch(argc,argv,"--representBack3D") )
+    else if ( rapter::console::find_switch(argc,argv,"--represent") || rapter::console::find_switch(argc,argv,"--represent3D")
+              || rapter::console::find_switch(argc,argv,"--representBack") || rapter::console::find_switch(argc,argv,"--representBack3D") )
     {
         return represent( argc, argv );
     }
-//    else if ( GF2::console::find_switch(argc,argv,"--corresp") || GF2::console::find_switch(argc,argv,"--corresp3D") )
+//    else if ( rapter::console::find_switch(argc,argv,"--corresp") || rapter::console::find_switch(argc,argv,"--corresp3D") )
 //    {
 //        return corresp( argc, argv );
 //    }
@@ -119,6 +119,6 @@ int main( int argc, char *argv[] )
 //    float scale = 0.1f;
 //    pcl::console::parse_argument( argc, argv, "--scale", scale );
 
-//    return GF2::Solver::run( img_path, scale, {0, M_PI_2, M_PI}, argc, argv );
+//    return rapter::Solver::run( img_path, scale, {0, M_PI_2, M_PI}, argc, argv );
 }
 

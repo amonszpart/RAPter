@@ -3,18 +3,18 @@
 #include "pcl/io/io.h"
 #include "pcl/io/ply_io.h"
 #include "pcl/common/common.h"
-#include "globfit2/globOpt_types.h"
-#include "globfit2/io/io.h"
-#include "globfit2/simple_types.h" //GidT,LidT
+#include "rapter/globOpt_types.h"
+#include "rapter/io/io.h"
+#include "rapter/simple_types.h" //GidT,LidT
 
 int reassign( int argc, char** argv )
 {
     typedef Eigen::Vector4f Position;
-    typedef GF2::PointContainerT PointContainerT;
-    typedef GF2::PointPrimitiveT PointPrimitiveT;
-    typedef GF2::_3d::InnerPrimitiveContainerT InnerPrimitiveContainerT;
-    typedef GF2::_3d::PrimitiveContainerT PrimitiveContainerT;
-    typedef GF2::_3d::PrimitiveT PrimitiveT;
+    typedef rapter::PointContainerT PointContainerT;
+    typedef rapter::PointPrimitiveT PointPrimitiveT;
+    typedef rapter::_3d::InnerPrimitiveContainerT InnerPrimitiveContainerT;
+    typedef rapter::_3d::PrimitiveContainerT PrimitiveContainerT;
+    typedef rapter::_3d::PrimitiveT PrimitiveT;
 
     bool        valid_input             = true;
     std::string cloud_path              = "./cloud.ply", associations_path, input_prims_path;
@@ -59,16 +59,16 @@ int reassign( int argc, char** argv )
     PointContainerT points;
     if ( EXIT_SUCCESS == err )
     {
-        err = GF2::io::readPoints<PointPrimitiveT>( points, cloud_path );
+        err = rapter::io::readPoints<PointPrimitiveT>( points, cloud_path );
         if ( err != EXIT_SUCCESS )  std::cerr << "[" << __func__ << "]: " << "readPoints returned error " << err << std::endl;
     } //...read points
 
-    typedef std::map<GF2::GidT, InnerPrimitiveContainerT> PrimitiveMapT;
+    typedef std::map<rapter::GidT, InnerPrimitiveContainerT> PrimitiveMapT;
     PrimitiveContainerT planes;
     PrimitiveMapT patches;
     {
         std::cout << "[" << __func__ << "]: " << "reading primitives from " << input_prims_path << "...";
-        GF2::io::readPrimitives<PrimitiveT, InnerPrimitiveContainerT>( planes, input_prims_path, &patches );
+        rapter::io::readPrimitives<PrimitiveT, InnerPrimitiveContainerT>( planes, input_prims_path, &patches );
         std::cout << "reading primitives ok (#: " << planes.size() << ")\n";
     } //...read primitives
 
@@ -97,7 +97,7 @@ int reassign( int argc, char** argv )
         points[pid].setTag( PointPrimitiveT::TAGS::GID, min_gid );
     }
     std::cout << "finishing assignment" << std::endl;
-    GF2::io::writeAssociations<PointPrimitiveT>( points, "./points_primitives.schnabel.csv" );
+    rapter::io::writeAssociations<PointPrimitiveT>( points, "./points_primitives.schnabel.csv" );
 
 
 

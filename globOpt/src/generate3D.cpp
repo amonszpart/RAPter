@@ -1,18 +1,18 @@
-#include "globfit2/globOpt_types.h" // _2d, _3d namespaces
-#include "globfit2/util/parse.h" // GF2::console
+#include "rapter/globOpt_types.h" // _2d, _3d namespaces
+#include "rapter/util/parse.h" // rapter::console
 
-#include "globfit2/optimization/candidateGenerator.h"
-#include "globopt/primitives/impl/planePrimitive.hpp"
+#include "rapter/optimization/candidateGenerator.h"
+#include "rapter/primitives/impl/planePrimitive.hpp"
 
 int generate3D( int argc, char** argv )
 {
-    if ( GF2::console::find_switch(argc,argv,"--generate3D") )
+    if ( rapter::console::find_switch(argc,argv,"--generate3D") )
     {
-        return GF2::CandidateGenerator::generateCli< GF2::_3d::PrimitiveContainerT
-                                                   , GF2::PointContainerT
-                                                   , GF2::Scalar
-                                                   , GF2::PointPrimitiveT
-                                                   , GF2::_3d::PrimitiveT
+        return rapter::CandidateGenerator::generateCli< rapter::_3d::PrimitiveContainerT
+                                                   , rapter::PointContainerT
+                                                   , rapter::Scalar
+                                                   , rapter::PointPrimitiveT
+                                                   , rapter::_3d::PrimitiveT
                                                    >( argc, argv );
     }
     else

@@ -1,12 +1,12 @@
 #include "globfit2/globOpt_types.h"
-//#include "globopt/primitives/impl/planePrimitive.hpp"
+//#include "rapter/primitives/impl/planePrimitive.hpp"
 #include "globopt/evaluation/impl/assignPointsToTriangles.hpp"
 
-namespace globopt
+namespace rapter
 {
     template
-    int assignPointsToTriangles< GF2::_3d::PrimitiveVectorT
-                                 , GF2::_3d::PrimitiveMapT
-                                 , GF2::PointContainerT
-                                 , GF2::PclCloudT>( int argc, char** argv );
-} //...ns globopt
+    int assignPointsToTriangles< rapter::_3d::PrimitiveVectorT
+                                 , rapter::_3d::PrimitiveMapT
+                                 , rapter::PointContainerT
+                                 , rapter::PclCloudT>( int argc, char** argv );
+} //...ns rapter

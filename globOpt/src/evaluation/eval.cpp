@@ -3,7 +3,7 @@
 #include "globfit2/globOpt_types.h"
 #include "globopt/evaluation/assignPointsToTriangles.h"
 
-namespace globopt
+namespace rapter
 {
 namespace eval
 {
@@ -18,28 +18,28 @@ inline int printUsage( int argc, char** argv )
 
 int main(int argc, char *argv[])
 {
-    if ( GF2::console::find_switch(argc,argv,"--help") )
+    if ( rapter::console::find_switch(argc,argv,"--help") )
     {
-        return globopt::eval::printUsage( argc, argv );
+        return rapter::eval::printUsage( argc, argv );
     }
-    else if ( GF2::console::find_switch(argc,argv,"--assign") )
+    else if ( rapter::console::find_switch(argc,argv,"--assign") )
     {
-        if ( GF2::console::find_switch(argc,argv,"--planes") )
+        if ( rapter::console::find_switch(argc,argv,"--planes") )
         {
-            return globopt::assignPointsToTriangles<GF2::_3d::PrimitiveVectorT
-                    , GF2::_3d::PrimitiveMapT
-                    , GF2::PointContainerT
-                    , GF2::PclCloudT>
+            return rapter::assignPointsToTriangles<rapter::_3d::PrimitiveVectorT
+                    , rapter::_3d::PrimitiveMapT
+                    , rapter::PointContainerT
+                    , rapter::PclCloudT>
                     ( argc, argv );
         }
-        else if ( GF2::console::find_switch(argc,argv,"--lines") )
+        else if ( rapter::console::find_switch(argc,argv,"--lines") )
         {
             std::cout << "--lines (2D) unimplemented" << std::endl;
             return EXIT_FAILURE;
         }
     }
     else
-        return globopt::eval::printUsage( argc, argv );
+        return rapter::eval::printUsage( argc, argv );
 
     return EXIT_FAILURE;
 }

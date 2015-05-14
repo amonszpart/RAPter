@@ -1,16 +1,16 @@
 #include "Eigen/Dense"
 
-#include "globopt/primitives/impl/planePrimitive.hpp"
-#include "globfit2/globOpt_types.h"
+#include "rapter/primitives/impl/planePrimitive.hpp"
+#include "rapter/globOpt_types.h"
 
-GF2::PlanePrimitive
-GF2::PlanePrimitive::fromFileEntry( std::vector<GF2::PlanePrimitive::Scalar> const& entries )
+rapter::PlanePrimitive
+rapter::PlanePrimitive::fromFileEntry( std::vector<rapter::PlanePrimitive::Scalar> const& entries )
 {
-    return GF2::PlanePrimitive( /*    pos: */ Eigen::Map<const Eigen::Matrix<Scalar,3,1> >( entries.data()  , 3 ),
+    return rapter::PlanePrimitive( /*    pos: */ Eigen::Map<const Eigen::Matrix<Scalar,3,1> >( entries.data()  , 3 ),
                                 /* normal: */ Eigen::Map<const Eigen::Matrix<Scalar,3,1> >( entries.data()+3, 3 ) );
 }
 
-namespace GF2
+namespace rapter
 {
     std::string PlanePrimitive::toFileEntry() const
     {
@@ -26,12 +26,12 @@ namespace GF2
     {
         return MyPointFinitePlaneDistanceFunctor::eval( extrema, *this, pnt );
     }
-} //...ns GF2
+} //...ns rapter
 
-namespace GF2
+namespace rapter
 {
     template
-    class Primitive<3,6,GF2::Scalar>;
+    class Primitive<3,6, rapter::Scalar>;
 
     namespace templ_inst
     {

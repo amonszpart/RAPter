@@ -39,7 +39,7 @@ int ransacCli( int argc, char **argv )
 {
     typedef typename _InnerPrimitiveContainerT::value_type    PrimitiveT;
     typedef typename _PointContainerT::value_type             PointPrimitiveT;
-    typedef          std::map<GF2::GidT, _InnerPrimitiveContainerT> PrimitiveMapT;
+    typedef          std::map<rapter::GidT, _InnerPrimitiveContainerT> PrimitiveMapT;
     typedef typename PointPrimitiveT::Scalar                  Scalar;
     typedef typename _PclCloudT::PointType                    PclPointT;
 
@@ -61,7 +61,7 @@ int ransacCli( int argc, char **argv )
 
     // parse
     {
-        valid_input = EXIT_SUCCESS == GF2::parseInput<_InnerPrimitiveContainerT,_PclCloudT>( points, pclCloud, initial_primitives, patches, params, argc, argv );
+        valid_input = EXIT_SUCCESS == rapter::parseInput<_InnerPrimitiveContainerT,_PclCloudT>( points, pclCloud, initial_primitives, patches, params, argc, argv );
         params.modelType = pcl::console::find_switch( argc, argv, "--3D" ) ? pcl::SacModel::SACMODEL_PLANE
                                                                            : pcl::SacModel::SACMODEL_LINE;
         usePatches = pcl::console::find_switch( argc, argv, "--use-patches");
@@ -80,8 +80,8 @@ int ransacCli( int argc, char **argv )
         pcl::console::parse_argument( argc, argv, "--max-prims", maxPlanes );
 
         if (     !valid_input
-              || (GF2::console::find_switch(argc,argv,"-h"    ))
-              || (GF2::console::find_switch(argc,argv,"--help")) )
+              || (rapter::console::find_switch(argc,argv,"-h"    ))
+              || (rapter::console::find_switch(argc,argv,"--help")) )
         {
             std::cout << "[" << __func__ << "]: " << "Usage: " << argv[0] << "\n"
                       << "\t --cloud " << /*cloud_path <<*/ "\n"
@@ -106,8 +106,8 @@ int ransacCli( int argc, char **argv )
     std::vector<int> inliers;
 
     // created RandomSampleConsensus object and compute the appropriated model
-    GF2::GidPidVectorMap populations;
-    GF2::processing::getPopulations( populations, points );
+    rapter::GidPidVectorMap populations;
+    rapter::processing::getPopulations( populations, points );
 
     if ( !usePatches )
     {
@@ -159,7 +159,7 @@ int ransacCli( int argc, char **argv )
 
                             int gid = out_prims.size();
 
-                            GF2::containers::add( out_prims, gid, *primToAdd )
+                            rapter::containers::add( out_prims, gid, *primToAdd )
                                     .setTag( PrimitiveT::TAGS::GID    , gid )
                                     .setTag( PrimitiveT::TAGS::DIR_GID, gid );
                             std::cout << "created " << out_prims[gid].back().toString() << ", distO: " << out_prims[gid].back().getDistance( Eigen::Matrix<Scalar,3,1>::Zero() )  << std::endl;
@@ -218,7 +218,7 @@ int ransacCli( int argc, char **argv )
 
                                 Eigen::Matrix<Scalar,3,1> nrm = ransac.model_coefficients_.template head<3>();
                                 nrm.normalize();
-                                GF2::containers::add( out_prims, gid, PrimitiveT( Eigen::Matrix<Scalar,3,1>::Zero() - nrm * ransac.model_coefficients_(3), nrm) )
+                                rapter::containers::add( out_prims, gid, PrimitiveT( Eigen::Matrix<Scalar,3,1>::Zero() - nrm * ransac.model_coefficients_(3), nrm) )
                                         .setTag( PrimitiveT::TAGS::GID    , gid )
                                         .setTag( PrimitiveT::TAGS::DIR_GID, gid );
                                 std::cout << "created " << out_prims[gid].back().toString() << ", distO: " << out_prims[gid].back().getDistance( Eigen::Matrix<Scalar,3,1>::Zero() )  << std::endl;
@@ -250,7 +250,7 @@ int ransacCli( int argc, char **argv )
                             // save line
                             if ( inliers.size() )
                             {
-                                GF2::containers::add( out_prims, gid, PrimitiveT( ransac.model_coefficients_.template head<3>(), ransac.model_coefficients_.template segment<3>(3)) )
+                                rapter::containers::add( out_prims, gid, PrimitiveT( ransac.model_coefficients_.template head<3>(), ransac.model_coefficients_.template segment<3>(3)) )
                                         .setTag( PrimitiveT::TAGS::GID    , gid )
                                         .setTag( PrimitiveT::TAGS::DIR_GID, gid );
                                 std::cout << "created " << out_prims[gid].back().toString() << std::endl;
@@ -278,8 +278,8 @@ int ransacCli( int argc, char **argv )
         } //...for each patch
         } //...if use patch
 
-    GF2::io::savePrimitives<PrimitiveT,typename _InnerPrimitiveContainerT::const_iterator>( out_prims, "./primitives.ransac.csv" );
-    GF2::io::writeAssociations<PointPrimitiveT>( points, "./points_primitives.ransac.csv" );
+    rapter::io::savePrimitives<PrimitiveT,typename _InnerPrimitiveContainerT::const_iterator>( out_prims, "./primitives.ransac.csv" );
+    rapter::io::writeAssociations<PointPrimitiveT>( points, "./points_primitives.ransac.csv" );
 
     return err;
 }
@@ -345,13 +345,13 @@ template < typename _PointContainerT
 inline int schnabelCli( int argc, char** argv )
 {
     typedef typename _PclCloudT::PointType                    PclPointT;
-    typedef          std::map<GF2::GidT, _InnerPrimitiveContainerT> PrimitiveMapT;
+    typedef          std::map<rapter::GidT, _InnerPrimitiveContainerT> PrimitiveMapT;
     typedef typename _PointContainerT::value_type             PointPrimitiveT;
     typedef typename _InnerPrimitiveContainerT::value_type   PrimitiveT;
     typedef typename _PclCloudT::PointType                    PclPointT;
 
     bool extrude2D = false;
-    if ( GF2::console::find_switch(argc,argv,"--schnabel2D") )
+    if ( rapter::console::find_switch(argc,argv,"--schnabel2D") )
         extrude2D = true;
     if ( extrude2D )
         std::cout << "hello Schnabel2D\n";
@@ -365,21 +365,21 @@ inline int schnabelCli( int argc, char** argv )
     PrimitiveMapT            patches;
     int                      min_support_arg = 300;
     int pointMultiplier = 50;
-    GF2::console::parse_argument( argc, argv, "--point-mult", pointMultiplier);
+    rapter::console::parse_argument( argc, argv, "--point-mult", pointMultiplier);
 
     // parse
     {
-        bool valid_input = !GF2::parseInput<_InnerPrimitiveContainerT,_PclCloudT>( points, pcl_cloud, initial_primitives, patches, params, argc, argv );
+        bool valid_input = !rapter::parseInput<_InnerPrimitiveContainerT,_PclCloudT>( points, pcl_cloud, initial_primitives, patches, params, argc, argv );
 
-        if ( (GF2::console::parse_argument( argc, argv, "--minsup", min_support_arg) < 0) )
+        if ( (rapter::console::parse_argument( argc, argv, "--minsup", min_support_arg) < 0) )
         {
             std::cerr << "[" << __func__ << "]: " << "--minsup required (300?)" << std::endl;
             valid_input = false;
         }
 
         if (     !valid_input
-              || (GF2::console::find_switch(argc,argv,"-h"    ))
-              || (GF2::console::find_switch(argc,argv,"--help")) )
+              || (rapter::console::find_switch(argc,argv,"-h"    ))
+              || (rapter::console::find_switch(argc,argv,"--help")) )
         {
             std::cout << "[" << __func__ << "]: " << "Usage: " << argv[0] << "\n"
                       << "\t --cloud " << /*cloud_path <<*/ "\n"
@@ -419,11 +419,11 @@ inline int schnabelCli( int argc, char** argv )
         vptr->spinOnce(100);
     }
 
-    typedef std::map<GF2::PidT,GF2::GidT> PidGidT;
-     std::vector<GF2::PlanePrimitive> planes;
+    typedef std::map<rapter::PidT, rapter::GidT> PidGidT;
+     std::vector<rapter::PlanePrimitive> planes;
      PidGidT                          pidGid;
 
-     err = GF2::SchnabelEnv::run<pcl::PointCloud<PclPointT> >( planes
+     err = rapter::SchnabelEnv::run<pcl::PointCloud<PclPointT> >( planes
                                //, pidGid
                                , outPoints
                                , points
@@ -439,7 +439,7 @@ inline int schnabelCli( int argc, char** argv )
     PrimitiveMapT out_prims;
     for ( size_t gid = 0; gid != planes.size(); ++gid )
     {
-        GF2::containers::add( out_prims, gid, planes[gid] )
+        rapter::containers::add( out_prims, gid, planes[gid] )
                 .setTag( PrimitiveT::TAGS::GID    , gid )
                 .setTag( PrimitiveT::TAGS::DIR_GID, gid );
         std::cout << "added " << out_prims[gid].back().toString() << std::endl;
@@ -491,15 +491,15 @@ inline int schnabelCli( int argc, char** argv )
     char outPrimsPath[ 512 ], outAssocPath[512], outCloudPath[512];
     sprintf( outPrimsPath, "./schnabel_minsup%d.primitives.csv", min_support_arg );
     std::cout << " writing " << out_prims.size() << " primitives to " << outPrimsPath << std::endl;
-    GF2::io::savePrimitives<PrimitiveT,std::vector<GF2::PlanePrimitive>::const_iterator >( out_prims, std::string(outPrimsPath) );
+    rapter::io::savePrimitives<PrimitiveT,std::vector<rapter::PlanePrimitive>::const_iterator >( out_prims, std::string(outPrimsPath) );
 
     sprintf( outAssocPath, "./schnabel_minsup%d.points_primitives.csv", min_support_arg );
     std::cout << " writing " << outPoints.size() << " assignments to " << outAssocPath << std::endl;
-    GF2::io::writeAssociations<PointPrimitiveT>( outPoints, outAssocPath );
+    rapter::io::writeAssociations<PointPrimitiveT>( outPoints, outAssocPath );
 
     sprintf( outCloudPath, "./schnabel_minsup%d.cloud.ply", min_support_arg );
     std::cout << " writing " << outPoints.size() << " points to " << outCloudPath << std::endl;
-    GF2::io::writePoints<PointPrimitiveT>( outPoints, outCloudPath );
+    rapter::io::writePoints<PointPrimitiveT>( outPoints, outCloudPath );
 
     std::cout << "../show.py -p " << outPrimsPath << " -a " << outAssocPath << " --cloud " << outCloudPath << " --scale " << params.scale << "\n";
 
@@ -512,36 +512,36 @@ int main(int argc, char *argv[])
     typedef          pcl::PointCloud<PclPointT>               PclCloudT;
 
     std::cout << "hello ransac\n";
-    if ( GF2::console::find_switch(argc,argv,"--schnabel3D") || GF2::console::find_switch(argc,argv,"--schnabel2D") )
+    if ( rapter::console::find_switch(argc,argv,"--schnabel3D") || rapter::console::find_switch(argc,argv,"--schnabel2D") )
     {
-        return schnabelCli< GF2::PointContainerT
-                          , GF2::_3d::InnerPrimitiveContainerT
-                          , GF2::_3d::PrimitiveContainerT
+        return schnabelCli< rapter::PointContainerT
+                          , rapter::_3d::InnerPrimitiveContainerT
+                          , rapter::_3d::PrimitiveContainerT
                           , PclCloudT
                           >( argc, argv);
     }
-    else if ( GF2::console::find_switch(argc,argv,"--assign") )
+    else if ( rapter::console::find_switch(argc,argv,"--assign") )
     {
-        return GF2::reassignCli< GF2::PointContainerT
-                               , GF2::_3d::InnerPrimitiveContainerT
-                               , GF2::_3d::PrimitiveContainerT
+        return rapter::reassignCli< rapter::PointContainerT
+                               , rapter::_3d::InnerPrimitiveContainerT
+                               , rapter::_3d::PrimitiveContainerT
                                , PclCloudT
                                >( argc, argv);
     }
-    else if ( GF2::console::find_switch(argc,argv,"--3D") )
+    else if ( rapter::console::find_switch(argc,argv,"--3D") )
     {
         std::cout << "running planes" << std::endl;
-        return ransacCli< GF2::PointContainerT
-                       , GF2::_3d::InnerPrimitiveContainerT
-                       , GF2::_3d::PrimitiveContainerT
+        return ransacCli< rapter::PointContainerT
+                       , rapter::_3d::InnerPrimitiveContainerT
+                       , rapter::_3d::PrimitiveContainerT
                        , PclCloudT
                        >( argc, argv );
     }
     else
     {
-        return ransacCli< GF2::PointContainerT
-                       , GF2::_2d::InnerPrimitiveContainerT
-                       , GF2::_2d::PrimitiveContainerT
+        return ransacCli< rapter::PointContainerT
+                       , rapter::_2d::InnerPrimitiveContainerT
+                       , rapter::_2d::PrimitiveContainerT
                        , PclCloudT
                        >( argc, argv );
     } // if 3D

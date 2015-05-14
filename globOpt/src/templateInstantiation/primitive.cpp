@@ -1,7 +1,7 @@
-#include "globfit2/simple_types.h"
-#include "globfit2/primitives/primitive.h"
+#include "rapter/simple_types.h"
+#include "rapter/primitives/primitive.h"
 
 template
-class GF2::Primitive<2,6,GF2::__Scalar>;
+class rapter::Primitive<2,6, rapter::__Scalar>;
 template
-class GF2::Primitive<3,6,GF2::__Scalar>;
+class rapter::Primitive<3,6, rapter::__Scalar>;

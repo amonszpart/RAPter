@@ -1,6 +1,6 @@
-#include "globopt/primitives/taggable.h"
-#include "globopt/primitives/impl/taggable.hpp"
+#include "rapter/primitives/taggable.h"
+#include "rapter/primitives/impl/taggable.hpp"
 
 template
-class globopt::Taggable<float>;
+class rapter::Taggable<float>;
 

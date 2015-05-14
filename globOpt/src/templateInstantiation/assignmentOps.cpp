@@ -1,13 +1,13 @@
-#include "globfit2/globOpt_types.h"
-#include "globopt/processing/impl/assignmentOps.hpp"
-#include "globfit2/primitives/planePrimitive.h"
-#include "globopt/primitives/impl/planePrimitive.hpp"
+#include "rapter/globOpt_types.h"
+#include "rapter/processing/impl/assignmentOps.hpp"
+#include "rapter/primitives/planePrimitive.h"
+#include "rapter/primitives/impl/planePrimitive.hpp"
 
-namespace globopt
+namespace rapter
 {
     template
-    int approxUnassignedWPlanes< GF2::_3d::PrimitiveVectorT
-                           , GF2::_3d::PrimitiveMapT
-                           , GF2::PointContainerT
-                           , GF2::PclCloudT>( int argc, char** argv );
+    int approxUnassignedWPlanes< rapter::_3d::PrimitiveVectorT
+                           , rapter::_3d::PrimitiveMapT
+                           , rapter::PointContainerT
+                           , rapter::PclCloudT>( int argc, char** argv );
 }
