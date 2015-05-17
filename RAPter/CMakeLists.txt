@@ -15,9 +15,9 @@ SET( PCL_DIR "${THIRD_PARTY_DIR}/pcl-trunk2/install/share/pcl-1.8/"
 # BONMIN
 SET( PATH_BONMIN_DIR "${THIRD_PARTY_DIR}/CoinBonmin-stable/build/")
 
-# QCQPCPP
-SET( PATH_QCQPCPP_ROOT "${WORKSPACE_DIR}/QCQPcpp/"
-        CACHE FILEPATH "Root directory of QCQPcpp library containing the \"include\" directory.")
+## QCQPCPP
+#SET( PATH_QCQPCPP_ROOT "${WORKSPACE_DIR}/QCQPcpp/"
+#        CACHE FILEPATH "Root directory of QCQPcpp library containing the \"include\" directory.")
 
 # PEARL, GCO
 SET( PATH_GLOBOPT_DEPS_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../../globOptDeps"
@@ -96,7 +96,16 @@ SET(BONMIN_LIBRARIES
 INCLUDE_DIRECTORIES( ${PATH_BONMIN_DIR}/include )
 
 # QCQPCPP
-INCLUDE_DIRECTORIES( ${PATH_QCQPCPP_ROOT}/include )
+#INCLUDE_DIRECTORIES( ${PATH_QCQPCPP_ROOT}/include )
+SET( QCQPCPP_H_LIST
+    external/qcqpcpp/optProblem.h
+    external/qcqpcpp/bonminOptProblem.h
+    external/qcqpcpp/io/io.h
+)
+SET( QCQPCPP_HPP_LIST
+    external/qcqpcpp/impl/optProblem.hpp
+)
+INCLUDE_DIRECTORIES( external )
 
 # libfbi
 INCLUDE_DIRECTORIES( ${PATH_LIBFBI_ROOT}/include )
@@ -149,6 +158,7 @@ SET( RAPTER_HPP_LIST
     include/rapter/util/impl/pclUtil.hpp
     include/rapter/util/containers.hpp
     include/rapter/util/lruCache.hpp
+    ${QCQPCPP_HPP_LIST}
 )
 
 SET( RAPTER_H_LIST
@@ -172,6 +182,7 @@ SET( RAPTER_H_LIST
     include/rapter/primitives/planePrimitive.h
     include/rapter/util/parse.h
     include/rapter/util/pclUtil.h
+    ${QCQPCPP_H_LIST}
 )
 
 SET( RAPTER_SRC_LIST

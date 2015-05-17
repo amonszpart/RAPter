@@ -222,9 +222,9 @@ namespace rapter
 
         // was this direction-angle pair already covered?
         {
-#warning "bumm 19/4/2015"
-            //if ( copied[gid0].find(DidAid(dir_gid1,closest_angle_id0)) != copied[gid0].end() )
-            //    add0 = false;
+//#warning "bumm 19/4/2015"
+            if ( copied[gid0].find(DidAid(dir_gid1,closest_angle_id0)) != copied[gid0].end() )
+                add0 = false;
         }
 
         // are we still adding it?
@@ -519,13 +519,13 @@ namespace rapter
 
 
         // count patch populations
-        std::cout << "[" << __func__ << "]: " << "populations start" << std::endl; fflush(stdout);
+        if ( verbose ) { std::cout << "[" << __func__ << "]: " << "populations start" << std::endl; fflush(stdout); }
         GidPidVectorMap populations; // populations[patch_id] = all points with GID==patch_id
         processing::getPopulations( populations, points );
-        std::cout << "[" << __func__ << "]: " << "populations end" << std::endl; fflush(stdout);
+        if ( verbose ) { std::cout << "[" << __func__ << "]: " << "populations end" << std::endl; fflush(stdout); }
 
         // _________ (1) promotion _________
-        std::cout << "[" << __func__ << "]: " << "promotion start" << std::endl; fflush(stdout);
+        if ( verbose ) { std::cout << "[" << __func__ << "]: " << "promotion start" << std::endl; fflush(stdout); }
         // upgrade primitives to large, and copy large primitives to output
         // added on 21/09/2014 by Aron
         std::set<GidLid> promoted; // Contains primitives, that were small, but now are large (active)
@@ -629,10 +629,10 @@ namespace rapter
             //    safe_mode = false;
             //}
         } //...promote
-        std::cout << "[" << __func__ << "]: " << "populations end" << std::endl; fflush(stdout);
+        if ( verbose ) { std::cout << "[" << __func__ << "]: " << "populations end" << std::endl; fflush(stdout); }
 
         // _________ (2) statistics _________
-        std::cout << "[" << __func__ << "]: " << "angle stats start" << std::endl; fflush(stdout);
+        if ( verbose ) { std::cout << "[" << __func__ << "]: " << "angle stats start" << std::endl; fflush(stdout); }
         // ANGLES
         std::map<DidT,AnglesT> allowedAngles;      // final storage to store allowed angles
         //AnglesT                angle_gens_in_rad;
@@ -679,7 +679,7 @@ namespace rapter
                 // 2.1 Understand from angles, which generators we got from cli (i.e. 90, or 60,90)
                 //deduceGenerators<_Scalar>( angle_gens_in_rad, angles );
                 // log
-                std::cout<<"[" << __func__ << "]: " << "angle_gens_in_rad:";for(size_t vi=0;vi!=angle_gens_in_rad.size();++vi)std::cout<<angle_gens_in_rad[vi]*180./M_PI<<" ";std::cout << "\n";
+                std::cout<<"[" << __func__ << "]: " << "angle_gens_in_rad: ";for(size_t vi=0;vi!=angle_gens_in_rad.size();++vi)std::cout<<angle_gens_in_rad[vi]*180./M_PI<<" ";std::cout << "\n";
 
                 // 2.2 estimate direction cluster angles
                 {
@@ -697,7 +697,7 @@ namespace rapter
                 }
             }
         }
-        std::cout << "[" << __func__ << "]: " << "angle stats stop" << std::endl; fflush(stdout);
+        if ( verbose ) { std::cout << "[" << __func__ << "]: " << "angle stats stop" << std::endl; fflush(stdout); }
 
         /* Status of primitives at this stage are:
          * ACTIVE      for large primitives to use
@@ -706,7 +706,7 @@ namespace rapter
          */
 
         // _________ (3) generation _________
-        std::cout << "[" << __func__ << "]: " << "generate start" << std::endl; fflush(stdout);
+        if ( verbose ) { std::cout << "[" << __func__ << "]: " << "generate start" << std::endl; fflush(stdout); }
 
         DidT maxDid = 0; // collects currently existing maximum cluster id (!small, active, all!)
 
@@ -751,26 +751,24 @@ namespace rapter
                                     prim1, prim0, lid1, lid0, safe_mode, allowPromoted, angle_limit, angles, angle_gens_in_rad, promoted,
                                     allowedAngles, copied, generated, nlines, outPrims, points, scale, &aliases, tripletSafe, verbose );
 
-#warning "wasteful 19/4/2015"
-                        if ( gid1 == 299 || gid0 == 299 )
-                            std::cout << "deb" << std::endl;
+//#warning "wasteful 19/4/2015"
 
-                        AnglesT tmpAngles = AnglesT({0.});
-                        addCandidate<_PrimitivePrimitiveAngleFunctorT>(
-                                    prim0, prim1, lid0, lid1, safe_mode, allowPromoted, angle_limit, tmpAngles, angle_gens_in_rad, promoted,
-                                    allowedAngles, copied, generated, nlines, outPrims, points, scale, &aliases, tripletSafe, verbose );
-                        addCandidate<_PrimitivePrimitiveAngleFunctorT>(
-                                    prim1, prim0, lid1, lid0, safe_mode, allowPromoted, angle_limit, tmpAngles, angle_gens_in_rad, promoted,
-                                    allowedAngles, copied, generated, nlines, outPrims, points, scale, &aliases, tripletSafe, verbose );
+//                        AnglesT tmpAngles = AnglesT({0.});
+//                        addCandidate<_PrimitivePrimitiveAngleFunctorT>(
+//                                    prim0, prim1, lid0, lid1, safe_mode, allowPromoted, angle_limit, tmpAngles, angle_gens_in_rad, promoted,
+//                                    allowedAngles, copied, generated, nlines, outPrims, points, scale, &aliases, tripletSafe, verbose );
+//                        addCandidate<_PrimitivePrimitiveAngleFunctorT>(
+//                                    prim1, prim0, lid1, lid0, safe_mode, allowPromoted, angle_limit, tmpAngles, angle_gens_in_rad, promoted,
+//                                    allowedAngles, copied, generated, nlines, outPrims, points, scale, &aliases, tripletSafe, verbose );
 
                     } //...for l3
                 } //...for l2
             } //...for l1
         } //...for l0
-        std::cout << "[" << __func__ << "]: " << "generate end" << std::endl; fflush(stdout);
+        if ( verbose ) { std::cout << "[" << __func__ << "]: " << "generate end" << std::endl; fflush(stdout); }
 
         // ___________ (4) ALIASES _______________
-        std::cout << "[" << __func__ << "]: " << "alias start" << std::endl; fflush(stdout);
+        if ( verbose ) { std::cout << "[" << __func__ << "]: " << "alias start" << std::endl; fflush(stdout); }
 
         // [did][angle] = AliasT( gid, lid, prim )
         for ( auto aliasIt = aliases.begin(); aliasIt != aliases.end(); ++aliasIt )
@@ -827,10 +825,10 @@ namespace rapter
                 } //...outer for
             } //...for all angles
         } //...for all aliases
-        std::cout << "[" << __func__ << "]: " << "alias end" << std::endl; fflush(stdout);
+        if ( verbose ) { std::cout << "[" << __func__ << "]: " << "alias end" << std::endl; fflush(stdout); }
 
         // ___________ (5) LIMIT VARIABLES _______________
-        std::cout << "[" << __func__ << "]: " << "limit vars start" << std::endl; fflush(stdout);
+        if ( verbose ) { std::cout << "[" << __func__ << "]: " << "limit vars start" << std::endl; fflush(stdout); }
         int ret = EXIT_SUCCESS;
         if ( (var_limit > 0) && (nlines > var_limit) )
         {
@@ -855,7 +853,7 @@ namespace rapter
             // don't do this, if the actives alone were exceeding the limit...
             if ( active_count >= var_limit )
             {
-                std::cerr << "[" << __func__ << "]: " << "!!!!!!!! ALL " << nlines << " ACTIVE or ACTIVEs " << active_count << " > " << var_limit << "var_limit, cannot limit vars! !!!!!!!" << std::endl;
+                std::cerr << "[" << __func__ << "]: " << "!!!!!!!! ALL " << nlines << " ACTIVE or ACTIVEs " << active_count << " > " << var_limit << " var_limit, cannot limit vars! !!!!!!! Increase --small-thresh-mult please." << std::endl;
                 ret = -1;
                 // demote!
                 LidT demoted = 0;
@@ -881,7 +879,7 @@ namespace rapter
                 // (2) Select entries, that get to stay promoted
                 // in: ranks, containing a descending list of variable counts
                 // out: chosen, a list of promoted locations, that should stay promoted in out_prims, others should be demoted back
-                std::cout << "var_limit: " << var_limit << ", active: " << active_count << ", nlines: " << nlines << std::endl;
+                //std::cout << "[" << __func__ << "]: " << "var_limit: " << var_limit << ", active: " << active_count << ", nlines: " << nlines << std::endl;
                 std::set< GidLid > chosen;
                 {
                     LidT vars = active_count;
@@ -904,10 +902,10 @@ namespace rapter
                 ret = ranks.size() - chosen.size();
             } // if too many actives already
         } // filter
-        std::cout << "[" << __func__ << "]: " << "limit vars end" << std::endl; fflush(stdout);
+        if ( verbose ) { std::cout << "[" << __func__ << "]: " << "limit vars end" << std::endl; fflush(stdout); }
 
         // ___________ (6) Make sure allowed angles stick _______________
-        std::cout << "[" << __func__ << "]: " << "allowed start" << std::endl; fflush(stdout);
+        if ( verbose ) { std::cout << "[" << __func__ << "]: " << "allowed start" << std::endl; fflush(stdout); }
         std::map<DidT,LidT> directionPopulation; // counts, how many candidates have a direction
         for ( typename PrimitiveMapT::Iterator primIt(outPrims); primIt.hasNext() && (ret != -1); primIt.step() )
         {
@@ -960,7 +958,7 @@ namespace rapter
                 }
             }
         }
-        std::cout << "[" << __func__ << "]: " << "allowed end" << std::endl; fflush(stdout);
+        if ( verbose ) { std::cout << "[" << __func__ << "]: " << "allowed end" << std::endl; fflush(stdout); }
 
         // log
         std::cout << "[" << __func__ << "]: " << "finished generating, we now have " << nlines << " candidates" << std::endl;
@@ -1198,10 +1196,10 @@ namespace rapter
 
                 //if ( err != EXIT_SUCCESS ) std::cerr << "[" << __func__ << "]: " << "generate exited with error! Code: " << err << std::endl;
                 if ( ret > 0 )
-                    std::cout << "not all patches were promoted( " << ret << " left), will need rerun on same threshold..." << std::endl;
+                    std::cout << "[" << __func__ << "]: " << "Not all patches were promoted( " << ret << " left), will need rerun on same threshold..." << std::endl;
                 else if ( ret < 0 )
                 {
-                    std::cout << "rerunning in safe mode, all active..." << std::endl;
+                    std::cout << "[" << __func__ << "]: " << "rerunning in safe mode, all active..." << std::endl;
                     attemptLimit = 2;
                     generatorParams.safe_mode = 1;
                     primitives.clear();

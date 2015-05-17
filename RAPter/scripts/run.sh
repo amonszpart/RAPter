@@ -7,7 +7,7 @@ execPyStats="python ../collectStatistics.py"
 ###############################################
 doExecPy=true          # Set to true if generating graphs
 dryRun=false           # Values: [true/false]. If "true", don't execute, just show calls
-noVis=true            # Only show premerge and final output
+noVis=true             # Only show premerge and final output
 echo `pwd`
 
 # startAt=0: do segment
@@ -45,13 +45,13 @@ echo "runPath:" $runPath
 echo "source $runPath/runRepr.sh"
 source "$runPath/runRepr.sh";
 echo "loaded runRepr.sh"
-source "$runPath/runFuncs.sh"; 
+source "$runPath/runFuncs.sh";
 echo "loaded runFuncs.sh"
 
 function print_usage() {
         echo "usage:\t run.sh scale anglelimit pairwisecost [pop-limit] [3D] [smallThreshStart]"
         echo "example:\t run.sh 0.03 0.2 1 25 3D 64"
-        echo "showPearl: ../globOptVis --show --scale 0.05 --pop-limit 0 -p primitives.pearl.csv -a points_primitives.pearl.csv --title \"Pearl\" --use-tags --no-clusters --no-pop"
+        echo "showPearl: ../rapterVis --show --scale 0.05 --pop-limit 0 -p primitives.pearl.csv -a points_primitives.pearl.csv --title \"Pearl\" --use-tags --no-clusters --no-pop"
 }
 
 # parse scale
@@ -140,7 +140,7 @@ if [ $startAt -eq 0 ]; then
     cp $input "segments.csv"
     cp $assoc "points_segments.csv"
     if [ "$noVis" = false ] ; then
-            my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p segments.csv -a points_segments.csv --title \"GlobOpt - Segmentation output\" $visdefparam --dir-colours --no-rel &"
+            my_exec "../rapterVis --show$flag3D --scale $scale --pop-limit $poplimit -p segments.csv -a points_segments.csv --title \"GlobOpt - Segmentation output\" $visdefparam --dir-colours --no-rel &"
     fi
 fi
 
@@ -156,7 +156,7 @@ if [ $startAt -le 1 ]; then
         # save patches
         cp patches.csv_merged_it-1.csv $input
         cp points_primitives_it-1.csv $assoc
-        my_exec "../globOptVis --show$flag3D --scale $scale --use-tags --pop-limit $poplimit -p patches.csv -a $assoc --normals 100 --title \"GlobOpt - PreMerge output\" --no-clusters --no-pop --no-rel --bg-colour .9,.9,.9 --angle-gens $anglegens &"
+        my_exec "../rapterVis --show$flag3D --scale $scale --use-tags --pop-limit $poplimit -p patches.csv -a $assoc --normals 100 --title \"GlobOpt - PreMerge output\" --no-clusters --no-pop --no-rel --bg-colour .9,.9,.9 --angle-gens $anglegens &"
     fi #...if premerge
 fi #...startAt <= 1
 
@@ -229,7 +229,7 @@ do
 
         # Show output
         if [ "$noVis" = false ] ; then
-            my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p primitives_it$c.bonmin.csv -a $assoc --title \"GlobOpt - $c iteration output\" $visdefparam &"
+            my_exec "../rapterVis --show$flag3D --scale $scale --pop-limit $poplimit -p primitives_it$c.bonmin.csv -a $assoc --title \"GlobOpt - $c iteration output\" $visdefparam &"
         fi
         
         # Generate relation graphs
@@ -265,7 +265,7 @@ do
         my_exec "$executable --merge$flag3D --scale $mergeScale --adopt $adopt --prims primitives_it$c.bonmin.csv -a $assoc --angle-gens $anglegens --patch-pop-limit $poplimit"
 
         #if [ $c -ge $nbExtraIter ]; then
-        #    my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p primitives_it$c.bonmin.csv -a $assoc --title \"GlobOpt - [Dir-Colours] $c iteration output\" $visdefparam --paral-colours --no-rel &"
+        #    my_exec "../rapterVis --show$flag3D --scale $scale --pop-limit $poplimit -p primitives_it$c.bonmin.csv -a $assoc --title \"GlobOpt - [Dir-Colours] $c iteration output\" $visdefparam --paral-colours --no-rel &"
         #fi
 
         #my_exec "$executable --energy --formulate$flag3D --scale $scale --cloud cloud.ply --unary $unary --pw $pw --cmp $cmp --constr-mode $iterationConstrMode --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $anglegens --candidates primitives_it$c.bonmin.csv -a $assoc --freq-weight $freqweight  --cost-fn $pwCostFunc $formParams"
@@ -286,7 +286,7 @@ do
     c=$(( $c + 1 ))
 done
 c2=$(( $c - 1 ))
-my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p primitives_it$c2.bonmin.csv -a $assoc --title \"GlobOpt - $c2 iteration output ($pw)\" $visdefparam &"
+my_exec "../rapterVis --show$flag3D --scale $scale --pop-limit $poplimit -p primitives_it$c2.bonmin.csv -a $assoc --title \"GlobOpt - $c2 iteration output ($pw)\" $visdefparam &"
 
 if [ "$doExecPy" = true ]; then
     my_exec "$execPyStats .  --angles $anglegens"
