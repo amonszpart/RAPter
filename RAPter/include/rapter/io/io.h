@@ -118,14 +118,14 @@ namespace rapter
                 std::vector<Scalar> floats;
                 std::istringstream iss( line );
                 std::string        tmp_str;
-                while ( /**/ (floats.size() < Dim)
+                while ( /**/ (floats.size() < static_cast<size_t>(Dim))
                         &&   (std::getline(iss, tmp_str, ',') || std::getline(iss, tmp_str)) )
                 {
                     floats.push_back( atof(tmp_str.c_str()) );
                 }
 
                 // error check
-                if ( floats.size() < Dim )
+                if ( floats.size() < static_cast<size_t>(Dim) )
                     std::cerr << "[" << __func__ << "]: " << "not good, floats.size() < Dim..." << std::endl;
 
                 // rest

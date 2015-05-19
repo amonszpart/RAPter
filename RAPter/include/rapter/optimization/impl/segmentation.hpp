@@ -38,10 +38,10 @@ namespace smartgeometry {
     {
         centroid.setZero();
 
-        const int N = indices_arg ? indices_arg->size() : cloud.size();
+        const size_t N = indices_arg ? indices_arg->size() : cloud.size();
         for (size_t pid = 0; pid != N; ++pid )
         {
-            const int index = indices_arg ? (*indices_arg)[pid] : pid;
+            const size_t index = indices_arg ? (*indices_arg)[pid] : pid;
             centroid[0] += cloud[index].x;
             centroid[1] += cloud[index].y;
             centroid[2] += cloud[index].z;
@@ -63,7 +63,7 @@ namespace smartgeometry {
         // Initialize to 0
         covariance_matrix.setZero();
 
-        const int N = indices_arg ? indices_arg->size() : cloud.size();
+        const size_t N = indices_arg ? indices_arg->size() : cloud.size();
 
         // init centroid
         Eigen::Matrix<Scalar,4,1> centroid; centroid.setZero();
@@ -291,9 +291,9 @@ Segmentation::orientPoints( _PointContainerT          &points
                , verbose ); // contains point id for fit_line
 
         // copy line direction into point
-        for ( PidT pid_id = 0; pid_id != point_ids.size(); ++pid_id )
+        for ( UPidT pid_id = 0; pid_id != point_ids.size(); ++pid_id )
         {
-            const PidT pid = point_ids[pid_id];
+            const UPidT pid = point_ids[pid_id];
             points[pid].coeffs().template segment<3>(3) = fit_lines.at(pid).dir();
         }
     } // ... (1) local fit
@@ -488,7 +488,7 @@ Segmentation::patchify( _PrimitiveContainerT                   & patches
 
     // Copy the representative direction of each patch in groups to an output patch with GID as it's linear index in groups.
 //#   pragma omp parallel for num_threads(RAPTER_MAX_OMP_THREADS)
-    for ( GidT gid = 0; gid < groups.size(); ++gid )
+    for ( UGidT gid = 0; gid < groups.size(); ++gid )
     {
         if ( patchPopLimit && (populations[gid].size() < patchPopLimit) )
             continue;
@@ -941,7 +941,7 @@ Segmentation::segmentCli( int    argc
 
             std::cerr << "\t [--angle-limit " << generatorParams.angle_limit << "]\n";
             std::cerr << "\t [--dist-limit-mult " << generatorParams.patch_dist_limit_mult << "]\n";
-            std::cerr << "\t [--angle-gens "; for(int i=0;i!=angle_gens.size();++i)std::cerr<<angle_gens[i];std::cerr<<"]\n";
+            std::cerr << "\t [--angle-gens "; for(size_t i=0;i!=angle_gens.size();++i)std::cerr<<angle_gens[i];std::cerr<<"]\n";
             std::cerr << "\t [--no-paral]\n";
             std::cerr << "\t [--pop-limit " << generatorParams.patch_population_limit << "]\t Filters patches smaller than this.\n";
             std::cerr << "\t [-v, --verbose]\n";
@@ -978,7 +978,7 @@ Segmentation::segmentCli( int    argc
         err = io::readPoints<_PointPrimitiveT>( points, cloud_path );
         if ( err != EXIT_SUCCESS )  std::cerr << "[" << __func__ << "]: " << "readPoints returned error " << err << std::endl;
         unsigned long normalCnt = 0;
-        for ( int i = 0; i != points.size(); ++i )
+        for ( size_t i = 0; i != points.size(); ++i )
             normalCnt += ( points[i].template dir().template norm() > _Scalar(0.1) );
 
         if ( normalCnt / _Scalar(points.size()) > _Scalar(.5) )

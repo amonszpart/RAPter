@@ -573,7 +573,7 @@ Merging::mergeCli( int argc, char** argv )
                 prims_path = "primitives.bonmin.csv",
                 assoc_path = "points_primitives.csv";
     AnglesT  angle_gens( {AnglesT::Scalar(90.)} );
-    int sizeLimit = 0; // if >0, a non-spatial recursive partitioning will happen
+    size_t sizeLimit = 0; // if >0, a non-spatial recursive partitioning will happen
 
     // parse params
     {
@@ -592,30 +592,31 @@ Merging::mergeCli( int argc, char** argv )
             std::cerr << "we need comma-separated anglegens explicitly!" << std::endl;
             throw std::runtime_error("no anglegens provided");
         }
-        pcl::console::parse_argument( argc, argv, "--adopt", params.do_adopt );
-        pcl::console::parse_argument( argc, argv, "--thresh-mult", params.spatial_threshold_mult );
-        pcl::console::parse_argument( argc, argv, "--assoc", assoc_path );
-        pcl::console::parse_argument( argc, argv, "-a", assoc_path );
-        pcl::console::parse_argument( argc, argv, "--patch-pop-limit", params.patch_population_limit );
+        rapter::console::parse_argument( argc, argv, "--adopt", params.do_adopt );
+        rapter::console::parse_argument( argc, argv, "--thresh-mult", params.spatial_threshold_mult );
+        rapter::console::parse_argument( argc, argv, "--assoc", assoc_path );
+        rapter::console::parse_argument( argc, argv, "-a", assoc_path );
+        rapter::console::parse_argument( argc, argv, "--patch-pop-limit", params.patch_population_limit );
 
-        pcl::console::parse_argument( argc, argv, "--partition", sizeLimit );
-
-        std::cerr << "[" << __func__ << "]: " << "Usage:\t gurobi_opt --formulate\n"
-                  << "\t--scale " << params.scale << "\n"
-                  << "\t--prims " << prims_path << "\n"
-                  << "\t--cloud " << cloud_path << "\n"
-                  << "\t-a,--assoc " << assoc_path << "\n"
-                  << "\t[--angle-gens "; for(int i=0;i!=angle_gens.size();++i)std::cerr<<angle_gens[i]<<",";std::cerr<<"]\n";
-        std::cerr << "\t[--adopt " << params.do_adopt << "]\n"
-                  << "\t[--patch-pop-limit " << params.patch_population_limit << "]\n"
-                  << "\t[--thresh-mult " << params.spatial_threshold_mult << "]\n"
-                  << "\t[--no-paral]\n"
-                  << "\t[--partition " << sizeLimit << "\t split scene into chunks ]\n"
-                  << std::endl;
+        rapter::console::parse_argument( argc, argv, "--partition", sizeLimit );
 
         if ( !valid_input || pcl::console::find_switch(argc,argv,"--help") || pcl::console::find_switch(argc,argv,"-h") )
         {
             std::cerr << "[" << __func__ << "]: " << "--scale, --prims are compulsory, --cloud needs to exist" << std::endl;
+
+            std::cerr << "[" << __func__ << "]: " << "Usage:\t gurobi_opt --formulate\n"
+                      << "\t--scale " << params.scale << "\n"
+                      << "\t--prims " << prims_path << "\n"
+                      << "\t--cloud " << cloud_path << "\n"
+                      << "\t-a,--assoc " << assoc_path << "\n"
+                      << "\t[--angle-gens "; for(size_t i=0;i!=angle_gens.size();++i)std::cerr<<angle_gens[i]<<",";std::cerr<<"]\n";
+            std::cerr << "\t[--adopt " << params.do_adopt << "]\n"
+                      << "\t[--patch-pop-limit " << params.patch_population_limit << "]\n"
+                      << "\t[--thresh-mult " << params.spatial_threshold_mult << "]\n"
+                      << "\t[--no-paral]\n"
+                      << "\t[--partition " << sizeLimit << "\t split scene into chunks ]\n"
+                      << std::endl;
+
             return EXIT_FAILURE;
         }
     } // ... parse params

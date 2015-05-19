@@ -33,7 +33,7 @@ namespace rapter
             if ( !no_parallel )
                 angles_set.insert( Scalar(0) );
 
-            for ( int i = 0; i != angle_gens.size(); ++i )
+            for ( size_t i = 0; i != angle_gens.size(); ++i )
             {
                 Scalar angle_gen_rad = angle_gens[i] * (inRad ? Scalar(1.) : radMult );
 
@@ -197,7 +197,7 @@ namespace rapter
         if ( angle == _Scalar(0.) || angle == _Scalar(M_PI) )
             return;
 
-        int i = 0;
+        size_t i = 0;
         while ( i != angleGensInRad.size() )
         {
             if ( angleGensInRad[i] == _Scalar(0.) || angleGensInRad[i] == _Scalar(M_PI) )

@@ -100,7 +100,7 @@ namespace rapter
         typedef typename _PrimitiveT::Scalar Scalar;
 
         // filter similar
-        for ( LidT i = 0; i != out_prims[gid].size(); ++i )
+        for ( ULidT i = 0; i != out_prims[gid].size(); ++i )
         {
             if ( cand.getTag(_PrimitiveT::TAGS::DIR_GID) == out_prims[gid][i].getTag(_PrimitiveT::TAGS::DIR_GID) )
             {
@@ -138,7 +138,7 @@ namespace rapter
         ++nlines;                                                     // keep track of output size
 
         // debug
-        LidT tmp_size = copied[ cand.getTag(_PrimitiveT::TAGS::GID) ].size();
+        ULidT tmp_size = copied[ cand.getTag(_PrimitiveT::TAGS::GID) ].size();
 
         // keep track of instances
         DidAid didAid( cand.getTag(_PrimitiveT::TAGS::DIR_GID),closest_angle_id ); // direction id, closest angle id
@@ -287,7 +287,7 @@ namespace rapter
                         else
                         {
                             _Scalar distSum( 0. );
-                            for ( int pid_id = 0; pid_id != population.size(); ++pid_id )
+                            for ( UPidT pid_id = 0; pid_id != population.size(); ++pid_id )
                                 distSum += cand0.getFiniteDistance( extrema, points[ population[pid_id] ].template pos() );
                             if ( distSum < bestDataCost )
                             {
@@ -560,7 +560,7 @@ namespace rapter
                     {
                         // Promote: check, if patch is large by now
                         if (    ((populations.find(gid) != populations.end()) &&
-                                 (populations[gid].size() > params.patch_population_limit) )
+                                 (populations[gid].size() > static_cast<size_t>(params.patch_population_limit)) )
                              && (prim.getSpatialSignificance( spatialSignif, points, scale, &(populations[gid]))(0) >= smallThresh  )   )
                         {
                             // store primitives, that have just been promoted to large from small
@@ -883,7 +883,7 @@ namespace rapter
                 std::set< GidLid > chosen;
                 {
                     LidT vars = active_count;
-                    for ( LidT i = 0; i != ranks.size(); ++i )
+                    for ( ULidT i = 0; i != ranks.size(); ++i )
                     {
                         vars += ranks[i].second;
                         if ( vars <= var_limit )
@@ -938,7 +938,7 @@ namespace rapter
                 if (    (directionPopulation[dId] > 1)
                      || (primIt->getTag(_PrimitiveT::TAGS::STATUS) == _PrimitiveT::STATUS_VALUES::SMALL)
                      || (    (populations.find(primIt.getGid()) != populations.end()      )
-                          && (populations[primIt.getGid()].size() > params.patch_population_limit * 2) ) // add if, at least double poplimit points in it
+                          && (populations[primIt.getGid()].size() > static_cast<size_t>(params.patch_population_limit * 2)) ) // add if, at least double poplimit points in it
                    )
                 {
                     containers::add( outPrims, primIt.getGid(), *primIt );
@@ -1228,7 +1228,9 @@ namespace rapter
     #endif
 
         // save primitives
-        std::string o_path = boost::filesystem::path( cloud_path ).parent_path().string() + "/";
+        std::string o_path = boost::filesystem::path( cloud_path ).parent_path().string();
+        if ( !o_path.empty() )
+            o_path += "/";
         if ( EXIT_SUCCESS == err )
         {
             std::string output_prims_path( o_path + "candidates.csv" );

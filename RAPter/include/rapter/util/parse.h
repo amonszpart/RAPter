@@ -40,6 +40,17 @@ namespace console
         return (index - 1);
     }
 
+    inline int
+    parse_argument (int argc, char** argv, const char* str, long unsigned &val)
+    {
+        int index = pcl::console::find_argument (argc, argv, str) + 1;
+
+        if (index > 0 && index < argc )
+          val = atoi (argv[index]);
+
+        return (index - 1);
+    }
+
     inline int parse_x_arguments (int argc, char** argv, const char* str, std::vector<long>& v)
     {
       for (int i = 1; i < argc; ++i)

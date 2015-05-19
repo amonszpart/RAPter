@@ -11,20 +11,21 @@ SET( THIRD_PARTY_DIR "${WORKSPACE_DIR}/3rdparty" )
 
 # PCL
 SET( PCL_DIR "${THIRD_PARTY_DIR}/pcl-trunk2/install/share/pcl-1.8/"
-        CACHE FILEPATH "Folder containing \"PCLConfig.cmake\", usually \"{PCL_INSTALL_DIR}/share/pcl-1.8/\"." )
+        CACHE FILEPATH "Folder containing \"PCLConfig.cmake\", usually \"{PCL_INSTALL_DIR}/share/pcl-x.x/\"." )
 # BONMIN
 SET( PATH_BONMIN_DIR "${THIRD_PARTY_DIR}/CoinBonmin-stable/build/")
+#SET( PATH_BONMIN_DIR "${THIRD_PARTY_DIR}/Bonmin-1.8.0-lapack/")
 
 ## QCQPCPP
 #SET( PATH_QCQPCPP_ROOT "${WORKSPACE_DIR}/QCQPcpp/"
 #        CACHE FILEPATH "Root directory of QCQPcpp library containing the \"include\" directory.")
 
 # PEARL, GCO
-SET( PATH_GLOBOPT_DEPS_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../../globOptDeps"
-        CACHE PATH "Folder containing additional dependency libraries (pearl, gco-v3, etc.)" FORCE )
+#SET( PATH_GLOBOPT_DEPS_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../../globOptDeps"
+#        CACHE PATH "Folder containing additional dependency libraries (pearl, gco-v3, etc.)" FORCE )
 
 # FBI
-SET( PATH_LIBFBI_ROOT "${THIRD_PARTY_DIR}/libfbi/")
+#SET( PATH_LIBFBI_ROOT "${THIRD_PARTY_DIR}/libfbi/")
 
 #_____________________________________#
 #______________TARGETS________________#
@@ -96,7 +97,6 @@ SET(BONMIN_LIBRARIES
 INCLUDE_DIRECTORIES( ${PATH_BONMIN_DIR}/include )
 
 # QCQPCPP
-#INCLUDE_DIRECTORIES( ${PATH_QCQPCPP_ROOT}/include )
 SET( QCQPCPP_H_LIST
     external/qcqpcpp/optProblem.h
     external/qcqpcpp/bonminOptProblem.h
@@ -108,7 +108,7 @@ SET( QCQPCPP_HPP_LIST
 INCLUDE_DIRECTORIES( external )
 
 # libfbi
-INCLUDE_DIRECTORIES( ${PATH_LIBFBI_ROOT}/include )
+#INCLUDE_DIRECTORIES( ${PATH_LIBFBI_ROOT}/include )
 
 #_______________________________________#
 #____________TemplateInst_______________#

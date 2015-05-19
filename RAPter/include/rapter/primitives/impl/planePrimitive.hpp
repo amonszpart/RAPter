@@ -45,7 +45,7 @@ namespace rapter
                                 ) const
     {
         // if not 0 or M_PI, meaning not parallel
-        if ( (closest_angle_id != 0) && (closest_angle_id != angles.size()-1) )
+        if ( (closest_angle_id != 0) && (closest_angle_id != static_cast<int>(angles.size())-1) )
         {
             //std::cerr << "[" << __func__ << "]: " << "rotating plane by angle " << angles[closest_angle_id] << std::endl;
             //return false;
@@ -136,7 +136,7 @@ namespace rapter
         //on_plane_cloud.reserve( inliers.size() );
         on_plane_cloud.resize( inliers.size() );
 #       pragma omp parallel for num_threads(4)
-        for ( PidT pid_id = 0; pid_id < inliers.size(); ++pid_id )
+        for ( UPidT pid_id = 0; pid_id < inliers.size(); ++pid_id )
         {
             on_plane_cloud[pid_id] = _PointPrimitiveT( this->projectPoint(cloud[ inliers[pid_id] ].template pos()),
                                                                           cloud[ inliers[pid_id] ].template dir()
@@ -277,7 +277,7 @@ namespace rapter
 
         _PointContainerT projectedPoints;
         projectedPoints.reserve( points.size() );
-        for ( PidT pId = 0; pId != points.size(); ++pId )
+        for ( UPidT pId = 0; pId != points.size(); ++pId )
         {
             projectedPoints.push_back( PointPrimitiveT(this->projectPoint(points[pId].template pos()), points[pId].template dir()) );
             projectedPoints.back().copyTagsFrom( points[pId] );
@@ -340,7 +340,7 @@ namespace rapter
         pcl::PointCloud<pcl::PointXYZ>::Ptr plane_polygon_cloud_ptr( new pcl::PointCloud<pcl::PointXYZ> );
 
         //char title[255];
-        for ( int corner_id = 0;
+        for ( size_t corner_id = 0;
               corner_id < corners.size();
               ++corner_id )
         {
@@ -443,7 +443,7 @@ namespace rapter
         else
         {
             std::vector<pcl::PointXYZ> ps;
-            for ( int i = 0; i != minMax.size(); ++i )
+            for ( size_t i = 0; i != minMax.size(); ++i )
             {
                 pcl::PointXYZ pnt;
                 pnt.x = minMax[i](0); pnt.y = minMax[i](1); pnt.z = minMax[i](2);

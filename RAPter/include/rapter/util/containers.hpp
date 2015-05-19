@@ -14,7 +14,7 @@ namespace containers {
     template <class _InnerT> static inline
     _InnerT& add( std::vector<std::vector<_InnerT> > &prims, GidT gid, _InnerT const& primitive )
     {
-        if ( prims.size() <= gid )
+        if ( static_cast<GidT>(prims.size()) <= gid )
             prims.resize( gid + 1 );
         prims[gid].push_back( primitive );
 

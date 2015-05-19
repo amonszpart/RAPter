@@ -170,7 +170,7 @@ namespace rapter
                 f << "graph {\n";
 
                 OutEdgeIteratorT out,out_end;
-                for ( LidT vid = 0; vid != boost::num_vertices(_undigraph); ++vid )
+                for ( ULidT vid = 0; vid != boost::num_vertices(_undigraph); ++vid )
                 {
                     for ( boost::tie(out, out_end) = boost::out_edges(boost::vertex(vid,_undigraph), _undigraph); out != out_end; ++out )
                     {

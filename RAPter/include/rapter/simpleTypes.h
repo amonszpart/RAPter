@@ -9,10 +9,12 @@
 namespace rapter
 {
     typedef long                    GidT;   // GroupId type
+    typedef unsigned long           UGidT;  // GroupId type
     typedef unsigned long           ULidT;
     typedef GidT                    UidT;   // UniqueId in containers.hpp
     typedef GidT                    DidT;   // DirectionId type // don't ever set to unsigned!!!!
     typedef GidT                    PidT;
+    typedef unsigned long           UPidT;
     typedef GidT                    LidT;   // LinearId type (vector index)
     typedef std::pair<GidT,LidT>    GidLid; // uniquely identifies a primitive by first: gid, second: linear id in innerContainer (vector).
     typedef std::pair<DidT,int>     DidAid; // <DirectionId, AngleId>

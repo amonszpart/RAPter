@@ -300,7 +300,7 @@ Solver::solve( int    argc
                     std::cout << "clusterVarsStart: " << clusterVarsStart << std::endl;
                     // add rest of nodes (cluster_nodes)
                     {
-                        for ( ; prim_id < x_out.size(); ++prim_id )
+                        for ( ; prim_id < static_cast<LidT>(x_out.size()); ++prim_id )
                         {
                             char name[256];
                             if ( int(round(x_out[prim_id])) > 0 )
@@ -318,7 +318,7 @@ Solver::solve( int    argc
                     // go over constraints
                     {
                         typedef typename OptProblemT::SparseMatrix SparseMatrix;
-                        for ( LidT j = 0; j != p_problem->getConstraintCount(); ++j )
+                        for ( LidT j = 0; j != static_cast<LidT>(p_problem->getConstraintCount()); ++j )
                         {
                             SparseMatrix Qk = p_problem->getQuadraticConstraintsMatrix( j );
                             if ( !Qk.nonZeros() ) continue;

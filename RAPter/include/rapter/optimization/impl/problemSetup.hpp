@@ -430,7 +430,7 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
     processing::getPopulations( populations, points );
 
     // find smallest pwcost
-    std::cout << "[" << __func__ << "]: " << "collapse loop start..." << std::endl; fflush(stdout);
+    if ( verbose ) { std::cout << "[" << __func__ << "]: " << "collapse loop start..." << std::endl; fflush(stdout); }
     typedef std::pair<DidT,DidT> DIdPair;
     DIdPair minPair;
     _Scalar minScore = std::numeric_limits<_Scalar>::max();
@@ -503,14 +503,14 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
     }
     else
         std::cout << "[" << __func__ << "]: " << "not replacing, since minscore: " << minScore << "(" << minPair.first << ","  << minPair.second << ")" << std::endl;
-    std::cout << "[" << __func__ << "]: " << "collapse loop finish..." << std::endl; fflush(stdout);
+    if ( verbose ) { std::cout << "[" << __func__ << "]: " << "collapse loop finish..." << std::endl; fflush(stdout); }
 
 
     // ____________________________________________________
     // Variables - Add variables to problem
     //std::map< DidT, LidT > dIdsVarIds; // holds the cluster variable Ids for each direction Id
 
-    std::cout << "[" << __func__ << "]: " << "var loop start..." << std::endl; fflush(stdout);
+    if ( verbose ) { std::cout << "[" << __func__ << "]: " << "var loop start..." << std::endl; fflush(stdout); }
     /* { < didT, [ varId, varId, ...] >, ... }
      * Holds the variable Ids of primitives that will have to
      * be connected to an extra node representing this dId
@@ -584,9 +584,9 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
                 }
         } //...for dIds
     } // ... variables
-    std::cout << "[" << __func__ << "]: " << "var loop end..." << std::endl; fflush(stdout);
+    if ( verbose ) {  std::cout << "[" << __func__ << "]: " << "var loop end..." << std::endl; fflush(stdout); }
 
-    std::cout << "[" << __func__ << "]: " << "constr loop start..." << std::endl; fflush(stdout);
+    if ( verbose ) {  std::cout << "[" << __func__ << "]: " << "constr loop start..." << std::endl; fflush(stdout); }
     // ____________________________________________________
     // Lin constraints
     if ( EXIT_SUCCESS == err )
@@ -615,8 +615,8 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
             return err;
         }
     } //...Lin constraints
-    std::cout << "[" << __func__ << "]: " << "constr loop end..." << std::endl; fflush(stdout);
-    std::cout << "[" << __func__ << "]: " << "data loop start..." << std::endl; fflush(stdout);
+    if ( verbose ) {  std::cout << "[" << __func__ << "]: " << "constr loop end..." << std::endl; fflush(stdout); }
+    if ( verbose ) {  std::cout << "[" << __func__ << "]: " << "data loop start..." << std::endl; fflush(stdout); }
     // ____________________________________________________
     // Unary cost -> lin objective
     if ( EXIT_SUCCESS == err )
@@ -651,7 +651,7 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
         std::cerr << "[" << __func__ << "]: " << "data cost setup returned error " << err << std::endl;
         return err;
     }
-    std::cout << "[" << __func__ << "]: " << "data loop end..." << std::endl; fflush(stdout);
+    if ( verbose ) {  std::cout << "[" << __func__ << "]: " << "data loop end..." << std::endl; fflush(stdout); }
 
     // ____________________________________________________
     // Pairwise cost -> quad objective
@@ -679,7 +679,7 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
         const _Scalar halfSpatialWeightCoeff = primPrimDistFunctor->getSpatialWeightCoeff() / _Scalar(2.); // we add both ways, so adds up
         if ( needPairwise )
         {
-            std::cout << "[" << __func__ << "]: " << "spatial start..." << std::endl; fflush(stdout);
+            if ( verbose ) {  std::cout << "[" << __func__ << "]: " << "spatial start..." << std::endl; fflush(stdout); }
 
 #           pragma omp parallel for num_threads(RAPTER_MAX_OMP_THREADS)
             for ( size_t lid = 0; lid < prims.size(); ++lid )
@@ -756,7 +756,7 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
                     graph.addEdge( it->_v0, it->_v1, /* not used right now: */ it->_w );
                 }
 
-                for ( LidT i = 0; i != lids_varids.size(); ++i )
+                for ( ULidT i = 0; i != lids_varids.size(); ++i )
                 {
                     if ( !problem.getVarName(i).empty() )
                         graph.addVertexName( i, problem.getVarName(i) );
@@ -771,7 +771,7 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
                     graph.getComponents( components, &compSizes );
 
                     std::map< PidT, std::vector<PidT> > clusters; // [ cluster0: [v0, v10,...], cluster1: [v3, v5, ...], ... ]
-                    for ( LidT varId = 0; varId != components.size(); ++varId )
+                    for ( ULidT varId = 0; varId != components.size(); ++varId )
                     {
                         if ( compSizes[ components[varId] ] < 2 )
                             continue;
@@ -804,7 +804,7 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
                             LidT varid = problem.addVariable( OptProblemT::BOUND::RANGE, 0.0, 1.0, OptProblemT::VAR_TYPE::INTEGER
                                                              , OptProblemT::LINEARITY::LINEAR, name );
 
-                            for ( LidT i = 0; i != it->second.size(); ++i )
+                            for ( ULidT i = 0; i != it->second.size(); ++i )
                             {
                                 cluster_constraint.insert( 0, it->second[i] ) = -1;
                             }
@@ -828,12 +828,12 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
                 graph.draw( "graph.gv" );
                 //system( "dot -Tpng -o graph.png graph.gv && (eog graph.png &)" );
             } //...if clusterMode
-            std::cout << "[" << __func__ << "]: " << "spatial end..." << std::endl; fflush(stdout);
+            if ( verbose ) {  std::cout << "[" << __func__ << "]: " << "spatial end..." << std::endl; fflush(stdout); }
         } //...if spatialweight or clustermode
     } //...pairwise cost
 
 
-    std::cout << "[" << __func__ << "]: " << "lvl2 constr start..." << std::endl; fflush(stdout);
+    if ( verbose ) {  std::cout << "[" << __func__ << "]: " << "lvl2 constr start..." << std::endl; fflush(stdout); }
     // ____________________________________________________
     // New dId constraint
     {
@@ -848,7 +848,7 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
             std::vector<SparseEntry> quadConstraints;
 
             // add 1 for each primitive variable
-            for ( LidT i = 0; i != dIdIt->second.size(); ++i )
+            for ( ULidT i = 0; i != dIdIt->second.size(); ++i )
             {
                 // dIdIt->second[i]: prim_i
 
@@ -860,14 +860,14 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
                                  , /* lower_limit: */ 0
                                  , /* upper_limit: */ problem.getINF()
                                  , /*      coeffs: */ &cluster_constraint );
-            for ( LidT j = 0; j != quadConstraints.size(); ++j )
+            for ( ULidT j = 0; j != quadConstraints.size(); ++j )
                 problem.addQConstraint( constraintId, quadConstraints[j].row(), quadConstraints[j].col(), quadConstraints[j].value() );
         }
 
     } //...dId constraint
-    std::cout << "[" << __func__ << "]: " << "lvl2 constr end..." << std::endl; fflush(stdout);
+    if ( verbose ) { std::cout << "[" << __func__ << "]: " << "lvl2 constr end..." << std::endl; fflush(stdout); }
 
-    std::cout << "[" << __func__ << "]: " << "lvl2 pw start..." << std::endl; fflush(stdout);
+    if ( verbose ) { std::cout << "[" << __func__ << "]: " << "lvl2 pw start..." << std::endl; fflush(stdout); }
     // ____________________________________________________
     // dId pw cost
     {
@@ -894,9 +894,9 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
                 }
             }
     } //...dId pw cost
-    std::cout << "[" << __func__ << "]: " << "lvl2 pw end..." << std::endl; fflush(stdout);
+    if ( verbose ) {  std::cout << "[" << __func__ << "]: " << "lvl2 pw end..." << std::endl; fflush(stdout); }
 
-    std::cout << "[" << __func__ << "]: " << "init solution..." << std::endl; fflush(stdout);
+    if ( verbose ) {  std::cout << "[" << __func__ << "]: " << "init solution..." << std::endl; fflush(stdout); }
     // ____________________________________________________
     // Initial solution
     {
@@ -910,7 +910,7 @@ ProblemSetup::formulate2( problemSetup::OptProblemT                             
             problem.setStartingPoint( x0 );
         }
     } //...Initial solution
-    std::cout << "[" << __func__ << "]: " << "init solution done" << std::endl; fflush(stdout);
+    if ( verbose ) {  std::cout << "[" << __func__ << "]: " << "init solution done" << std::endl; fflush(stdout); }
 
     // log
     if ( (EXIT_SUCCESS == err) && verbose )

@@ -67,9 +67,9 @@ namespace rapter
 
         // project cloud
         std::vector<Position> on_line_cloud;
-        for ( PidT pid_id = 0; pid_id != inliers.size(); ++pid_id )
+        for ( UPidT pid_id = 0; pid_id != inliers.size(); ++pid_id )
         {
-            const PidT pid = inliers[ pid_id ];
+            const UPidT pid = inliers[ pid_id ];
             on_line_cloud.push_back( this->projectPoint(cloud[pid].template pos()) );
         }
 

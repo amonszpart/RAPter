@@ -176,7 +176,7 @@ namespace rapter {
 
             cov.setZero();
             _Scalar sumW( 0. );
-            for ( size_t point_id = 0; point_id != N; ++point_id )
+            for ( LidT point_id = 0; point_id != N; ++point_id )
             {
                 const ULidT pid = indices ? (*indices)[point_id] : point_id;
                 _Position pos = points[ pid ].template pos() - centroid; // eigen expression template
@@ -386,7 +386,7 @@ namespace rapter {
                 if ( initial_line || (iteration > 0) )
                 {
                     // calculate distance from all points
-                    for ( size_t point_id = 0; point_id != N; ++point_id )
+                    for ( PidT point_id = 0; point_id != N; ++point_id )
                     {
                         weights[point_id] = primitive.getDistance( cloud[ p_indices ? (*p_indices)[point_id] : point_id ].pos() );
                     }
@@ -410,7 +410,7 @@ namespace rapter {
                 // compute centroid of cloud or selected points
                 Position centroid( Position::Zero() );
                 Scalar sumW = 0;
-                for ( size_t point_id = 0; point_id != N; ++point_id )
+                for ( PidT point_id = 0; point_id != N; ++point_id )
                 {
                     const unsigned long id = p_indices ? (*p_indices)[point_id] : point_id;
                     centroid += cloud[ id ].pos() * weights[ point_id ];
@@ -428,7 +428,7 @@ namespace rapter {
 
                 // compute neighbourhood covariance matrix
                 Eigen::Matrix<Scalar,3,3> cov( Eigen::Matrix<Scalar,3,3>::Zero() );
-                for ( size_t point_id = 0; point_id != N; ++point_id )
+                for ( PidT point_id = 0; point_id != N; ++point_id )
                 {
                     const unsigned long id = p_indices ? (*p_indices)[point_id] : point_id;
                     Position pos = cloud[ id ].template pos() - centroid; // eigen expression template
