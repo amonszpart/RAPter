@@ -1,5 +1,5 @@
-#ifndef RAPTER_GLOBOPT_TYPES_H
-#define RAPTER_GLOBOPT_TYPES_H
+#ifndef RAPTER_TYPES_H
+#define RAPTER_TYPES_H
 
 #include <vector>
 
@@ -41,4 +41,4 @@ namespace rapter
     }
 }
 
-#endif // RAPTER_GLOBOPT_TYPES_H
+#endif // RAPTER_TYPES_H

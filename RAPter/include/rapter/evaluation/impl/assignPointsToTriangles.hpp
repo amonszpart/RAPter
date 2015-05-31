@@ -1,10 +1,10 @@
-#ifndef GO_ASSIGNPOINTSTOTRIANGLES_HPP
-#define GO_ASSIGNPOINTSTOTRIANGLES_HPP
+#ifndef RAPTER_ASSIGNPOINTSTOTRIANGLES_HPP
+#define RAPTER_ASSIGNPOINTSTOTRIANGLES_HPP
 
-#include "globfit2/simple_types.h"
-#include "globfit2/io/inputParser.hpp"
-#include "globopt/io/trianglesFromObj.h"
-#include "globopt/primitives/impl/triangle.hpp"
+#include "rapter/simpleTypes.h"
+#include "rapter/io/inputParser.hpp"
+#include "rapter/io/trianglesFromObj.h"
+#include "rapter/primitives/impl/triangle.hpp"
 #include "pcl/PolygonMesh.h"
 
 #include "pcl/visualization/pcl_visualizer.h"
@@ -133,11 +133,11 @@ namespace rapter
 
             // ID points in input cloud to points in original cloud
             std::map<PidT,PidT> corresp;
-            for ( PidT pid = 0; pid < points.size(); ++pid )
+            for ( UPidT pid = 0; pid < points.size(); ++pid )
             {
                 double dist = 0.;
                 double minDist = std::numeric_limits<double>::max();
-                for ( PidT pid1 = 0; pid1 != origPoints.size(); ++pid1 )
+                for ( UPidT pid1 = 0; pid1 != origPoints.size(); ++pid1 )
                 {
                     dist = (points[pid].template pos() - origPoints[pid1].template pos()).norm();
                     if ( (dist < minDist) && (dist < params.scale) )
@@ -150,7 +150,7 @@ namespace rapter
             std::cout << "corresp.size(): " << corresp.size() << ", points.size(): " << points.size() << std::endl;
             auto oldPoints = points;
             points         = origPoints;
-            for ( PidT pid = 0; pid != oldPoints.size(); ++pid )
+            for ( UPidT pid = 0; pid != oldPoints.size(); ++pid )
             {
                 std::cout << "pid: " << pid  << "/" << oldPoints.size() << " -> ";  fflush(stdout);
                 std::cout << corresp.at(pid) << "/" << points.size() << std::endl;fflush(stdout);
@@ -205,7 +205,7 @@ namespace rapter
         // pointid
         //PidT pId( 0 );
 #       pragma omp parallel for num_threads(6)
-        for ( PidT pId = 0; pId < points.size(); ++pId )
+        for ( UPidT pId = 0; pId < points.size(); ++pId )
         {
             // cache point reference
             //PointPrimitiveT const& point = *pIt;
@@ -305,7 +305,7 @@ namespace rapter
         // store new assignments
         _PointContainerT gtPoints;
         gtPoints.reserve( points.size() );
-        for ( PidT pid = 0; pid != points.size(); ++pid )
+        for ( UPidT pid = 0; pid != points.size(); ++pid )
         {
             gtPoints.push_back( PointPrimitiveT(points[pid].template pos(), points[pid].template dir()) );
             gtPoints.back().setTag( PointPrimitiveT::TAGS::PID, pid );
@@ -315,7 +315,7 @@ namespace rapter
 
         // save triangles as primitives
         _PrimitiveMapT gtPrims;
-        for ( int triangleId = 0; triangleId != triangles.size(); ++triangleId )
+        for ( size_t triangleId = 0; triangleId != triangles.size(); ++triangleId )
         {
             // plane from triangle centroid
             gtPrims[triangleId].push_back( PrimitiveT(triangles[triangleId].getMean(), triangles[triangleId].template dir()) );
@@ -433,8 +433,8 @@ namespace rapter
         if ( N > orientedPoints.size() * orientedPoints.size() / 2. )
         {
             std::cout << "[" << __func__ << "]: " << "exhaustive" << std::endl;
-            for ( PidT pId0 = 0; pId0 != orientedPoints.size()-1; ++pId0 )
-                for ( PidT pId1 = pId0+1; pId1 != orientedPoints.size(); ++pId1 )
+            for ( UPidT pId0 = 0; pId0 != orientedPoints.size()-1; ++pId0 )
+                for ( UPidT pId1 = pId0+1; pId1 != orientedPoints.size(); ++pId1 )
                     angleLambda( pId0, pId1 );
         }
         else
@@ -542,5 +542,5 @@ namespace rapter
 
 } //...ns rapter
 
-#endif // GO_ASSIGNPOINTSTOTRIANGLES_HPP
+#endif // RAPTER_ASSIGNPOINTSTOTRIANGLES_HPP
 

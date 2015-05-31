@@ -3,9 +3,9 @@
 #include "pcl/io/io.h"
 #include "pcl/io/ply_io.h"
 #include "pcl/common/common.h"
-#include "rapter/globOpt_types.h"
+#include "rapter/typedefs.h"
 #include "rapter/io/io.h"
-#include "simpleTypes.h"
+#include "rapter/simpleTypes.h"
 
 int reassign( int argc, char** argv )
 {

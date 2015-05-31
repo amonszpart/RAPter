@@ -13,7 +13,7 @@
 
 // #include "pcl/common/common.h" //debug: getminmax3D
 
-/*!   \brief GlobOpt main namespace. */
+/*!   \brief RAPter main namespace. */
 namespace rapter {
 
     typedef std::map   < GidT, PidT >        GidIntMap;

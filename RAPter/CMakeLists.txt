@@ -409,7 +409,7 @@ IF(WITH_REFIT)
 
     SET( REFIT_H
         include/rapter/primitives/planePrimitive.h
-        include/rapter/globOpt_types.h
+        include/rapter/typedefs.h
         include/rapter/util/parse.h
         include/rapter/io/io.h
     )

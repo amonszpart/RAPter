@@ -1,22 +1,22 @@
 #include  <vector>
 
-#include "globfit2/globOpt_types.h"
-#include "globfit2/util/parse.h"    // console::parse_argument
-#include "globfit2/io/io.h"         // readPrimitives, readPoints
-#include "globfit2/util/containers.hpp" // add
-#include "globfit2/processing/util.hpp" // getpop
+#include "rapter/typedefs.h"
+#include "rapter/util/parse.h"    // console::parse_argument
+#include "rapter/io/io.h"         // readPrimitives, readPoints
+#include "rapter/util/containers.hpp" // add
+#include "rapter/processing/util.hpp" // getpop
 #include "schnabelEnv.h"
 #include "../../src/schnabelEnv.cpp"
 
-#if GF2_USE_PCL
+#if RAPTER_USE_PCL
     #include "pcl/sample_consensus/model_types.h" // sacmodel
     #include "pcl/sample_consensus/sac_model_line.h"
     #include "pcl/sample_consensus/sac_model_plane.h"
     #include "pcl/sample_consensus/ransac.h"
     #include "pcl/sample_consensus/sac_model.h"
-#endif // GF2_USE_PCL
+#endif // RAPTER_USE_PCL
 
-#include "globopt/primitives/impl/planePrimitive.hpp"
+#include "rapter/primitives/impl/planePrimitive.hpp"
 
 template <typename _Scalar>
 struct RansacParams
@@ -28,8 +28,8 @@ struct RansacParams
     pcl::SacModel   modelType;
 };
 
-#include "globfit2/io/inputParser.hpp"
-#include "globfit2/comparison/impl/reassign.hpp"
+#include "rapter/io/inputParser.hpp"
+#include "rapter/comparison/impl/reassign.hpp"
 
 template < typename _PointContainerT
          , class    _InnerPrimitiveContainerT

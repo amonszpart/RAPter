@@ -1,11 +1,11 @@
-#ifndef GO_SUBSAMPLEPRIMITIVES_HPP
-#define GO_SUBSAMPLEPRIMITIVES_HPP
+#ifndef RAPTER_SUBSAMPLEPRIMITIVES_HPP
+#define RAPTER_SUBSAMPLEPRIMITIVES_HPP
 
-#include "globfit2/simple_types.h"
-#include "globfit2/io/inputParser.hpp"
-#include "globfit2/processing/util.hpp"
-#include "globfit2/util/containers.hpp"
-#include "globopt/util/impl/randUtil.hpp"
+#include "rapter/simpleTypes.h"
+#include "rapter/io/inputParser.hpp"
+#include "rapter/processing/util.hpp"
+#include "rapter/util/containers.hpp"
+#include "rapter/util/impl/randUtil.hpp"
 #include <chrono>
 
 namespace rapter
@@ -278,4 +278,4 @@ namespace rapter
     } //...subsamplePrimitives()
 } //...ns rapter
 
-#endif // GO_SUBSAMPLEPRIMITIVES_HPP
+#endif // RAPTER_SUBSAMPLEPRIMITIVES_HPP

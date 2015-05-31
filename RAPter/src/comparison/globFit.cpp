@@ -1,10 +1,11 @@
-#include "globfit2/comparison/globFit.h"
+#include "rapter/comparison/globFit.h"
 
 #include <iostream>
-#include "globfit2/util/parse.h"
-#include "globfit2/globOpt_types.h"
-#include "globopt/processing/subsamplePrimitives.h"
-#include "globopt/processing/assignmentOps.h"
+#include "rapter/util/parse.h"
+#include "rapter/util/pclUtil.h"                    // PclCloudT
+#include "rapter/typedefs.h"
+#include "rapter/processing/subsamplePrimitives.h"
+#include "rapter/processing/assignmentOps.h"
 
 namespace rapter
 {

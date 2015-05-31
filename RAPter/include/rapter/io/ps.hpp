@@ -3,11 +3,11 @@
 
 #include <fstream>
 #include <string>
-#include "globfit2/util/containers.hpp"
-#include "globfit2/processing/util.hpp"
-#include "globfit2/util/util.hpp"
+#include "rapter/util/containers.hpp"
+#include "rapter/processing/util.hpp"
+#include "rapter/util/util.hpp"
 
-namespace GF2
+namespace rapter
 {
 namespace io
 {
@@ -465,7 +465,7 @@ namespace io
 
     } //...drawGraph
 } //...ns io
-} //...ns GF2
+} //...ns rapter
 
 
-#endif // GF2_PS_HPP
+#endif // RAPTER_PS_HPP

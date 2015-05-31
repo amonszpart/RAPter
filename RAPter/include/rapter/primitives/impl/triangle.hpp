@@ -1,5 +1,5 @@
-#ifndef GO_TRIANGLE_HPP
-#define GO_TRIANGLE_HPP
+#ifndef __RAPTER_TRIANGLE_HPP__
+#define __RAPTER_TRIANGLE_HPP__
 
 #include "Eigen/Dense"
 #include <iostream>
@@ -348,4 +348,4 @@ int testTriangle()
 return EXIT_FAILURE;
 #endif
 
-#endif // GO_TRIANGLE_HPP
+#endif // __RAPTER_TRIANGLE_HPP__

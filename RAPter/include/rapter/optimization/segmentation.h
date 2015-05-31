@@ -37,7 +37,7 @@ namespace segmentation {
                 // take average of all points
                 Eigen::Matrix<_Scalar,3,1> pos( _representative.pos() * _n );
                 Eigen::Matrix<_Scalar,3,1> dir( _representative.dir() * _n );
-                for ( int pid_id = _n; pid_id < this->size(); ++pid_id, ++_n )
+                for ( size_t pid_id = _n; pid_id < this->size(); ++pid_id, ++_n )
                 {
                     const int pid = this->operator []( pid_id ).first;
                     pos += points[ pid ].pos();

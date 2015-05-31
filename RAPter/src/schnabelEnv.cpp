@@ -1,13 +1,13 @@
-#ifndef GF2_SCHNABELENV_HPP_
-#define GF2_SCHNABELENV_HPP_
+#ifndef __RAPTER_SCHNABELENV_HPP__
+#define __RAPTER_SCHNABELENV_HPP__
 
 #include "schnabelEnv.h"
 
 #include "pcl/visualization/pcl_visualizer.h"
-#include "pcltools/util.hpp" // smartgeometry
+//#include "pcltools/util.hpp" // smartgeometry
 //#include "AMUtil2.h"
 
-#include "globfit2/primitives/planePrimitive.h"
+#include "rapter/primitives/planePrimitive.h"
 
 // --- schnabel07 ---
 #include "PointCloud.h"
@@ -278,4 +278,4 @@ namespace rapter
 } // ns am
 
 
-#endif //GF2_SCHNABELENV_HPP_
+#endif // __RAPTER_SCHNABELENV_HPP__

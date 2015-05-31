@@ -1,7 +1,7 @@
 #include <vector>
-#include "globopt/primitives/impl/triangle.hpp"
-#include "globopt/io/impl/trianglesFromObj.hpp"
-#include "globfit2/simple_types.h"
+#include "rapter/primitives/impl/triangle.hpp"
+#include "rapter/io/impl/trianglesFromObj.hpp"
+#include "rapter/simpleTypes.h"
 
 namespace rapter
 {

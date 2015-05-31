@@ -1,15 +1,15 @@
 #include <iostream>
 
-#include "globfit2/globOpt_types.h"           // _2d, _3d namespaces
-#include "globfit2/util/parse.h"              // GF2::console
-#include "globfit2/io/io.h"
-#include "globfit2/processing/angle_util.hpp" // AnglesT
-#include "globfit2/io/inputParser.hpp"        // parseInput()
-#include "globopt/util/impl/randUtil.hpp"     // randf()
+#include "rapter/typedefs.h"           // _2d, _3d namespaces
+#include "rapter/util/parse.h"              // GF2::console
+#include "rapter/io/io.h"
+#include "rapter/primitives/angles.h" // AnglesT
+#include "rapter/io/inputParser.hpp"        // parseInput()
+#include "rapter/util/impl/randUtil.hpp"     // randf()
 
 #include "qcqpcpp/bonminOptProblem.h"
-#include "globopt/primitives/impl/planePrimitive.hpp" // PlanePrimitive( pos ,normal )
-#include "globfit2/processing/graph.hpp"
+#include "rapter/primitives/impl/planePrimitive.hpp" // PlanePrimitive( pos ,normal )
+#include "rapter/processing/graph.hpp"
 
 namespace rapter
 {

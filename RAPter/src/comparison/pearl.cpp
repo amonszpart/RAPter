@@ -2,13 +2,13 @@
 
 #include  <vector>
 
-#include "globfit2/globOpt_types.h"
-#include "globfit2/util/parse.h"    // console::parse_argument
-#include "globfit2/io/io.h"         // readPrimitives, readPoints
-#include "globfit2/util/containers.hpp" // add
-#include "globfit2/simple_types.h"
-#include "globfit2/util/containers.hpp"
-#include "globopt/primitives/impl/planePrimitive.hpp"
+#include "rapter/typedefs.h"
+#include "rapter/util/parse.h"    // console::parse_argument
+#include "rapter/io/io.h"         // readPrimitives, readPoints
+#include "rapter/util/containers.hpp" // add
+#include "rapter/simpleTypes.h"
+#include "rapter/util/containers.hpp"
+#include "rapter/primitives/impl/planePrimitive.hpp"
 
 
 template int

@@ -503,10 +503,10 @@ namespace rapter
 
         if ( polygons.size() )
         {
-            PidT max_size = 0, max_id = 0;
+            UPidT max_size = 0, max_id = 0;
             for ( i = 0; i != polygons.size(); ++i )
             {
-                if ( polygons[i].vertices.size() >max_size)
+                if ( polygons[i].vertices.size() > max_size )
                 {
                     max_size = polygons[i].vertices.size();
                     max_id = i;

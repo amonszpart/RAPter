@@ -1,9 +1,9 @@
-#ifndef __GF2_SCHNABELENV_H__
-#define __GF2_SCHNABELENV_H__
+#ifndef __RAPTER_SCHNABELENV_H__
+#define __RAPTER_SCHNABELENV_H__
 
 #include <vector>
 #include "pcl/point_cloud.h"
-#include "globfit2/my_types.h"
+#include "rapter/typedefs.h"
 
 namespace rapter
 {
@@ -29,4 +29,4 @@ namespace rapter
 
 } // ns am
 
-#endif // SCHNABELENV_H
+#endif // __RAPTER_SCHNABELENV_H__

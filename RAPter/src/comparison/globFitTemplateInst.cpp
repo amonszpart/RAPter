@@ -1,6 +1,6 @@
-#include "globfit2/comparison/impl/globFit.hpp"
+#include "rapter/comparison/impl/globFit.hpp"
 //#include "rapter/processing/impl/subsamplePrimitives.hpp"
-#include "globfit2/globOpt_types.h"
+#include "rapter/typedefs.h"
 
 namespace rapter
 {

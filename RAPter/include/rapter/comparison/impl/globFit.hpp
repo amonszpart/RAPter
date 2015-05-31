@@ -1,12 +1,12 @@
-#ifndef GF2_GLOBFIT_HPP
-#define GF2_GLOBFIT_HPP
-#include "globfit2/comparison/globFit.h"
+#ifndef RAPTER_GLOBFIT_HPP
+#define RAPTER_GLOBFIT_HPP
+#include "rapter/comparison/globFit.h"
 
 #include <iostream>
-#include "globfit2/io/inputParser.hpp"
-#include "globfit2/util/util.hpp"       // timeStamp2Str
-#include "globfit2/util/containers.hpp"
-#include "globopt/primitives/impl/planePrimitive.hpp"
+#include "rapter/io/inputParser.hpp"
+#include "rapter/util/util.hpp"       // timeStamp2Str
+#include "rapter/util/containers.hpp"
+#include "rapter/primitives/impl/planePrimitive.hpp"
 
 namespace rapter
 {
@@ -402,4 +402,4 @@ namespace rapter
     } //...toGlobFit()
 }
 
-#endif // GF2_GLOBFIT_HPP
+#endif // RAPTER_GLOBFIT_HPP

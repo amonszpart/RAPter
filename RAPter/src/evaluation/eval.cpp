@@ -1,7 +1,8 @@
 #include <iostream>
-#include "globfit2/util/parse.h"
-#include "globfit2/globOpt_types.h"
-#include "globopt/evaluation/assignPointsToTriangles.h"
+#include "rapter/util/parse.h"
+#include "rapter/typedefs.h"
+#include "rapter/util/pclUtil.h" // pclCloudT
+#include "rapter/evaluation/assignPointsToTriangles.h"
 
 namespace rapter
 {

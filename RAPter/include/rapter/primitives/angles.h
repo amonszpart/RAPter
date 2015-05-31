@@ -1,5 +1,5 @@
-#ifndef RAPTER_ANGLES_HPP
-#define RAPTER_ANGLES_HPP
+#ifndef RAPTER_ANGLES_H
+#define RAPTER_ANGLES_H
 
 #include "rapter/simpleTypes.h" //...__Scalar
 
@@ -15,4 +15,4 @@ namespace rapter
 
 } //...ns rapter
 
-#endif // RAPTER_ANGLES_HPP
+#endif // RAPTER_ANGLES_H

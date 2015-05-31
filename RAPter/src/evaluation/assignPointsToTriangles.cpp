@@ -1,6 +1,6 @@
-#include "globfit2/globOpt_types.h"
+#include "rapter/typedefs.h"
 //#include "rapter/primitives/impl/planePrimitive.hpp"
-#include "globopt/evaluation/impl/assignPointsToTriangles.hpp"
+#include "rapter/evaluation/impl/assignPointsToTriangles.hpp"
 
 namespace rapter
 {
