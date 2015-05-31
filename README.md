@@ -2,7 +2,7 @@ RAPter
 =======
 
 Please use the version published here:
-[a link](http://geometry.cs.ucl.ac.uk/projects/2015/regular-arrangements-of-planes)
+[geometry.cs.ucl.ac.uk/projects/2015/regular-arrangements-of-planes](http://geometry.cs.ucl.ac.uk/projects/2015/regular-arrangements-of-planes)
 
 RAPter provides a set of tools to generate, segment, approximate, and visualize 2D and 3D point clouds with ground truth. It also comes with a set of quantitative and qualitative tests to evaluate the approximation results regarding the ground truth.
 The different modules are:
