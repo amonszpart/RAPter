@@ -1,6 +1,6 @@
-#include "globfit2/visualization/visualization.h"
+#include "rapter/visualization/visualization.h"
 
-namespace GF2 {
+namespace rapter {
 namespace vis {
 
 //vis::MyVisPtr
@@ -13,7 +13,7 @@ namespace vis {
 //                , bool                             const  show_ids
 //                , char                             const  use_tags )
 //{
-//    return GF2::Visualizer<vis::lines::PrimitiveContainerT
+//    return rapter::Visualizer<vis::lines::PrimitiveContainerT
 //                          ,vis::lines::PointContainerT>
 //                          ::show<vis::lines::Scalar>
 //                          ( lines, points, scale
@@ -26,4 +26,4 @@ namespace vis {
 //}
 
 } //...ns vis
-} //...ns GF2
+} //...ns rapter

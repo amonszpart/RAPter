@@ -1,21 +1,21 @@
-#ifndef GF2_VISUALIZATION_HPP
-#define GF2_VISUALIZATION_HPP
+#ifndef __RAPTER_VISUALIZATION_HPP__
+#define __RAPTER_VISUALIZATION_HPP__
 
 #include <pcl/console/parse.h>
 
 #include <vector>
 
-#include "globfit2/io/io.h"                      // readPrimitives()
-#include "globfit2/visualization/visualizer.hpp" // GF2::Visualizer
-#include "globfit2/util/pcl_util.hpp"            // cloudToVector()
-#include "globfit2/processing/angle_util.hpp" // appendAngles...
+#include "rapter/io/io.h"                       // readPrimitives()
+#include "rapter/visualization/visualizer.hpp"  // rapter::Visualizer
+#include "rapter/util/impl/pclUtil.hpp"         // cloudToVector()
+#include "rapter/processing/impl/angleUtil.hpp" // appendAngles...
 
 template <class PrimitiveT>
 int
-GF2::vis::showCli( int argc, char** argv )
+rapter::vis::showCli( int argc, char** argv )
 {
     typedef          std::vector< std::vector< PrimitiveT> >              PrimitiveContainerT;
-    typedef typename GF2::Visualizer<PrimitiveContainerT,PointContainerT> MyVisT;
+    typedef typename rapter::Visualizer<PrimitiveContainerT,PointContainerT> MyVisT;
     typedef typename MyVisT::Colour                                       Colour;
 
     if ( pcl::console::find_switch(argc,argv,"--help") || pcl::console::find_switch(argc,argv,"-h") )
@@ -62,6 +62,7 @@ GF2::vis::showCli( int argc, char** argv )
                   << "\t[ --save-poly \t\t Save polygons ]\n"
                   << "\t[ --save-hough \t\t Save hough csv]\n"
                   << "\t[ --screenshot \t\t ]\n"
+                  << "\t[ --vis-size x,y\t\t ]\n"
                   << std::endl;
         return EXIT_SUCCESS;
     }
@@ -101,6 +102,11 @@ GF2::vis::showCli( int argc, char** argv )
 
     std::vector<int> gids;
     pcl::console::parse_x_arguments( argc, argv, "--gids", gids );
+
+    std::vector<int> visSizeVector;
+    Eigen::Vector2i visSize;
+    if ( pcl::console::parse_x_arguments( argc, argv, "--vis-size", visSizeVector ) >= 0 )
+        visSize << visSizeVector.at(0), visSizeVector.at(1);
 
     std::vector<int> dids;
     pcl::console::parse_x_arguments( argc, argv, "--dids", dids );
@@ -146,7 +152,7 @@ GF2::vis::showCli( int argc, char** argv )
     }
 
     PrimitiveContainerT primitives;
-    err = GF2::io::readPrimitives<PrimitiveT, typename PrimitiveContainerT::value_type>( primitives, dir + "/" + primitives_file );
+    err = rapter::io::readPrimitives<PrimitiveT, typename PrimitiveContainerT::value_type>( primitives, dir + "/" + primitives_file );
     if ( EXIT_SUCCESS != err )
     {
         std::cerr << "[" << __func__ << "]: " << "failed to read " << dir + "/" + primitives_file << "...exiting" << std::endl;
@@ -165,7 +171,7 @@ GF2::vis::showCli( int argc, char** argv )
     // convert cloud
     pcl::PointCloud<pcl::PointNormal>::Ptr cloud( new pcl::PointCloud<pcl::PointNormal> );
     pcl::io::loadPLYFile( dir + "/" + cloud_file, *cloud );
-    GF2::pclutil::cloudToVector<PointPrimitiveT::Allocator>( points, cloud );
+    rapter::pclutil::cloudToVector<PointPrimitiveT::Allocator>( points, cloud );
     for ( int pid = 0; pid != cloud->size(); ++pid )
     {
         points[pid].coeffs()(3) = cloud->at(pid).normal_x;
@@ -180,7 +186,7 @@ GF2::vis::showCli( int argc, char** argv )
     {
         std::vector<std::pair<PidT,LidT> > points_primitives;
         std::map<PidT,LidT>                linear_indices; // <pid,lid>
-        GF2::io::readAssociations( points_primitives, dir + "/" + assoc_file, &linear_indices );
+        rapter::io::readAssociations( points_primitives, dir + "/" + assoc_file, &linear_indices );
 
         for ( size_t pid = 0; pid != points_primitives.size(); ++pid )
         {
@@ -232,14 +238,7 @@ GF2::vis::showCli( int argc, char** argv )
 
     // filter status codes UNSET, ACTIVE and SMALL
     std::set<int> statusSet;
-    {
-        statusSet.insert( statuses.begin(), statuses.end() );
-        if ( statusSet.size() )
-        {
-            std::cout<<"[" << __func__ << "]: " << "statuses:";
-            for(size_t vi=0;vi!=statuses.size();++vi)std::cout<<statuses[vi]<<" ";std::cout << "\n";
-        }
-    }
+    statusSet.insert( statuses.begin(), statuses.end() );
 
     // --save-poly will output "cloudRGBNormal" + outStem + ".ply",
     //                     and "plane_mesh"     + outStem + ".ply",
@@ -264,7 +263,7 @@ GF2::vis::showCli( int argc, char** argv )
         }
     } //...outStem parsing
 
-    GF2::Visualizer<PrimitiveContainerT,PointContainerT>::template show<Scalar>( primitives
+    rapter::Visualizer<PrimitiveContainerT,PointContainerT>::template show<Scalar>( primitives
                                                                                , points
                                                                                , scale
                                                                                , /*               colour: */ (Eigen::Vector3f() << 1,0,0).finished() // probably unused
@@ -298,8 +297,9 @@ GF2::vis::showCli( int argc, char** argv )
                                                                                , /*              outStem: */ outStem
                                                                                , /*            saveHough: */ save_hough
                                                                                , /*       screenshotPath: */ screenshotPath
+                                                                               , /*              visSize: */ visSizeVector.size() ? &visSize : NULL
                                                                                );
     return EXIT_SUCCESS;
 } // ... Solver::show()
 
-#endif // GF2_VISUALIZATION_HPP
+#endif // __RAPTER_VISUALIZATION_HPP__

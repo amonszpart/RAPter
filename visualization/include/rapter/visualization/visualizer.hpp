@@ -1,23 +1,23 @@
-#ifndef __GF2_VISUALIZER_HPP__
-#define __GF2_VISUALIZER_HPP__
+#ifndef __RAPTER_VISUALIZER_HPP__
+#define __RAPTER_VISUALIZER_HPP__
 
-#include "globfit2/globOpt_types.h"
+#include "rapter/typedefs.h"
 
-#if GF2_USE_PCL
+#if RAPTER_USE_PCL
 #   include "pcl/point_types.h"
 #   include "pcl/visualization/pcl_visualizer.h"
 #endif
 
-#include "globfit2/visualization/visualization.h" // MyVisPtr
-#include "globfit2/processing/util.hpp"           // getPopulations()
-#include "globfit2/util/diskUtil.hpp"             // saveBackup
+#include "rapter/visualization/visualization.h" // MyVisPtr
+#include "rapter/processing/util.hpp"           // getPopulations()
+#include "rapter/util/diskUtil.hpp"             // saveBackup
 
-#include "qcqpcpp/optProblem.h"
+//#include "qcqpcpp/optProblem.h"
 
-namespace GF2 {
+namespace rapter {
     //! \brief Visualizer class to show points, primitives and their relations
-    //! \tparam PrimitiveContainerT     Patch-wise grouped primitive container type. Concept: vector< vector< GF2::LinePrimitive2> >.
-    //! \tparam PointContainerT         Cloud of possibly oriented 3D points. Concept: vector< GF2::PointPrimitive >.
+    //! \tparam PrimitiveContainerT     Patch-wise grouped primitive container type. Concept: vector< vector< rapter::LinePrimitive2> >.
+    //! \tparam PointContainerT         Cloud of possibly oriented 3D points. Concept: vector< rapter::PointPrimitive >.
     template <class PrimitiveContainerT, class PointContainerT>
     class Visualizer
     {
@@ -78,6 +78,7 @@ namespace GF2 {
                 , std::string                 outStem               = ""
                 , bool                 const  saveHough             = false
                 , std::string          const  screenshotPath        = ""
+                , Eigen::Vector2i      const* visSize              = NULL
                 );
 
             //! \brief Shows a polygon that approximates the bounding ellipse of a cluster
@@ -90,28 +91,28 @@ namespace GF2 {
                        , Eigen::Matrix<_Scalar,3,1>         const& prim_colour
                        );
     }; //...class Visualizer
-} // ns GF2
+} // ns rapter
 
 //_________________________________________________________________
 //______________________________HPP________________________________
 //_________________________________________________________________
 
-#if GF2_USE_PCL
+#if RAPTER_USE_PCL
 #   include <pcl/common/common.h>        // getMinMax3D
 #   include <pcl/visualization/pcl_visualizer.h>
 #   include <pcl/common/pca.h>
-#   include "globfit2/util/pcl_util.hpp" // pclutil::asPointXYZ
+#   include "rapter/util/impl/pclUtil.hpp" // pclutil::asPointXYZ
 #   include "pcl/PolygonMesh.h"
 #endif
 
-#include "globfit2/my_types.h"
-#include "globfit2/util/util.hpp" // util::nColoursEigen
-#include "globfit2/optimization/energyFunctors.h"
+//#include "rapter/my_types.h"
+#include "rapter/util/util.hpp" // util::nColoursEigen
+#include "rapter/optimization/energyFunctors.h"
 
 #define FILTER_STATUS (filter_status && \
                        (*filter_status).find(primitives[lid][lid1].getTag(PrimitiveT::TAGS::STATUS)) == (*filter_status).end())
 
-namespace GF2
+namespace rapter
 {
     /*! \brief Assigns an id to each unique parallel direction among primitives
      * \note !!! UNTESTED !!!
@@ -218,6 +219,7 @@ namespace GF2
                                                            , std::string                 outStem             /* = "" */
                                                            , bool                 const  saveHough           /* = false */
                                                            , std::string          const  screenshotPath      /* = "" */
+                                                           , Eigen::Vector2i      const* visSize             /* = NULL */
                                                            )
     {
         // TYPEDEFS
@@ -232,9 +234,6 @@ namespace GF2
         const Eigen::Matrix<double,3,1> gray          ( (Eigen::Matrix<double,3,1>()<<.6,.6,.5).finished() );
         const _Scalar                   deg_multiplier( _Scalar(180.) / M_PI );
         const _Scalar                   text_size = scale/0.05 * 0.015;
-
-        std::cout << "[" << __func__ << "]: " << "scale: " << scale
-                  << std::endl;
 
         // --------------------------------------------------------------------
 
@@ -293,7 +292,8 @@ namespace GF2
         // log
         {
             std::cout << "[" << __func__ << "]: "
-                      << "points: "         << points.size()
+                      << "scale: "          << scale
+                      << ", points: "         << points.size()
                       << ", primitives: "   << nPrimitives
                       << ", max_gid: "      << max_gid
                       << ", max_dir_gid: "  << max_dir_gid
@@ -371,6 +371,10 @@ namespace GF2
         // init visualizer
         vis::MyVisPtr vptr( new pcl::visualization::PCLVisualizer(title) );
         vptr->setBackgroundColor( bg_colour(0), bg_colour(1), bg_colour(2) );
+        if ( visSize )
+        {
+            vptr->setSize( (*visSize)(0), (*visSize)(1) );
+        }
 
         // --------------------------------------------------------------------
 
@@ -485,11 +489,11 @@ namespace GF2
         // show point ids (takes quite long time)
         if ( show_pids )
         {
-            for ( int pid = 0; pid != points.size(); ++pid )
+            for ( PidT pid = 0; pid != points.size(); ++pid )
             {
                 char pname[255],ptext[255];
-                sprintf( pname, "p%d", pid );
-                sprintf( ptext, "%d", points[pid].getTag(PointPrimitiveT::TAGS::GID) );
+                sprintf( pname, "p%ld", pid );
+                sprintf( ptext, "%ld, (%ld)", points[pid].getTag(PointPrimitiveT::TAGS::PID), points[pid].getTag(PointPrimitiveT::TAGS::GID) );
                 vptr->addText3D( ptext, cloud->at(pid), 0.005, cloud->at(pid).r/255.f, cloud->at(pid).g/255.f, cloud->at(pid).b/255.f, pname, 0 );
             }
         }
@@ -859,73 +863,104 @@ namespace GF2
         // --------------------------------------------------------------------
 
         // Output mesh and pointcloud
-        if ( save_poly && (PrimitiveT::EmbedSpaceDim == 3) )
+        if ( save_poly )
         {
-            // QHull -> "mesh.ply"
-            if ( draw_mode & DRAW_MODE::QHULL )
+            if ( PrimitiveT::EmbedSpaceDim == 3 )
             {
-                std::cout << "[" << __func__ << "]: " << "mesh_accum.size: " << hull_mesh_accum.cloud.width << ", and " << hull_mesh_accum.polygons.size() << " polygons" << std::endl;
-                pcl::io::savePLYFile( "mesh" + outStem + ".ply", hull_mesh_accum );
-                std::cout << "[" << __func__ << "]: " << "saved " << "mesh" + outStem + ".ply" << std::endl;
-            }
-
-            // Planes as shown in GL -> "plane_mesh.ply"
-            std::string planeMeshFileName = "plane_mesh" + outStem + ".ply";
-            if ( !(draw_mode & DRAW_MODE::HIDE_PRIMITIVES) )
-            {
-                pcl::toPCLPointCloud2( plane_mesh_cloud, plane_mesh.cloud );
-                std::cout << "[" << __func__ << "]: " << "plane_mesh.size: " << plane_mesh.cloud.width << ", and " << plane_mesh.polygons.size() << " polygons" << std::endl;
-                util::saveBackup( planeMeshFileName );
-                pcl::io::savePLYFile( planeMeshFileName, plane_mesh );
-                std::cout << "[" << __func__ << "]: " << "saved " << planeMeshFileName << std::endl;
-            }
-
-            //if ( !boost::filesystem::exists("./cloudRGBNormal.ply") )
-            {
-                // at this stage, cloud has all the [visible] points (use HIDE_UNASSIGNED to filter it more up in the code)
-                // cloud is a pclPointCloud, points is a vector if PointPrimitives, don't use points, since the pids may not be in sync
-                pcl::PointCloud< pcl::PointXYZRGBNormal > splats; // output cloud
-                pcl::PointXYZRGBNormal pnt;
-                //Position               normal;
-                splats.reserve( cloud->size() );
-                for ( size_t pid = 0; pid != cloud->size(); ++pid )
+                // QHull -> "mesh.ply"
+                if ( draw_mode & DRAW_MODE::QHULL )
                 {
-                    pnt.getVector3fMap() = cloud->at(pid).getVector3fMap();
-                    pnt.rgb = cloud->at(pid).rgb;
-                    // original normal
-                    pnt.normal[0] = normals->at(pid).normal_x; //points[pid].template dir()(0); // points[pid] might not match cloud[pid]
-                    pnt.normal[1] = normals->at(pid).normal_y; //points[pid].template dir()(1);
-                    pnt.normal[2] = normals->at(pid).normal_z; //points[pid].template dir()(2);
+                    std::cout << "[" << __func__ << "]: " << "mesh_accum.size: " << hull_mesh_accum.cloud.width << ", and " << hull_mesh_accum.polygons.size() << " polygons" << std::endl;
+                    pcl::io::savePLYFile( "mesh" + outStem + ".ply", hull_mesh_accum );
+                    std::cout << "[" << __func__ << "]: " << "saved " << "mesh" + outStem + ".ply" << std::endl;
+                }
 
-                    // save point to output cloud
-                    splats.push_back( pnt );
-                } //...for each point in cloud
-                // save point to disk
+                // Planes as shown in GL -> "plane_mesh.ply"
+                std::string planeMeshFileName = "plane_mesh" + outStem + ".ply";
+                if ( !(draw_mode & DRAW_MODE::HIDE_PRIMITIVES) )
+                {
+                    pcl::toPCLPointCloud2( plane_mesh_cloud, plane_mesh.cloud );
+                    std::cout << "[" << __func__ << "]: " << "plane_mesh.size: " << plane_mesh.cloud.width << ", and " << plane_mesh.polygons.size() << " polygons" << std::endl;
+                    util::saveBackup( planeMeshFileName );
+                    pcl::io::savePLYFile( planeMeshFileName, plane_mesh );
+                    std::cout << "[" << __func__ << "]: " << "saved " << planeMeshFileName << std::endl;
+                }
 
-                std::string rgbNormalCloudName = "./cloudRGBNormal" + outStem;
-                if ( draw_mode & DRAW_MODE::REPROJECT )
-                    rgbNormalCloudName += "_reProj";
-                if ( draw_mode & DRAW_MODE::HIDE_UNASSIGNED_PTS )
-                    rgbNormalCloudName += "_noUnass";
-                if ( draw_mode & DRAW_MODE::HIDE_PRIMITIVES )
-                    rgbNormalCloudName += "_noPrim";
-                rgbNormalCloudName += ".ply";
+                //if ( !boost::filesystem::exists("./cloudRGBNormal.ply") )
+                {
+                    // at this stage, cloud has all the [visible] points (use HIDE_UNASSIGNED to filter it more up in the code)
+                    // cloud is a pclPointCloud, points is a vector if PointPrimitives, don't use points, since the pids may not be in sync
+                    pcl::PointCloud< pcl::PointXYZRGBNormal > splats; // output cloud
+                    pcl::PointXYZRGBNormal pnt;
+                    //Position               normal;
+                    splats.reserve( cloud->size() );
+                    for ( size_t pid = 0; pid != cloud->size(); ++pid )
+                    {
+                        pnt.getVector3fMap() = cloud->at(pid).getVector3fMap();
+                        pnt.rgb = cloud->at(pid).rgb;
+                        // original normal
+                        pnt.normal[0] = normals->at(pid).normal_x; //points[pid].template dir()(0); // points[pid] might not match cloud[pid]
+                        pnt.normal[1] = normals->at(pid).normal_y; //points[pid].template dir()(1);
+                        pnt.normal[2] = normals->at(pid).normal_z; //points[pid].template dir()(2);
 
-                util::saveBackup( rgbNormalCloudName );
-                pcl::PLYWriter w;
-                w.write<pcl::PointXYZRGBNormal>( rgbNormalCloudName, splats, /*binary: */ true, /*use_camera:*/ false );
-                std::cout << "[" << __func__ << "]: " << "saved " << rgbNormalCloudName << std::endl;
-                std::cout << "[" << __func__ << "]: " << "--draw-mode: 4: reproject points, 12(4+8): reproject pnts and hide prims, 28(4+8+16): reproj, hide prims, hide unassigned points" << std::endl;
-                std::cout << "[" << __func__ << "]: " << "--no-pts for primitives only" << std::endl;
-                std::cout << "\n../gaussSphere " << rgbNormalCloudName << std::endl;
-            } //...save cloudRGBNormal.ply
+                        // save point to output cloud
+                        splats.push_back( pnt );
+                    } //...for each point in cloud
+                    // save point to disk
+
+                    std::string rgbNormalCloudName = "./cloudRGBNormal" + outStem;
+                    if ( draw_mode & DRAW_MODE::REPROJECT )
+                        rgbNormalCloudName += "_reProj";
+                    if ( draw_mode & DRAW_MODE::HIDE_UNASSIGNED_PTS )
+                        rgbNormalCloudName += "_noUnass";
+                    if ( draw_mode & DRAW_MODE::HIDE_PRIMITIVES )
+                        rgbNormalCloudName += "_noPrim";
+                    rgbNormalCloudName += ".ply";
+
+                    util::saveBackup( rgbNormalCloudName );
+                    pcl::PLYWriter w;
+                    w.write<pcl::PointXYZRGBNormal>( rgbNormalCloudName, splats, /*binary: */ true, /*use_camera:*/ false );
+                    std::cout << "[" << __func__ << "]: " << "saved " << rgbNormalCloudName << std::endl;
+                    std::cout << "[" << __func__ << "]: " << "--draw-mode: 4: reproject points, 12(4+8): reproject pnts and hide prims, 28(4+8+16): reproj, hide prims, hide unassigned points" << std::endl;
+                    std::cout << "[" << __func__ << "]: " << "--no-pts for primitives only" << std::endl;
+                    std::cout << "\n../gaussSphere " << rgbNormalCloudName << std::endl;
+                } //...save cloudRGBNormal.ply
+            } //...if 3D
+            else // if (PrimitiveT::EmbedSpaceDim == 3)
+            {
+                std::ofstream outFile( "lines.csv" );
+
+                typename PrimitiveT::ExtremaT extent;
+                for ( size_t lid = 0; lid != primitives.size(); ++lid )
+                    for ( size_t lid1 = 0; lid1 < primitives[lid].size(); ++lid1 )
+                    {
+                        PrimitiveT const& prim = primitives[lid][lid1];
+                        GidT       const  gid  = prim.getTag( PrimitiveT::TAGS::GID );
+
+                        prim.template getExtent<PointPrimitiveT>( extent
+                                                                , points
+                                                                , scale
+                                                                , &(populations[gid]) );
+                        outFile << extent[0](0) << "," << extent[0](1) << "," << extent[0](2) << ","
+                                << extent[1](0) << "," << extent[1](1) << "," << extent[1](2) << ","
+                                << gid << "," << prim.getTag( PrimitiveT::TAGS::DIR_GID );
+                        const int colour_id = prim.getTag( primColourTag );
+                        Colour primColour = primColours[ id2ColId[colour_id] ] / 255.;
+                        outFile << "," << primColour(0) << "," << primColour(1) << "," << primColour(2);
+                        outFile << "\n";
+                    }
+
+                outFile.close();
+            }
         } //...if save_poly
 
         // --------------------------------------------------------------------
 
         if ( !screenshotPath.empty() )
         {
-            vptr->spinOnce();
+            vptr->spinOnce(100);
+            vptr->resetCamera();
+            vptr->spinOnce(100);
             vptr->saveScreenshot( screenshotPath );
         }
 
@@ -1021,8 +1056,8 @@ namespace GF2
 
         return 0;
     } // ... Visulazier::drawEllipse
-} // ns gf2
+} // ns rapter
 
 #undef FILTER_STATUS
 
-#endif // __GF2_VISUALIZER_HPP__
+#endif // __RAPTER_VISUALIZER_HPP__

@@ -1,20 +1,20 @@
-#ifndef GF2_VISUALIZATION_H
-#define GF2_VISUALIZATION_H
+#ifndef RAPTER_VISUALIZATION_H
+#define RAPTER_VISUALIZATION_H
 
 #include <vector>
 #include "pcl/visualization/pcl_visualizer.h"
 
-#include "globfit2/primitives/pointPrimitive.h"
+#include "rapter/primitives/pointPrimitive.h"
 
-namespace GF2 {
+namespace rapter {
 namespace vis {
 
     //! \brief Return type for visualizer. Convenience reasons (might need to be changed to std::shared_ptr.
     typedef pcl::visualization::PCLVisualizer::Ptr MyVisPtr;
 
-    //typedef GF2::LinePrimitive2                             PrimitiveT;
+    //typedef rapter::LinePrimitive2                             PrimitiveT;
     //typedef std::vector< std::vector<PrimitiveT> >          PrimitiveContainerT;
-    typedef GF2::PointPrimitive                             PointPrimitiveT;
+    typedef rapter::PointPrimitive                             PointPrimitiveT;
     typedef std::vector<PointPrimitiveT>                    PointContainerT;
     typedef typename PointPrimitiveT::Scalar                Scalar;
 
@@ -35,11 +35,8 @@ namespace vis {
 
 
 } //...ns vis
-} //...ns GF2
+} //...ns rapter
 
-#ifndef GF2_INC_VISUALIZATION_HPP
-#   define GF2_INC_VISUALIZATION_HPP
-#   include "globfit2/visualization/impl/visualization.hpp"
-#endif // GF2_INC_VISUALIZATION_HPP
+#include "rapter/visualization/impl/visualization.hpp"
 
-#endif // GF2_VISUALIZATION_H
+#endif // RAPTER_VISUALIZATION_H

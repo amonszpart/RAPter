@@ -14,7 +14,7 @@
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/prim_minimum_spanning_tree.hpp>
 
-namespace GF2
+namespace rapter
 {
 
 namespace mst
