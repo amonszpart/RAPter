@@ -37,8 +37,9 @@ SET( WITH_CORRESP OFF CACHE BINARY "Correspondance miniprogram compilation.")
 SET( WITH_GLOBFIT OFF CACHE BINARY "GlobFit (Li'11) comparison.")
 SET( WITH_EVAL OFF CACHE BINARY "Evaluation code")
 SET( WITH_REFIT OFF CACHE BINARY "Constrained refit project")
+SET( WITH_GCO OFF CACHE BINARY "Compile alpha-expansion library by Veksler and Delong, needed by PEARL, RSAC and REFIT projects.")
 #SET( WITH_GAUSSSPHERE OFF CACHE BINARY "Compile gaussSphere." )
-#SET( WITH_DRAWGRAPHS ON CACHE BINARY "Compile drawGraphs." )
+SET( WITH_TO_PS OFF CACHE BINARY "Compile primitives to ps converter." )
 #SET( WITH_PLYCONVERTER ON CACHE BINARY "Compile ply-converter executable.")
 
 #_____________________________________#
@@ -59,12 +60,12 @@ ADD_DEFINITIONS(-DRAPTER_WITH_BONMIN)
 
 # OpenGL
 FIND_PACKAGE( OpenGL REQUIRED )
-INCLUDE_DIRECTORIES( ${OPENGL_INCLUDE_DIRS} )
+#INCLUDE_DIRECTORIES( ${OPENGL_INCLUDE_DIRS} )
 
 # PCL
 FIND_PACKAGE( PCL REQUIRED ) # COMPONENTS COMMON IO SEARCH FEATURES FILTERS SEGMENTATION VISUALIZATION SAMPLE_CONSENSUS
-INCLUDE_DIRECTORIES( ${PCL_INCLUDE_DIRS} )
-ADD_DEFINITIONS( ${PCL_DEFINITIONS} )
+#INCLUDE_DIRECTORIES( ${PCL_INCLUDE_DIRS} )
+#ADD_DEFINITIONS( ${PCL_DEFINITIONS} )
 
 # OpenMP
 FIND_PACKAGE(OpenMP)
@@ -94,18 +95,32 @@ SET(BONMIN_LIBRARIES
     lapack
     dl
 )
-INCLUDE_DIRECTORIES( ${PATH_BONMIN_DIR}/include )
+SET( BONMIN_INCLUDE_DIRS "${PATH_BONMIN_DIR}/include" )
 
 # QCQPCPP
 SET( QCQPCPP_H_LIST
-    external/qcqpcpp/optProblem.h
-    external/qcqpcpp/bonminOptProblem.h
-    external/qcqpcpp/io/io.h
+    external/qcqpcpp/include/qcqpcpp/optProblem.h
+    external/qcqpcpp/include/qcqpcpp/bonminOptProblem.h
+    external/qcqpcpp/include/qcqpcpp/io/io.h
 )
 SET( QCQPCPP_HPP_LIST
-    external/qcqpcpp/impl/optProblem.hpp
+    external/qcqpcpp/include/qcqpcpp/impl/optProblem.hpp
 )
-INCLUDE_DIRECTORIES( external )
+SET( QCQPCPP_INCLUDE_DIRS "external/qcqpcpp/include" )
+
+# AlphaExpansion (GCO lib)
+IF(WITH_GCO OR WITH_PEARL OR WITH_REFIT)
+    add_definitions( -DGCO_ENERGYTYPE=float )
+    add_subdirectory( external/gco-v3-float )
+    #SET( PATH_GCO_ROOT ${PATH_GLOBOPT_DEPS_ROOT}/gco-v3-float CACHE PATH "alpha-expansion root" FORCE )
+
+    #add_library( libgco-v3 SHARED IMPORTED )
+    #set_property( TARGET libgco-v3 PROPERTY IMPORTED_LOCATION_RELEASE ${LIBRARY_OUTPUT_PATH}/libgco-v3-0-float.so )
+    #set_property( TARGET libgco-v3 PROPERTY IMPORTED_LOCATION_DEBUG   ${LIBRARY_OUTPUT_PATH}/libgco-v3-0-floatd.so )
+    SET( GCO_INCLUDE_DIRS external/gco-v3-float/include )
+    #SET( GCO_LIBRARIES "libgco-v3" )
+    SET( GCO_LIBRARIES "gco-v3-0-float" )
+ENDIF()
 
 # libfbi
 #INCLUDE_DIRECTORIES( ${PATH_LIBFBI_ROOT}/include )
@@ -127,15 +142,11 @@ SET( TEMPLATE_INST_SRC_LIST
 ##___________________________________________________________________________##
 ##                                  RAPTER                                   ##
 ##___________________________________________________________________________##
+SET(RAPTER_TARGET_NAME rapter)
 
 ADD_DEFINITIONS( -DRAPTER_USE_PCL=1
                  -DVTK_EXCLUDE_STRSTREAM_HEADERS
                )
-
-SET(RAPTER_TARGET_NAME rapter)
-INCLUDE_DIRECTORIES( include
-                    ${EIGEN_INCLUDE_DIRS}
-)
 
 SET( RAPTER_HPP_LIST
     include/rapter/io/impl/io.hpp
@@ -202,14 +213,28 @@ SET( RAPTER_SRC_LIST
     ${TEMPLATE_INST_SRC_LIST}
 )
 
-ADD_EXECUTABLE(${RAPTER_TARGET_NAME} ${RAPTER_SRC_LIST} ${RAPTER_HPP_LIST} ${RAPTER_H_LIST})
+INCLUDE_DIRECTORIES(
+    include
+    ${QCQPCPP_INCLUDE_DIRS}
+    ${BONMIN_INCLUDE_DIRS}
+    ${PCL_INCLUDE_DIRS}
+    ${EIGEN_INCLUDE_DIRS}
+)
+
+ADD_DEFINITIONS( ${PCL_DEFINITIONS} )
+
+ADD_EXECUTABLE( ${RAPTER_TARGET_NAME}
+    ${RAPTER_H_LIST}
+    ${RAPTER_HPP_LIST}
+    ${RAPTER_SRC_LIST}
+)
 
 TARGET_LINK_LIBRARIES( ${RAPTER_TARGET_NAME}
-                       ${BONMIN_LIBRARIES}
-                       ${PCL_LIBRARIES}
-                       boost_filesystem
-                       boost_system
-                       boost_thread
+    ${BONMIN_LIBRARIES}
+    ${PCL_LIBRARIES}
+    boost_filesystem
+    boost_system
+    boost_thread
 )
 
 ##___________________________________________________________________________##
@@ -219,47 +244,53 @@ TARGET_LINK_LIBRARIES( ${RAPTER_TARGET_NAME}
 IF(WITH_PEARL)
     SET( PEARL_TARGET pearl)
 
-    find_package(OpenMP)
-    if (OPENMP_FOUND)
-        set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-        set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-    endif()
+#    find_package(OpenMP)
+#    if (OPENMP_FOUND)
+#        set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+#        set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+#    endif()
 
     ## Deps
-    SET( PATH_PEARL_ROOT ${PATH_GLOBOPT_DEPS_ROOT}/pearl CACHE PATH "Pearl root" FORCE )
-    SET( WITH_GCO ON CACHE BINARY "Use alpha-expansion library")
-    SET( PATH_GCO_ROOT ${PATH_GLOBOPT_DEPS_ROOT}/gco-v3-float CACHE PATH "alpha-expansion root" FORCE )
-
-    # GCO
-    IF(WITH_GCO)
-        add_library( libgco-v3 SHARED IMPORTED )
-        set_property( TARGET libgco-v3 PROPERTY IMPORTED_LOCATION_RELEASE ${PATH_GCO_ROOT}/build/Release/lib/libgco-v3-0-float.so )
-        set_property( TARGET libgco-v3 PROPERTY IMPORTED_LOCATION_DEBUG ${PATH_GCO_ROOT}/build/Debug/lib/libgco-v3-0-floatd.so )
-        SET( GCO_INCLUDE_DIRS ${PATH_GCO_ROOT}/include )
-        SET( GCO_LIBRARIES "libgco-v3" )
-        add_definitions( -DGCO_ENERGYTYPE=float )
-    ENDIF(WITH_GCO)
-
-    MESSAGE( STATUS ${PATH_PEARL_ROOT} )
-    MESSAGE( STATUS ${GCO_INCLUDE_DIRS} )
-    INCLUDE_DIRECTORIES(
-        ${PATH_PEARL_ROOT}/include
-        ${GCO_INCLUDE_DIRS}
-    )
+    #SET( PATH_PEARL_ROOT ${PATH_GLOBOPT_DEPS_ROOT}/pearl CACHE PATH "Pearl root" FORCE )
+    #SET( PATH_PEARL_ROOT pearl)
+    #SET( WITH_GCO ON CACHE BINARY "Use alpha-expansion library" FORCE)
+    #SET( PATH_GCO_ROOT ${PATH_GLOBOPT_DEPS_ROOT}/gco-v3-float CACHE PATH "alpha-expansion root" FORCE )
+    IF( NOT ${WITH_GCO} )
+        message( FATAL_ERROR "\nPlease enable WITH_GCO flag if you want to use the pearl project!\n\n" )
+    ENDIF()
 
     ## Sources
-    SET( PEARL_SRC
+    SET( PEARL_TARGET_H
+        include/pearl/pearl.h
+        #${PATH_GLOBOPT_DEPS_ROOT}/pearl/include/pearl/pearl.h
+    )
+
+    SET( PEARL_TARGET_HPP
+        include/pearl/pearl.hpp
+        include/rapter/comparison/impl/reassign.hpp
+    )
+
+    SET( PEARL_TARGET_SRC
         src/comparison/pearl.cpp
         src/reassign.cpp
         ${TEMPLATE_INST_SRC_LIST}
     )
-    SET( PEARL_H
-        include/rapter/comparison/impl/reassign.hpp
-        ${PATH_GLOBOPT_DEPS_ROOT}/pearl/include/pearl/pearl.h
-    )
 
     ## Linking
-    add_executable( ${PEARL_TARGET} ${PEARL_SRC} ${PEARL_H})
+    INCLUDE_DIRECTORIES(
+        ${GCO_INCLUDE_DIRS}
+        ${PCL_INCLUDE_DIRS}
+        ${EIGEN_INCLUDE_DIRS}
+    )
+
+    ADD_DEFINITIONS( ${PCL_DEFINITIONS} )
+
+    ADD_EXECUTABLE( ${PEARL_TARGET}
+        ${PEARL_TARGET_SRC}
+        ${PEARL_TARGET_H}
+        ${PEARL_TARGET_HPP}
+    )
+
     TARGET_LINK_LIBRARIES( ${PEARL_TARGET}
         ${GCO_LIBRARIES}
         ${PCL_LIBRARIES}
@@ -274,41 +305,54 @@ ENDIF(WITH_PEARL)
 ##___________________________________________________________________________##
 
 IF(WITH_RSAC)
-    SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-local-typedefs " ) #-Wreturn-type # removed c++11
     SET( RSAC_TARGET ransac)
+    SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-local-typedefs " ) #-Wreturn-type # removed c++11
 
     #################################
     # libSchnabel
-    SET( SCHNABEL07_DIR /home/bontius/workspace/SmartGeometry/schnabel07/)
-    add_library( libSchnabel07 SHARED IMPORTED )
-    set_property( TARGET libSchnabel07 PROPERTY IMPORTED_LOCATION_RELEASE ${SCHNABEL07_DIR}/lib/libSchnabel07.so )
-    set_property( TARGET libSchnabel07 PROPERTY IMPORTED_LOCATION_DEBUG ${SCHNABEL07_DIR}/lib/libSchnabel07d.so )
-    add_library( libSchnabel07_MiscLib SHARED IMPORTED )
-    set_property( TARGET libSchnabel07_MiscLib PROPERTY IMPORTED_LOCATION_RELEASE ${SCHNABEL07_DIR}/lib/libMiscLib.so )
-    set_property( TARGET libSchnabel07_MiscLib PROPERTY IMPORTED_LOCATION_DEBUG ${SCHNABEL07_DIR}/lib/libMiscLibd.so )
-    INCLUDE_DIRECTORIES( ${SCHNABEL07_DIR} )
-    SET( SCHNABEL07_LIBRARIES libSchnabel07 libSchnabel07_MiscLib)
+    set( SCHNABEL07_DIR external/schnabel07 )
+    add_subdirectory( ${SCHNABEL07_DIR} )
+    #add_library( libSchnabel07 SHARED IMPORTED )
+    #set_property( TARGET libSchnabel07 PROPERTY IMPORTED_LOCATION_RELEASE ${LIBRARY_OUTPUT_PATH}/libSchnabel07.so  )
+    #set_property( TARGET libSchnabel07 PROPERTY IMPORTED_LOCATION_DEBUG   ${LIBRARY_OUTPUT_PATH}/libSchnabel07d.so )
+    #add_library( libSchnabel07_MiscLib SHARED IMPORTED )
+    #set_property( TARGET libSchnabel07_MiscLib PROPERTY IMPORTED_LOCATION_RELEASE ${LIBRARY_OUTPUT_PATH}/libMiscLib.so  )
+    #set_property( TARGET libSchnabel07_MiscLib PROPERTY IMPORTED_LOCATION_DEBUG   ${LIBRARY_OUTPUT_PATH}/libMiscLibd.so )
+    #MESSAGE(STATUS "LIBRARY_OUTPUT_PATH: ${LIBRARY_OUTPUT_PATH}" )
+    SET( SCHNABEL07_INCLUDE_DIRS ${SCHNABEL07_DIR} )
+    #SET( SCHNABEL07_LIBRARIES libSchnabel07 libSchnabel07_MiscLib )
+    SET( SCHNABEL07_LIBRARIES Schnabel07 )
     #################################
 
-    INCLUDE_DIRECTORIES(
-        ${PATH_RSAC_ROOT}/include
+    ## Sources
+    SET( RSAC_H
     )
 
-    ## Sources
+    SET( RSAC_HPP
+    )
+
     SET( RSAC_SRC
         src/comparison/ransac.cpp
         src/schnabelEnv.cpp
         ${TEMPLATE_INST_SRC_LIST}
     )
 
-    SET( RSAC_H
+    ## Linking
+    INCLUDE_DIRECTORIES(
+        ${SCHNABEL07_INCLUDE_DIRS}
+        ${PCL_INCLUDE_DIRS}
     )
 
-    ## Linking
-    add_executable( ${RSAC_TARGET} ${RSAC_SRC} ${RSAC_H})
+    ADD_DEFINITIONS( ${PCL_DEFINITIONS} )
+
+    ADD_EXECUTABLE( ${RSAC_TARGET}
+        ${RSAC_H}
+        ${RSAC_HPP}
+        ${RSAC_SRC}
+    )
+
     TARGET_LINK_LIBRARIES( ${RSAC_TARGET}
-        libSchnabel07
-        libSchnabel07_MiscLib
+        ${SCHNABEL07_LIBRARIES}
         ${GCO_LIBRARIES}
         ${PCL_LIBRARIES}
         boost_filesystem
@@ -323,12 +367,21 @@ ENDIF(WITH_RSAC)
 
 IF(WITH_CORRESP)
     SET( CORRESP_TARGET "corresp" )
+
     SET( CORRESP_SRC
         src/correspondence.cpp
         ${TEMPLATE_INST_SRC_LIST}
     )
 
-    add_executable( ${CORRESP_TARGET} ${CORRESP_SRC} ${CORRESP_H})
+    INCLUDE_DIRECTORIES(
+        ${PCL_INCLUDE_DIRS}
+    )
+
+    ADD_EXECUTABLE( ${CORRESP_TARGET}
+        ${CORRESP_SRC}
+        ${CORRESP_H}
+    )
+
     TARGET_LINK_LIBRARIES( ${CORRESP_TARGET}
         ${PCL_LIBRARIES}
         boost_filesystem
@@ -341,13 +394,17 @@ ENDIF(WITH_CORRESP)
 
 IF(WITH_GLOBFIT)
     SET( GLOBFIT_TARGET "toGlobFit" )
+
     SET( GLOBFIT_H
-        include/rapter/comparison/impl/globFit.hpp
-        include/rapter/processing/impl/subsamplePrimitives.hpp
-        include/rapter/processing/impl/assignmentOps.hpp
         include/rapter/processing/assignmentOps.h
         include/rapter/comparison/globFit.h
         include/rapter/processing/subsamplePrimitives.h
+    )
+
+    SET( GLOBFIT_HPP
+        include/rapter/processing/impl/assignmentOps.hpp
+        include/rapter/comparison/impl/globFit.hpp
+        include/rapter/processing/impl/subsamplePrimitives.hpp
     )
 
     SET( GLOBFIT_SRC
@@ -357,7 +414,19 @@ IF(WITH_GLOBFIT)
         ${TEMPLATE_INST_SRC_LIST}
     )
 
-    add_executable( ${GLOBFIT_TARGET} ${GLOBFIT_SRC} ${GLOBFIT_H})
+    # Linking
+    INCLUDE_DIRECTORIES(
+        ${PCL_INCLUDE_DIRS}
+    )
+
+    ADD_DEFINITIONS( ${PCL_DEFINITIONS} )
+
+    ADD_EXECUTABLE( ${GLOBFIT_TARGET}
+        ${GLOBFIT_H}
+        ${GLOBFIT_HPP}
+        ${GLOBFIT_SRC}
+    )
+
     TARGET_LINK_LIBRARIES( ${GLOBFIT_TARGET}
         ${PCL_LIBRARIES}
         boost_filesystem
@@ -393,7 +462,11 @@ IF(WITH_EVAL)
         ${TEMPLATE_INST_SRC_LIST}
     )
 
-    add_executable( ${EVAL_TARGET} ${EVAL_SRC} ${EVAL_H} ${EVAL_HPP} )
+    ADD_EXECUTABLE( ${EVAL_TARGET}
+        ${EVAL_SRC}
+        ${EVAL_H}
+        ${EVAL_HPP}
+    )
     TARGET_LINK_LIBRARIES( ${EVAL_TARGET}
         ${PCL_LIBRARIES}
         boost_filesystem
@@ -406,6 +479,7 @@ ENDIF(WITH_EVAL)
 
 IF(WITH_REFIT)
     SET( REFIT_TARGET "refit" )
+
 
     SET( REFIT_H
         include/rapter/primitives/planePrimitive.h
@@ -422,20 +496,32 @@ IF(WITH_REFIT)
 
     SET( REFIT_SRC
         src/refit.cpp
-        #${TEMPLATE_INST_SRC_LIST}
         src/templateInstantiation/planePrimitive.cpp
         src/templateInstantiation/linePrimitive.cpp
         src/templateInstantiation/taggable.cpp
     )
 
-    add_executable( ${REFIT_TARGET} ${REFIT_SRC} ${REFIT_H} ${REFIT_HPP} )
+    INCLUDE_DIRECTORIES(
+        ${QCQPCPP_INCLUDE_DIRS}
+        ${BONMIN_INCLUDE_DIRS}
+        ${GCO_INCLUDE_DIRS}
+        ${PCL_INCLUDE_DIRS}
+    )
+
+    ADD_DEFINITIONS( ${PCL_DEFINITIONS} )
+
+    ADD_EXECUTABLE( ${REFIT_TARGET}
+        ${REFIT_SRC}
+        ${REFIT_H}
+        ${REFIT_HPP}
+    )
     TARGET_LINK_LIBRARIES( ${REFIT_TARGET}
         ${BONMIN_LIBRARIES}
+        ${GCO_LIBRARIES}
         ${PCL_LIBRARIES}
         boost_filesystem
     )
 ENDIF(WITH_REFIT)
-
 
 ##___________________________________________________________________________##
 ##                              PLY CONVERTER                                ##
@@ -478,3 +564,36 @@ ENDIF(WITH_REFIT)
 #        boost_filesystem
 #    )
 #ENDIF(WITH_GAUSSSPHERE)
+
+##___________________________________________________________________________##
+##__________________________________TO_PS____________________________________##
+##___________________________________________________________________________##
+
+IF(WITH_TO_PS)
+    SET( TO_PS_TARGET "toPs" )
+
+    SET( TO_PS_H
+    )
+
+    SET( TO_PS_HPP
+        include/rapter/io/ps.hpp
+    )
+
+    SET( TO_PS_SRC
+        src/drawGraphs.cpp
+        src/templateInstantiation/taggable.cpp
+        src/templateInstantiation/primitive.cpp
+        src/templateInstantiation/linePrimitive.cpp
+        src/templateInstantiation/planePrimitive.cpp
+    )
+
+    ADD_EXECUTABLE( ${TO_PS_TARGET}
+        ${TO_PS_SRC}
+        ${TO_PS_H}
+    )
+
+    TARGET_LINK_LIBRARIES( ${TO_PS_TARGET}
+        ${PCL_LIBRARIES}
+        boost_filesystem
+    )
+ENDIF(WITH_TO_PS)

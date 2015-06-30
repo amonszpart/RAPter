@@ -45,7 +45,7 @@ int ransacCli( int argc, char **argv )
 
     bool valid_input = true;
     bool usePatches = false;
-    int maxPlanes = 0;
+    size_t maxPlanes = 0;
 
 //    std::string cloud_path       = "./cloud.ply",
 //                input_prims_path = "./patches.csv",
@@ -77,7 +77,7 @@ int ransacCli( int argc, char **argv )
         else
             std::cerr << "[" << __func__ << "]: " << "unrecognized ransac algorithm" << std::endl;
 
-        pcl::console::parse_argument( argc, argv, "--max-prims", maxPlanes );
+        rapter::console::parse_argument( argc, argv, "--max-prims", maxPlanes );
 
         if (     !valid_input
               || (rapter::console::find_switch(argc,argv,"-h"    ))

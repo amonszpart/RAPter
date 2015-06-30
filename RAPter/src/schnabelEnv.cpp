@@ -45,7 +45,7 @@ namespace rapter
             if ( extrude2D )
             {
                 cloud.reset( new PclCloudT() );
-                for (PidT pid = 0; pid < inCloud->size(); ++pid )
+                for ( UPidT pid = 0; pid < inCloud->size(); ++pid )
                 {
                     for ( int i = 0; i != pointMultiplier; ++i )
                     {
@@ -63,7 +63,7 @@ namespace rapter
 
         // read
         pcl::PointCloud<pcl::Normal>::Ptr normals( new pcl::PointCloud<pcl::Normal> );
-        for ( int i = 0; i != cloud->size(); ++i )
+        for ( size_t i = 0; i != cloud->size(); ++i )
         {
             pcl::Normal nrm;
             nrm.normal_x = cloud->at(i).normal_x;
@@ -151,10 +151,10 @@ namespace rapter
 
         outPoints.clear(); outPoints.reserve( outShapeIndex.size() );
         size_t eidx = pc.size();
-        for ( LidT shapeId = 0; shapeId != outIndices.size(); ++shapeId )
+        for ( ULidT shapeId = 0; shapeId != outIndices.size(); ++shapeId )
         {
             size_t bidx = eidx - shapes[shapeId].second;
-            for ( PidT pidId = bidx; pidId < eidx; ++pidId )
+            for ( UPidT pidId = bidx; pidId < eidx; ++pidId )
             {
                 PointPrimitiveT pnt( Eigen::Map<const Eigen::Vector3f>( pc.at(pidId).pos.getValue(), 3 )
                                    , Eigen::Map<const Eigen::Vector3f>( pc.at(pidId).normal        , 3 ) );

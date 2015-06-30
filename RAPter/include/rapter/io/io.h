@@ -237,6 +237,8 @@ namespace rapter
                 // 2d indices (lid,lid1)
                 if ( static_cast<LidT>(points_primitives.size()) <= ints[0] )
                     points_primitives.resize( ints[0]+1, std::pair<LidT,LidT>(-1,-1) );
+                //if ( ints[0] == 1991 )
+                //    std::cout << "line: " << line << std::endl;
                 points_primitives[ ints[0] ] = std::pair<LidT,LidT>( ints[1], ints[2] );
                 lines.insert( std::pair<LidT,LidT>(ints[1], ints[2]) );
 

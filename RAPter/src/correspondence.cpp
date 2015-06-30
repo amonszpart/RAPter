@@ -365,7 +365,7 @@ namespace correspondence
         {
             // select non-taken pairs
             std::set<GidLid> taken_primsA, taken_primsB;
-            for ( int i = 0; i < cost_list.size(); ++i )
+            for ( size_t i = 0; i < cost_list.size(); ++i )
             {
                 CostKey const& costKey   = cost_list[i].second; // second: < <gidA,lidA>,<gidB,lidB> >
                 GidLid  const& gidLidA   = costKey.first;       // <gidA,lidA>

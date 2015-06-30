@@ -47,7 +47,7 @@ namespace rapter
         rapter::console::parse_argument( argc,argv,"--pop-limit", popLimit );
         std::cout << "[" << __func__ << "]: " << "keeping at least " << popLimit << " points for each plane, change with \"--pop-limit k\"" << std::endl;
 
-        int primLimit( 0 ); // keep the first primLimit planes
+        size_t primLimit( 0 ); // keep the first primLimit planes
         rapter::console::parse_argument( argc,argv,"--prim-limit", primLimit );
         Scalar primRandRatio( 0. ); // randomize the selection of primitives
         rapter::console::parse_argument( argc,argv,"--prim-random-ratio", primRandRatio );
@@ -90,7 +90,7 @@ namespace rapter
         // pick (1. - primRandRatio) primitives from the top, and the rest randomly
         std::set<MultiMapPair> chosenGids;
         {
-            LidT largePrimDemand = std::floor( primLimit * (1. - primRandRatio) );
+            ULidT largePrimDemand = std::floor( primLimit * (1. - primRandRatio) );
             std::cout << "largePrimDemand " << largePrimDemand << ", primlimiT: " << primLimit << std::endl;
 
             // iterate over all once

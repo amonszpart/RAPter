@@ -6,6 +6,7 @@
 
 #define GCO_ENERGYTYPE float
 #include "gco/GCoptimization.h"
+#include "rapter/simpleTypes.h"
 
 namespace rapter
 {
@@ -69,7 +70,7 @@ namespace rapter
             char name[255];
             for ( typename _PrimitiveContainerT::const_iterator it = primitives.begin(); it != primitives.end(); ++it )
             {
-                for ( LidT lid = 0; lid != it->size(); ++lid )
+                for ( ULidT lid = 0; lid != it->size(); ++lid )
                 {
                     PrimitiveT const& prim = it->at( lid );
                     sprintf( name, "prim%06ld_%06ld", prim.getTag( PrimitiveT::TAGS::GID ), lid );
@@ -99,7 +100,7 @@ namespace rapter
                 LidT label = 0;
                 LidT lid0 = 0;
                 for ( typename _PrimitiveContainerT::const_iterator it = primitives.begin(); it != primitives.end(); ++it, ++lid0 )
-                    for ( LidT lid1 = 0; lid1 != it->size(); ++lid1, ++label )
+                    for ( ULidT lid1 = 0; lid1 != it->size(); ++lid1, ++label )
                     {
                         Scalar dist = it->at(lid1).getDistance( points[pid].template pos() );
                         data[ pid*num_labels + label] = Scalar(100.) * dist * dist;
@@ -140,8 +141,8 @@ namespace rapter
                                                    );
 
                 std::cout << "[" << __func__ << "]: " << "setting neighbourhood" << std::endl; fflush(stdout);
-                for ( int pid = 0; pid != neighs.size(); ++pid )
-                    for ( int nid = 0; nid != neighs[pid].size(); ++nid )
+                for ( UPidT pid = 0; pid != neighs.size(); ++pid )
+                    for ( UPidT nid = 0; nid != neighs[pid].size(); ++nid )
                     {
                         Scalar d = Scalar(100.) * std::max( Scalar(0.), params.scale - sqr_dists[pid][nid]);
                         gc->setNeighbors( pid, neighs[pid][nid], d );
@@ -159,7 +160,7 @@ namespace rapter
                     points[i].setTag( PointPrimitiveT::TAGS::GID, primitives[lidLid1.first][lidLid1.second].getTag( PrimitiveT::TAGS::GID) );
                 }
 
-                std::cout<<"result:";for(size_t vi=0;vi!=num_pixels;++vi)std::cout<<result[vi]<<" ";std::cout << "\n";
+                std::cout<<"result:";for(LidT vi=0;vi!=num_pixels;++vi)std::cout<<result[vi]<<" ";std::cout << "\n";
                 std::cout << "[" << __func__ << "]: " << "writing to points_primitives.schnabel.csv" << std::endl;
                 rapter::io::writeAssociations<PointPrimitiveT>( points, "./points_primitives.schnabel.csv" );
 

@@ -400,7 +400,7 @@ namespace rapter
         std::set< GidPair > mstEdges;
         g.spanningTree( mstEdges );
 
-        for ( int i = 0; i != constraints.size(); ++i ) // perps.size()
+        for ( size_t i = 0; i != constraints.size(); ++i ) // perps.size()
         {
             OptProblemT::SparseMatrix perp_constraint( problem.getVarCount(), problem.getVarCount() );
             const std::vector<LidT>& prim0VarIds = prims_vars.at( constraints[i].prim0 );

@@ -777,25 +777,26 @@ int Merging::adoptPoints( _PointContainerT          & points
         GidLidExtremaT extremaMap;
 
         std::cout << "Orphan re-assigned ";
-        for ( size_t pid = 0; pid != points.size(); ++pid )
+        for ( size_t pIdId = 0; pIdId != points.size(); ++pIdId )
         {
-            const GidT point_gid = points[pid].getTag(_PointPrimitiveT::TAGS::GID);
-            typename _PrimitiveContainerT::const_iterator it = prims.find( point_gid );
+            //const PidT pId       = points[pIdId].getTag(_PointPrimitiveT::TAGS::PID);
+            const GidT pointGId = points[pIdId].getTag(_PointPrimitiveT::TAGS::GID);
+            typename _PrimitiveContainerT::const_iterator it = prims.find( pointGId );
 
             // try to find if at least one of the primitive of the group is big
             // if is not the case, we can potentially re-assign
             auto isBigPatch = [] (const _PrimitiveT& prim) { return prim.getTag(_PrimitiveT::TAGS::STATUS) != _PrimitiveT::STATUS_VALUES::SMALL; };
 
             if (    ( it == prims.end()                            )    // the patch this point is assigned to does not exist
-                 || ( !containers::valueOf<_PrimitiveT>(it).size()      // the patch this point is assigned to is empty (no primitives in it)
-                 || std::find_if((*it).second.begin(), (*it).second.end(), isBigPatch) == (*it).second.end()) // there is no big patch in the group
+                 || ( !containers::valueOf<_PrimitiveT>(it).size() )    // the patch this point is assigned to is empty (no primitives in it)
+                 || ( std::find_if((*it).second.begin(), (*it).second.end(), isBigPatch) == (*it).second.end()) // there is no big patch in the group
                )  // the patch this point is assigned to is too small
             {
 
                 // We here have an orphan, so we need to iterate over all primitives and get the closest distance < scale
                 _Scalar  minDist = std::numeric_limits<_Scalar>::max();
                 GidT     minGid  = -1;
-                Position pos     = points[pid].pos();
+                Position pos     = points[pIdId].pos();
 
                 // now loop over all primitives to get the closest for
                 for ( outer_const_iterator it1 = prims.begin(); it1 != prims.end(); ++it1 )
@@ -839,13 +840,12 @@ int Merging::adoptPoints( _PointContainerT          & points
                 if ( (minDist < scale) && (minDist >= _Scalar(0.)) )
                 {
                     // reassign point
-                    points[pid].setTag( _PointPrimitiveT::TAGS::GID, minGid );
+                    points[pIdId].setTag( _PointPrimitiveT::TAGS::GID, minGid );
                     ++orphanReCount;
                     if ( !(orphanReCount % 1000) )
                         std::cout << orphanReCount << " points, ";
                     //std::cout << pid << " " << minGid << ", ";
                     changed = true;
-
                 }
             } //...if reassign point
         }//...for all points

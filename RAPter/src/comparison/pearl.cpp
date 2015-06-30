@@ -8,7 +8,7 @@
 #include "rapter/util/containers.hpp" // add
 #include "rapter/simpleTypes.h"
 #include "rapter/util/containers.hpp"
-#include "rapter/primitives/impl/planePrimitive.hpp"
+//#include "rapter/primitives/impl/planePrimitive.hpp"
 
 
 template int
@@ -161,7 +161,7 @@ int pearlCli( int argc, char **argv )
 
         if ( points.size() != labels.size() )
             std::cerr << "[" << __func__ << "]: " << "labels != points " << points.size() << " " << labels.size() << std::endl;
-        for ( int pid = 0; pid != labels.size(); ++pid )
+        for ( size_t pid = 0; pid != labels.size(); ++pid )
         {
             const int gid = labels[pid];
             // assign point

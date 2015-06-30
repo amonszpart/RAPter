@@ -491,7 +491,7 @@ namespace rapter
         cloud_projected->resize(indices->size());
 
         // get assigned points, project them to the plane and store as PCL cloud
-        PidT i = 0;
+        UPidT i = 0;
         for ( typename _IndicesContainerT::const_iterator it = indices->begin(); it != indices->end(); ++i, ++it )
         {
             cloud_projected->at(i).getVector3fMap() = plane.projectPoint(points[*it].pos()).template cast<float>();

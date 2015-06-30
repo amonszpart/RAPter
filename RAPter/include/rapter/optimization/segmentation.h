@@ -139,7 +139,7 @@ class Segmentation
                 , _PatchPatchDistanceFunctorT       const& patchPatchDistanceFunctor
                 , int                               const  nn_K
                 , int                               const  verbose
-                , int                               const  patchPopLimit
+                , size_t                            const  patchPopLimit
                 );
 
         /*! \brief                               Greedy region growing

@@ -1,5 +1,5 @@
-#ifndef RAPTER_PS_HPP
-#define RAPTER_PS_HPP
+#ifndef __RAPTER_PS_HPP__
+#define __RAPTER_PS_HPP__
 
 #include <fstream>
 #include <string>
@@ -13,14 +13,14 @@ namespace io
 {
     inline std::string didName( DidT did )
     {
-        char name[128]; sprintf(name, "\"$\\\\chi_{%Ld}$\"", did );
+        char name[128]; sprintf(name, "\"$\\\\chi_{%ld}$\"", did );
         return name;
     }
 
     inline std::string getPrimName( GidT gid, DidT did )
     {
         char name[128];
-        sprintf(name, "\"P%Ld,%Ld\"", gid, did );
+        sprintf(name, "\"P%ld,%ld\"", gid, did );
         return name;
     }
 
@@ -30,7 +30,7 @@ namespace io
         typedef typename _PrimitiveMapT::mapped_type::value_type PrimitiveT;
         std::vector<Eigen::Vector3f> colours = util::paletteDarkColoursEigen();
 
-        int cIndex = 0;
+        size_t cIndex = 0;
         for ( typename containers::PrimitiveContainer<PrimitiveT>::ConstIterator it(prims); it.hasNext(); it.step() )
         {
             if ( it->getTag(PrimitiveT::TAGS::STATUS) == PrimitiveT::STATUS_VALUES::SMALL ) continue;
@@ -138,7 +138,7 @@ namespace io
             FILE* fpCloud = fopen( cloudPath.c_str(), "w" );
             Eigen::Matrix<Scalar,2,1> pSize; pSize << 0.001, 0.001;
             Eigen::Vector3f colour = Eigen::Vector3f::Zero();
-            for ( PidT pid = 0; pid != points.size(); ++pid )
+            for ( UPidT pid = 0; pid != points.size(); ++pid )
             {
                 if ( rand() / float(RAND_MAX) > subSample ) continue;
                 if ( colourCloud )
@@ -213,7 +213,7 @@ namespace io
             {
                 Eigen::Vector2f mid = locs[0] + (locs[1] - locs[0])/2.f;
                 mid(0) += 1.f;
-                fprintf( fp, "/Times-Roman findfont\n6 scalefont\nsetfont\n%.3f %.3f moveto\n(P%Ld->%Ld) show\n"
+                fprintf( fp, "/Times-Roman findfont\n6 scalefont\nsetfont\n%.3f %.3f moveto\n(P%ld->%ld) show\n"
                          , mid(0), mid(1), it.getDid(), it.getGid() );
 
                 for ( int i = 0; i != 2; ++i )
@@ -468,4 +468,4 @@ namespace io
 } //...ns rapter
 
 
-#endif // RAPTER_PS_HPP
+#endif // __RAPTER_PS_HPP__

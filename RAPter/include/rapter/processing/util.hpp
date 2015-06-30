@@ -548,7 +548,7 @@ namespace rapter {
             MyPointT            searchPoint;
             std::vector<float>  sqr_dists;
             PidT                found_points_count = 0;
-            for ( size_t pid = 0; pid != N; ++pid )
+            for ( PidT pid = 0; pid != N; ++pid )
             {
                 // copy search point
                 searchPoint = indices_arg ? cloud->at( (*indices_arg)[pid] )

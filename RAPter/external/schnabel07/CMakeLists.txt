@@ -5,9 +5,9 @@ SET( CMAKE_CXX_FLAGS "-std=c++0x -Wall" ) #-Wreturn-type
 #SET(CMAKE_VERBOSE_MAKEFILE true)
 add_definitions( -DDOPARALLEL )
 
-SET( dir ${CMAKE_CURRENT_SOURCE_DIR}/build/${CMAKE_BUILD_TYPE})
-SET( EXECUTABLE_OUTPUT_PATH ${dir} CACHE PATH "Build directory" FORCE)
-SET( LIBRARY_OUTPUT_PATH    ${dir} CACHE PATH "Build directory" FORCE)
+#SET( dir ${CMAKE_CURRENT_SOURCE_DIR}/build/${CMAKE_BUILD_TYPE})
+#SET( EXECUTABLE_OUTPUT_PATH ${dir} CACHE PATH "Build directory" FORCE)
+#SET( LIBRARY_OUTPUT_PATH    ${dir} CACHE PATH "Build directory" FORCE)
 
 #ADD_SUBDIRECTORY(GfxTL)
 ADD_SUBDIRECTORY(MiscLib)
@@ -53,9 +53,9 @@ target_link_libraries(${PROJECT_NAME}
     gomp )
 
 # LIB COPY
-get_target_property( OUTPUT_LOCATION ${PROJECT_NAME} LOCATION )
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                   COMMAND ${CMAKE_COMMAND} -E copy_directory
-                   ${LIBRARY_OUTPUT_PATH}
-                   "${CMAKE_CURRENT_BINARY_DIR}/../lib/"
-)
+#get_target_property( OUTPUT_LOCATION ${PROJECT_NAME} LOCATION )
+#add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+#                   COMMAND ${CMAKE_COMMAND} -E copy_directory
+#                   ${LIBRARY_OUTPUT_PATH}
+#                   "${CMAKE_CURRENT_BINARY_DIR}/../lib/"
+#)

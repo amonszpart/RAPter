@@ -58,9 +58,9 @@ namespace rapter
             , rapter::Scalar                           const  scale
             , std::vector<rapter::Scalar>              const& angles
             , rapter::_2d::PatchPatchDistanceFunctorT  const& patchPatchDistanceFunctor
-            , int                                   const  nn_K
-            , int                                   const  verbose
-            , int                                   const  patchPopLimit
+            , int                                      const  nn_K
+            , int                                      const  verbose
+            , size_t                                   const  patchPopLimit
             );
 
     template int
@@ -75,9 +75,9 @@ namespace rapter
                           , rapter::Scalar                           const  scale
                           , std::vector<rapter::Scalar>              const& angles
                           , rapter::_3d::PatchPatchDistanceFunctorT  const& patchPatchDistanceFunctor
-                          , int                                   const  nn_K
-                          , int                                   const  verbose
-                          , int                                   const  patchPopLimit
+                          , int                                      const  nn_K
+                          , int                                      const  verbose
+                          , size_t                                   const  patchPopLimit
                           );
 
     namespace segm_templinst
