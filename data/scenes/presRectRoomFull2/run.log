@@ -1,1 +1,0 @@
-../rapter.py -s 0.01 --al 3 --pw 10 -l --segment-scale-mult 0.25 --ald 0.25 --it 20 --pl 3

@@ -1,6 +1,0 @@
-[09/12/14 18:57:53] ../../../globOpt/scripts/run.sh 0.015 0.2 2 
-[09/12/14 18:58:24] ../../../globOpt/scripts/run.sh 0.02 0.2 2 
-[09/12/14 18:59:09] ../../../globOpt/scripts/run.sh 0.02 0.2 2 
-[09/12/14 18:59:36] ../../../globOpt/scripts/run.sh 0.04 0.2 2 
-[09/12/14 19:00:47] ../../../globOpt/scripts/run.sh 0.04 0.2 2 
-[09/25/14 20:37:35] ../../../globOpt/scripts/run.sh 0.05 0.3 0.1 15 --freqweight 10 --angle-limit 0.3 --segment-scale-mult 1. --adopt 0 --dirbias 0 --cand-anglediv 2.5 --angle-gens 45 --cost-fn spatsqrt --small-thresh 8 --small-thresh-limit 

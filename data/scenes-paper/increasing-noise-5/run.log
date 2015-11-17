@@ -1,4 +1,0 @@
-[09/25/14 00:04:39] ../../../globOpt/scripts/run.sh 0.08 0.25 10 25 --freqweight 10 --angle-limit 0.25 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 45 --cost-fn spatsqrt --small-thresh 4 --small-thresh-limit 
-[09/25/14 00:05:17] ../../../globOpt/scripts/run.sh 0.08 0.25 10 25 --freqweight 10 --angle-limit 0.25 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 45 --cost-fn spatsqrt --small-thresh 4 --small-thresh-limit 
-[09/25/14 00:06:06] ../../../globOpt/scripts/run.sh 0.08 0.25 10 25 --freqweight 10 --angle-limit 0.25 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 45 --cost-fn spatsqrt --small-thresh 4 --small-thresh-limit 
-[09/25/14 09:08:43] ../../../globOpt/scripts/run.sh 0.08 0.25 10 25 --freqweight 10 --angle-limit 0.25 --segment-scale-mult 1 --adopt 0 --dirbias 0 --cand-anglediv 1 --angle-gens 45 --cost-fn spatsqrt --small-thresh 4 --small-thresh-limit 

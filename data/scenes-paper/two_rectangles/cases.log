@@ -1,6 +1,0 @@
-two_rectangles:
-    snap: ../../../globOpt/scripts/run.sh 0.03 0.4 1 40
-    medium snap: ../../../globOpt/scripts/run.sh 0.03 0.4 0.1 40
-    don't snap: ../../../globOpt/scripts/run.sh 0.03 0.4 0.01 40
-
-../globOptVis --show --scale 0.03 --pop-limit 40 -p primitives_it5.bonmin.csv -a points_primitives_it4.csv --title "GlobOpt - [Dir-Colours] 6 iteration output" --use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --dir-colours --no-rels &

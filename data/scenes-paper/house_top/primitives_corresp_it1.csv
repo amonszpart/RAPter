@@ -1,9 +1,0 @@
-# corresp between
-# ./gt/primitives.csv,primitives_it1.bonmin.csv
-# gid, lid, did, gid, lid, did
-0,0,0,13,0,0
-1,0,0,0,0,0
-3,0,0,23,0,0
-5,0,0,19,0,0
-10,0,0,44,0,0
-11,0,0,40,0,0

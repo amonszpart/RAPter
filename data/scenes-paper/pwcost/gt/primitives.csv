@@ -1,5 +1,0 @@
-#Describes primitives of the scene
-#x,y,z,nx,ny,nz,primitiveId,orientationId,used
-0.257812,0.5449,0,1,0,0,0,0,1
-0.455114,0.5449,0,1,0,0,2,2,1
-0.713646,0.5517,0,0.965928,0.258812,0,4,4,1
