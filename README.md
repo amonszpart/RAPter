@@ -47,7 +47,7 @@ Once all the dependencies are satisfied, you can build RAPter. By default, depen
 ```
 mkdir build
 cd build
-cmake ..
+cmake -DCMAKE_BUILD_TYPE=Release ..
 make
 ```
 
