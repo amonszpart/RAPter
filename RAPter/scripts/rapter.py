@@ -8,7 +8,7 @@ import math         # pi
 import subprocess   # Popen
 
 
-rapterRoot = "/home/bontius/workspace/globOpt";
+rapterRoot = "/home/bontius/workspace/RAPter/";
 rapterExec = os.path.join( rapterRoot, "RAPter", "build", "Release", "bin", "rapter" );
 
 def show( primitivesPath, associationsPath, title, args ):
@@ -35,7 +35,7 @@ def call( cmd, dry = True, noExit = False ):
 
 def runRepr( rprPrims, rprAssoc, rprIter, args, angleGens, keepSingles ):
     print( "Running with prims: %s, assoc: %s, iteration: %d" % (rprPrims,rprAssoc,rprIter) );
-    
+
     rprRepr      = "representatives_it%d.csv" % rprIter             # representatives output, contains one patch for each dId
     rprReprAssoc = "points_representatives_it%d.csv" % rprIter      # representatives output, contains associations for representative primitives only
     rprCands     = "candidates_representatives_it%d.csv" % rprIter  # candidates generated from representatives
@@ -49,7 +49,7 @@ def runRepr( rprPrims, rprAssoc, rprIter, args, angleGens, keepSingles ):
 
     # representatives
     cmd = "%s --represent%s -p %s -a %s -sc %f --cloud %s --angle-gens %s" \
-           % (args.rapterExec, args.flag3D, rprPrims, rprAssoc, args.scale, args.cloud, angleGens ); 
+           % (args.rapterExec, args.flag3D, rprPrims, rprAssoc, args.scale, args.cloud, angleGens );
     #my_exec "$executable --represent$flag3D -p $rprPrims -a $rprAssoc -sc $scale --cloud cloud.ply --angle-gens $anglegens"
     call( cmd, args.dry );
 
@@ -61,7 +61,7 @@ def runRepr( rprPrims, rprAssoc, rprIter, args, angleGens, keepSingles ):
         #mv points_representatives.csv $rprReprAssoc
         shutil.move("points_representatives.csv",rprReprAssoc);
 
-    
+
     # ShowRepr
     #cmd="../globOptVis --show$flag3D--scale $scale --pop-limit $poplimit --title \"Representatives\" --angle-gens $angleGens --use-tags --no-clusters --statuses -1,1 --no-pop --dir-colours --no-scale --bg-colour .9,.9,.9 --ids --no-rel -p $repr -a $assoc $"
     #my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p $rprRepr -a $rprReprAssoc --title \"Representatives\" $visdefparam &"
@@ -75,8 +75,8 @@ def runRepr( rprPrims, rprAssoc, rprIter, args, angleGens, keepSingles ):
 
     #cmd = "$executable --generate$flag3D $tripletSafe -sc $scale -al $rprAngLimit -ald ${cand_anglediv} --small-mode 0 --patch-pop-limit $poplimit --angle-gens $candAngleGens --small-thresh-mult $smallThresh -p $rprRepr --assoc $rprReprAssoc --keep-singles"
     #my_exec "%s --generate%s -sc $scale -al $rprAngLimit -ald 1.0 --patch-pop-limit $poplimit -p $rprRepr --assoc $rprReprAssoc --angle-gens $candAngleGens --small-thresh-mult %f --small-mode 0 %s %s"
-    cmd = "%s --generate%s -sc %f -al %f -ald 1.0 --patch-pop-limit %d -p %s --assoc %s --angle-gens %s --small-thresh-mult %f --small-mode 0 %s %s" \
-        % ( args.rapterExec, args.flag3D, args.scale, rprAngLimit, args.popLimit, rprRepr, rprReprAssoc, candAngleGens, \
+    cmd = "%s --generate%s -sc %f --cloud %s -al %f -ald 1.0 --patch-pop-limit %d -p %s --assoc %s --angle-gens %s --small-thresh-mult %f --small-mode 0 %s %s" \
+        % ( args.rapterExec, args.flag3D, args.scale, args.cloud, rprAngLimit, args.popLimit, rprRepr, rprReprAssoc, candAngleGens, \
            args.smallThreshMult, args.tripletSafe, keepSingles );
     call( cmd, args.dry );
 
@@ -88,10 +88,10 @@ def runRepr( rprPrims, rprAssoc, rprIter, args, angleGens, keepSingles ):
         # mv candidates_it${rprNextId}_tmp.csv candidates_it${rprNextId}.csv
         if os.path.isfile( "candidates_it%d_tmp.csv" % rprNextId ):
             shutil.move( "candidates_it%d_tmp.csv" % rprNextId, "candidates_it%d.csv" % rprNextId ); # move back tmp
-    
+
     # Show candidates
     #my_exec "../globOptVis --show$flag3D --scale $scale --pop-limit $poplimit -p $rprCands -a $rprReprAssoc --title \"GlobOpt-repr_candidates\" $visdefparam &"
-    
+
     # Formulate
     # my_exec "$executable --formulate$flag3D $formParams --scale $scale --cloud cloud.ply --unary $unary --pw $rprPw --cmp $cmp --constr-mode patch --dir-bias $dirbias --patch-pop-limit $poplimit --angle-gens $anglegens --candidates $rprCands -a $rprReprAssoc --freq-weight $freqweight --cost-fn $pwCostFunc"
     cmd = "%s --formulate%s --scale %f --unary %f --pw %f --spat-weight %f --spat-dist-mult 2. --patch-pop-limit %d --angle-gens %s --cloud %s --candidates %s -a %s --collapse-angle-deg %f --trunc-angle %f --constr-mode patch --dir-bias 0 --no-clusters --cmp 0 --freq-weight 0 --cost-fn spatsqrt" \
@@ -118,7 +118,7 @@ def runRepr( rprPrims, rprAssoc, rprIter, args, angleGens, keepSingles ):
         # echo "cp primitives_it${rprIter}.bonmin.csv $rprReprOpt"
         # cp primitives_it${rprIter}.bonmin.csv $rprReprOpt
         shutil.copyfile( "primitives_it%d.bonmin.csv" % rprIter, rprReprOpt );
-        
+
         # echo "cp primitives_it${rprIter}_rprtmp.csv primitives_it${rprIter}.bonmin.csv"
         # cp primitives_it${rprIter}_rprtmp.csv primitives_it${rprIter}.bonmin.csv
         shutil.copyfile( "primitives_it%d_rprtmp.csv" % rprIter, "primitives_it%d.bonmin.csv" % rprIter );
@@ -258,7 +258,7 @@ while iteration <= args.nbExtraIterations:
     # decresase, unless there is more to do on the same level
     if decreaseLevel:
         args.smallThreshMult = float(int(args.smallThreshMult / smallThreshDiv));
-    
+
     # if we reached the bottom working scale (ideally 0)
     if args.smallThreshMult <= smallThreshLimit:
         args.smallThreshMult = int(smallThreshLimit) # make sure it's integer
@@ -275,7 +275,7 @@ while iteration <= args.nbExtraIterations:
     print( "smallThreshMult: %d" % args.smallThreshMult );
     print( "__________________________________________________________" );
     print( "Start iteration %d" % iteration );
-    
+
     prevId = iteration - 1;
     nextId = iteration + 1;
 
@@ -323,7 +323,7 @@ while iteration <= args.nbExtraIterations:
     if iteration == 3:
         allowPromoted = ""
 
-    # Don't throw away single directions before the 3rd (c==1) iteration. 
+    # Don't throw away single directions before the 3rd (c==1) iteration.
     # This will keep large patches, even if they don't copy to anywhere for later.
     if iteration == 1:
         keepSingles = ""
