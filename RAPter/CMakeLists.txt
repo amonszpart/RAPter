@@ -13,7 +13,8 @@ SET( THIRD_PARTY_DIR "${WORKSPACE_DIR}/3rdparty" )
 SET( PCL_DIR "${THIRD_PARTY_DIR}/pcl-trunk2/install/share/pcl-1.8/"
         CACHE FILEPATH "Folder containing \"PCLConfig.cmake\", usually \"{PCL_INSTALL_DIR}/share/pcl-x.x/\"." )
 # BONMIN
-SET( PATH_BONMIN_DIR "${THIRD_PARTY_DIR}/CoinBonmin-stable/build/")
+SET( PATH_BONMIN_DIR "${THIRD_PARTY_DIR}/CoinBonmin-stable/build/"
+    CACHE FILEPATH "Folder containing the compiled Bonmin libraries")
 #SET( PATH_BONMIN_DIR "${THIRD_PARTY_DIR}/Bonmin-1.8.0-lapack/")
 
 ## QCQPCPP
@@ -75,12 +76,12 @@ IF(OPENMP_FOUND)
 ENDIF(OPENMP_FOUND)
 
 # Bonmin
-IF(EXISTS ${PATH_BONMIN_DIR}lib/libcoinhsl.so)
-  SET (BONMIN_SOLVER_LIB ${PATH_BONMIN_DIR}lib/libcoinhsl.so)
+IF(EXISTS ${PATH_BONMIN_DIR}/lib/libcoinhsl.so)
+  SET (BONMIN_SOLVER_LIB ${PATH_BONMIN_DIR}/lib/libcoinhsl.so)
   MESSAGE(STATUS "HSL Solver available, using HSL instead of MUMPS")
 ELSE()
-    SET (BONMIN_SOLVER_LIB ${PATH_BONMIN_DIR}lib/libcoinmumps.so)
-ENDIF(EXISTS ${PATH_BONMIN_DIR}lib/libcoinhsl.so)
+    SET (BONMIN_SOLVER_LIB ${PATH_BONMIN_DIR}/lib/libcoinmumps.so)
+ENDIF(EXISTS ${PATH_BONMIN_DIR}/lib/libcoinhsl.so)
 
 SET(BONMIN_LIBRARIES
     ${PATH_BONMIN_DIR}/lib/libipopt.so
