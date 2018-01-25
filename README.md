@@ -5,7 +5,7 @@ Venue: [SIGGRAPH 2015](https://s2015.siggraph.org) <br />
 Authors: [Aron Monszpart](http://geometry.cs.ucl.ac.uk/amonszpart)<sup>1</sup>, [Nicolas Mellado](https://www.irit.fr/recherches/VORTEX/MelladoNicolas/)<sup>1,2</sup>, [Gabriel J. Brostow](http://www0.cs.ucl.ac.uk/staff/g.brostow/)<sup>1</sup>, [Niloy J. Mitra](http://geometry.cs.ucl.ac.uk)<sup>1</sup><br />
 <sup>1</sup>University College London <sup>2</sup>CNRS-IRIT (Toulouse, France)
 
-![Teaser](geometry.cs.ucl.ac.uk/projects/2015/regular-arrangements-of-planes/paper_docs/teaser.png)
+![Teaser](img/teaser.png)
 <br />We present a novel approach to extract a Regular Arrangements of Planes (RAP) from an unstructured and noisy raw scan (shown in gold). (a) In this example, our algorithm reconstructs a building arrangement from a raw pointcloud, pre-assembled from multiple laser scans. (b) The distribution of the initial normals is very noisy in this scene, which makes any greedy arrangement of planes error-prone. Instead, we propose a global algorithm to simultaneously select both the planes along with their sparse inter-relations. (c) Cross-sectional views reveal discovered regularity of the extracted arrangement at multiple scales, _e.g._, walls, stairways, chairs, etc.
 
 ## _Abstract_
