@@ -5,7 +5,7 @@ Venue: [SIGGRAPH 2015](https://s2015.siggraph.org) <br />
 Authors: [Aron Monszpart](http://geometry.cs.ucl.ac.uk/amonszpart)<sup>1</sup>, [Nicolas Mellado](https://www.irit.fr/recherches/VORTEX/MelladoNicolas/)<sup>1,2</sup>, [Gabriel J. Brostow](http://www0.cs.ucl.ac.uk/staff/g.brostow/)<sup>1</sup>, [Niloy J. Mitra](http://geometry.cs.ucl.ac.uk)<sup>1</sup><br />
 <sup>1</sup>University College London <sup>2</sup>CNRS-IRIT (Toulouse, France)
 
-![Teaser](geometry.cs.ucl.ac.uk/projects/2015/regular-arrangements-of-planes/paper_docs/teaser.png")
+![Teaser](geometry.cs.ucl.ac.uk/projects/2015/regular-arrangements-of-planes/paper_docs/teaser.png)
 <br />We present a novel approach to extract a Regular Arrangements of Planes (RAP) from an unstructured and noisy raw scan (shown in gold). (a) In this example, our algorithm reconstructs a building arrangement from a raw pointcloud, pre-assembled from multiple laser scans. (b) The distribution of the initial normals is very noisy in this scene, which makes any greedy arrangement of planes error-prone. Instead, we propose a global algorithm to simultaneously select both the planes along with their sparse inter-relations. (c) Cross-sectional views reveal discovered regularity of the extracted arrangement at multiple scales, _e.g._, walls, stairways, chairs, etc.
 
 ## _Abstract_
@@ -23,7 +23,7 @@ The different modules are:
 * visualization: based on PCL viewer, support both 2D and 3D point clouds and inter-primitive relations.
 * RAPter: the core of the project, a new approach to approximate scenes with primitives supported by global relations.
 
-###Dependencies
+### Dependencies
 * 3rd Party:
 ** CoinBonmin (optimisation)
 ** libfbi (fast box intersection)
@@ -33,7 +33,7 @@ RAPter also requires OpenCV and PointCloudLibrary, and we recommend to use respe
 
 Ubuntu packages: python-pygraphviz
 
-###CoinBonmin
+### CoinBonmin
 First, download Bonmin in `${WORKSPACE}/3rdparty`:
 ```
 svn co https://projects.coin-or.org/svn/Bonmin/stable/1.5 CoinBonmin-stable
@@ -50,12 +50,12 @@ make
 make -install
 ```
 
-###libfbi
+### libfbi
 Download in `${WORKSPACE}/3rdparty` from [Github](https://github.com/mkirchner/libfbi.git).
 No installation required.
 
-##Compilation
-###RAPter
+## Compilation
+### RAPter
 Once all the dependencies are satisfied, you can build RAPter. By default, dependencies are expected to be in `/home:${USER}/workspace/` (you may need to edit CMakelist.txt to change that behaviour). 
 ```
 mkdir build
@@ -64,5 +64,5 @@ cmake -DCMAKE_BUILD_TYPE=Release ..
 make
 ```
 
-###InputGen
+### InputGen
 Just compile using cmake like usual.
