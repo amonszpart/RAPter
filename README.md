@@ -1,6 +1,6 @@
 RAPter
 =======
-Project page: [http://geometry.cs.ucl.ac.uk/projects/2015/regular-arrangements-of-planes](http://geometry.cs.ucl.ac.uk/projects/2015/regular-arrangements-of-planes)<br />
+Project page: [RAPter: Rebuilding Man-made Scenes with Regular Arrangements of Planes](http://geometry.cs.ucl.ac.uk/projects/2015/regular-arrangements-of-planes)<br />
 Venue: [SIGGRAPH 2015](https://s2015.siggraph.org) <br />
 Authors: [Aron Monszpart](http://geometry.cs.ucl.ac.uk/amonszpart)<sup>1</sup>, [Nicolas Mellado](https://www.irit.fr/recherches/VORTEX/MelladoNicolas/)<sup>1,2</sup>, [Gabriel J. Brostow](http://www0.cs.ucl.ac.uk/staff/g.brostow/)<sup>1</sup>, [Niloy J. Mitra](http://geometry.cs.ucl.ac.uk)<sup>1</sup><br />
 <sup>1</sup>University College London <sup>2</sup>CNRS-IRIT (Toulouse, France)
