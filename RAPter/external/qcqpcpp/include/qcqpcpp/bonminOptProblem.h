@@ -691,7 +691,7 @@ BonminTMINLP<_Scalar>::get_starting_point( Ipopt::Index    n
 
                 x[ j ] = (*real_distribution)( gen );
 
-                if ( isinf(x[j]) )
+                if ( std::isinf(x[j]) )
                     std::cerr << "[" << __func__ << "]: " << "warning, returning inf as starting point x0[" << j << "]..." << std::endl;
 
                 if ( _delegate.isDebug() )
