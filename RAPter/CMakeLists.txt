@@ -14,7 +14,7 @@ SET( PCL_DIR "${THIRD_PARTY_DIR}/pcl-trunk2/install/share/pcl-1.8/"
         CACHE FILEPATH "Folder containing \"PCLConfig.cmake\", usually \"{PCL_INSTALL_DIR}/share/pcl-x.x/\"." )
 # BONMIN
 SET( PATH_BONMIN_DIR "${THIRD_PARTY_DIR}/CoinBonmin-stable/build/"
-    CACHE FILEPATH "Folder containing the compiled Bonmin libraries")
+    CACHE FILEPATH "Folder containing the compiled Bonmin libraries" FORCE)
 #SET( PATH_BONMIN_DIR "${THIRD_PARTY_DIR}/Bonmin-1.8.0-lapack/")
 
 ## QCQPCPP
