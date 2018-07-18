@@ -47,7 +47,7 @@ mkdir build
 cd build
 ../configure -C
 make
-make -install
+make install
 ```
 
 ### libfbi
