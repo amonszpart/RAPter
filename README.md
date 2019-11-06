@@ -56,7 +56,7 @@ No installation required.
 
 ## Compilation
 ### RAPter
-Once all the dependencies are satisfied, you can build RAPter. By default, dependencies are expected to be in `/home:${USER}/workspace/` (you may need to edit CMakelist.txt to change that behaviour). 
+Once all the dependencies are satisfied, you can build RAPter. By default, dependencies are expected to be in `/home:${USER}/workspace/` (you probably need to edit [CMakelist.txt](https://github.com/amonszpart/RAPter/blob/spatially_smooth/RAPter/CMakeLists.txt#L16) to change that behaviour). 
 ```
 mkdir build
 cd build
@@ -66,3 +66,16 @@ make
 
 ### InputGen
 Just compile using cmake like usual.
+
+# Example run
+
+```shell
+cd <SCENE>
+ln -s <YOURCLOUD.ply> cloud.ply
+python rapter.py -h
+python rapter.py
+```
+
+- The scale parameter `-s` is the most important, that controls the "feature size", e.g. how small distances are collapsed to one plane. 
+- A similar parameter is `--al`, which is the threshold on angle of normals in radians to consider two points or planes the same.
+- Higher `--pw` values will result in larger regularization.
